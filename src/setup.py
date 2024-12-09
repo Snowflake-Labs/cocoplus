@@ -58,8 +58,8 @@ def display_setup(session):
     # Header Section
     st.markdown("""
         <div class="header-section">
-            <div class="header-title">Setup Guide: Snowflake Cortex Demo</div>
-            <div class="header-subtitle">Get started with Snowflake Cortex in a no-code environment powered by Streamlit</div>
+            <div class="header-title">Setup Guide: Snowflake AI Toolkit</div>
+            <div class="header-subtitle">Snowflake AI Toolkit is an AI Accelerator and Playground for enabling AI in Snowflake.</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -84,7 +84,7 @@ def display_setup(session):
         <div class="section">
             <div class="section-title">2. Native Mode Setup (Recommended)</div>
             <div class="section-content">
-                The Snowflake Cortex app is designed to be run in <strong>Native Streamlit mode</strong>. This mode ensures that your app runs 
+                The app is designed to be run in <strong>Native Streamlit mode</strong>. This mode ensures that your app runs 
                 within Snowflake’s managed environment, offering better integration and performance.
                 <ul>
                     <li><strong>Native Streamlit Mode</strong>: The app will use the active Snowflake session, so no local configuration for credentials is required.</li>
@@ -140,9 +140,9 @@ def display_setup(session):
             <div class="section-title">4. Clone the Repository</div>
             <div class="section-content">
                 Clone the repository that contains the Snowflake Cortex demo app code:
-                <pre><code>git clone https://github.com/your-repo/snowflake-cortex-demo.git</code></pre>
+                <pre><code>git clone https://github.com/sgsshankar/Snowflake-AI-Toolkit.git</code></pre>
                 Then navigate into the cloned directory:
-                <pre><code>cd snowflake-cortex-demo</code></pre>
+                <pre><code>cd snowflake-ai-toolkit</code></pre>
             </div>
         </div>
     """, unsafe_allow_html=True)
