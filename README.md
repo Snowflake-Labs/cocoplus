@@ -23,7 +23,7 @@ A notification system that keeps users informed about task completions, error me
 
 ![Snowflake Cortex Demo](assets/demo.gif)
 
-Experience the power and simplicity of the Snowflake Cortex Demo App in action. The demo showcases key features including the interactive playground, build functionality, and notification system.
+Experience the power and simplicity of the Snowflake Cortex Demo App in action. The demo showcases key features including the interactive playground, build , and RAG and Fine-Tune.
 
 
 ## Prerequisites
