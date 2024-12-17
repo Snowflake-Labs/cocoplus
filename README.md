@@ -10,7 +10,11 @@ The application provides several key features:
 An interactive environment where users can experiment with Snowflake Cortex functions, test prompts, and and play around with cortex functions.
 
 ### Build
-A dedicated section for constructing and deploying custom data pipelines, workflows, and applications using Snowflake's native capabilities.
+A dedicated section for constructing and deploying data pipelines and workflows using Snowflake Cortex's powerful AI capabilities, enabling seamless integration with your Snowflake databases and tables
+- Text completion and generation using the COMPLETE function
+- Retrieval-Augmented Generation (RAG) for question answering with your own data
+- Fine-tuning large language models on your custom datasets
+
 
 ### Notification
 A notification system that keeps users informed about task completions, error messages as logs ensuring smooth operation monitoring.
@@ -31,7 +35,7 @@ Before you begin, ensure you have met the following requirements:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo/snowflake-cortex-demo.git
+   git clone https://github.com/sgsshankar/Snowflake-AI-Toolkit.git
    cd snowflake-cortex-demo
    ```
 
