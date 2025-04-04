@@ -6,6 +6,7 @@ from src.query_result_builder import *
 from snowflake.core import Root
 from src.utils import *
 from pathlib import Path
+from src.cortex_agent import *
 
 # Load the config file
 config_path = Path("src/settings_config.json")
@@ -129,7 +130,7 @@ def display_playground(session):
    
     elif choices == "Chat Using":
         with choose_col2:
-            options = st.selectbox("Choose one of the options", ["Search Service","RAG"])
+            options = st.selectbox("Choose one of the options", ["Search Service","RAG","Cortex Agent"])
         
         if options == "Search Service":
             # Settings in expander
@@ -366,3 +367,33 @@ def display_playground(session):
                 except Exception as e:
                     add_log_entry(session, "Generate RAG Response", str(e))
                     st.error("An error occurred :  Check if same embedding type and model are selected. Please check the logs for details.")
+
+        elif options == "Cortex Agent":
+            st.subheader("Chat with Agent")
+            agent_manager = CortexAgentManager(session)
+            agents = agent_manager.get_all_agents()
+            chat_agent_name = st.selectbox("Select Agent", [agent.name for agent in agents], key="chat_agent_name")
+            if chat_agent_name:
+                agent = next(a for a in agents if a.name == chat_agent_name)
+                question = st.text_input("Ask a question", placeholder="Type your question here...", key="question")
+
+                if st.button("Send", key="send"):
+                    if question.strip():
+                        with st.spinner("Processing your request..."):
+                            text, sql = agent.chat(session, question)
+                            if text:
+                                with st.chat_message("assistant"):
+                                    st.markdown(text.replace("•", "\n\n"))  # Format bullet points
+                                st.session_state.setdefault("messages", []).append({"role": "assistant", "content": text})
+                            if sql:
+                                st.markdown("### Generated SQL")
+                                st.code(sql, language="sql")
+                                sql_result = run_snowflake_query(session, sql)
+                                if sql_result is not None:
+                                    st.write("### Query Results")
+                                    st.dataframe(sql_result)
+                                else:
+                                    st.error("Error executing SQL query")
+                    else:
+                        st.error("Question cannot be empty")
+

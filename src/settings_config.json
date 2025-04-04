@@ -1,15 +1,5 @@
 {
   "mode": "native",
-  "snowflake": {
-    "account": "",
-    "user": "",
-    "password": "",
-    "role": "",
-    "warehouse": "COMPUTE_WH",
-    "database": "SNOWFLAKE_AI_TOOLKIT",
-    "schema": "PUBLIC",
-    "stage": "SF_AI_STAGE"
-  },
   "default_settings": {
     "model": [
       "claude-3-5-sonnet",
@@ -25,13 +15,16 @@
       "llama3.1-405b",
       "llama3.2-1b",
       "llama3.2-3b",
+      "llama3.3-70b",
       "mistral-large",
       "mistral-large2",
       "mistral-7b",
       "mixtral-8x7b",
       "reka-core",
       "reka-flash",
-      "snowflake-arctic"
+      "snowflake-arctic",
+      "snowflake-llama-3.1-405b",
+      "snowflake-llama-3.3-70b"
     ],
     "private_preview_models": ["deepseek-r1"],
     "fine_tune_models": [
@@ -78,10 +71,22 @@
         "e5-base-v2"
       ],
       "EMBED_TEXT_1024": [
+        "snowflake-arctic-embed-l-v2.0",
         "nv-embed-qa-4",
         "multilingual-e5-large",
         "voyage-multilingual-2"
       ]
     }
-  }
+  },
+  "account": "",
+  "user": "",
+  "password": "",
+  "role": "",
+  "warehouse": "COMPUTE_WH",
+  "database": "SNOWFLAKE_AI_TOOLKIT",
+  "schema": "PUBLIC",
+  "stage": "SF_AI_STAGE",
+  "snowflake_account_base_url": "",
+  "rsa_public_key_fp": "",
+  "rsa_private_key": ""
 }
