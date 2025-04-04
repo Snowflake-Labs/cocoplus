@@ -7,6 +7,10 @@ import json
 from snowflake.snowpark.exceptions import SnowparkSQLException
 from src.notification import *
 from src.search import *
+from src.cortex_agent import *
+# from trulens.connectors.snowflake import SnowflakeConnector
+# from trulens.core.session import TruSession
+# from trulens.dashboard import run_dashboard
 
 # Load the config file
 config_path = Path("src/settings_config.json")
@@ -33,10 +37,15 @@ if st.session_state.snowflake_session is None:
     elif config["mode"] == "debug":
         try:
             connection_parameters = {
-                "account": config["snowflake"]["account"],"user": config["snowflake"]["user"],"password": config["snowflake"]["password"],
-                "role": config["snowflake"]["role"],"warehouse": config["snowflake"]["warehouse"],"database": config["snowflake"]["database"],
-                "schema": config["snowflake"]["schema"]
+                "account": config["account"],"user": config["user"],"password": config["password"],
+                "role": config["role"],"warehouse": config["warehouse"],"database": config["database"],
+                "schema": config["schema"],
+                # "init_server_side": True
             }
+            # connector = SnowflakeConnector(**connection_parameters)
+            # truelens_session = TruSession(connector)
+            # st.session_state.truelens_session = truelens_session
+            # run_dashboard(truelens_session)
             st.session_state.snowflake_session = Session.builder.configs(connection_parameters).create()
         except Exception as e:
             st.error(f"Failed to create session in debug mode: {e}")
@@ -114,6 +123,8 @@ with st.sidebar:
             st.session_state.page = "Build"
         if st.button("🔍 Cortex Search"):
             st.session_state.page = "Cortex Search"
+        if st.button("🤖 Cortex Agent"):
+            st.session_state.page = "Cortex Agent"
         if st.button("🔔 Notification"):
             st.session_state.page = "Notification"
 
@@ -124,6 +135,7 @@ pages = {
     "Build": build.display_build,
     "Notification": notification.display_notification,
     "Cortex Search": display_search,
+    "Cortex Agent": display_cortex_agent,
     "Setup": setup.display_setup
 }
 

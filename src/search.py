@@ -7,7 +7,7 @@ import asyncio
 import threading
 import json
 from snowflake.core import Root
-
+import os
 
 config_path = Path("src/settings_config.json")
 with open(config_path, "r") as f:
@@ -29,7 +29,7 @@ def display_search(session):
     #     st.write(res)
 
 
-    warehouse = config["snowflake"]["warehouse"]
+    warehouse = config["warehouse"]
 
     if create_or_use == "Create":
 

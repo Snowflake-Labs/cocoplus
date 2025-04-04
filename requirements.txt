@@ -5,3 +5,4 @@ langchain
 pandas
 pyarrow
 snowflake
+PyJWT

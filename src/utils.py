@@ -284,10 +284,6 @@ def create_prompt_for_rag(session, question: str, rag: bool, column: str, databa
         """
     return prompt
 
-def create_prompt_for_search_service(session, question: str, search_service: str, chat_history: list):
-
-    return
-
 def get_cortex_complete_result(session, query: str):
     """
     Executes a Cortex complete query and returns the result.
@@ -394,8 +390,8 @@ def create_database_and_stage_if_not_exists(session: Session):
         session (Session): Snowflake session object
     """
     # Fetch database and stage details from the config file
-    database_name = config["snowflake"]["database"]
-    stage_name = config["snowflake"]["stage"]
+    database_name = config["database"]
+    stage_name = config["stage"]
 
     # Check if the database exists, and create if it doesn't
     database_query = f"SHOW DATABASES LIKE '{database_name}'"

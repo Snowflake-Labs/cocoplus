@@ -1,4 +1,4 @@
-definition_version: "1"
+definition_version: '1'
 streamlit:
   name: snowflake_ai_toolkit
   stage: sf_ai_stage
@@ -8,6 +8,7 @@ streamlit:
   #pages_dir: pages/
   additional_source_files:
     - src/cortex_functions.py
+    - src/cortex_agent.py
     - src/utils.py
     - src/html_snippets.py
     - src/styles.css

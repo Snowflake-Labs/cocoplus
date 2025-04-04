@@ -18,6 +18,9 @@ Get a hybrid (vector and keyword) search engine on your text data in minutes,
 - Use Cortex Search for your RAG Application
 - Use Cortex Search Powered Chat
 
+### Agent
+
+
 ## Prerequisites
 
 Before you begin, ensure you have met the following requirements:
@@ -59,6 +62,41 @@ Make sure your Snowflake role has the necessary privileges for these operations.
 To configure the application mode, update the `mode` parameter in `src/settings_config.json`:
 - Set to `"debug"` for local development and editing.
 - Set to `"native"` for running natively in Snowflake.
+
+### Authentication for Cortex Agent – JWT Token Support Only
+
+This app currently supports **only JWT-based authentication** using RSA key pairs for Cortex Agents. OAuth is **not supported** at this time.
+
+#### Step 1: Generate RSA Key Pair
+
+```bash
+openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -out rsa_private_key.p8 -nocrypt
+openssl rsa -in rsa_private_key.p8 -pubout -out rsa_public_key.pub
+```
+
+#### Step 2: Upload Public Key to Snowflake
+
+1. Copy the content from `rsa_public_key.pub` (exclude `-----BEGIN PUBLIC KEY-----` headers).
+2. In Snowflake, run:
+
+```sql
+alter user <your_username> set rsa_public_key='<paste_public_key_here>';
+```
+
+3. Retrieve the public key fingerprint:
+
+```sql
+desc user <your_username>;
+```
+
+Use the fingerprint in `rsa_public_key_fp`.
+
+#### Step 3: Add to `settings_config.json`
+
+- Paste full contents of `rsa_private_key.p8` into `rsa_private_key` (escape newlines if needed).
+- Paste fingerprint into `rsa_public_key_fp`.
+
+For more details, refer to the [Snowflake documentation](https://docs.snowflake.com/en/user-guide/key-pair-auth.html#using-key-pair-authentication).
 
 ## Running the App
 
