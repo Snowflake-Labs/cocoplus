@@ -32,7 +32,7 @@ def display_fine_tune(session):
     st.title("Fine-Tune LLM Model")
 
     # Dropdown to select action: Fine-Tune New Model or Use Fine-Tuned Model
-    fine_tune_action = st.selectbox("Select Action", ["Fine-Tune A Model", "Try Fine-Tuned Model"], key="fine_tune_action")
+    fine_tune_action = st.selectbox("Select Action", ["Fine-Tune A Model", "Check Status"], key="fine_tune_action")
 
     if fine_tune_action == "Fine-Tune A Model":
         st.subheader("Fine-Tune a New Model")
@@ -41,21 +41,21 @@ def display_fine_tune(session):
         col1, col2 = st.columns(2)
         with col1:
             databases = list_databases(session)
-            selected_db = st.selectbox("Select Database", databases)
+            selected_db = st.selectbox("Database", databases)
 
         with col2:
             schemas = list_schemas(session, selected_db)
-            selected_schema = st.selectbox("Select Schema", schemas)
+            selected_schema = st.selectbox("Schema", schemas)
 
         # Train Table and Validation Table selection side by side
         col1, col2 = st.columns(2)
         with col1:
             train_tables = list_tables(session, selected_db, selected_schema)
-            selected_train_table = st.selectbox("Select Train Table", train_tables if train_tables else ["No tables available"])
+            selected_train_table = st.selectbox("Train Table", train_tables if train_tables else ["No tables available"])
 
         with col2:
             validation_tables = list_tables(session, selected_db, selected_schema)
-            selected_validation_table = st.selectbox("Select Validation Table", validation_tables if validation_tables else ["No tables available"])
+            selected_validation_table = st.selectbox("Validation Table", validation_tables if validation_tables else ["No tables available"])
 
         # Validate required columns in Train and Validation Tables
         fine_tune_enabled = True
@@ -72,11 +72,11 @@ def display_fine_tune(session):
                 fine_tune_enabled = False
 
         # Model selection and text input for generating a new model
-        selected_model = st.selectbox("Select Base Model", config["default_settings"]["fine_tune_models"])
-        new_model_name = st.text_input("Enter New Model Name", placeholder="Type model name...")
+        selected_model = st.selectbox("Base Model", config["default_settings"]["fine_tune_models"])
+        new_model_name = st.text_input("New Model Name (Note: Use only _ for word spacing.)", placeholder="Type model name...")
 
         # Fine-Tune a New Model
-        if st.button("Fine-Tune", key="fine_tune_button", disabled=not fine_tune_enabled):
+        if st.button("Run", key="fine_tune_button", disabled=not fine_tune_enabled):
             details = f"Fine-tuning model `{new_model_name}` using `{selected_model}`"
             notification_id = add_notification_entry(session, "Fine-Tune Model", "In-Progress", details)
             try:
@@ -90,6 +90,8 @@ def display_fine_tune(session):
                 )
                 if tracking_id:
                     update_notification_entry(session, notification_id, "Success")
+                    details = f"Fine-tuning model `{new_model_name}` using `{selected_model}` with tracking ID `{tracking_id}`"
+                    update_notification_fine_tune_entry(session, notification_id, details)
                     st.success(f"Fine-tuning started for model `{new_model_name}`! Tracking ID: `{tracking_id}`.")
                     st.info("You can use the tracking ID to check the fine-tuning progress.")
                 else:
@@ -99,7 +101,27 @@ def display_fine_tune(session):
                 add_log_entry(session, "Fine-Tune Model", str(e))
                 st.error(f"Failed to fine-tune the model: {e}")
 
+    elif fine_tune_action == "Try Fine-Tuned Model":
+        st.subheader("Try Fine-Tuned Model")
 
+        # Fetch fine-tuned models
+        try:
+            fine_tuned_models = fetch_fine_tuned_models(session)
+            if not fine_tuned_models:
+                st.warning("No fine-tuned models found.")
+            else:
+                selected_model = st.selectbox("Model", fine_tuned_models)
+                print("selected_mode",selected_model)
+            # Prompt input and generation logic
+            prompt = st.text_area("Enter your prompt:", placeholder="Type your prompt here...")
+            if st.button("Generate", key="use_fine_tuned_model_button"):
+                result = execute_query_and_get_result(session, prompt, selected_model, "Try Fine-Tuned Model")
+                format_and_display_result(result, prompt)
+        except Exception as e:
+            add_log_entry(session, "Fetch Fine-Tuned Models", str(e))
+            st.error(f"Failed to fetch or use fine-tuned models: {e}")
+
+    elif fine_tune_action == "Check Status":
         st.subheader("Check Fine-Tuning Status")
         tracking_id_input = st.text_input("Enter Tracking ID", placeholder="Enter your tracking ID to check the status")
         tracking_id_input = tracking_id_input.strip()
@@ -119,23 +141,3 @@ def display_fine_tune(session):
                 except Exception as e:
                     add_log_entry(session, "Check Fine-Tune Status", str(e))
                     st.error(f"Failed to retrieve status for Tracking ID `{tracking_id_input}`.")
-
-    elif fine_tune_action == "Try Fine-Tuned Model":
-        st.subheader("Try Fine-Tuned Model")
-
-        # Fetch fine-tuned models
-        try:
-            fine_tuned_models = fetch_fine_tuned_models(session)
-            if not fine_tuned_models:
-                st.warning("No fine-tuned models found.")
-            else:
-                selected_model = st.selectbox("Select Model", fine_tuned_models)
-                print("selected_mode",selected_model)
-            # Prompt input and generation logic
-            prompt = st.text_area("Enter your prompt:", placeholder="Type your prompt here...")
-            if st.button("Generate", key="use_fine_tuned_model_button"):
-                result = execute_query_and_get_result(session, prompt, selected_model, "Try Fine-Tuned Model")
-                format_and_display_result(result, prompt)
-        except Exception as e:
-            add_log_entry(session, "Fetch Fine-Tuned Models", str(e))
-            st.error(f"Failed to fetch or use fine-tuned models: {e}")

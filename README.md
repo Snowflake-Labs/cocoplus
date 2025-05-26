@@ -1,25 +1,33 @@
 # Snowflake AI Toolkit
-Snowflake AI Toolkit is an AI Accelerator and Playground for enabling AI in Snowflake. It is an Plug and Play Streamlit based Native App that can be used to explore, learn and build rapid prototypes of AI Solutions in Snowflake powered by the Snowflake's Cortex and AI Functions. 
+
+Snowflake AI Toolkit is an AI Accelerator and Playground for enabling AI in Snowflake. It is an Plug and Play Streamlit based Native App that can be used to explore, learn and build rapid prototypes of AI Solutions in Snowflake powered by the Snowflake's Cortex and AI Functions.
 
 # Features
 
 ### Playground
+
 An interactive environment where users can chat and experiment with Snowflake Cortex functions, test prompts, and and play around with cortex functions.
 
 ### Build
+
 A dedicated section for constructing and deploying data pipelines and workflows using Snowflake Cortex's powerful AI capabilities, enabling seamless integration with your Snowflake databases and tables
+
 - Text completion and generation using the COMPLETE function
 - Retrieval-Augmented Generation (RAG) for question answering with your own data
 - Fine-tuning large language models on your custom datasets
 
 ### Search
+
 Get a hybrid (vector and keyword) search engine on your text data in minutes,
+
 - Create and manage Cortex Search Service
 - Use Cortex Search for your RAG Application
 - Use Cortex Search Powered Chat
 
 ### Agent
+
 Cortex Agents orchestrate across both structured and unstructured data sources to deliver insights.
+
 - Create and Manage Cortex Agent Instances
 - Test the Agent against the Data
 - Utilize Cortex Search and Cortex Analyst through Agents
@@ -37,25 +45,29 @@ Before you begin, ensure you have met the following requirements:
 - **Python**: Version 3.7 or higher.
 - **Streamlit**: Installed on your local machine.
 - **Snowflake-CLI** : Install snowflake-cli through pip
+- **Model Availability**: `claude-4-sonnet` and `claude-4-opus` is available only in AWS US (cross-region).
 
 ## Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/sgsshankar/Snowflake-AI-Toolkit.git
    cd snowflake-ai-toolkit
    ```
 
 2. Install dependencies (only required for local development):
+
    ```bash
    pip install -r requirements.txt
    ```
-   
+
    All necessary libraries are listed in `requirements.txt`.
 
 ## Setup
 
 The application will automatically handle:
+
 - Database creation
 - Stage setup
 - Required resource initialization
@@ -63,6 +75,7 @@ The application will automatically handle:
 Make sure your Snowflake role has the necessary privileges for these operations.
 
 To configure the application mode, update the `mode` parameter in `src/settings_config.json`:
+
 - Set to `"debug"` for local development and editing.
 - Set to `"native"` for running natively in Snowflake.
 
@@ -96,7 +109,7 @@ Use the fingerprint in `rsa_public_key_fp`.
 
 #### Step 3: Add to `settings_config.json`
 
-- Paste full contents of `rsa_private_key.p8` into `rsa_private_key` (escape newlines if needed).
+- Paste full contents of `rsa_private_key.p8` into `rsa_private_key` (add \n).
 - Paste fingerprint into `rsa_public_key_fp`.
 
 For more details, refer to the [Snowflake documentation](https://docs.snowflake.com/en/user-guide/key-pair-auth.html#using-key-pair-authentication).
@@ -106,47 +119,50 @@ For more details, refer to the [Snowflake documentation](https://docs.snowflake.
 ### Locally
 
 Launch the application locally using:
-   ```bash
-   streamlit run streamlit_app.py
-   ```
+
+```bash
+streamlit run streamlit_app.py
+```
 
 ### Natively on Snowflake
 
 To deploy the application natively in Snowflake, use the following command:
-   ```bash
-   snow streamlit deploy --account "<your_account>" --user "<your_username>" --password "<your_password>" --role "<your_role>" --warehouse "<your_warehouse>" --database "<your_database>" --replace
-   ```
+
+```bash
+snow streamlit deploy --account "<your_account>" --user "<your_username>" --password "<your_password>" --role "<your_role>" --warehouse "<your_warehouse>" --database "<your_database>" --replace
+```
 
 Replace the placeholders (`<your_account>`, `<your_username>`, etc.) with your actual Snowflake account details. When running natively in Snowflake, installing dependencies from `requirements.txt` is not needed.
 
 ## Project Structure
 
-| File/Directory                      | Description                                      |
-|-------------------------------------|--------------------------------------------------|
-| [src/](src/)                        | Source code for setup and styling                |
-| [src/setup.py](src/setup.py)        | Setup and initialization code                    |
-| [src/styles.css](src/styles.css)    | Custom styling                                   |
-| [src/build.py](src/build.py)        | Build mode functionality                         |
-| [src/cortex_functions.py](src/cortex_functions.py) | Core functions for Cortex operations      |
-| [src/query_result_builder.py](src/query_result_builder.py) | Query result handling and display      |
-| [src/playground.py](src/playground.py) | Playground mode functionality                  |
-| [src/rag.py](src/rag.py) | RAG mode functionality                  |
-| [src/fine_tune.py](src/fine_tune.py) | Fine-tuning functionality                  |
-| [src/search.py](src/search.py) | Cortex Search Functionality               |
-| [.gitignore](.gitignore)            | Git ignore file                                  |
-| [requirements.txt](requirements.txt)| Project dependencies                             |
-| [streamlit_app.py](streamlit_app.py)| Main application entry point                     |
-
+| File/Directory                                             | Description                          |
+| ---------------------------------------------------------- | ------------------------------------ |
+| [src/](src/)                                               | Source code for setup and styling    |
+| [src/setup.py](src/setup.py)                               | Setup and initialization code        |
+| [src/styles.css](src/styles.css)                           | Custom styling                       |
+| [src/build.py](src/build.py)                               | Build mode functionality             |
+| [src/cortex_functions.py](src/cortex_functions.py)         | Core functions for Cortex operations |
+| [src/query_result_builder.py](src/query_result_builder.py) | Query result handling and display    |
+| [src/playground.py](src/playground.py)                     | Playground mode functionality        |
+| [src/rag.py](src/rag.py)                                   | RAG mode functionality               |
+| [src/fine_tune.py](src/fine_tune.py)                       | Fine-tuning functionality            |
+| [src/search.py](src/search.py)                             | Cortex Search Functionality          |
+| [.gitignore](.gitignore)                                   | Git ignore file                      |
+| [requirements.txt](requirements.txt)                       | Project dependencies                 |
+| [streamlit_app.py](streamlit_app.py)                       | Main application entry point         |
 
 ## Troubleshooting
 
 Common issues and solutions:
 
 1. **Snowflake Permission Errors**
+
    - Verify role privileges for database and stage creation
    - Ensure Cortex functionalities are enabled
 
 2. **Dependency Issues**
+
    - If pandas/pyarrow installation fails:
      ```bash
      pip install pandas pyarrow
@@ -168,10 +184,10 @@ We welcome contributions! Please:
 ## Support
 
 For assistance:
+
 - Open an issue in the GitHub repository
 - Contact project maintainers
 - Check documentation for common solutions
-
 
 ## Warranty
 

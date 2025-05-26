@@ -26,7 +26,7 @@ SETTINGS_TEMPLATE = {
     "model": "",  # AI model to use
     "tools": [],  # List of tool specifications
     "tool_resources": {},  # Configuration for each tool
-    "response_instruction": "You will always maintain a friendly tone and provide concise response. When a user asks you a question, you will also be given excerpts from different sources provided by a search engine. Use that information to provide a summary that addresses the user's question. Question: {{.Question}}\n\nContext: {{.Context}}",
+    "response_instruction": "You will always maintain a friendly tone and provide concise response. When a user asks you a question, you will also be given excerpts from different sources provided by a search engine.",
 }
 
 def run_snowflake_query(session, query):
@@ -106,6 +106,7 @@ class CortexAgent:
             # print("token: ", token)
             return token, expiration
         except Exception as e:
+            print(e)
             st.error(f"Error generating JWT token: {str(e)}")
             return None, None
     
@@ -627,17 +628,17 @@ def render_dynamic_settings_form(session, settings_template: Dict[str, Any], pre
 
                 st.divider()
 
-        if st.button(f"Add", key=f"{prefix.lower()}add_tool"):
-            new_tool_name = f"tool_{len(tools_list) + 1}"
-            tools_list.append({"tool_spec": {"type": "cortex_search", "name": new_tool_name}})
-            st.rerun()
-
         # Response instruction input
         filled_settings["response_instruction"] = st.text_area(
             f"Response Instruction",
             value=prefilled_values["response_instruction"],
             key=f"{prefix.lower()}response_instruction"
         )
+
+        if st.button(f"Add", key=f"{prefix.lower()}add_tool"):
+            new_tool_name = f"tool_{len(tools_list) + 1}"
+            tools_list.append({"tool_spec": {"type": "cortex_search", "name": new_tool_name}})
+            st.rerun()
 
         # Update settings with tools data
         filled_settings["tools"] = tools_list
@@ -656,9 +657,9 @@ def display_cortex_agent(session):
     st.title("Cortex Agent")
     agent_manager = CortexAgentManager(session)
 
-    tab1, tab2, tab3 = st.tabs(["Create", "Edit", "Use"])
+    option = st.selectbox("Choose Functionality", ["Create", "Edit"], key="agent_option")
 
-    with tab1:
+    if option == "Create":
         # Create Agent Tab
         st.subheader("Create Agent")
         col1, col2 = st.columns(2)
@@ -674,10 +675,11 @@ def display_cortex_agent(session):
         new_settings = render_dynamic_settings_form(session, SETTINGS_TEMPLATE, prefix="Create")
         new_settings["model"] = model
         
-        if st.button("Create Agent", key="create_agent"):
+        if st.button("Create", key="create_agent"):
             if name.strip():
                 new_agent = CortexAgent(name=name, settings=new_settings)
-                response_instruction = new_settings.get("response_instruction", "")    
+                new_settings["response_instruction"] = new_settings.get("response_instruction", "") + "Use that information to provide a summary that addresses the user's question. Question: {{.Question}}\n\nContext: {{.Context}}"
+                response_instruction = new_settings.get("response_instruction", "")
                 if "{{.Question}}" not in response_instruction or "{{.Context}}" not in response_instruction:
                     show_toast_message("Response instruction must include {{.Question}} and {{.Context}}", toast_type="error")
                     return
@@ -693,7 +695,7 @@ def display_cortex_agent(session):
             else:
                 st.error("Agent name cannot be empty")
 
-    with tab2:
+    elif option == "Edit":
         # Edit Agent Tab
         st.subheader("Edit Existing Agent")
         agents = agent_manager.get_all_agents()
@@ -728,7 +730,7 @@ def display_cortex_agent(session):
 
             # print("settings: " , json.dumps(updated_settings, indent=2))
 
-            if st.button("Update Agent", key="edit_button"):
+            if st.button("Update", key="edit_button"):
                 if new_name.strip():
                     updated_agent = agent.edit(session, new_name, updated_settings)
                     if agent_manager.save_agent(updated_agent):
@@ -742,7 +744,7 @@ def display_cortex_agent(session):
                 else:
                     st.error("Agent name and RSA public key fingerprint cannot be empty")
 
-    with tab3:
+    else:
         # Chat Tab
         st.subheader("Use Agent")
         agents = agent_manager.get_all_agents()
@@ -765,9 +767,13 @@ def display_cortex_agent(session):
                             st.markdown("### Generated SQL")
                             st.code(sql, language="sql")
                             sql_result = run_snowflake_query(session, sql)
+                            # explanations = make_llm_call(session,"Explain the SQL Query", str(sql), "claude-3-5-sonnet")
+                            # st.write("### SQL Query Explanation")
+                            # st.markdown(explanations)
                             if sql_result is not None:
                                 st.write("### Query Results")
                                 st.dataframe(sql_result)
+                                
                             else:
                                 st.error("Error executing SQL query")
                 else:

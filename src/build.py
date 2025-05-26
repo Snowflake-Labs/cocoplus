@@ -143,15 +143,15 @@ def get_non_playground_input(session, functionality):
     
     # Database and schema selections at the same level
     col1, col2 = st.columns(2)
-    database = col1.selectbox("Select Database", list_databases(session))
-    schema = col2.selectbox("Select Schema", list_schemas(session, database) if database else [], disabled=not database)
+    database = col1.selectbox("Database", list_databases(session))
+    schema = col2.selectbox("Schema", list_schemas(session, database) if database else [], disabled=not database)
 
     # Table and column selections at the same level
     col3, col4 = st.columns(2)
     tables = list_tables(session, database, schema) if schema else []
-    selected_table = col3.selectbox("Select Table", tables if tables else ["No tables available"], disabled=not schema)
+    selected_table = col3.selectbox("Table", tables if tables else ["No tables available"], disabled=not schema)
     columns = list_columns(session, database, schema, selected_table) if selected_table != "No tables available" else []
-    selected_column = col4.selectbox("Select Column", columns if columns else ["No columns available"], disabled=not selected_table or selected_table == "No tables available")
+    selected_column = col4.selectbox("Column", columns if columns else ["No columns available"], disabled=not selected_table or selected_table == "No tables available")
 
     if selected_table != "No tables available" and selected_column != "No columns available":
         st.write(f"Preview of `{selected_table}`")
@@ -166,7 +166,7 @@ def get_non_playground_input(session, functionality):
     st.subheader("Select Output Table and Column")
  
     col5, col6 = st.columns(2)
-    output_table = col5.text_input("Enter New Output Table Name", placeholder="New output table")
+    output_table = col5.text_input("New Output Table Name", placeholder="New output table")
     output_column = col6.text_input("Output Column Name", placeholder="Enter output column name")
 
     input_data = {
@@ -197,7 +197,7 @@ def display_build(session):
 
     # Extend the functionality options to include RAG and Fine Tune
     functionality = st.selectbox(
-        "Choose functionality:", ["Select Functionality", "Complete", "Translate", "Summarize", "Extract", "Sentiment", "RAG", "Fine Tune"]
+        "Choose functionality:", ["Complete", "Translate", "Summarize", "Extract", "Sentiment", "RAG", "Fine Tune"]
     )
 
     if functionality != "Select Functionality":
@@ -211,7 +211,7 @@ def display_build(session):
             settings = get_functionality_settings(functionality, config,session)
             input_data = get_non_playground_input(session, functionality)
 
-            if st.button(f"Run {functionality}"):
+            if st.button(f"Run"):
                 try:
                     trigger_async_operation(session, functionality, input_data, settings)
                     st.success(f"Operation {functionality} triggered. Check the notifications screen for updates.")

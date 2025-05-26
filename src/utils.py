@@ -37,13 +37,18 @@ def list_cortex_services(session,database,schema):
     q = f"SHOW CORTEX SEARCH SERVICES IN {database}.{schema}"
     return [row["name"] for row in session.sql(q).collect()]
 
-
 def fetch_cortex_service(session, service_name,database,schema):
     q = f"SHOW CORTEX SEARCH SERVICEs LIKE '{service_name}' IN {database}.{schema}"
     return session.sql(q).collect()
 
-def cortex_search_data_scan(session, service_name):
-    q = f"SELECT * FROM TABLE (CORTEX_SEARCH_DATA_SCAN (SERVICE_NAME => '{service_name}'));"
+def cortex_search_data_scan(session, db, schema, service_name):
+    service = f"{db}.{schema}.{service_name}"
+    q = f"SELECT * FROM TABLE (CORTEX_SEARCH_DATA_SCAN (SERVICE_NAME => '{service}'));"
+    return session.sql(q).collect()
+
+def cortex_search_service_display(session, db, schema, service_name):
+    service = f"{db}.{schema}.{service_name}"
+    q = f"DESCRIBE CORTEX SEARCH SERVICE {service};"
     return session.sql(q).collect()
     
 def list_databases(session):
@@ -483,7 +488,10 @@ def upload_file_to_stage(session, database, schema, stage_name, file):
             os.remove(temp_file_path)
 
 
-def show_toast_message(message, duration=3, toast_type="info"):
+import streamlit as st
+import time
+
+def show_toast_message(message, duration=3, toast_type="info", position="top-right"):
     """
     Displays a toast message in Streamlit using a temporary container.
     
@@ -491,6 +499,7 @@ def show_toast_message(message, duration=3, toast_type="info"):
         message (str): Message to display in the toast
         duration (int, optional): Duration in seconds to show the toast. Defaults to 3.
         toast_type (str, optional): Type of toast ("info", "success", "warning", "error"). Defaults to "info".
+        position (str, optional): Position of the toast ("top-right", "top-left", "bottom-right", "bottom-left"). Defaults to "top-right".
     """
     # Define color styles based on the toast type
     toast_colors = {
@@ -500,7 +509,16 @@ def show_toast_message(message, duration=3, toast_type="info"):
         "error": "#dc3545"
     }
 
+    # Define position styles
+    position_styles = {
+        "top-right": "top: 20px; right: 20px;",
+        "top-left": "top: 20px; left: 20px;",
+        "bottom-right": "bottom: 20px; right: 20px;",
+        "bottom-left": "bottom: 20px; left: 20px;"
+    }
+
     color = toast_colors.get(toast_type, "#007bff")  # Default to "info" color
+    pos_style = position_styles.get(position, "top: 20px; right: 20px;")  # Default to "top-right"
 
     # Create a temporary container to display the toast
     toast_container = st.empty()
@@ -509,8 +527,7 @@ def show_toast_message(message, duration=3, toast_type="info"):
     toast_html = f"""
     <div style="
         position: fixed;
-        top: 20px;
-        right: 20px;
+        {pos_style}
         background-color: {color};
         color: white;
         padding: 10px 20px;
@@ -597,3 +614,27 @@ class pdf_text_chunker:
         #st.success("UDF pdf_text_chunker created successfully.")
     except Exception as e:
         st.error(f"Error creating UDF: {e}")
+
+
+def make_llm_call(session,system_prompt, prompt, model):
+    prompt = prompt.replace("'", "''").replace("\n", "\\n").replace("\\", "\\\\")
+    messages = []
+    if system_prompt:
+        messages.append({'role': 'system', 'content': system_prompt})
+    messages.append({'role': 'user', 'content': prompt})
+
+    messages_json = escape_sql_string(json.dumps(messages))
+
+    query = f"""
+    SELECT SNOWFLAKE.CORTEX.COMPLETE(
+        '{model}',
+        PARSE_JSON('{messages_json}')
+    );
+    """
+    try:
+        result = session.sql(query).collect()[0][0]
+        return result
+    except SnowparkSQLException as e:
+        raise e
+    
+    

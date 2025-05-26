@@ -39,7 +39,8 @@ if st.session_state.snowflake_session is None:
             connection_parameters = {
                 "account": config["account"],"user": config["user"],"password": config["password"],
                 "role": config["role"],"warehouse": config["warehouse"],"database": config["database"],
-                "schema": config["schema"],
+                "schema": config["schema"]
+                # "passcode": config["passcode"],
                 # "init_server_side": True
             }
             # connector = SnowflakeConnector(**connection_parameters)

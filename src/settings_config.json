@@ -3,6 +3,8 @@
   "default_settings": {
     "model": [
       "claude-3-5-sonnet",
+      "claude-4-sonnet",
+      "claude-4-opus",
       "gemma-7b",
       "jamba-1.5-mini",
       "jamba-1.5-large",
@@ -24,9 +26,10 @@
       "reka-flash",
       "snowflake-arctic",
       "snowflake-llama-3.1-405b",
-      "snowflake-llama-3.3-70b"
+      "snowflake-llama-3.3-70b",
+      "deepseek-r1"
     ],
-    "private_preview_models": ["deepseek-r1"],
+    "private_preview_models": [],
     "fine_tune_models": [
       "llama3-8b",
       "llama3-70b",
@@ -35,6 +38,7 @@
       "mistral-7b",
       "mixtral-8x7b"
     ],
+    "complete_multimodal": ["claude-3-5-sonnet", "pixtral-large"],
     "temperature_min": 0.0,
     "temperature_max": 1.0,
     "temperature": 0.7,

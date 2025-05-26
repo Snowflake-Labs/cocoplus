@@ -6,20 +6,20 @@ def display_home(session):
     Displays the home page of the Snowflake AI Toolkit application.
     
     This function creates a visually appealing landing page with information about
-    Snowflake Cortex and the application's features. It includes styled sections for:
+    the Snowflake AI Toolkit, including its description and a section of quick link
+    buttons styled like ChatGPT's welcome screen tiles. It includes styled sections for:
     - Header with application title
-    - Introduction to Snowflake Cortex
-    - Overview of the Streamlit UI
-    - Available features and functionality
+    - Toolkit description
+    - Quick links section with interactive buttons
     - Call to action button
     
     Args:
         session: Snowflake session object used for database operations
         
     The function uses custom CSS styling to create a cohesive Snowflake-themed design
-    with responsive sections and interactive elements.
+    with responsive sections and interactive elements inspired by ChatGPT's tile design.
     """
-    # Apply custom CSS styles for a Snowflake blue-themed layout
+    # Apply custom CSS styles for a Snowflake blue-themed layout and ChatGPT-like tiles
     st.markdown("""
         <style>
             .header-section {
@@ -56,13 +56,38 @@ def display_home(session):
                 line-height: 1.5;
                 color: #333;
             }
+            .quick-links-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 15px;
+                justify-content: center;
+                margin-top: 20px;
+            }
+            .quick-link-btn {
+                background-color: #F7FAFC;
+                color: #333;
+                border: 1px solid #E2E8F0;
+                padding: 15px 20px;
+                font-size: 1.1em;
+                border-radius: 28px;
+                text-decoration: none;
+                text-align: center;
+                flex: 1;
+                min-width: 200px;
+                max-width: 250px;
+                transition: background-color 0.2s ease;
+            }
+            .quick-link-btn:hover {
+                background-color: #E2E8F0;
+                border-color: #56CCF2;
+            }
             .get-started-btn {
                 background-color: #56CCF2;
                 color: white;
                 border: none;
                 padding: 15px 30px;
                 font-size: 1.2em;
-                border-radius: 5px;
+                border-radius: ;
                 margin-top: 20px;
                 display: inline-block;
                 text-decoration: none;
@@ -70,58 +95,38 @@ def display_home(session):
             .get-started-btn:hover {
                 background-color: #2D9CDB;
             }
+            
         </style>
     """, unsafe_allow_html=True)
 
     # Header Section
     st.markdown("""
         <div class="header-section">
-            <div class="header-title">Snowflake AI Toolkit</div>
-            <div class="header-subtitle">Unlock the power of AI and data with Snowflake Cortex, now accessible in a no-code environment.</div>
+            <div class="header-title">Snowflake AI Toolkit: Your Playground for AI Innovation</div>
+            <div class="header-subtitle">Discover, prototype, and build AI solutions with Snowflake Cortex in a no-code environment.</div>
         </div>
     """, unsafe_allow_html=True)
 
-    # Introduction to Snowflake Cortex
+       # Toolkit Description
     st.markdown("""
         <div class="section">
-            <div class="section-title">What is Snowflake Cortex?</div>
+            <div class="section-title">About Snowflake AI Toolkit</div>
             <div class="section-content">
-                Snowflake Cortex is a robust suite of AI and machine learning tools integrated directly within the Snowflake platform. It enables users to perform complex tasks such as text completion, summarization, sentiment analysis, information extraction, and more, all while leveraging Snowflake's powerful data storage and processing capabilities.
-                <br><br>
-                Cortex simplifies the AI workflow by integrating advanced models with your data, helping you create and deploy solutions with ease, speed, and security.
+                Snowflake AI Toolkit is an AI Accelerator and Playground for enabling AI in Snowflake. It is a Plug and Play Streamlit-based Native App that can be used to explore, learn, and build rapid prototypes of AI Solutions in Snowflake powered by Snowflake's Cortex and AI Functions.
             </div>
         </div>
     """, unsafe_allow_html=True)
 
-    # How the Streamlit UI helps
+    # Resources Section (GitHub & Medium Links)
     st.markdown("""
         <div class="section">
-            <div class="section-title">No-Code AI with Streamlit</div>
+            <div class="section-title">Resources</div>
             <div class="section-content">
-                This Streamlit-based UI offers a no-code solution for exploring the full range of Snowflake Cortex functionalities. With an easy-to-use interface, you can experiment with Cortex's powerful AI capabilities without writing a single line of code.
-                <br><br>
-                Whether you're generating text completions, performing sentiment analysis, or extracting specific data from large datasets, this platform allows you to effortlessly explore these features, test your ideas, and build AI-driven applications within Snowflake's secure environment.
+                <ul>
+                    <li><a href="https://github.com/Snowflake-Labs/Snowflake-AI-Toolkit" target="_blank">GitHub Repository</a></li>
+                    <li><a href="https://medium.com/snowflake/build-rapid-ai-prototypes-and-validates-use-cases-against-snowflake-cortex-with-the-snowflake-ai-ae811892cb92" target="_blank">Medium Article</a></li>
+                </ul>
             </div>
         </div>
     """, unsafe_allow_html=True)
 
-    # Sections Overview
-    st.markdown("""
-        <div class="section">
-            <div class="section-title">Available Features</div>
-            <div class="section-content">
-                <strong>Playground:</strong> Experiment with Cortex's AI functionalities like text completion, translation, summarization, and sentiment analysis in an interactive environment. Quickly test various models and see real-time results.
-                <br><br>
-                <strong>Build:</strong> Create AI-driven workflows for business use cases. Fine-tune models and leverage Retrieval-Augmented Generation (RAG) to enhance the performance of your AI models. This section is designed for building custom solutions with powerful features like model fine-tuning and advanced retrieval mechanisms.
-                <br><br>
-                <strong>Notification:</strong> Track and manage all operations asynchronously. Get real-time updates on the success or failure of your Cortex operations in one centralized place.
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
-    # Call to Action Section
-    st.markdown("""
-        <div style='text-align: center; margin-top: 30px;'>
-            <a href='#' class='get-started-btn'>Get Started with Snowflake Cortex</a>
-        </div>
-    """, unsafe_allow_html=True)

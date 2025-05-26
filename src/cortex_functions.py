@@ -92,6 +92,50 @@ def get_complete_result(session, model, prompt, temperature, max_tokens, guardra
     except SnowparkSQLException as e:
         raise e
 
+def get_complete_multimodal_result(session, model, prompt, stage, files):
+    """Handles the Complete functionality in playground mode for multimodal inputs.
+    
+    Args:
+        session: Snowflake session.
+        model (str): The model to use for completion.
+        prompt (str): The user prompt text.
+        stage (str): Stage name containing files.
+        files (list): List of file names to include in the prompt.
+        
+    Returns:
+        dict: The completion result from the model.
+        
+    Raises:
+        SnowparkSQLException: If the query fails.
+    """
+    if len(files) == 1:
+        q = f"""
+        SELECT SNOWFLAKE.CORTEX.COMPLETE(
+            '{model}',
+            '{prompt}',
+            TO_FILE('@{stage}','{files[0]}'))
+        """
+        try:
+            result = session.sql(q).collect()
+            return list(result[0])[0]
+        except SnowparkSQLException as e:
+            raise e
+    else:
+        file_str = ",\n".join([f"TO_FILE('@{stage}', '{file}')" for file in files])
+        q = f"""
+            SELECT SNOWFLAKE.CORTEX.COMPLETE(
+                '{model}',
+                PROMPT('{prompt}',
+                    {file_str}
+                )
+            )
+            """
+        try:
+            result = session.sql(q).collect()
+            return list(result[0])[0]
+        except SnowparkSQLException as e:
+            raise e
+
 def get_translation(session, text, source_lang, target_lang):
     """Handles the Translate functionality in playground mode using SQL.
     
@@ -187,6 +231,105 @@ def get_sentiment(session, text):
     except SnowparkSQLException as e:
         raise e
     
+def get_classification(session, text, categories):
+    """Handles the Classification functionality in playground mode using SQL.
+    
+    Args:
+        session: Snowflake session.
+        text (str): Text to classify.
+        categories (list): List of categories for classification.
+        
+    Returns:
+        str: The classification result.
+        
+    Raises:
+        SnowparkSQLException: If the query fails.
+    """
+    # Convert categories string to list of strings, categories are separated by commas
+    categories = [f"'{category}'" for category in categories.split(",")]
+    print("categories_str: ",categories)
+    query = f"""
+    SELECT SNOWFLAKE.CORTEX.CLASSIFY_TEXT('{text}', ARRAY_CONSTRUCT({','.join(categories)}));
+    """
+    print("query: ",query)
+    try:
+        result = session.sql(query).collect()[0][0]
+        print("result: ",result)
+        return result
+    except SnowparkSQLException as e:
+        raise e
+
+
+def get_parse_document(session, stage, file, mode):
+    """Handles the Parse Document functionality in playground mode using SQL.
+    
+    Args:
+        session: Snowflake session.
+        stage (str): Stage name containing files.
+        file (str): File name to parse.
+        mode (str): Mode for parsing (e.g., 'OCR', 'LAYOUT').
+        
+    Returns:
+        str: The parsed document content.
+        
+    Raises:
+        SnowparkSQLException: If the query fails.
+    """
+    # Ensure stage and file are properly quoted for SQL
+    stage = f"'{stage}'"
+    file = f"'{file}'"
+    
+    print("stage: ", stage)
+    print("file: ", file)
+    print("mode: ", mode)
+    
+    # Format the mode parameter as a JSON-like string
+    mode_param = "{'mode': 'OCR'}" if mode == "OCR" else "{'mode': 'LAYOUT'}"
+    
+    query = f"""
+        SELECT TO_VARCHAR(
+            SNOWFLAKE.CORTEX.PARSE_DOCUMENT(
+                {stage},
+                {file},
+                {mode_param}
+            )
+        ) AS result;
+    """
+    
+    print("query: ", query)
+    try:
+        result = session.sql(query).collect()[0][0]
+        return result
+    except SnowparkSQLException as e:
+        raise e
+
+def get_entity_sentiment(session, text, entities):
+    """Handles the Entity Sentiment functionality in playground mode using SQL.
+    
+    Args:
+        session: Snowflake session.
+        text (str): Text to analyze entity sentiment.
+        entities (list): List of entities to analyze.
+        
+    Returns:
+        str: The entity sentiment analysis result.
+        
+    Raises:
+        SnowparkSQLException: If the query fails.
+    """
+    # Convert entities string to list of strings, entities are separated by commas
+    entities = [f"'{entity}'" for entity in entities.split(",")]
+    print("entities_str: ",entities)
+    query = f"""
+    SELECT SNOWFLAKE.CORTEX.ENTITY_SENTIMENT('{text}', ARRAY_CONSTRUCT({','.join(entities)}));
+    """
+    print("query: ",query)
+    try:
+        result = session.sql(query).collect()[0][0]
+        print("result: ",result)
+        return result
+    except SnowparkSQLException as e:
+        raise e
 
 def get_complete_result_from_column(session, model, db, schema, table, input_column, temperature, max_tokens, guardrails, output_table, output_column, system_prompt=None, user_prompt=None):
     """Fetches content from a column and writes the completion result to an output table.

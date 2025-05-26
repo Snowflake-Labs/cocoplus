@@ -19,7 +19,7 @@ def display_search(session):
     st.subheader("Use Your Tables As Context To Search")
 
     # Display "Create or Use Knowledge Source" dropdown
-    create_or_use = st.selectbox("Select Action", ("Create", "Use","Display"), key="create_or_use")
+    create_or_use = st.selectbox("Select Action", ("Create","Display"), key="create_or_use")
 
     # Display "Create Cortex Search Service" form
     # if st.button("show cortex search service"):
@@ -194,7 +194,7 @@ def display_search(session):
             
 
         if st.button("Display"):
-            data = cortex_search_data_scan(session, selected_service)
+            data = cortex_search_service_display(session, selected_db,selected_schema,selected_service)
             st.write(data)
         
 

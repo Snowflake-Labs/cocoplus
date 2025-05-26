@@ -26,6 +26,17 @@ def execute_functionality(session, functionality, input_data, settings):
         st.write("Completion Result")
         st.write(f"**Messages:**")
         st.success(result_formatted['messages'])
+    
+    elif functionality == "Complete Multimodal":
+        result = get_complete_multimodal_result(
+            session, settings['model'], input_data['prompt'], settings["stage"], settings["files"],
+        )
+        # st.write("Completion Multimodal Result")
+        if len(settings["files"]) == 1:
+            path = f"@{settings['stage']}/{settings['files'][0]}"
+            image = session.file.get_stream(path, decompress=False).read()
+            st.image(image)
+        st.write(result)
 
     elif functionality == "Translate":
         result = get_translation(session,input_data['text'], settings['source_lang'], settings['target_lang'])
@@ -40,8 +51,21 @@ def execute_functionality(session, functionality, input_data, settings):
         st.write(f"**Extracted Answer:** {result}")
 
     elif functionality == "Sentiment":
-        result = get_sentiment(session,input_data['text'])
-        st.write(f"**Sentiment Analysis Result:** {result}")
+        if input_data["toggle"]:
+            result = get_entity_sentiment(session,input_data['text'], input_data['entities'])
+            st.write(f"**Entity Sentiment Analysis Result:** {result}")
+        else:
+            result = get_sentiment(session,input_data['text'])
+            st.write(f"**Sentiment Analysis Result:** {result}")
+    elif functionality == "Classify Text":
+        result = get_classification(session,input_data['text'], input_data['categories'])
+        st.write(f"**Classification Result:** {result}")
+    elif functionality == "Parse Document":
+        result = get_parse_document(session, settings["stage"], settings["file"], input_data["mode"])
+        st.write(f"**Parsed Document Result:**")
+        # print(result)
+        res = json.loads(result)
+        st.write(res["content"])
 
 def get_functionality_settings(functionality, config, session=None):
     """
@@ -66,10 +90,68 @@ def get_functionality_settings(functionality, config, session=None):
         settings['max_tokens'] = st.slider("Max Tokens:", defaults['max_tokens_min'], defaults['max_tokens_max'], defaults['max_tokens'])
         settings['guardrails'] = st.checkbox("Enable Guardrails", value=defaults['guardrails'])
         settings['system_prompt'] = st.text_area("System Prompt (optional):", placeholder="Enter a system prompt...")
+    elif functionality == "Complete Multimodal":
+        col1, col2 = st.columns(2)
+        with col1: 
+            selected_model = st.selectbox("Models", config["default_settings"]["complete_multimodal"])
+            settings['model'] = selected_model
+        with col2:
+            selected_db = st.selectbox("Databases",list_databases(session))
+            settings["db"] = selected_db
+        with col1:
+            selected_schema = st.selectbox("Schemas",list_schemas(session,selected_db))
+            settings["schema"] = selected_schema
+        with col2:
+            selected_stage = st.selectbox("Stage",list_stages(session,selected_db,selected_schema))
+            stage = f"{selected_db}.{selected_schema}.{selected_stage}"
+            settings["stage"] = stage
+        if selected_stage:
+            list = list_files_in_stage(session,selected_db,selected_schema,selected_stage)
+            list = [file.split("/")[-1] for file in list]
+            # add index to the list, starts from 0
+            list = [f"{i}: {file}" for i, file in enumerate(list)]
+            if not list:
+                st.warning("No files found in the selected stage.")
+                return
+            files = st.multiselect("Images",list)
+            # remove indeces from the list
+            files = [file.split(": ")[-1] for file in files]
+            if not files:
+                st.warning("No files selected.")
+                return
+            settings["files"] = files
 
     elif functionality == "Translate":
         settings['source_lang'] = st.selectbox("Source Language", defaults['languages'])
         settings['target_lang'] = st.selectbox("Target Language", defaults['languages'])
+    elif functionality == "Parse Document":
+        col1, col2 = st.columns(2)
+        with col1:
+            selected_db = st.selectbox("Databases",list_databases(session))
+            settings["db"] = selected_db
+        with col2:
+            selected_schema = st.selectbox("Schemas",list_schemas(session,selected_db))
+            settings["schema"] = selected_schema
+        with col1:
+            selected_stage = st.selectbox("Stage",list_stages(session,selected_db,selected_schema))
+            stage = f"@{selected_db}.{selected_schema}.{selected_stage}"
+            settings["stage"] = stage
+        if selected_stage:
+            list = list_files_in_stage(session,selected_db,selected_schema,selected_stage)
+            list = [file.split("/")[-1] for file in list]
+            # add index to the list, starts from 0
+            if not list:
+                st.warning("No files found in the selected stage.")
+                return
+            with col2:
+                file = st.selectbox("File",list)
+            # remove indeces from the list
+            if not file:
+                st.warning("No files selected.")
+                return
+            settings["file"] = file
+        # mode = st.selectbox("Mode", ["OCR", "LAYOUT"])
+        # settings["mode"] = mode
     return settings
 
 def get_playground_input(functionality):
@@ -81,6 +163,9 @@ def get_playground_input(functionality):
     if functionality == "Complete":
         input_data['prompt'] = st.text_area("Enter a prompt:", placeholder="Type your prompt here...")
         input_data["prompt"] = input_data["prompt"].strip()
+    elif functionality == "Complete Multimodal":
+        input_data['prompt'] = st.text_area("Enter a prompt:", placeholder="Type your prompt here...")
+        input_data["prompt"] = input_data["prompt"].strip()
     elif functionality == "Translate":
         input_data['text'] = st.text_area("Enter text to translate:", placeholder="Type your text here...")
     elif functionality == "Summarize":
@@ -89,7 +174,19 @@ def get_playground_input(functionality):
         input_data['text'] = st.text_area("Enter the text:", placeholder="Type your text here...")
         input_data['query'] = st.text_input("Enter your query:", placeholder="Type your query here...")
     elif functionality == "Sentiment":
-        input_data['text'] = st.text_area("Enter text for sentiment analysis:", placeholder="Type your text here...")
+        toggle = st.toggle("ENTITY_SENTIMENT")
+        input_data["toggle"] = toggle
+        # print(input_data["toggle"])
+        if toggle:
+            input_data['text'] = st.text_input("Enter text for entity sentiment analysis:", placeholder="Type your text here...")
+            input_data["entities"] = st.text_input("Enter entities (comma-separated):", placeholder="Type your entities here...")
+        else:
+            input_data['text'] = st.text_area("Enter text for sentiment analysis:", placeholder="Type your text here...")
+    elif functionality == "Classify Text":
+        input_data['text'] = st.text_area("Enter text to classify:", placeholder="Type your text here...")
+        input_data["categories"] = st.text_input("Enter categories (comma-separated):", placeholder="Type your categories here...")
+    elif functionality == "Parse Document":
+        input_data["mode"] = st.selectbox("Mode", ["OCR", "LAYOUT"])
 
     return input_data
 
@@ -109,26 +206,26 @@ def display_playground(session):
 
     choose_col1, choose_col2 = st.columns(2)
     with choose_col1:
-        choices = st.selectbox("Choose Functionality", ["LLM Functions","Chat Using"])
+        choices = st.selectbox("Choose Functionality", ["LLM Functions","Chat"])
     
     if choices == "LLM Functions":
         with choose_col2:
             functionality = st.selectbox(
                 "Choose functionality:",
-                ["Select Functionality", "Complete", "Translate", "Summarize", "Extract", "Sentiment"]
+                ["Complete", "Complete Multimodal","Translate", "Summarize", "Extract", "Sentiment","Classify Text","Parse Document"]
             )
 
         if functionality != "Select Functionality":
             settings = get_functionality_settings(functionality, config, session)
             input_data = get_playground_input(functionality)
 
-            if st.button(f"Run {functionality}"):
+            if st.button(f"Run"):
                 try:
                     execute_functionality(session, functionality, input_data, settings)
                 except SnowparkSQLException as e:
                     st.error(f"Error: {e}")
    
-    elif choices == "Chat Using":
+    elif choices == "Chat":
         with choose_col2:
             options = st.selectbox("Choose one of the options", ["Search Service","RAG","Cortex Agent"])
         
@@ -205,7 +302,9 @@ def display_playground(session):
                         st.markdown(message["content"])
             
             if question := st.chat_input("Enter your question"):
-                
+                if not columns:
+                    show_toast_message("Please select columns to display.", position="bottom-right")
+                    return
                 st.session_state.cortex_chat.append({"role": "user", "content": question})
                 with chat_placeholder: 
                     with st.chat_message("user"):
@@ -217,9 +316,6 @@ def display_playground(session):
                             .schemas[selected_schema]
                             .cortex_search_services[selected_service.lower()]
                             )
-                    if not columns:
-                        show_toast_message("Please select columns to display.")
-                        return
                     columns = [col.lower() for col in columns]
                     resp = service.search(
                         query=question,
@@ -293,7 +389,7 @@ def display_playground(session):
 
                 col1, col2 = st.columns(2)
                 with col1:
-                    selected_table = st.selectbox("Select Table", list_tables(session, selected_db, selected_schema) or [] )
+                    selected_table = st.selectbox("Table", list_tables(session, selected_db, selected_schema) or [] )
                     if "prev_selected_table" not in st.session_state:
                         st.session_state.prev_selected_table = selected_table
                     if st.session_state.prev_selected_table != selected_table:
@@ -307,7 +403,7 @@ def display_playground(session):
                         if missing_cols:
                             st.info("The table is missing vector_embeddings column. Please use the appropriate table.")
                         else:
-                            selected_column = st.selectbox("Select Column", ["Vector_Embeddings"])
+                            selected_column = st.selectbox("Column", ["Vector_Embeddings"])
 
                 st.subheader("Choose Your Models") 
                 col1,col2=  st.columns(2)
@@ -325,7 +421,7 @@ def display_playground(session):
                 col4, col5 = st.columns(2)
                 with col4:
                     embeddings = list(config["default_settings"]["embeddings"].keys())
-                    embedding_type = st.selectbox("Select Embeddings", embeddings[1:])
+                    embedding_type = st.selectbox("Embeddings", embeddings[1:])
                 with col5:
                     embedding_model = st.selectbox("Embedding Model", config["default_settings"]["embeddings"][embedding_type])
 
@@ -372,7 +468,7 @@ def display_playground(session):
             st.subheader("Chat with Agent")
             agent_manager = CortexAgentManager(session)
             agents = agent_manager.get_all_agents()
-            chat_agent_name = st.selectbox("Select Agent", [agent.name for agent in agents], key="chat_agent_name")
+            chat_agent_name = st.selectbox("Agent", [agent.name for agent in agents], key="chat_agent_name")
             if chat_agent_name:
                 agent = next(a for a in agents if a.name == chat_agent_name)
                 question = st.text_input("Ask a question", placeholder="Type your question here...", key="question")
@@ -383,17 +479,14 @@ def display_playground(session):
                             text, sql = agent.chat(session, question)
                             if text:
                                 with st.chat_message("assistant"):
-                                    st.markdown(text.replace("•", "\n\n"))  # Format bullet points
+                                    st.markdown(text.replace("•", "\n\n").replace("【†", "[").replace("†】", "]"))  # Format bullet points
                                 st.session_state.setdefault("messages", []).append({"role": "assistant", "content": text})
                             if sql:
                                 st.markdown("### Generated SQL")
                                 st.code(sql, language="sql")
                                 sql_result = run_snowflake_query(session, sql)
-                                if sql_result is not None:
-                                    st.write("### Query Results")
-                                    st.dataframe(sql_result)
-                                else:
-                                    st.error("Error executing SQL query")
+                                st.write("### Query Results")
+                                st.dataframe(sql_result)
                     else:
                         st.error("Question cannot be empty")
 

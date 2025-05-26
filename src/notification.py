@@ -112,6 +112,25 @@ def update_notification_entry(session: Session, notification_id: int, status: st
     """
     session.sql(query).collect()
 
+def update_notification_fine_tune_entry(session: Session, notification_id: int, details: str):
+    """
+    Updates the status and completion time of an existing notification entry.
+    
+    Args:
+        session (Session): Active Snowflake session object
+        notification_id (int): ID of the notification to update
+        status (str): New status to set for the notification
+    """
+    if not details:
+        status = 'Unknown details'
+
+    query = f"""
+        UPDATE notification
+        SET details = '{details}', completed_at = CURRENT_TIMESTAMP
+        WHERE id = {notification_id}
+    """
+    session.sql(query).collect()
+
 def escape_sql_string(value: str) -> str:
     """
     Escapes single quotes in SQL strings to prevent SQL injection.
