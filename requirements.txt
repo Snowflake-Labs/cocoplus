@@ -6,3 +6,5 @@ pandas
 pyarrow
 snowflake
 PyJWT
+streamlit-mic-recorder
+snowflake.core

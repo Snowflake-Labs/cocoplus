@@ -1,6 +1,7 @@
 from snowflake.snowpark.exceptions import SnowparkSQLException
 import json
 import streamlit as st
+from src.notification import execute_cortex_with_logging, escape_sql_string as notification_escape_sql_string
 
 
 def escape_sql_string(s):
@@ -73,22 +74,50 @@ def get_complete_result(session, model, prompt, temperature, max_tokens, guardra
         messages.append({'role': 'system', 'content': system_prompt})
     messages.append({'role': 'user', 'content': prompt})
 
-    messages_json = escape_sql_string(json.dumps(messages))
-
-    query = f"""
+    # Use parameterized query to avoid JSON escaping issues
+    query = """
     SELECT SNOWFLAKE.CORTEX.COMPLETE(
-        '{model}',
-        PARSE_JSON('{messages_json}'),
-        {{
-            'temperature': {temperature},
-            'max_tokens': {max_tokens},
-            'guardrails': {str(guardrails).lower()}
-        }}
+        ?,
+        PARSE_JSON(?),
+        OBJECT_CONSTRUCT(
+            'temperature', ?,
+            'max_tokens', ?,
+            'guardrails', ?
+        )
     );
     """
+    
+    # Parameters for the query
+    params = [
+        model,
+        json.dumps(messages),  # JSON string without SQL escaping
+        temperature,
+        max_tokens,
+        guardrails
+    ]
+    
+    print("messages: ", messages)
+    print("query parameters: ", params)
     try:
-        result = session.sql(query).collect()[0][0]
-        return json.loads(result)
+        result = session.sql(query, params).collect()[0][0]
+        print("result: ", result)
+        
+        # Parse the result if it's a JSON string
+        if isinstance(result, str):
+            try:
+                parsed_result = json.loads(result)
+                return parsed_result
+            except json.JSONDecodeError:
+                # If parsing fails, return the raw string wrapped in a basic structure
+                return {
+                    "choices": [{"messages": result}],
+                    "model": "unknown",
+                    "usage": {}
+                }
+        else:
+            # If result is already a dict/object, return as is
+            return result
+            
     except SnowparkSQLException as e:
         raise e
 
@@ -352,6 +381,10 @@ def get_complete_result_from_column(session, model, db, schema, table, input_col
     Raises:
         SnowparkSQLException: If the query fails.
     """
+    from src.notification import log_cortex_usage
+    from datetime import datetime
+    
+    start_time = datetime.now()
     
     # Check if the output table and column exist, and create/add the column if necessary
     columns = [
@@ -395,8 +428,41 @@ def get_complete_result_from_column(session, model, db, schema, table, input_col
     """
 
     try:
+        # Execute the batch operation
         session.sql(query).collect()
+        end_time = datetime.now()
+        
+        # Count how many rows were processed
+        row_count_query = f"SELECT COUNT(*) as count FROM {source_table_full}"
+        row_count = session.sql(row_count_query).collect()[0]['COUNT']
+        
+        # Estimate tokens (rough approximation for batch operation)
+        estimated_total_tokens = row_count * 100  # Rough estimate per row
+        estimated_credits = estimated_total_tokens * 0.0001
+        
+        # Log the batch operation usage  
+        log_cortex_usage(
+            session=session,
+            function_name="COMPLETE",
+            model_name=model,
+            total_tokens=estimated_total_tokens,
+            estimated_credits=estimated_credits,
+            start_time=start_time,
+            end_time=end_time,
+            details=f"Batch operation: {row_count} rows processed from {table}.{input_column} to {output_table}.{output_column}"
+        )
+        
     except SnowparkSQLException as e:
+        end_time = datetime.now()
+        # Log the failed attempt
+        log_cortex_usage(
+            session=session,
+            function_name="COMPLETE",
+            model_name=model,
+            start_time=start_time,
+            end_time=end_time,
+            details=f"Batch operation failed: {str(e)}"
+        )
         raise e
 
 
@@ -417,6 +483,11 @@ def get_translation_from_column(session, db, schema, table, input_column, source
     Raises:
         SnowparkSQLException: If the query fails.
     """
+    from src.notification import log_cortex_usage
+    from datetime import datetime
+    
+    start_time = datetime.now()
+    
     columns = [
         f"{input_column} VARCHAR(16777216)",
         f"{output_column} VARCHAR(16777216)"
@@ -434,7 +505,34 @@ def get_translation_from_column(session, db, schema, table, input_column, source
     """
     try:
         session.sql(query).collect()
+        end_time = datetime.now()
+        
+        # Count processed rows and log usage
+        row_count_query = f"SELECT COUNT(*) as count FROM {source_table_full}"
+        row_count = session.sql(row_count_query).collect()[0]['COUNT']
+        
+        estimated_total_tokens = row_count * 50  # Rough estimate for translation
+        estimated_credits = estimated_total_tokens * 0.0001
+        
+        log_cortex_usage(
+            session=session,
+            function_name="TRANSLATE",
+            total_tokens=estimated_total_tokens,
+            estimated_credits=estimated_credits,
+            start_time=start_time,
+            end_time=end_time,
+            details=f"Batch translation: {row_count} rows from {source_lang} to {target_lang}"
+        )
+        
     except SnowparkSQLException as e:
+        end_time = datetime.now()
+        log_cortex_usage(
+            session=session,
+            function_name="TRANSLATE",
+            start_time=start_time,
+            end_time=end_time,
+            details=f"Batch translation failed: {str(e)}"
+        )
         raise e
 
 
@@ -453,6 +551,11 @@ def get_summary_from_column(session, db, schema, table, input_column, output_tab
     Raises:
         SnowparkSQLException: If the query fails.
     """
+    from src.notification import log_cortex_usage
+    from datetime import datetime
+    
+    start_time = datetime.now()
+    
     columns = [
         f"{input_column} VARCHAR(16777216)",
         f"{output_column} VARCHAR(16777216)"
@@ -470,7 +573,34 @@ def get_summary_from_column(session, db, schema, table, input_column, output_tab
     """
     try:
         session.sql(query).collect()
+        end_time = datetime.now()
+        
+        # Count processed rows and log usage
+        row_count_query = f"SELECT COUNT(*) as count FROM {source_table_full}"
+        row_count = session.sql(row_count_query).collect()[0]['COUNT']
+        
+        estimated_total_tokens = row_count * 75  # Rough estimate for summarization
+        estimated_credits = estimated_total_tokens * 0.0001
+        
+        log_cortex_usage(
+            session=session,
+            function_name="SUMMARIZE",
+            total_tokens=estimated_total_tokens,
+            estimated_credits=estimated_credits,
+            start_time=start_time,
+            end_time=end_time,
+            details=f"Batch summarization: {row_count} rows processed"
+        )
+        
     except SnowparkSQLException as e:
+        end_time = datetime.now()
+        log_cortex_usage(
+            session=session,
+            function_name="SUMMARIZE",
+            start_time=start_time,
+            end_time=end_time,
+            details=f"Batch summarization failed: {str(e)}"
+        )
         raise e
 
 def get_extraction_from_column(session, db, schema, table, input_column, query_text, output_table, output_column):
@@ -489,6 +619,11 @@ def get_extraction_from_column(session, db, schema, table, input_column, query_t
     Raises:
         SnowparkSQLException: If the query fails.
     """
+    from src.notification import log_cortex_usage
+    from datetime import datetime
+    
+    start_time = datetime.now()
+    
     columns = [
         f"{input_column} VARCHAR(16777216)",
         f"{output_column} VARCHAR(16777216)"
@@ -508,7 +643,34 @@ def get_extraction_from_column(session, db, schema, table, input_column, query_t
     """
     try:
         session.sql(query).collect()
+        end_time = datetime.now()
+        
+        # Count processed rows and log usage
+        row_count_query = f"SELECT COUNT(*) as count FROM {source_table_full}"
+        row_count = session.sql(row_count_query).collect()[0]['COUNT']
+        
+        estimated_total_tokens = row_count * 60  # Rough estimate for extraction
+        estimated_credits = estimated_total_tokens * 0.0001
+        
+        log_cortex_usage(
+            session=session,
+            function_name="EXTRACT_ANSWER",
+            total_tokens=estimated_total_tokens,
+            estimated_credits=estimated_credits,
+            start_time=start_time,
+            end_time=end_time,
+            details=f"Batch extraction: {row_count} rows processed with query '{query_text}'"
+        )
+        
     except SnowparkSQLException as e:
+        end_time = datetime.now()
+        log_cortex_usage(
+            session=session,
+            function_name="EXTRACT_ANSWER",
+            start_time=start_time,
+            end_time=end_time,
+            details=f"Batch extraction failed: {str(e)}"
+        )
         raise e
 
 
@@ -527,6 +689,11 @@ def get_sentiment_from_column(session, db, schema, table, input_column, output_t
     Raises:
         SnowparkSQLException: If the query fails.
     """
+    from src.notification import log_cortex_usage
+    from datetime import datetime
+    
+    start_time = datetime.now()
+    
     columns = [
         f"{input_column} VARCHAR(16777216)",
         f"{output_column} VARCHAR(16777216)"
@@ -544,7 +711,34 @@ def get_sentiment_from_column(session, db, schema, table, input_column, output_t
     """
     try:
         session.sql(query).collect()
+        end_time = datetime.now()
+        
+        # Count processed rows and log usage
+        row_count_query = f"SELECT COUNT(*) as count FROM {source_table_full}"
+        row_count = session.sql(row_count_query).collect()[0]['COUNT']
+        
+        estimated_total_tokens = row_count * 30  # Rough estimate for sentiment analysis
+        estimated_credits = estimated_total_tokens * 0.0001
+        
+        log_cortex_usage(
+            session=session,
+            function_name="SENTIMENT",
+            total_tokens=estimated_total_tokens,
+            estimated_credits=estimated_credits,
+            start_time=start_time,
+            end_time=end_time,
+            details=f"Batch sentiment analysis: {row_count} rows processed"
+        )
+        
     except SnowparkSQLException as e:
+        end_time = datetime.now()
+        log_cortex_usage(
+            session=session,
+            function_name="SENTIMENT",
+            start_time=start_time,
+            end_time=end_time,
+            details=f"Batch sentiment analysis failed: {str(e)}"
+        )
         raise e
 
     
@@ -563,6 +757,11 @@ def create_vector_embedding_from_stage(session, db, schema, stage, embedding_typ
     Raises:
         SnowparkSQLException: If the query fails.
     """
+    from src.notification import log_cortex_usage
+    from datetime import datetime
+    
+    start_time = datetime.now()
+    
     stage_path = f"@{db}.{schema}.{stage}"
     output_table_full = f"{db}.{schema}.{output_table}"
 
@@ -593,9 +792,41 @@ def create_vector_embedding_from_stage(session, db, schema, stage, embedding_typ
         TABLE(pdf_text_chunker(build_scoped_file_url('{stage_path}', relative_path))) AS func;
     """
     try:
+        print(query)
         session.sql(query).collect()
+        end_time = datetime.now()
+        
+        # Count how many chunks were processed
+        chunk_count_query = f"SELECT COUNT(*) as count FROM {output_table_full}"
+        chunk_count = session.sql(chunk_count_query).collect()[0]['COUNT']
+        
+        # Estimate tokens for embedding operation
+        estimated_total_tokens = chunk_count * 200  # Rough estimate per chunk for embeddings
+        estimated_credits = estimated_total_tokens * 0.0001
+        
+        log_cortex_usage(
+            session=session,
+            function_name=embedding_type,
+            model_name=embedding_model,
+            total_tokens=estimated_total_tokens,
+            estimated_credits=estimated_credits,
+            start_time=start_time,
+            end_time=end_time,
+            details=f"Vector embedding creation: {chunk_count} chunks processed from stage {stage}"
+        )
+        
         st.success(f"Vector embeddings created successfully for all files in {stage}. Results saved to {output_table}.")
+        
     except SnowparkSQLException as e:
+        end_time = datetime.now()
+        log_cortex_usage(
+            session=session,
+            function_name=embedding_type,
+            model_name=embedding_model,
+            start_time=start_time,
+            end_time=end_time,
+            details=f"Vector embedding creation failed: {str(e)}"
+        )
         st.error(f"Failed to create embeddings: {e}")
         raise e
 

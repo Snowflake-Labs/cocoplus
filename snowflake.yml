@@ -1,25 +1,48 @@
-definition_version: '1'
-streamlit:
-  name: snowflake_ai_toolkit
-  stage: sf_ai_stage
-  query_warehouse: compute_wh
-  main_file: streamlit_app.py
-  env_file: environment.yml
-  #pages_dir: pages/
-  additional_source_files:
-    - src/cortex_functions.py
-    - src/cortex_agent.py
-    - src/utils.py
-    - src/html_snippets.py
-    - src/styles.css
-    - src/home.py
-    - src/playground.py
-    - src/build.py
-    - src/rag.py
-    - src/fine_tune.py
-    - src/setup.py
-    - src/notification.py
-    - src/settings_config.json
-    - src/logo.png
-    - src/query_result_builder.py
-    - src/search.py
+definition_version: '2'
+
+entities:
+  streamlit:
+    type: streamlit
+    identifier: snowflake_ai_toolkit_demo
+    stage: sf_ai_stage
+    query_warehouse: compute_wh
+    main_file: streamlit_app.py
+    # pages_dir: pages/
+    # external_access_integrations:
+    #   - test_egress
+    # secrets:
+    #   dummy_secret: "db.schema.dummy_secret"
+    # imports:
+    #   - '@sf_ai_stage/streamlit_mic_recorder.zip'
+    artifacts:
+      - streamlit_app.py
+      - src/cortex_functions.py
+      - src/cortex_agent.py
+      - src/utils.py
+      - src/html_snippets.py
+      - src/styles.css
+      - src/home.py
+      - src/playground.py
+      - src/build.py
+      - src/rag.py
+      - src/fine_tune.py
+      - src/setup.py
+      - src/notification.py
+      - src/settings_config.json
+      - src/logo.png
+      - src/query_result_builder.py
+      - src/search.py
+      - environment.yml
+
+  # audio_to_text:
+  #   handler: 'src.functions.audio_to_text'
+  #   stage: sf_ai_stage
+  #   signature: ''
+  #   returns: string
+  #   artifacts: ['src/']
+  #   type: function
+  #   imports:
+  #     - '@sf_ai_stage/streamlit_mic_recorder.zip'
+  #   meta:
+  #     use_mixins:
+  #       - snowpark_shared

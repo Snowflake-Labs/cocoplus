@@ -5,9 +5,10 @@ from pathlib import Path
 import json
 import time
 import base64
-import os
-import traceback
+import snowflake.connector
 from src.cortex_functions import *
+from typing import List, Dict, Union, Optional
+# from streamlit_mic_recorder import speech_to_text
 
 # Load the config file
 config_path = Path("src/settings_config.json")
@@ -301,6 +302,147 @@ def get_cortex_complete_result(session, query: str):
         str: Query result
     """
     return session.sql(query).collect()[0][0]
+
+def enhance_prompt(session, original_prompt: str, enhancement_type: str = "refine", model: str = None):
+    """
+    Enhances a user prompt using Snowflake's CORTEX.COMPLETE function with different enhancement types.
+    
+    Args:
+        session: Snowflake session object
+        original_prompt (str): The original prompt to enhance
+        enhancement_type (str): Type of enhancement - "refine", "elaborate", "rephrase", "shorten", "formal", "informal"
+        model (str): Model to use for enhancement (optional, defaults to config)
+        
+    Returns:
+        str: Enhanced prompt
+    """
+    if not original_prompt or not original_prompt.strip():
+        return original_prompt
+    
+    # Use default model from config if not provided
+    if not model:
+        model = config.get("default_settings", {}).get("model", ["mistral-large"])
+        if isinstance(model, list):
+            model = model[0]
+    
+    # Create enhancement instructions based on type
+    enhancement_instructions = {
+        "refine": f"""You are an expert prompt engineer. Refine the following prompt to make it more detailed, specific, and effective for getting better AI responses. 
+
+Guidelines:
+1. Keep the original intent and meaning intact
+2. Add specific details and context where appropriate
+3. Make the prompt clearer and more actionable
+4. Add relevant constraints or formatting instructions if beneficial
+5. Ensure the enhanced prompt is concise but comprehensive
+
+Original prompt: "{original_prompt}"
+
+Please provide only the refined prompt without any explanations or additional text:""",
+
+        "formal": f"""You are an expert prompt engineer. Convert the following prompt to a formal tone, making it more professional, structured, and appropriate for business or academic contexts.
+
+Guidelines:
+1. Use formal language and professional vocabulary
+2. Structure sentences with proper grammar and syntax
+3. Remove casual expressions and colloquialisms
+4. Maintain the original intent and requirements
+5. Make it sound authoritative and well-structured
+
+Original prompt: "{original_prompt}"
+
+Please provide only the formalized prompt without any explanations or additional text:""",
+
+        "informal": f"""You are an expert prompt engineer. Convert the following prompt to an informal, conversational tone while maintaining its effectiveness and clarity.
+
+Guidelines:
+1. Use casual, friendly language that feels natural
+2. Make it sound conversational and approachable
+3. Remove overly formal or stiff language
+4. Keep the original intent and all requirements intact
+5. Ensure it sounds engaging and easy to understand
+
+Original prompt: "{original_prompt}"
+
+Please provide only the informal prompt without any explanations or additional text:""",
+
+        "elaborate": f"""You are an expert prompt engineer. Elaborate on the following prompt by adding more detail, context, and specific instructions to make it more comprehensive and effective.
+
+Guidelines:
+1. Expand on the original request with relevant details
+2. Add context that would help produce better responses
+3. Include specific formatting or output requirements
+4. Provide examples or clarifications where helpful
+5. Keep the core intent clear and focused
+
+Original prompt: "{original_prompt}"
+
+Please provide only the elaborated prompt without any explanations or additional text:""",
+
+        "rephrase": f"""You are an expert prompt engineer. Rephrase the following prompt using different wording while maintaining the exact same meaning and intent.
+
+Guidelines:
+1. Use alternative vocabulary and sentence structures
+2. Keep the same meaning and intent
+3. Make it clearer and more effective
+4. Ensure the rephrased version is engaging and well-structured
+
+Original prompt: "{original_prompt}"
+
+Please provide only the rephrased prompt without any explanations or additional text:""",
+
+        "shorten": f"""You are an expert prompt engineer. Shorten the following prompt while preserving all essential information and maintaining effectiveness.
+
+Guidelines:
+1. Remove unnecessary words and redundancy
+2. Keep all critical information and requirements
+3. Maintain clarity and effectiveness
+4. Ensure the shortened version is still complete and actionable
+
+Original prompt: "{original_prompt}"
+
+Please provide only the shortened prompt without any explanations or additional text:"""
+    }
+    
+    # Get the appropriate enhancement instruction
+    enhancement_instruction = enhancement_instructions.get(enhancement_type.lower(), enhancement_instructions["refine"])
+    
+    try:
+        # Execute CORTEX.COMPLETE query
+        from src.notification import execute_cortex_with_logging, escape_sql_string
+        
+        query = f"""
+        SELECT SNOWFLAKE.CORTEX.COMPLETE(
+            '{model}',
+            '{escape_sql_string(enhancement_instruction)}'
+        )
+        """
+        result, notification_id = execute_cortex_with_logging(
+            session=session,
+            cortex_query=query,
+            function_name="COMPLETE",
+            model_name=model,
+            input_text=enhancement_instruction,
+            details=f"Prompt enhancement - {enhancement_type}"
+        )
+        if result:
+            # Clean the result to make it JSON-parse friendly
+            cleaned_result = result.strip()
+            
+            # Remove common prefixes/suffixes that models might add
+            if cleaned_result.startswith('"') and cleaned_result.endswith('"'):
+                cleaned_result = cleaned_result[1:-1]
+            
+            # Handle escaped quotes and newlines properly
+            cleaned_result = cleaned_result.replace('\\"', '"').replace('\\n', '\n').replace('\\\\', '\\')
+            
+            return cleaned_result
+        else:
+            return original_prompt
+            
+    except Exception as e:
+        print(f"Error enhancing prompt: {e}")
+        return original_prompt
 
 def list_existing_models(session):
     """
@@ -632,9 +774,288 @@ def make_llm_call(session,system_prompt, prompt, model):
     );
     """
     try:
-        result = session.sql(query).collect()[0][0]
+        from src.notification import execute_cortex_with_logging
+        
+        result, notification_id = execute_cortex_with_logging(
+            session=session,
+            cortex_query=query,
+            function_name="COMPLETE",
+            model_name=model,
+            input_text=prompt,
+            details="LLM call with system and user prompts"
+        )
         return result
     except SnowparkSQLException as e:
         raise e
+
+def get_ai_complete_result(session, model, prompt, model_parameters=None, response_format=None, show_details=False):
+    """
+    Executes the AI_COMPLETE function for a text prompt.
     
+    Args:
+        session: Snowflake session object
+        model: String specifying the language model
+        prompt: Text prompt for completion
+        model_parameters: Optional dict with temperature, top_p, max_tokens, guardrails
+        response_format: Optional JSON schema for structured output
+        show_details: Boolean to include detailed output (choices, created, model, usage)
     
+    Returns:
+        Completion result as a string or JSON object
+    """
+    if not prompt:
+        raise ValueError("Prompt cannot be empty.")
+    if not model:
+        raise ValueError("Model must be specified.")
+
+    prompt = prompt.replace("'", "''")
+
+    model_parameters_json = None
+    if model_parameters:
+        if not isinstance(model_parameters, dict):
+            raise ValueError("Model parameters must be a dictionary.")
+        valid_params = {}
+        allowed_keys = {'temperature', 'top_p', 'max_tokens', 'guardrails'}
+        for key in model_parameters:
+            if key not in allowed_keys:
+                print(f"Warning: Ignoring invalid model parameter '{key}'")
+                continue
+            valid_params[key] = model_parameters[key]
+        if valid_params:
+            model_parameters_json = json.dumps(valid_params, ensure_ascii=False).replace("'", "''")
+
+    response_format_json = None
+    if response_format:
+        if not isinstance(response_format, dict):
+            raise ValueError("Response format must be a dictionary.")
+        response_format_json = json.dumps(response_format, ensure_ascii=False).replace("'", "''")
+
+    try:
+        query = f"SELECT AI_COMPLETE('{model}', '{prompt}')"
+        print(f"Generated SQL Query: {query}")
+
+        result = session.sql(query).collect()[0][0]
+        return result
+    except SnowparkSQLException as e:
+        print(f"SQL Error: {e}")
+        raise
+
+def get_ai_similarity_result(session, input1, input2, config_object=None, input_type="Text", stage=None, file1=None, file2=None):
+    """
+    Executes the AI_SIMILARITY function for text or image inputs.
+    
+    Args:
+        session: Snowflake session object
+        input1: First text input or file path for image
+        input2: Second text input or file path for image
+        config_object: Optional configuration object with 'model' key
+        input_type: "Text" or "Image"
+        stage: Stage path for image inputs
+        file1: First image file name
+        file2: Second image file name
+    
+    Returns:
+        Float similarity score between -1 and 1
+    """
+    if input_type == "Text" and (not input1 or not input2):
+        raise ValueError("Both text inputs must be non-empty.")
+    if input_type == "Image" and (not stage or not file1 or not file2):
+        raise ValueError("Stage and both image files must be provided.")
+
+    config_json = None
+    if config_object:
+        if not isinstance(config_object, dict):
+            raise ValueError("Config object must be a dictionary.")
+        valid_config = {}
+        allowed_keys = {'model'}
+        for key in config_object:
+            if key not in allowed_keys:
+                print(f"Warning: Ignoring invalid config key '{key}'")
+                continue
+            valid_config[key] = config_object[key]
+        if valid_config:
+            config_json = json.dumps(valid_config, ensure_ascii=False).replace("'", "''")
+
+    try:
+        if input_type == "Text":
+            input1 = input1.replace("'", "''")
+            input2 = input2.replace("'", "''")
+            query = f"SELECT AI_SIMILARITY('{input1}', '{input2}'"
+        else:
+            file_path1 = f"{stage}/{file1}"
+            file_path2 = f"{stage}/{file2}"
+            query = f"SELECT AI_SIMILARITY(TO_FILE('{file_path1}'), TO_FILE('{file_path2}')"
+        
+        if config_json:
+            query += f", PARSE_JSON('{config_json}')"
+        query += ")"
+
+        print(f"Generated SQL Query: {query}")
+
+        result = session.sql(query).collect()[0][0]
+        return result
+    except SnowparkSQLException as e:
+        print(f"SQL Error: {e}")
+        raise
+
+def get_ai_classify_result(
+    session,
+    input_data: Union[str, Dict],
+    categories: List[Union[str, Dict]],
+    config_object: Optional[Dict] = None,
+    input_type: str = "Text",
+    stage: Optional[str] = None,
+    file_name: Optional[str] = None
+) -> str:
+    """
+    Execute AI_CLASSIFY query for text or image classification.
+    
+    Args:
+        session: Snowflake session object.
+        input_data: Text input or dict with prompt for classification.
+        categories: List of category dictionaries or strings.
+        config_object: Optional configuration (task_description, output_mode, examples).
+        input_type: 'Text' or 'Image'.
+        stage: Stage path for image files (e.g., @db.schema.stage).
+        file_name: File name for image input.
+    
+    Returns:
+        Classification result as a JSON string or error message.
+    """
+    try:
+        if input_type not in ["Text", "Image"]:
+            return json.dumps({"error": "Invalid input_type. Must be 'Text' or 'Image'."})
+
+        if not categories:
+            return json.dumps({"error": "Categories list cannot be empty."})
+        
+        if isinstance(categories, list):
+            if all(isinstance(cat, str) for cat in categories):
+                categories_str = ", ".join(f"'{cat}'" for cat in categories)
+            elif all(isinstance(cat, dict) for cat in categories):
+                categories_str = ", ".join(f"'{cat.get('name', '')}'" for cat in categories if cat.get('name'))
+            else:
+                return json.dumps({"error": "Categories must be a list of strings or dictionaries with 'name' key."})
+        else:
+            return json.dumps({"error": "Categories must be a list."})
+
+        if input_type == "Text":
+            if isinstance(input_data, dict):
+                input_text = input_data.get("prompt", "")
+            elif isinstance(input_data, str):
+                input_text = input_data
+            else:
+                return json.dumps({"error": "input_data must be a string or dict with 'prompt' key for Text input_type."})
+            
+            if not input_text:
+                return json.dumps({"error": "Input text cannot be empty for Text input_type."})
+
+            query = f"SELECT AI_CLASSIFY('{input_text}', ARRAY_CONSTRUCT({categories_str})) AS result"
+
+        elif input_type == "Image":
+            if not stage or not file_name:
+                return json.dumps({"error": "Stage and file_name are required for Image input_type."})
+            if not isinstance(input_data, dict):
+                return json.dumps({"error": "input_data must be a dict for Image input_type."})
+            
+            query = f"SELECT AI_CLASSIFY('{stage}/{file_name}', ARRAY_CONSTRUCT({categories_str})) AS result"
+
+        if config_object:
+            task_description = config_object.get("task_description", "")
+            output_mode = config_object.get("output_mode", "label")
+            examples = config_object.get("examples", [])
+            
+            if task_description or examples or output_mode != "label":
+                pass
+
+        result = session.sql(query).collect()
+        
+        if not result:
+            return json.dumps({"error": "No result returned from AI_CLASSIFY query."})
+
+        classification_result = result[0]["RESULT"]
+        
+        if isinstance(classification_result, str):
+            try:
+                parsed_result = json.loads(classification_result)
+                return json.dumps(parsed_result)
+            except json.JSONDecodeError:
+                return json.dumps({"classification": classification_result})
+        else:
+            return json.dumps(classification_result)
+
+    except snowflake.connector.errors.ProgrammingError as e:
+        return json.dumps({"error": f"Query execution failed: {str(e)}"})
+    except Exception as e:
+        return json.dumps({"error": f"An unexpected error occurred: {str(e)}"})
+    
+def get_ai_filter_result(
+    session,
+    input_data: str,
+    stage: Optional[str] = None,
+    file_name: Optional[str] = None
+) -> str:
+    """
+    Execute AI_FILTER query for text or image filtering.
+    
+    Args:
+        session: Snowflake session object.
+        input_data: Text input or predicate for image filtering.
+        stage: Stage path for image files (e.g., @db.schema.stage).
+        file_name: File name for image input.
+    
+    Returns:
+        Filter result as a JSON string or error message.
+    """
+    try:
+        input_type = "Image" if stage and file_name else "Text"
+
+        if input_type == "Text":
+            if not input_data:
+                return json.dumps({"error": "Input text cannot be empty for Text input_type."})
+            if not isinstance(input_data, str):
+                return json.dumps({"error": "input_data must be a string for Text input_type."})
+            query = f"SELECT AI_FILTER('{input_data}') AS result"
+
+        elif input_type == "Image":
+            if not stage or not file_name:
+                return json.dumps({"error": "Stage and file_name are required for Image input_type."})
+            if not isinstance(input_data, str):
+                return json.dumps({"error": "Predicate must be a string for Image input_type."})
+            
+            query = f"SELECT AI_FILTER('{input_data}', TO_FILE('{stage}/{file_name}')) AS result"
+
+        result = session.sql(query).collect()
+        
+        if not result:
+            return json.dumps({"error": "No result returned from AI_FILTER query."})
+
+        filter_result = result[0]["RESULT"]
+        
+        if isinstance(filter_result, bool):
+            return json.dumps({"result": filter_result})
+        elif isinstance(filter_result, str):
+            try:
+                parsed_result = json.loads(filter_result)
+                return json.dumps(parsed_result)
+            except json.JSONDecodeError:
+                return json.dumps({"result": filter_result})
+        else:
+            return json.dumps({"result": filter_result})
+
+    except snowflake.connector.errors.ProgrammingError as e:
+        return json.dumps({"error": f"Query execution failed: {str(e)}"})
+    except Exception as e:
+        return json.dumps({"error": f"An unexpected error occurred: {str(e)}"})
+    
+def list_table_columns(session, database, schema, table):
+    """
+    Lists columns in a specified table.
+    """
+    try:
+        query = f"DESCRIBE TABLE {database}.{schema}.{table}"
+        result = session.sql(query).collect()
+        return [row['name'] for row in result]
+    except Exception as e:
+        st.error(f"Error listing columns: {e}")
+        return []

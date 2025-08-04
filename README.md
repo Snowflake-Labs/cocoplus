@@ -7,6 +7,7 @@ Snowflake AI Toolkit is an AI Accelerator and Playground for enabling AI in Snow
 ### Playground
 
 An interactive environment where users can chat and experiment with Snowflake Cortex functions, test prompts, and and play around with cortex functions.
+Supports both manual text entry and voice-to-text input for prompts wherever needed, across multiple functions including Complete, Translate, Extract, Sentiment Analysis, and AI Complete (debug mode only)
 
 ### Build
 
@@ -31,6 +32,25 @@ Cortex Agents orchestrate across both structured and unstructured data sources t
 - Create and Manage Cortex Agent Instances
 - Test the Agent against the Data
 - Utilize Cortex Search and Cortex Analyst through Agents
+
+### Audio Input Integration
+
+The Snowflake AI Toolkit now supports voice input across multiple functionalities, making it easier to interact with AI functions through speech (available in debug mode only):
+
+- **Voice-to-Text Conversion**: Convert spoken words directly into text inputs for various AI functions
+- **Multi-Function Support**: Available for Complete, Complete Multimodal, Translate, Extract, Sentiment Analysis, AI Classify (Image), and AI Complete functions
+- **Real-Time Processing**: Instant speech recognition with immediate text population in input fields
+- **User-Friendly Interface**: Microphone button (🎙️) positioned conveniently next to the Run button for seamless workflow
+- **Debug Mode Only**: Audio input feature is enabled only when `mode` is set to `"debug"` in `src/settings_config.json`
+
+### Notification
+
+- **Real-Time Updates**: Receive instant notifications for every function call and completion.
+- **Synchronous & Asynchronous Support**: Stay informed about both immediate and long-running processes, including RAG and fine-tuning tasks.
+- **Computation Details**: View token usage and token credit consumption for each operation.
+- **In-App Delivery**: All notifications appear directly within the application interface.
+- **Enhanced Transparency**: Get clear, timely feedback throughout all workflows.
+
 
 ## Prerequisites
 

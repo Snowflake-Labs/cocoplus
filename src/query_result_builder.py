@@ -77,8 +77,18 @@ def execute_query_and_get_result(session, prompt, model, functionality):
         """
         query = query.encode("ascii", "ignore").decode()
         print("query: ",query)
-        result = session.sql(query).collect()
-        return result[0][0] if result else None
+        
+        from src.notification import execute_cortex_with_logging
+        
+        result, notification_id = execute_cortex_with_logging(
+            session=session,
+            cortex_query=query,
+            function_name="COMPLETE",
+            model_name=model,
+            input_text=prompt,
+            details=f"Query result builder - {functionality}"
+        )
+        return result
     except Exception as e:
         # Log the error in the logs table
         add_log_entry(session, functionality, str(e))
@@ -115,7 +125,25 @@ def execute_fine_tune_query(session, db, schema, train_table, validation_table, 
     )
     """
     try:
+        from src.notification import log_cortex_usage
+        from datetime import datetime
+        
+        start_time = datetime.now()
         result = session.sql(query).collect()
+        end_time = datetime.now()
+        
+        # Log the fine-tuning operation
+        log_cortex_usage(
+            session=session,
+            function_name="FINETUNE",
+            model_name=base_model,
+            start_time=start_time,
+            end_time=end_time,
+            total_tokens=1000,  # Rough estimate for fine-tuning setup
+            estimated_credits=0.1,
+            details=f"Fine-tune model creation: {new_model_name} from {base_model}"
+        )
+        
         return result[0][0] if result else None
     except Exception as e:
         raise RuntimeError(f"Failed to execute fine-tune query: {e}")
@@ -142,7 +170,24 @@ def execute_fine_tune_status_query(session, tracking_id):
     )
     """
     try:
+        from src.notification import log_cortex_usage
+        from datetime import datetime
+        
+        start_time = datetime.now()
         result = session.sql(query).collect()
+        end_time = datetime.now()
+        
+        # Log the fine-tuning status check
+        log_cortex_usage(
+            session=session,
+            function_name="FINETUNE",
+            start_time=start_time,
+            end_time=end_time,
+            total_tokens=10,  # Minimal tokens for status check
+            estimated_credits=0.001,
+            details=f"Fine-tune status check for tracking ID: {tracking_id}"
+        )
+        
         return result[0][0] if result else None
     except Exception as e:
         raise RuntimeError(f"Failed to fetch fine-tune status: {e}")
@@ -195,7 +240,24 @@ def execute_fine_tune_status_query(session, tracking_id):
     )
     """
     try:
+        from src.notification import log_cortex_usage
+        from datetime import datetime
+        
+        start_time = datetime.now()
         result = session.sql(query).collect()
+        end_time = datetime.now()
+        
+        # Log the detailed fine-tuning status check
+        log_cortex_usage(
+            session=session,
+            function_name="FINETUNE",
+            start_time=start_time,
+            end_time=end_time,
+            total_tokens=10,  # Minimal tokens for status check
+            estimated_credits=0.001,
+            details=f"Detailed fine-tune status check for tracking ID: {tracking_id}"
+        )
+        
         return result[0][0] if result else None
     except Exception as e:
         raise RuntimeError(f"Failed to fetch fine-tune status for Tracking ID {tracking_id}: {e}")
