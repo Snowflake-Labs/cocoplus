@@ -1,32 +1,33 @@
-#!/bin/bash
-# UserPromptSubmit hook — extended for Context Mode and persona routing
+#!/usr/bin/env bash
+set -u
 
-COCOPLUS_DIR=".cocoplus"
-HOOK_LOG="${COCOPLUS_DIR}/hook-log.jsonl"
-TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "${SCRIPT_DIR}/_common.sh"
 
-if [ ! -d "$COCOPLUS_DIR" ]; then
-  exit 0
-fi
+main() {
+  local cocoplus_dir=".cocoplus"
+  local hook_log="${cocoplus_dir}/hook-log.jsonl"
+  local ts phase
+  ts="$(iso_utc)"
 
-echo "{\"hook\":\"user-prompt-submit\",\"ts\":\"${TS}\"}" >> "$HOOK_LOG" 2>/dev/null || true
-
-# Context Mode: prepend current phase context
-if [ -f "${COCOPLUS_DIR}/modes/context-mode.on" ]; then
-  PHASE="unknown"
-  if [ -f "${COCOPLUS_DIR}/lifecycle/meta.json" ]; then
-    PHASE=$(grep '"current_phase"' "${COCOPLUS_DIR}/lifecycle/meta.json" 2>/dev/null | sed 's/.*"current_phase"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/' || echo "unknown")
+  if [[ ! -d "$cocoplus_dir" ]]; then
+    return 0
   fi
 
-  MODES=""
-  [ -f "${COCOPLUS_DIR}/modes/memory.on" ] && MODES="${MODES}memory, "
-  [ -f "${COCOPLUS_DIR}/modes/inspector.on" ] && MODES="${MODES}inspector, "
-  [ -f "${COCOPLUS_DIR}/modes/quality.on" ] && MODES="${MODES}quality, "
-  [ -f "${COCOPLUS_DIR}/modes/safety.strict" ] && MODES="${MODES}safety:strict, "
-  [ -f "${COCOPLUS_DIR}/modes/safety.normal" ] && MODES="${MODES}safety:normal, "
-  MODES="${MODES%, }"
+  append_json_line "$hook_log" "{\"hook\":\"user-prompt-submit\",\"ts\":\"${ts}\"}"
 
-  echo "{\"hook\":\"user-prompt-submit\",\"action\":\"context_prepended\",\"phase\":\"${PHASE}\",\"ts\":\"${TS}\"}" >> "$HOOK_LOG" 2>/dev/null || true
+  if [[ -f "${cocoplus_dir}/modes/context-mode.on" ]]; then
+    phase="unknown"
+    if [[ -f "${cocoplus_dir}/lifecycle/meta.json" ]]; then
+      phase="$(read_json_string "${cocoplus_dir}/lifecycle/meta.json" "current_phase")"
+      phase="${phase:-unknown}"
+    fi
+    append_json_line "$hook_log" "{\"hook\":\"user-prompt-submit\",\"action\":\"context_prepended\",\"phase\":\"$(json_escape "$phase")\",\"ts\":\"${ts}\"}"
+  fi
+}
+
+if ! main "$@"; then
+  log_error "user-prompt-submit" "failed while processing prompt submission"
 fi
 
 exit 0

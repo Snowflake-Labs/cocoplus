@@ -1,29 +1,38 @@
-#!/bin/bash
-# PreCompact hook — real implementation
-# Phase 6: Memory flush to warm layer
+#!/usr/bin/env bash
+set -u
 
-COCOPLUS_DIR=".cocoplus"
-HOOK_LOG="${COCOPLUS_DIR}/hook-log.jsonl"
-TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "${SCRIPT_DIR}/_common.sh"
 
-if [ ! -d "$COCOPLUS_DIR" ]; then
-  exit 0
-fi
+main() {
+  local cocoplus_dir=".cocoplus"
+  local hook_log="${cocoplus_dir}/hook-log.jsonl"
+  local decision_buffer decisions_file ts
+  ts="$(iso_utc)"
 
-echo "{\"hook\":\"pre-compact\",\"ts\":\"${TS}\"}" >> "$HOOK_LOG" 2>/dev/null || true
-
-# Flush decision buffer to warm memory if memory mode is on
-if [ -f "${COCOPLUS_DIR}/modes/memory.on" ]; then
-  DECISION_BUFFER="${COCOPLUS_DIR}/.decision-buffer"
-  DECISIONS_FILE="${COCOPLUS_DIR}/memory/decisions.md"
-
-  if [ -f "$DECISION_BUFFER" ] && [ -s "$DECISION_BUFFER" ]; then
-    echo "" >> "$DECISIONS_FILE" 2>/dev/null || true
-    echo "## Session ${TS}" >> "$DECISIONS_FILE" 2>/dev/null || true
-    cat "$DECISION_BUFFER" >> "$DECISIONS_FILE" 2>/dev/null || true
-    rm -f "$DECISION_BUFFER"
-    echo "{\"hook\":\"pre-compact\",\"action\":\"decisions_flushed\",\"ts\":\"${TS}\"}" >> "$HOOK_LOG" 2>/dev/null || true
+  if [[ ! -d "$cocoplus_dir" ]]; then
+    return 0
   fi
+
+  append_json_line "$hook_log" "{\"hook\":\"pre-compact\",\"ts\":\"${ts}\"}"
+
+  if [[ -f "${cocoplus_dir}/modes/memory.on" ]]; then
+    decision_buffer="${cocoplus_dir}/.decision-buffer"
+    decisions_file="${cocoplus_dir}/memory/decisions.md"
+
+    if [[ -f "$decision_buffer" && -s "$decision_buffer" ]]; then
+      {
+        printf '\n## Session %s\n' "$ts"
+        cat "$decision_buffer"
+      } >> "$decisions_file" 2>/dev/null || true
+      rm -f "$decision_buffer"
+      append_json_line "$hook_log" "{\"hook\":\"pre-compact\",\"action\":\"decisions_flushed\",\"ts\":\"${ts}\"}"
+    fi
+  fi
+}
+
+if ! main "$@"; then
+  log_error "pre-compact" "failed to flush pre-compact memory state"
 fi
 
 exit 0

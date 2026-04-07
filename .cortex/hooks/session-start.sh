@@ -1,52 +1,55 @@
-#!/bin/bash
-# SessionStart hook — real implementation
-# Phase 6: CocoPod detection, memory loading, inspector trigger, meter init
+#!/usr/bin/env bash
+set -u
 
-COCOPLUS_DIR=".cocoplus"
-HOOK_LOG="${COCOPLUS_DIR}/hook-log.jsonl"
-TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-SESSION_ID="${COCO_SESSION_ID:-sess-$(date +%Y%m%d%H%M%S)}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "${SCRIPT_DIR}/_common.sh"
 
-# No-op if CocoPlus not initialized
-if [ ! -d "$COCOPLUS_DIR" ]; then
-  exit 0
-fi
+main() {
+  local cocoplus_dir=".cocoplus"
+  local hook_log="${cocoplus_dir}/hook-log.jsonl"
+  local ts session_id phase meter_file decision_count
+  ts="$(iso_utc)"
+  session_id="${COCO_SESSION_ID:-sess-$(date +%Y%m%d-%H%M%S)}"
 
-echo "{\"hook\":\"session-start\",\"session\":\"${SESSION_ID}\",\"ts\":\"${TS}\"}" >> "$HOOK_LOG" 2>/dev/null || true
-
-# 1. Load phase context from project.md
-PHASE="unknown"
-if [ -f "${COCOPLUS_DIR}/lifecycle/meta.json" ]; then
-  PHASE=$(grep '"current_phase"' "${COCOPLUS_DIR}/lifecycle/meta.json" 2>/dev/null | sed 's/.*"current_phase"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/' || echo "unknown")
-fi
-
-# 2. Trigger Environment Inspector as background (non-blocking) if mode is on
-if [ -f "${COCOPLUS_DIR}/modes/inspector.on" ]; then
-  echo "{\"hook\":\"session-start\",\"action\":\"inspector_triggered\",\"session\":\"${SESSION_ID}\",\"ts\":\"${TS}\"}" >> "$HOOK_LOG" 2>/dev/null || true
-fi
-
-# 3. Load warm memory layer if enabled
-if [ -f "${COCOPLUS_DIR}/modes/memory.on" ]; then
-  if [ -f "${COCOPLUS_DIR}/memory/decisions.md" ]; then
-    DECISION_COUNT=$(grep -c "^##" "${COCOPLUS_DIR}/memory/decisions.md" 2>/dev/null || echo "0")
-    echo "{\"hook\":\"session-start\",\"action\":\"memory_loaded\",\"decisions\":${DECISION_COUNT},\"ts\":\"${TS}\"}" >> "$HOOK_LOG" 2>/dev/null || true
+  if [[ ! -d "$cocoplus_dir" ]]; then
+    return 0
   fi
-fi
 
-# 4. Initialize CocoMeter if enabled
-if [ -f "${COCOPLUS_DIR}/modes/cocometer.on" ]; then
-  METER_FILE="${COCOPLUS_DIR}/meter/current-session.json"
-  cat > "$METER_FILE" 2>/dev/null <<METEREOF
+  append_json_line "$hook_log" "{\"hook\":\"session-start\",\"session\":\"$(json_escape "$session_id")\",\"ts\":\"${ts}\"}"
+
+  phase="unknown"
+  if [[ -f "${cocoplus_dir}/lifecycle/meta.json" ]]; then
+    phase="$(read_json_string "${cocoplus_dir}/lifecycle/meta.json" "current_phase")"
+    phase="${phase:-unknown}"
+  fi
+
+  if [[ -f "${cocoplus_dir}/modes/inspector.on" ]]; then
+    append_json_line "$hook_log" "{\"hook\":\"session-start\",\"action\":\"inspector_triggered\",\"session\":\"$(json_escape "$session_id")\",\"ts\":\"${ts}\"}"
+  fi
+
+  if [[ -f "${cocoplus_dir}/modes/memory.on" && -f "${cocoplus_dir}/memory/decisions.md" ]]; then
+    decision_count="$(grep -c "^##" "${cocoplus_dir}/memory/decisions.md" 2>/dev/null || printf '0')"
+    append_json_line "$hook_log" "{\"hook\":\"session-start\",\"action\":\"memory_loaded\",\"decisions\":${decision_count},\"ts\":\"${ts}\"}"
+  fi
+
+  if [[ -f "${cocoplus_dir}/modes/cocometer.on" ]]; then
+    meter_file="${cocoplus_dir}/meter/current-session.json"
+    atomic_write "$meter_file" <<EOF
 {
-  "session_id": "${SESSION_ID}",
-  "started_at": "${TS}",
-  "phase": "${PHASE}",
+  "session_id": "$(json_escape "$session_id")",
+  "started_at": "${ts}",
+  "phase": "$(json_escape "$phase")",
   "tools_called": 0,
   "tokens_consumed": 0,
   "sql_statements": 0,
   "writes_performed": 0
 }
-METEREOF
+EOF
+  fi
+}
+
+if ! main "$@"; then
+  log_error "session-start" "failed to initialize session state"
 fi
 
 exit 0

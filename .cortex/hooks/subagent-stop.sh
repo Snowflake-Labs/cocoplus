@@ -1,27 +1,33 @@
-#!/bin/bash
-# SubagentStop hook — real implementation
-# Triggered when a CocoHarvest persona subagent completes
-# Updates flow.json state and triggers CocoCupper
+#!/usr/bin/env bash
+set -u
 
-COCOPLUS_DIR=".cocoplus"
-HOOK_LOG="${COCOPLUS_DIR}/hook-log.jsonl"
-SUBAGENT_ID="${COCO_SUBAGENT_ID:-unknown}"
-SUBAGENT_NAME="${COCO_SUBAGENT_NAME:-unknown}"
-TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "${SCRIPT_DIR}/_common.sh"
 
-if [ ! -d "$COCOPLUS_DIR" ]; then
-  exit 0
+main() {
+  local cocoplus_dir=".cocoplus"
+  local hook_log="${cocoplus_dir}/hook-log.jsonl"
+  local subagent_id subagent_name ts stage_id
+  subagent_id="${COCO_SUBAGENT_ID:-unknown}"
+  subagent_name="${COCO_SUBAGENT_NAME:-unknown}"
+  ts="$(iso_utc)"
+
+  if [[ ! -d "$cocoplus_dir" ]]; then
+    return 0
+  fi
+
+  append_json_line "$hook_log" "{\"hook\":\"subagent-stop\",\"subagent_id\":\"$(json_escape "$subagent_id")\",\"subagent_name\":\"$(json_escape "$subagent_name")\",\"ts\":\"${ts}\"}"
+
+  if printf '%s' "$subagent_name" | grep -q "stage-"; then
+    stage_id="$(printf '%s' "$subagent_name" | grep -o 'stage-[0-9]*' | head -1)"
+    append_json_line "$hook_log" "{\"hook\":\"subagent-stop\",\"stage\":\"$(json_escape "$stage_id")\",\"completed_at\":\"${ts}\"}"
+  fi
+
+  append_json_line "$hook_log" "{\"hook\":\"subagent-stop\",\"cupper\":\"scheduled\",\"subagent\":\"$(json_escape "$subagent_id")\",\"ts\":\"${ts}\"}"
+}
+
+if ! main "$@"; then
+  log_error "subagent-stop" "failed to process subagent completion"
 fi
-
-echo "{\"hook\":\"subagent-stop\",\"subagent_id\":\"${SUBAGENT_ID}\",\"subagent_name\":\"${SUBAGENT_NAME}\",\"ts\":\"${TS}\"}" >> "$HOOK_LOG" 2>/dev/null || true
-
-# Update AGENTS.md with subagent completion (if it mentions a stage)
-if echo "$SUBAGENT_NAME" | grep -q "stage-"; then
-  STAGE_ID="$(echo "$SUBAGENT_NAME" | grep -o 'stage-[0-9]*')"
-  echo "{\"hook\":\"subagent-stop\",\"stage\":\"${STAGE_ID}\",\"completed_at\":\"${TS}\"}" >> "$HOOK_LOG" 2>/dev/null || true
-fi
-
-# Signal CocoCupper to analyze stage output
-echo "{\"hook\":\"subagent-stop\",\"cupper\":\"scheduled\",\"subagent\":\"${SUBAGENT_ID}\",\"ts\":\"${TS}\"}" >> "$HOOK_LOG" 2>/dev/null || true
 
 exit 0

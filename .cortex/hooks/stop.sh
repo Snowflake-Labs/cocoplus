@@ -1,31 +1,35 @@
-#!/bin/bash
-# Stop hook — real implementation
-# Triggers CocoCupper background analysis on session end
+#!/usr/bin/env bash
+set -u
 
-COCOPLUS_DIR=".cocoplus"
-HOOK_LOG="${COCOPLUS_DIR}/hook-log.jsonl"
-TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-SESSION_ID="${COCO_SESSION_ID:-unknown}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "${SCRIPT_DIR}/_common.sh"
 
-if [ ! -d "$COCOPLUS_DIR" ]; then
-  exit 0
-fi
+main() {
+  local cocoplus_dir=".cocoplus"
+  local hook_log="${cocoplus_dir}/hook-log.jsonl"
+  local meter_file history_file ts session_id
+  ts="$(iso_utc)"
+  session_id="${COCO_SESSION_ID:-unknown}"
 
-echo "{\"hook\":\"stop\",\"session\":\"${SESSION_ID}\",\"ts\":\"${TS}\",\"action\":\"cupper_triggered\"}" >> "$HOOK_LOG" 2>/dev/null || true
-
-# Finalize meter if enabled
-if [ -f "${COCOPLUS_DIR}/modes/cocometer.on" ]; then
-  METER_FILE="${COCOPLUS_DIR}/meter/current-session.json"
-  HISTORY_FILE="${COCOPLUS_DIR}/meter/history.jsonl"
-  if [ -f "$METER_FILE" ]; then
-    sed -i.bak "s/\"started_at\"/\"ended_at\": \"${TS}\", \"started_at\"/" "$METER_FILE" 2>/dev/null || true
-    rm -f "${METER_FILE}.bak"
-    cat "$METER_FILE" >> "$HISTORY_FILE" 2>/dev/null || true
-    echo "" >> "$HISTORY_FILE" 2>/dev/null || true
+  if [[ ! -d "$cocoplus_dir" ]]; then
+    return 0
   fi
-fi
 
-# CocoCupper is triggered as a background subagent — Coco handles the actual spawning
-echo "{\"hook\":\"stop\",\"cupper\":\"scheduled\",\"session\":\"${SESSION_ID}\",\"ts\":\"${TS}\"}" >> "$HOOK_LOG" 2>/dev/null || true
+  append_json_line "$hook_log" "{\"hook\":\"stop\",\"session\":\"$(json_escape "$session_id")\",\"ts\":\"${ts}\",\"action\":\"cupper_triggered\"}"
+
+  if [[ -f "${cocoplus_dir}/modes/cocometer.on" ]]; then
+    meter_file="${cocoplus_dir}/meter/current-session.json"
+    history_file="${cocoplus_dir}/meter/history.jsonl"
+    if [[ -f "$meter_file" ]]; then
+      append_json_line "$history_file" "{\"session_id\":\"$(json_escape "$session_id")\",\"stopped_at\":\"${ts}\",\"source\":\"stop-hook\"}"
+    fi
+  fi
+
+  append_json_line "$hook_log" "{\"hook\":\"stop\",\"cupper\":\"scheduled\",\"session\":\"$(json_escape "$session_id")\",\"ts\":\"${ts}\"}"
+}
+
+if ! main "$@"; then
+  log_error "stop" "failed to process stop event"
+fi
 
 exit 0
