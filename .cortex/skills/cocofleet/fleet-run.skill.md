@@ -13,10 +13,10 @@ Your objective is to execute a CocoFleet manifest.
 Before proceeding, verify that `.cocoplus/` exists.
 If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
 
-Parse argument: `/fleet run [fleet-name]`
-If no fleet-name: output "Usage: /fleet run [fleet-name]" Then stop.
+Parse argument: `/fleet run [manifest-path]`
+If no manifest-path: output "Usage: /fleet run [manifest-path]" Then stop.
 
-Read `.cocoplus/fleet/[fleet-name]-manifest.json`. If not found: output "Manifest not found. Run `/fleet init [fleet-name]` first." Then stop.
+Read the manifest file at `[manifest-path]`. If not found: output "Manifest not found: [manifest-path]" Then stop.
 
 ## Validate Manifest
 
@@ -32,7 +32,7 @@ Write `.cocoplus/fleet/[fleet-id]-state.json`:
 ```json
 {
   "fleet_id": "[fleet-id]",
-  "fleet_name": "[fleet-name]",
+  "manifest_path": "[manifest-path]",
   "started_at": "[ISO 8601 timestamp]",
   "status": "running",
   "instances": {}
@@ -55,20 +55,15 @@ Algorithm:
       ```
    d. Record PID in state.json, set status = "running", started_at = [timestamp]
 
-3. Poll every 30 seconds:
-   - For each running instance: check if PID is still alive (`kill -0 [pid]`)
-   - If PID dead: validate checkpoints, update state
-   - If checkpoints satisfied: status = "completed"
-   - If not: status = "failed"
-   - Spawn newly unblocked dependents
-
-4. When all instances complete: write aggregated-results.md
+3. Record each launched instance in state.json and leave blocked instances in `pending`.
+4. Return control to the developer immediately after the initial ready set is launched.
+5. Do NOT poll in this command. Ongoing monitoring belongs to `/fleet status` and follow-up fleet orchestration logic.
 
 ## Write Aggregated Results
 
-Write `.cocoplus/fleet/[fleet-id]-aggregated-results.md`:
+When later orchestration determines the fleet is complete, write `.cocoplus/fleet/[fleet-id]-aggregated-results.md`:
 ```markdown
-# Fleet Results: [fleet-name]
+# Fleet Results: [manifest-path]
 
 **Fleet ID:** [fleet-id]
 **Completed:** [ISO 8601 timestamp]
@@ -83,7 +78,7 @@ Write `.cocoplus/fleet/[fleet-id]-aggregated-results.md`:
 [COMPLETE / PARTIAL (N failed) / FAILED]
 ```
 
-Output: "Fleet [fleet-name] running. Fleet ID: [fleet-id]. Use `/fleet status [fleet-id]` to monitor. Use `/fleet stop [fleet-id]` to terminate all processes."
+Output: "Fleet started from [manifest-path]. Fleet ID: [fleet-id]. Initial ready instances were launched and the session returned immediately. Use `/fleet status [fleet-id]` to monitor. Use `/fleet stop [fleet-id]` to terminate all processes."
 
 ## Anti-Rationalization
 

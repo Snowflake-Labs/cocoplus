@@ -25,13 +25,13 @@ Ask each question in sequence. Wait for the developer's response before proceedi
 
 **Question 2:** What are the success criteria? (How will you know this project succeeded? List 2-5 measurable outcomes.)
 
-**Question 3:** What are the key constraints? (Timeline, data volume, performance requirements, budget, regulatory requirements — list what applies.)
+**Question 3:** What is explicitly out of scope for this work? (List anything the project will not attempt in this phase.)
 
-**Question 4:** Who are the personas involved? (Which specialist roles will work on this? e.g., Data Engineer, Analytics Engineer, Data Scientist, BI Analyst)
+**Question 4:** Which existing Snowflake objects are involved? (List tables, views, stages, functions, procedures, or schemas already in play. If none, say "None".)
 
-**Question 5:** What are the key data sources? (List tables, schemas, external feeds, or data systems this project reads from or writes to.)
+**Question 5:** Who are the target users? (Who will use or benefit from this output? If unknown, say "TBD".)
 
-**Question 6:** What are the critical deliverables? (What artifacts, tables, models, notebooks, or dashboards must exist when this project is complete?)
+**Question 6:** What is the target timeline? (If unknown, say "TBD".)
 
 ## Write Specification Document
 
@@ -52,17 +52,17 @@ Write `.cocoplus/lifecycle/spec.md`:
 ## Success Criteria
 [Developer's answers to Question 2, formatted as bullet list]
 
-## Constraints
+## Out of Scope
 [Developer's answers to Question 3, formatted as bullet list]
 
-## Personas
+## Existing Snowflake Objects
 [Developer's answers to Question 4, formatted as bullet list]
 
-## Data Sources
-[Developer's answers to Question 5, formatted as bullet list]
+## Target Users
+[Developer's answer to Question 5]
 
-## Deliverables
-[Developer's answers to Question 6, formatted as bullet list]
+## Timeline
+[Developer's answer to Question 6]
 ```
 
 ## Update AGENTS.md

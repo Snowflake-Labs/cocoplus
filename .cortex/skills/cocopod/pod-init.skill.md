@@ -15,7 +15,9 @@ Your objective is to initialize the CocoPlus project bundle in the current worki
 1. Check if `.cocoplus/` already exists in the current directory.
    - If it does: output "CocoPlus is already initialized in this directory. Use `/pod status` to check current state or `/pod resume` to restore context." Then stop.
 2. Check that a git repository exists (`git rev-parse --git-dir`).
-   - If not: output "No git repository found. Initialize git with `git init` before running `/pod init`." Then stop.
+   - If not: offer "Git not detected. Initialize? (yes/no)"
+   - If yes: run `git init` and continue.
+   - If no: stop.
 
 ## Create Directory Structure
 
@@ -67,7 +69,10 @@ Copy template files from the plugin templates directory to `.cocoplus/`:
 Create the default safety mode flag:
 - `touch .cocoplus/modes/safety.normal`
 
-Do NOT create other mode flags (memory, inspector, etc.) — those are opt-in.
+Create the default memory mode flag:
+- `touch .cocoplus/modes/memory.on`
+
+Do NOT create other mode flags (inspector, context-mode, quality, cocometer, etc.) unless the developer enables them explicitly later.
 
 ## Initialize Lifecycle Meta
 
