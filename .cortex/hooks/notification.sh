@@ -1,27 +1,33 @@
-#!/bin/bash
-# Notification hook — routes CocoPlus events to UI or log file
+#!/usr/bin/env bash
+set -u
 
-COCOPLUS_DIR=".cocoplus"
-HOOK_LOG="${COCOPLUS_DIR}/hook-log.jsonl"
-NOTIF_TYPE="${COCO_NOTIFICATION_TYPE:-unknown}"
-NOTIF_PAYLOAD="${COCO_NOTIFICATION_PAYLOAD:-}"
-TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "${SCRIPT_DIR}/_common.sh"
 
-if [ ! -d "$COCOPLUS_DIR" ]; then
-  exit 0
+main() {
+  local cocoplus_dir=".cocoplus"
+  local hook_log="${cocoplus_dir}/hook-log.jsonl"
+  local notif_type="${COCO_NOTIFICATION_TYPE:-unknown}"
+  local notif_payload="${COCO_NOTIFICATION_PAYLOAD:-}"
+  local ts
+  ts="$(iso_utc)"
+
+  if [[ ! -d "$cocoplus_dir" ]]; then
+    return 0
+  fi
+
+  append_json_line "$hook_log" "{\"hook\":\"notification\",\"type\":\"$(json_escape "$notif_type")\",\"ts\":\"${ts}\"}"
+  printf '[%s] %s: %s\n' "$ts" "$notif_type" "$notif_payload" >> "${cocoplus_dir}/notifications.log" 2>/dev/null || true
+
+  case "$notif_type" in
+    phase_transition|agent_completion|safety_gate_trigger|cupper_findings_ready|meter_budget_threshold|flow_stage_completion)
+      append_json_line "${cocoplus_dir}/ui-notifications.jsonl" "{\"notify\":\"$(json_escape "$notif_type")\",\"payload\":\"$(json_escape "$notif_payload")\",\"ts\":\"${ts}\"}"
+      ;;
+  esac
+}
+
+if ! main "$@"; then
+  log_error "notification" "failed to route notification"
 fi
-
-echo "{\"hook\":\"notification\",\"type\":\"${NOTIF_TYPE}\",\"ts\":\"${TS}\"}" >> "$HOOK_LOG" 2>/dev/null || true
-
-# Log to notifications log file
-LOG_FILE="${COCOPLUS_DIR}/notifications.log"
-echo "[${TS}] ${NOTIF_TYPE}: ${NOTIF_PAYLOAD}" >> "$LOG_FILE" 2>/dev/null || true
-
-# Route high-priority events to UI notifications queue
-case "$NOTIF_TYPE" in
-  phase_transition|agent_completion|safety_gate_trigger|cupper_findings_ready|meter_budget_threshold|flow_stage_completion)
-    echo "{\"notify\":\"${NOTIF_TYPE}\",\"payload\":\"${NOTIF_PAYLOAD}\",\"ts\":\"${TS}\"}" >> "${COCOPLUS_DIR}/ui-notifications.jsonl" 2>/dev/null || true
-    ;;
-esac
 
 exit 0

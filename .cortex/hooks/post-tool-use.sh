@@ -1,43 +1,72 @@
-#!/bin/bash
-# PostToolUse hook — real implementation
-# Phase 6: Decision capture, token tracking
+#!/usr/bin/env bash
+set -u
 
-COCOPLUS_DIR=".cocoplus"
-HOOK_LOG="${COCOPLUS_DIR}/hook-log.jsonl"
-TOOL_NAME="${COCO_TOOL_NAME:-unknown}"
-TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "${SCRIPT_DIR}/_common.sh"
 
-if [ ! -d "$COCOPLUS_DIR" ]; then
-  exit 0
-fi
+main() {
+  local cocoplus_dir=".cocoplus"
+  local hook_log="${cocoplus_dir}/hook-log.jsonl"
+  local tool_name="${COCO_TOOL_NAME:-unknown}"
+  local ts
+  ts="$(iso_utc)"
 
-echo "{\"hook\":\"post-tool-use\",\"tool\":\"${TOOL_NAME}\",\"ts\":\"${TS}\"}" >> "$HOOK_LOG" 2>/dev/null || true
-
-# 1. Memory Engine: capture decisions if mode is on
-if [ -f "${COCOPLUS_DIR}/modes/memory.on" ]; then
-  TOOL_RESULT="${COCO_TOOL_RESULT:-}"
-  if echo "$TOOL_RESULT" | grep -qiE "decided|determined|approved|pattern|chosen|selected"; then
-    DECISION_BUFFER="${COCOPLUS_DIR}/.decision-buffer"
-    echo "- [${TS}] Tool: ${TOOL_NAME}" >> "$DECISION_BUFFER" 2>/dev/null || true
+  if [[ ! -d "$cocoplus_dir" ]]; then
+    return 0
   fi
-fi
 
-# 2. CocoMeter: update token tracking if enabled
-if [ -f "${COCOPLUS_DIR}/modes/cocometer.on" ]; then
-  METER_FILE="${COCOPLUS_DIR}/meter/current-session.json"
-  if [ -f "$METER_FILE" ]; then
-    CURRENT=$(grep '"tools_called"' "$METER_FILE" 2>/dev/null | grep -o '[0-9]*' | head -1 || echo "0")
-    NEW_COUNT=$((CURRENT + 1))
-    sed -i.bak "s/\"tools_called\": [0-9]*/\"tools_called\": ${NEW_COUNT}/" "$METER_FILE" 2>/dev/null || true
-    rm -f "${METER_FILE}.bak"
+  append_json_line "$hook_log" "{\"hook\":\"post-tool-use\",\"tool\":\"$(json_escape "$tool_name")\",\"ts\":\"${ts}\"}"
 
-    if [ "$TOOL_NAME" = "SnowflakeSqlExecute" ]; then
-      SQL_CURRENT=$(grep '"sql_statements"' "$METER_FILE" 2>/dev/null | grep -o '[0-9]*' | head -1 || echo "0")
-      NEW_SQL=$((SQL_CURRENT + 1))
-      sed -i.bak "s/\"sql_statements\": [0-9]*/\"sql_statements\": ${NEW_SQL}/" "$METER_FILE" 2>/dev/null || true
-      rm -f "${METER_FILE}.bak"
+  if [[ -f "${cocoplus_dir}/modes/memory.on" ]]; then
+    local tool_result decision_buffer
+    tool_result="${COCO_TOOL_RESULT:-}"
+    decision_buffer="${cocoplus_dir}/.decision-buffer"
+    if printf '%s' "$tool_result" | grep -qiE "decided|determined|approved|pattern|chosen|selected"; then
+      printf -- '- [%s] Tool: %s\n' "$ts" "$tool_name" >> "$decision_buffer" 2>/dev/null || true
     fi
   fi
+
+  if [[ -f "${cocoplus_dir}/modes/cocometer.on" ]]; then
+    local meter_file session_id started_at phase tokens tools sql writes
+    meter_file="${cocoplus_dir}/meter/current-session.json"
+    if [[ -f "$meter_file" ]]; then
+      session_id="$(read_json_string "$meter_file" "session_id")"
+      started_at="$(read_json_string "$meter_file" "started_at")"
+      phase="$(read_json_string "$meter_file" "phase")"
+      tokens="$(read_json_number "$meter_file" "tokens_consumed")"
+      tools="$(read_json_number "$meter_file" "tools_called")"
+      sql="$(read_json_number "$meter_file" "sql_statements")"
+      writes="$(read_json_number "$meter_file" "writes_performed")"
+
+      tokens="${tokens:-0}"
+      tools="$(( ${tools:-0} + 1 ))"
+      sql="${sql:-0}"
+      writes="${writes:-0}"
+
+      if [[ "$tool_name" == "SnowflakeSqlExecute" ]]; then
+        sql="$((sql + 1))"
+      fi
+      if [[ "$tool_name" == "Write" || "$tool_name" == "Edit" ]]; then
+        writes="$((writes + 1))"
+      fi
+
+      atomic_write "$meter_file" <<EOF
+{
+  "session_id": "$(json_escape "$session_id")",
+  "started_at": "$(json_escape "$started_at")",
+  "phase": "$(json_escape "$phase")",
+  "tools_called": ${tools},
+  "tokens_consumed": ${tokens},
+  "sql_statements": ${sql},
+  "writes_performed": ${writes}
+}
+EOF
+    fi
+  fi
+}
+
+if ! main "$@"; then
+  log_error "post-tool-use" "failed to record post-tool metrics"
 fi
 
 exit 0

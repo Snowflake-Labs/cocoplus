@@ -1,71 +1,77 @@
-#!/bin/bash
-# PreToolUse hook — Safety Gate implementation
-# Receives: COCO_TOOL_NAME env var, tool input via stdin JSON
-# Purpose: Intercept SnowflakeSqlExecute for destructive SQL patterns
+#!/usr/bin/env bash
+set -u
 
-COCOPLUS_DIR=".cocoplus"
-HOOK_LOG="${COCOPLUS_DIR}/hook-log.jsonl"
-SAFETY_LOG="${COCOPLUS_DIR}/safety-decisions.log"
-TOOL_NAME="${COCO_TOOL_NAME:-unknown}"
-TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "${SCRIPT_DIR}/_common.sh"
 
-# No-op if CocoPlus not initialized
-if [ ! -d "$COCOPLUS_DIR" ]; then
-  exit 0
+main() {
+  local cocoplus_dir=".cocoplus"
+  local hook_log="${cocoplus_dir}/hook-log.jsonl"
+  local safety_log="${cocoplus_dir}/safety-decisions.log"
+  local tool_name="${COCO_TOOL_NAME:-unknown}"
+  local ts
+  ts="$(iso_utc)"
+
+  if [[ ! -d "$cocoplus_dir" ]]; then
+    printf '{"action":"allow"}\n'
+    return 0
+  fi
+
+  append_json_line "$hook_log" "{\"hook\":\"pre-tool-use\",\"tool\":\"$(json_escape "$tool_name")\",\"ts\":\"${ts}\"}"
+
+  if [[ "$tool_name" != "SnowflakeSqlExecute" ]]; then
+    printf '{"action":"allow"}\n'
+    return 0
+  fi
+
+  local input payload sql_input sql_upper pattern="" safety_mode="normal"
+  input="${COCO_TOOL_INPUT:-}"
+  if [[ -z "$input" && ! -t 0 ]]; then
+    input="$(cat 2>/dev/null || true)"
+  fi
+  payload="$(printf '%s' "$input" | tr '\n' ' ')"
+  sql_input="$(printf '%s' "$payload" | sed -n 's/.*"sql"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
+  sql_upper="$(printf '%s' "$sql_input" | tr '[:lower:]' '[:upper:]')"
+
+  if printf '%s' "$sql_upper" | grep -qE "DROP[[:space:]]+(TABLE|DATABASE|SCHEMA|INDEX|PROCEDURE|FUNCTION)"; then
+    pattern="DROP statement"
+  elif printf '%s' "$sql_upper" | grep -qE "TRUNCATE[[:space:]]+TABLE"; then
+    pattern="TRUNCATE TABLE"
+  elif printf '%s' "$sql_upper" | grep -qE "DELETE[[:space:]]+FROM[[:space:]]+[^[:space:];]+([[:space:]]*;)?$"; then
+    pattern="DELETE without WHERE"
+  elif printf '%s' "$sql_upper" | grep -qE "ALTER[[:space:]]+TABLE.*DROP[[:space:]]+COLUMN"; then
+    pattern="ALTER TABLE DROP COLUMN"
+  fi
+
+  if [[ -z "$pattern" ]]; then
+    printf '{"action":"allow"}\n'
+    return 0
+  fi
+
+  if [[ -f "${cocoplus_dir}/modes/safety.strict" ]]; then
+    safety_mode="strict"
+  elif [[ -f "${cocoplus_dir}/modes/safety.off" ]]; then
+    safety_mode="off"
+  fi
+
+  append_json_line "$safety_log" "{\"ts\":\"${ts}\",\"tool\":\"$(json_escape "$tool_name")\",\"pattern\":\"$(json_escape "$pattern")\",\"mode\":\"${safety_mode}\"}"
+
+  case "$safety_mode" in
+    strict)
+      printf '{"action":"block","reason":"SnowflakeSqlExecute: %s detected in safety.strict mode. This operation is blocked."}\n' "$(json_escape "$pattern")"
+      ;;
+    normal)
+      printf '{"action":"allow","warning":"SnowflakeSqlExecute: %s detected in safety.normal mode. This operation is allowed but flagged."}\n' "$(json_escape "$pattern")"
+      ;;
+    *)
+      printf '{"action":"allow"}\n'
+      ;;
+  esac
+}
+
+if ! main "$@"; then
+  log_error "pre-tool-use" "failed to evaluate tool payload"
+  printf '{"action":"allow"}\n'
 fi
 
-# Log hook invocation
-echo "{\"hook\":\"pre-tool-use\",\"tool\":\"${TOOL_NAME}\",\"ts\":\"${TS}\"}" >> "$HOOK_LOG" 2>/dev/null || true
-
-# Only intercept SnowflakeSqlExecute
-if [ "$TOOL_NAME" != "SnowflakeSqlExecute" ]; then
-  exit 0
-fi
-
-# Read SQL input from stdin or COCO_TOOL_INPUT
-SQL_INPUT="${COCO_TOOL_INPUT:-}"
-if [ -z "$SQL_INPUT" ] && [ ! -t 0 ]; then
-  SQL_INPUT="$(cat 2>/dev/null || true)"
-fi
-SQL_UPPER="$(echo "$SQL_INPUT" | tr '[:lower:]' '[:upper:]')"
-
-# Detect destructive patterns
-IS_DESTRUCTIVE=0
-PATTERN_MATCHED=""
-
-if echo "$SQL_UPPER" | grep -qE "DROP[[:space:]]+(TABLE|DATABASE|SCHEMA|INDEX)"; then
-  IS_DESTRUCTIVE=1; PATTERN_MATCHED="DROP TABLE/DATABASE/SCHEMA/INDEX"
-elif echo "$SQL_UPPER" | grep -qE "TRUNCATE[[:space:]]+TABLE"; then
-  IS_DESTRUCTIVE=1; PATTERN_MATCHED="TRUNCATE TABLE"
-elif echo "$SQL_UPPER" | grep -qE "DELETE[[:space:]]+FROM[[:space:]]+[^[:space:]]+[[:space:]]*$"; then
-  IS_DESTRUCTIVE=1; PATTERN_MATCHED="DELETE without WHERE"
-elif echo "$SQL_UPPER" | grep -qE "ALTER[[:space:]]+TABLE.*DROP[[:space:]]+COLUMN"; then
-  IS_DESTRUCTIVE=1; PATTERN_MATCHED="ALTER TABLE DROP COLUMN"
-fi
-
-if [ "$IS_DESTRUCTIVE" -eq 0 ]; then
-  exit 0
-fi
-
-# Determine safety mode
-SAFETY_MODE="normal"
-if [ -f "${COCOPLUS_DIR}/modes/safety.strict" ]; then
-  SAFETY_MODE="strict"
-elif [ -f "${COCOPLUS_DIR}/modes/safety.off" ]; then
-  SAFETY_MODE="off"
-fi
-
-# Log the decision
-echo "{\"ts\":\"${TS}\",\"tool\":\"${TOOL_NAME}\",\"pattern\":\"${PATTERN_MATCHED}\",\"mode\":\"${SAFETY_MODE}\"}" >> "$SAFETY_LOG" 2>/dev/null || true
-
-# Apply safety mode
-if [ "$SAFETY_MODE" = "strict" ]; then
-  echo "BLOCKED: Safety Gate (strict mode) prevented execution. Pattern detected: ${PATTERN_MATCHED}. To proceed, switch to /safety normal and confirm, or /safety off (not recommended)." >&2
-  exit 1
-elif [ "$SAFETY_MODE" = "normal" ]; then
-  echo "WARNING: Safety Gate detected destructive SQL pattern: ${PATTERN_MATCHED}. This operation has been flagged for soft-gate confirmation. Explicit confirmation required before execution." >&2
-  exit 0
-else
-  # Safety off: allow silently
-  exit 0
-fi
+exit 0
