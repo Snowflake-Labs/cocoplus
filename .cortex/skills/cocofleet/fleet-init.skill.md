@@ -28,15 +28,14 @@ Write `.cocoplus/fleet/[fleet-name]-manifest.json`:
 
 ```json
 {
-  "meta": {
-    "name": "[fleet-name]",
-    "version": "1.0",
-    "description": "CocoFleet manifest for [fleet-name]",
-    "created": "[ISO 8601 timestamp]",
-    "max_instances": 10
-  },
+  "id": "[fleet-name]",
+  "name": "[fleet-name]",
+  "version": "1.0",
+  "created_at": "[ISO 8601 timestamp]",
   "defaults": {
+    "persona": "data-engineer",
     "model": "claude-sonnet-4-20250514",
+    "coco_flags": "--no-interactive",
     "timeout_minutes": 60
   },
   "instances": [
@@ -44,10 +43,21 @@ Write `.cocoplus/fleet/[fleet-name]-manifest.json`:
       "_comment": "Each instance is an independent Coco process. task_file must be self-contained.",
       "id": "instance-001",
       "name": "Example Instance",
+      "persona": "data-engineer",
       "task_file": ".cocoplus/fleet/instance-001/task.md",
-      "checkpoints": [".cocoplus/fleet/instance-001/done.flag"],
+      "output_dir": ".cocoplus/fleet/instance-001/",
       "depends_on": [],
-      "timeout_minutes": 60
+      "checkpoints": [".cocoplus/fleet/instance-001/done"]
+    },
+    {
+      "_comment": "Remove this second instance or use it as a template for a dependent stage.",
+      "id": "instance-002",
+      "name": "Example Dependent Instance",
+      "persona": "analytics-engineer",
+      "task_file": ".cocoplus/fleet/instance-002/task.md",
+      "output_dir": ".cocoplus/fleet/instance-002/",
+      "depends_on": ["instance-001"],
+      "checkpoints": [".cocoplus/fleet/instance-002/done"]
     }
   ]
 }
