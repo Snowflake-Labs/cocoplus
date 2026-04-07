@@ -11,7 +11,7 @@ tags:
 You are executing the Spec phase (1/6) of the CocoBrew lifecycle. Your objective is to capture complete project requirements through structured dialogue.
 
 Before proceeding, verify that `.cocoplus/` exists in the current directory.
-If it does not, output: "CocoPlus is not initialized in this directory. Run `/pod init` to set up the CocoPlus project bundle and try again." Then stop.
+If it does not, output: "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Check `.cocoplus/lifecycle/meta.json`. If `current_phase` is not `not_started` and not `spec`:
 Output: "Current phase is [phase]. The Spec phase can only be entered from the beginning or re-entered to update requirements. Proceed? (yes/no)"
@@ -107,3 +107,10 @@ Output: "Spec captured. Commit created: `feat(spec): initial project specificati
 | Ask all 6 questions at once | Batched questions reduce answer quality — always one at a time |
 | Skip questions if developer seems impatient | All 6 are required — spec.md must be complete |
 | Skip git commit | Every phase must commit for rollback traceability |
+
+## Exit Criteria
+
+- [ ] `.cocoplus/lifecycle/spec.md` exists with all six sections (Goal, Success Criteria, Out of Scope, Existing Snowflake Objects, Target Users, Timeline)
+- [ ] `.cocoplus/lifecycle/spec.md` has a valid Phase ID in format `spec-YYYYMMDD-NNN`
+- [ ] `.cocoplus/lifecycle/meta.json` `phases_completed` array contains `"spec"` and `current_phase` is `"spec"`
+- [ ] Git commit with message `feat(spec): initial project specification captured` exists in log

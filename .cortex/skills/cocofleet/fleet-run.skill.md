@@ -11,7 +11,7 @@ tags:
 Your objective is to execute a CocoFleet manifest.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Parse argument: `/fleet run [manifest-path]`
 If no manifest-path: output "Usage: /fleet run [manifest-path]" Then stop.
@@ -87,3 +87,10 @@ Output: "Fleet started from [manifest-path]. Fleet ID: [fleet-id]. Initial ready
 | Block waiting for all instances | Fleet must return control to developer immediately |
 | Share context between instances | Instances are process-isolated by design — no shared context |
 | Exceed 10 instances without warning | 10 is the safety limit — always enforce |
+
+## Exit Criteria
+
+- [ ] `.cocoplus/fleet/[fleet-id]-state.json` exists with `status: "running"` and an entry for each instance
+- [ ] All ready instances (no unmet dependencies) have been spawned with PIDs recorded in state.json
+- [ ] `output.log` and `pid.txt` files exist in each launched instance's directory
+- [ ] Control is returned to the developer immediately after launching the initial ready set — the command does not block

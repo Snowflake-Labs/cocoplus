@@ -13,7 +13,7 @@ You are activating CocoSpark — divergent brainstorm mode.
 **IMPORTANT:** CocoSpark output is exploration only. It does NOT modify spec.md, plan.md, or any lifecycle artifacts. Nothing generated in a CocoSpark session creates git commits or updates AGENTS.md phase state.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 ## Activation
 
@@ -52,3 +52,18 @@ Append all output to the spark session file.
 When the developer runs `/spark-off`:
 - Remove mode flag: `rm -f .cocoplus/modes/coco-spark.on`
 - Output: "CocoSpark session ended. Exploration saved to `.cocoplus/spark-[timestamp].md`. Nothing in this session modified project state."
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Write brainstorm output directly into spec.md or plan.md | CocoSpark is exploration-only; writing into lifecycle artifacts conflates divergent thinking with committed decisions |
+| Skip creating the spark session file and output inline only | Without a session file, the exploration is lost when the conversation ends — the file is the durable record |
+| Produce only one approach instead of 3-5 | Single-approach brainstorming is just planning with extra steps; the value of CocoSpark is divergence |
+
+## Exit Criteria
+
+- [ ] `.cocoplus/modes/coco-spark.on` flag exists after activation
+- [ ] `.cocoplus/spark-[timestamp].md` file exists with the `[EXPLORATION]` section structure
+- [ ] Brainstorm output contains at least 3 distinct approaches, one challenged assumption, and one "what if" scenario
+- [ ] No changes to `spec.md`, `plan.md`, or any lifecycle artifact during the session

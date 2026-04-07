@@ -11,7 +11,7 @@ tags:
 Your objective is to list all SecondEye review history.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Find all files in `.cocoplus/lifecycle/` matching `secondeye-*.md`.
 If none found: output "No SecondEye reviews yet. Run `/secondeye` to perform a review." Then stop.
@@ -32,3 +32,18 @@ Output:
 Total reviews: [N]
 Unacknowledged critical findings: [N]
 ```
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Show only latest report | Hides trend and unresolved critical history |
+| Omit acknowledgment status column | Developers cannot quickly assess build gate risk |
+| Skip empty-state guidance | Users do not know the next action when no reports exist |
+
+## Exit Criteria
+
+- [ ] History scan includes all `.cocoplus/lifecycle/secondeye-*.md` files
+- [ ] Output table shows Report ID, Artifact, Date, Critical, Advisory, Observations, and Acknowledged status for each report
+- [ ] Footer reports total review count and unacknowledged critical count
+- [ ] If no reports exist, a clear guidance message directs the developer to run `/secondeye`

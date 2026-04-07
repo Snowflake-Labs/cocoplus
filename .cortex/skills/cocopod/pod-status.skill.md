@@ -11,7 +11,7 @@ tags:
 Your objective is to produce a comprehensive status report of the CocoPlus project bundle.
 
 Before proceeding, verify that `.cocoplus/` exists in the current directory.
-If it does not, output: "CocoPlus is not initialized in this directory. Run `/pod init` to set up the CocoPlus project bundle and try again." Then stop.
+If it does not, output: "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 ## Read State From These Files
 
@@ -70,3 +70,16 @@ Check for presence of these flag files and report on/off:
 - List any subagent IDs recorded in `lifecycle/meta.json` or `AGENTS.md`
 
 Output as a clean markdown table per section. Complete in under 2 seconds.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Error out if any state file is missing | Status must be readable at any project stage; use the defined defaults for missing files rather than failing |
+| Read full file contents instead of just checking file existence for mode flags | Mode flags are sentinel files — only presence/absence matters; reading content wastes time on binary state |
+
+## Exit Criteria
+
+- [ ] Report contains all 8 sections: CocoBrew Lifecycle, CocoFlow Pipeline, Active Modes, Memory Engine, CocoMeter, CocoGrove, Safety Gate, Personas Used
+- [ ] Active Modes section correctly reflects which flag files exist in `.cocoplus/modes/`
+- [ ] Report completed in under 2 seconds

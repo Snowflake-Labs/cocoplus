@@ -11,7 +11,7 @@ tags:
 You are executing the Build phase (3/6) of CocoBrew. Your objective is to transform the approved plan into executing workstreams.
 
 Before proceeding, verify that `.cocoplus/` exists in the current directory.
-If it does not, output: "CocoPlus is not initialized in this directory. Run `/pod init` to set up the CocoPlus project bundle and try again." Then stop.
+If it does not, output: "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Read `.cocoplus/lifecycle/meta.json`. Verify `phases_completed` contains both `"spec"` and `"plan"`.
 If not: output "The Spec and Plan phases must be completed before building. Check `/pod status` for current state." Then stop.
@@ -71,3 +71,18 @@ If HIGH complexity: Activate `flow-run` skill to begin pipeline execution.
 If LOW complexity: Execute the plan directly using the appropriate persona.
 
 Output: "Build phase initiated. Use `/flow status` to monitor pipeline progress."
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Skip SecondEye gate check and proceed directly to build | Unacknowledged Critical findings represent unresolved risks — building on top of them silently buries problems |
+| Always invoke CocoHarvest regardless of complexity | Low-complexity plans don't need full pipeline decomposition; over-engineering wastes tokens and adds unnecessary stages |
+| Mark build as complete before flow-run finishes | Build phase is only complete when execution has started, not just when CocoHarvest generates flow.json |
+
+## Exit Criteria
+
+- [ ] `.cocoplus/lifecycle/meta.json` `phases_completed` array contains `"build"`
+- [ ] `.cocoplus/flow.json` has non-empty `stages` array (for HIGH complexity) or execution is underway
+- [ ] Git commit with message `build: begin build phase` exists in log
+- [ ] No unacknowledged SecondEye files with `critical_open: true` exist in `.cocoplus/lifecycle/`

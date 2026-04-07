@@ -11,7 +11,7 @@ tags:
 Your objective is to create a git worktree for isolated exploration.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 ## Usage
 
@@ -41,3 +41,16 @@ Your changes in the worktree are isolated on the explore/[branch-name] branch.
 To merge back:  git merge explore/[branch-name]
 To discard:     git worktree remove [worktree-path] && git branch -d explore/[branch-name]
 ```
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Create a branch without using a worktree | A branch without a worktree shares the working directory; changes in the exploration bleed into the main session |
+| Use a flat branch name instead of `explore/` prefix | The `explore/` prefix clearly marks the branch as temporary exploration; flat names get lost among feature branches |
+
+## Exit Criteria
+
+- [ ] A git worktree exists at `[project-dir]-explore-[branch-name]` path
+- [ ] Branch `explore/[branch-name]` exists in the git repository
+- [ ] Output shows worktree path, branch name, merge command, and discard command

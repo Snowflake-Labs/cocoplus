@@ -11,7 +11,7 @@ tags:
 Your objective is to decompose the approved plan into parallel workstreams and generate a complete flow.json pipeline.
 
 Before proceeding, verify that `.cocoplus/` exists in the current directory.
-If it does not, output: "CocoPlus is not initialized in this directory. Run `/pod init` first." Then stop.
+If it does not, output: "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Read `.cocoplus/lifecycle/plan.md`. If it does not exist or is empty:
 Output: "No approved plan found. Run `/plan` to create an execution plan first." Then stop.
@@ -127,3 +127,18 @@ Prompt files written to .cocoplus/prompts/
 
 Next: Run `/flow run` to begin execution.
 ```
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Assign all workstreams to a single persona to simplify execution | CocoHarvest's value is optimal persona-to-workstream matching — flattening to one persona loses specialist quality |
+| Skip creating per-stage prompt files and just write flow.json | flow-run reads the prompt file path from flow.json; missing prompt files cause every stage to fail at runtime |
+| Create dependency links between all stages to be "safe" | Unnecessary dependencies serialize parallel work; independence must be correctly identified to unlock parallel execution |
+
+## Exit Criteria
+
+- [ ] `.cocoplus/flow.json` has `"generated_by": "cocoharvest"` and a non-empty `stages` array
+- [ ] A `.cocoplus/prompts/[stage-id]-prompt.md` file exists for every stage in `flow.json`
+- [ ] Each stage has at least one entry in its `checkpoints` array
+- [ ] The summary output shows workstream count, stage count, parallel groups, and sequential chains

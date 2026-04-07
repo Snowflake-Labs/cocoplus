@@ -11,7 +11,7 @@ tags:
 Your objective is to execute a CocoFlow pipeline.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Read `.cocoplus/flow.json`. If `stages` is empty:
 Output: "No stages defined in flow.json. Run `/plan` then `/build` to generate the pipeline." Then stop.
@@ -89,3 +89,10 @@ Time: [duration]
 | Skip checkpoint validation | Checkpoints are the quality gate — never skip |
 | Proceed past a stop failure | stop means STOP — require manual intervention |
 | Mix stage outputs in same git commit | One commit per stage for traceability |
+
+## Exit Criteria
+
+- [ ] Each completed stage has `status: "completed"` and a `completed_at` timestamp in `flow.json`
+- [ ] Each completed stage has a corresponding git commit with message `build([stage-id]): [stage name] — checkpoints verified`
+- [ ] All checkpoint glob patterns for each completed stage matched at least one file
+- [ ] If any stage had `on_failure: stop` and failed, the pipeline halted immediately with an actionable error message

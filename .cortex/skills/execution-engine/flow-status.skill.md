@@ -11,7 +11,7 @@ tags:
 Your objective is to display the current pipeline execution state.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Read `.cocoplus/flow.json`. Count stages by status:
 - Total stages
@@ -44,3 +44,17 @@ Checkpoint failed: [pattern]
 on_failure: stop
 Action required: Fix issue and run `/flow run [stage-id]`
 ```
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Show stage status without verifying checkpoint glob matches exist | A stage may report "completed" in flow.json but its checkpoint files could have been deleted; verify independently |
+| Omit the Next Action line when all stages are complete | Developers need explicit confirmation that the pipeline is done — "All complete" is load-bearing output |
+
+## Exit Criteria
+
+- [ ] Status table with columns Stage, Name, Persona, Status, Started, Duration is output for every stage
+- [ ] Overall completion percentage (completed/total) is shown
+- [ ] Pause status (checked via `.cocoplus/flow.pause` existence) and Next Action are shown
+- [ ] `## Failures` section present for any failed stages with checkpoint details and retry command

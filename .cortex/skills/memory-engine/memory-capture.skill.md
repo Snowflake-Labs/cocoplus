@@ -14,7 +14,7 @@ Your objective is to capture a specific item to the CocoPlus Memory Engine.
 ## Pre-flight Check
 
 1. Check that `.cocoplus/` directory exists. If not, output:
-   "CocoPlus is not initialized. Run `/pod init` first."
+   "CocoPlus not initialized in this directory. Run `/pod init` to begin."
    Then stop.
 
 2. Check if `memory.on` flag exists at `.cocoplus/modes/memory.on`.
@@ -81,3 +81,17 @@ Format to append:
 1. Output confirmation: "Captured to `.cocoplus/memory/<type>.md`."
 2. If the item looks like a reusable pattern that might benefit other projects, suggest:
    "This looks like a reusable pattern. Run `/patterns promote` to add it to CocoGrove for future projects."
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Capture without specifying a type (decision/pattern/error) | Each type goes to a different memory file; routing to the wrong file makes retrieval unreliable |
+| Skip the Rationale field for decisions because "it's obvious" | Rationale is why the decision has value; without it, future sessions cannot understand why the decision was made |
+| Append to errors.md for a decision that "went wrong" | Errors and decisions are separate categories — conflating them makes both files noisy and hard to scan |
+
+## Exit Criteria
+
+- [ ] The captured item is appended to the correct memory file (`decisions.md`, `patterns.md`, or `errors.md`) in the required format
+- [ ] The entry includes a date-prefixed header in `## [YYYY-MM-DD HH:MM] <title>` format
+- [ ] Output confirms the file the item was written to

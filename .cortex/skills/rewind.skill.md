@@ -11,7 +11,7 @@ tags:
 Your objective is to roll back the CocoBrew lifecycle to a prior phase commit.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 ## Usage
 
@@ -48,3 +48,18 @@ Update `.cocoplus/lifecycle/meta.json`: set `current_phase` to the target phase,
 Update AGENTS.md: replace phase line with rolled-back phase.
 
 Output: "Rolled back to [step-id]. Current phase: [phase]. Subsequent phase artifacts have been unstaged. Use `git checkout -- .cocoplus/` to also discard working tree changes if needed."
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Rewind without showing commit range impact | Developer cannot make an informed rollback decision |
+| Use hard reset instead of soft reset | Destroys working changes and increases recovery risk |
+| Skip phase-state updates after reset | CocoBrew state diverges from git history and breaks later stages |
+
+## Exit Criteria
+
+- [ ] Available lifecycle commits are shown when no `step-id` is provided
+- [ ] Developer receives an explicit confirmation prompt with the commit range to be removed
+- [ ] `git reset --soft [target-commit-sha]` is executed only after confirmation
+- [ ] `.cocoplus/lifecycle/meta.json` and `.cocoplus/AGENTS.md` phase state are updated to the target lifecycle phase

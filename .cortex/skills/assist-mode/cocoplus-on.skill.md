@@ -11,7 +11,7 @@ tags:
 Your objective is to activate Full Assist Mode — enabling all CocoPlus features at once.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 ## Create All Mode Flags
 
@@ -77,3 +77,19 @@ git commit -m "chore(cocopod): activate full assist mode"
 
 All flags created. Run `/cocoplus off` to deactivate all features at once.
 ```
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Skip creating memory files if they already exist | Always check — initialization is idempotent; missing headers break memory capture parsing |
+| Overwrite an existing stricter safety flag with `safety.normal` | A stricter flag is a deliberate user setting; downgrading it silently would remove production protection |
+| Skip triggering the background inspector scan | Inspector scan is part of Full Assist activation — skipping it means stale environment data |
+
+## Exit Criteria
+
+- [ ] All six flags (`memory.on`, `inspector.on`, `quality.on`, `context-mode.on`, `cocometer.on`, `full-assist.on`) exist in `.cocoplus/modes/`
+- [ ] At least one safety flag (`safety.strict`, `safety.normal`, or `safety.off`) exists in `.cocoplus/modes/`
+- [ ] `.cocoplus/AGENTS.md` `## Active Modes` section shows `FULL ASSIST MODE: ACTIVE`
+- [ ] `.cocoplus/memory/decisions.md`, `patterns.md`, and `errors.md` all exist with headers
+- [ ] Git commit with message `chore(cocopod): activate full assist mode` exists in log

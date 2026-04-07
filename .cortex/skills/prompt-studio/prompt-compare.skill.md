@@ -11,7 +11,7 @@ tags:
 Your objective is to compare two prompt versions.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Parse arguments: `/prompt compare [path-a] [path-b]`
 If arguments missing: output "Usage: /prompt compare [path-a] [path-b]" Then stop.
@@ -40,3 +40,18 @@ Prompt A: [strengths and weaknesses]
 Prompt B: [strengths and weaknesses]
 Recommendation: [which prompt to use and why]
 ```
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Compare with only one input | A single case hides regressions and overfits the recommendation |
+| Skip difference column details | Without explicit diffs, recommendation becomes subjective |
+| Ignore missing prompt file validation | Comparison output becomes misleading and non-reproducible |
+
+## Exit Criteria
+
+- [ ] Both prompt files were validated as existing before comparison
+- [ ] Comparison output includes rows for each provided test input with Prompt A output, Prompt B output, and a difference summary
+- [ ] `## Analysis` section includes strengths and weaknesses for each prompt plus a recommendation
+- [ ] Errors for missing arguments or missing files are handled with clear usage guidance

@@ -35,3 +35,14 @@ Direct invocation:    $de Review this SQL for performance issues
 With continuation:    $de --continue Fix the issues you identified
 In CocoHarvest:       Automatic based on workstream classification
 ```
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Display a partial persona list to keep output short | The persona catalog is a reference table — omitting personas causes developers to invoke the wrong specialist or miss options |
+
+## Exit Criteria
+
+- [ ] All 11 personas are listed in the output table with Trigger, Model, Mode, Isolation, and Tools columns
+- [ ] Invocation examples section is shown with direct, continuation, and CocoHarvest examples

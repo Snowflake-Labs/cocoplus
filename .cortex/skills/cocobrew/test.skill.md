@@ -11,7 +11,7 @@ tags:
 You are executing the Test phase (4/6) of CocoBrew.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized in this directory. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Read `.cocoplus/lifecycle/meta.json`. Verify `phases_completed` contains `"build"`.
 If not: output "The Build phase must be completed before testing. Run `/build` first." Then stop.
@@ -71,3 +71,18 @@ git commit -m "test: test execution and validation"
 ```
 
 Output: "Test phase complete. [N] tests passed, [M] failed. Check `.cocoplus/lifecycle/test.md` for details. Proceed to `/review`."
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Skip tests for deliverables that "obviously exist" | The spec mandates verifiable outcomes — assumption-based passing is not evidence |
+| Mark phase complete even if some tests failed | Failing tests are open issues; committing and moving on hides defects from the Review phase |
+| Generate test cases without reading spec.md success criteria | Test cases not anchored to success criteria will miss spec-mandated outcomes entirely |
+
+## Exit Criteria
+
+- [ ] `.cocoplus/lifecycle/test.md` exists with a `## Summary` section showing Tests Run, Passed, and Failed counts
+- [ ] Every Success Criterion from `spec.md` has at least one corresponding test case in `test.md`
+- [ ] `.cocoplus/lifecycle/meta.json` `phases_completed` array contains `"test"`
+- [ ] Git commit with message `test: test execution and validation` exists in log

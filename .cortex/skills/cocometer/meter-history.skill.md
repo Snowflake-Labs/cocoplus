@@ -11,7 +11,7 @@ tags:
 Your objective is to display historical CocoMeter data.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Parse argument: `/meter history [n]` — n defaults to 10.
 
@@ -38,3 +38,16 @@ Total SQL statements: [sum]
 Total writes: [sum]
 Estimated total tokens: [sum]
 ```
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Read all lines from history.jsonl regardless of N argument | Large projects accumulate hundreds of sessions; always respect the N limit to avoid excessive output |
+| Show history when history.jsonl is empty without a clear explanation | A blank output looks like a bug; always explain that no sessions have been recorded yet and how to start |
+
+## Exit Criteria
+
+- [ ] A session history table with columns Session, Started, Duration, Tools Called, SQL Statements, Writes is output
+- [ ] At most N sessions are shown (N from argument, default 10)
+- [ ] Totals row showing sums across all displayed sessions is shown at the bottom

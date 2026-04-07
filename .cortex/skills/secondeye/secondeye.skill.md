@@ -11,7 +11,7 @@ tags:
 Your objective is to run a multi-model adversarial critique of a lifecycle artifact.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 ## Parse Arguments
 
@@ -132,3 +132,18 @@ SecondEye review complete. No critical findings.
 [N] advisory findings, [N] observations.
 Report: .cocoplus/lifecycle/secondeye-[timestamp].md
 ```
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Run only one critic by default | Loses adversarial diversity and weakens coverage |
+| Skip deduplication when aggregating findings | Inflated issue counts reduce signal quality |
+| Keep staging files after report generation | Leaks temporary artifacts and confuses future runs |
+
+## Exit Criteria
+
+- [ ] Artifact path is resolved and validated before critic execution
+- [ ] `.cocoplus/lifecycle/.secondeye-staging/[timestamp]/` is created for critic task files and removed during cleanup
+- [ ] Critic outputs are aggregated into `.cocoplus/lifecycle/secondeye-[timestamp].md` with `critical_open` and acknowledgment metadata
+- [ ] Output clearly indicates whether `/build` is soft-gated and points to `/secondeye acknowledge` when critical findings exist

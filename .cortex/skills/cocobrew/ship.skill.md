@@ -11,7 +11,7 @@ tags:
 You are executing the Ship phase (6/6) of CocoBrew.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized in this directory. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Read `.cocoplus/lifecycle/meta.json`. Verify `phases_completed` contains `"review"`.
 If not: output "The Review phase must be approved before shipping. Run `/review` first." Then stop.
@@ -98,3 +98,18 @@ PR: [URL or "not created"]
 
 Full CocoBrew lifecycle complete: Spec → Plan → Build → Test → Review → Ship ✓
 ```
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Skip the full diff review and proceed to tag directly | Developer must consciously review what goes out — blind shipping can include unintended changes |
+| Auto-increment the version without asking the developer | Semantic versioning is a project decision (patch vs minor vs major); it cannot be inferred automatically |
+| Create the git tag before the deployment record commit | Tag must point to the final commit that includes deployment.md — out-of-order tagging creates a misleading release point |
+
+## Exit Criteria
+
+- [ ] `.cocoplus/lifecycle/deployment.md` exists with Version, Spec ID, Plan ID, and Review Approval fields
+- [ ] Git tag matching `v*.*.*` exists pointing to the release commit
+- [ ] `.cocoplus/lifecycle/meta.json` `current_phase` is `"shipped"` and `phases_completed` contains `"ship"`
+- [ ] `.cocoplus/AGENTS.md` contains `Phase: SHIPPED` with version and timestamp

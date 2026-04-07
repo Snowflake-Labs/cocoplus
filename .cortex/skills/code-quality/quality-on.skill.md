@@ -11,9 +11,20 @@ tags:
 Your objective is to enable the Code Quality Advisor.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Create mode flag: `touch .cocoplus/modes/quality.on`
 Update AGENTS.md (keep ≤200 lines): replace Quality line with `- Quality: ON (auto-review SQL writes)`
 
 Output: "✓ Code Quality Advisor enabled. SQL files written during this session will be automatically reviewed for anti-patterns. Findings are written to .cocoplus/quality-findings-[timestamp].md."
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Skip updating AGENTS.md since the mode flag is already set | AGENTS.md is the hot context; if it still says "Quality: off" the AI will behave as if quality is off |
+
+## Exit Criteria
+
+- [ ] `.cocoplus/modes/quality.on` flag exists
+- [ ] `.cocoplus/AGENTS.md` Quality line reads `- Quality: ON (auto-review SQL writes)`

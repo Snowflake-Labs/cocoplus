@@ -11,7 +11,7 @@ tags:
 You are executing the Plan phase (2/6) of CocoBrew. Your objective is to transform the approved specification into an executable plan.
 
 Before proceeding, verify that `.cocoplus/` exists in the current directory.
-If it does not, output: "CocoPlus is not initialized in this directory. Run `/pod init` to set up the CocoPlus project bundle and try again." Then stop.
+If it does not, output: "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Read `.cocoplus/lifecycle/meta.json`. Verify `phases_completed` contains `"spec"`.
 If not: output "The Spec phase must be completed before planning. Run `/spec` to capture requirements first." Then stop.
@@ -123,3 +123,10 @@ Output: "Plan captured and approved. Commit created: `feat(plan): approved execu
 | Skip Coco native plan mode | Plan mode is a HARD GATE — it is not optional under any circumstances |
 | Proceed without explicit developer approval | Developer must approve before plan.md is written |
 | Create detailed flow.json stages here | CocoHarvest creates stages — plan.skill.md only creates the empty skeleton |
+
+## Exit Criteria
+
+- [ ] `.cocoplus/lifecycle/plan.md` exists with YAML-like header fields (Date, Phase, Phase ID, Spec ID) and a `## Workstreams` section
+- [ ] `.cocoplus/flow.json` exists with `meta.phase` set to `"plan"` and an empty `"stages": []` array
+- [ ] `.cocoplus/lifecycle/meta.json` `phases_completed` array contains `"plan"`
+- [ ] Git commit with message `feat(plan): approved execution plan v1` exists in log

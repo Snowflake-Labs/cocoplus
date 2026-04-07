@@ -11,7 +11,7 @@ tags:
 Your objective is to resume a paused CocoFlow pipeline.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Check if `.cocoplus/flow.pause` exists. If not:
 Output: "Pipeline is not paused. Run `/flow run` to start or continue execution." Then stop.
@@ -24,3 +24,16 @@ Remove pause flag: `rm .cocoplus/flow.pause`
 Output: "Pipeline resumed. Continuing from [stage name]. Run `/flow status` to monitor."
 
 Activate the `flow-run` skill to begin execution.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Resume from the beginning instead of the next pending stage | Already-completed stages would run again, duplicating deliverables and corrupting stage state |
+| Remove the pause flag but not activate flow-run | Removing the flag without resuming execution leaves the pipeline stuck — the developer sees no feedback |
+
+## Exit Criteria
+
+- [ ] `.cocoplus/flow.pause` flag file does NOT exist
+- [ ] `flow-run` skill is activated to continue execution from the next pending stage
+- [ ] Output identifies which stage execution is resuming from

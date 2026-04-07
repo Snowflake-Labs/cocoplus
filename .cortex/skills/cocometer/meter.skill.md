@@ -11,7 +11,7 @@ tags:
 Your objective is to display the current session CocoMeter report.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Read `.cocoplus/meter/current-session.json`. If it does not exist:
 Output: "No active meter session. CocoMeter tracking starts automatically when a session begins with CocoMeter enabled. Run `/meter on` to enable and start a new session." Then stop.
@@ -38,3 +38,15 @@ Estimated tokens consumed: [tokens_consumed]
 SQL operations × 0.00001 credits/statement = [estimate] credits
 (rough estimate — actual credits depend on compute size and query complexity)
 ```
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Show zeros for all fields if current-session.json exists but has no data | Zero-filled output looks like a bug; always explain that tracking starts accumulating on next tool use |
+
+## Exit Criteria
+
+- [ ] Report shows Session ID, Started timestamp, and Phase from current-session.json
+- [ ] Tool Usage section shows tools called, SQL statements, and file writes
+- [ ] Token Estimate and Snowflake Credit Estimate sections are shown with appropriate caveats

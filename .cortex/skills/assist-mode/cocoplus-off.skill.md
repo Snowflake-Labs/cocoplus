@@ -11,7 +11,7 @@ tags:
 Your objective is to deactivate Full Assist Mode.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 ## Check Which Flags Exist
 
@@ -75,3 +75,18 @@ Preserved (not deleted):
 
 Run `/cocoplus on` to re-activate all features.
 ```
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Only remove the `full-assist.on` flag and leave others | Stale feature flags cause incorrect mode detection on next session — remove all of them |
+| Skip updating AGENTS.md | AGENTS.md is the hot context file read at every session start; stale mode info misleads the AI |
+| Delete memory or meter history files "to clean up" | Data files are permanent records; this skill explicitly must NOT delete them |
+
+## Exit Criteria
+
+- [ ] All nine flag files (`memory.on`, `inspector.on`, `quality.on`, `context-mode.on`, `cocometer.on`, `full-assist.on`, `safety.strict`, `safety.normal`, `safety.off`) do NOT exist in `.cocoplus/modes/`
+- [ ] `.cocoplus/AGENTS.md` `## Active Modes` section shows `FULL ASSIST MODE: OFF` with all features listed as `off`
+- [ ] Git commit with message `chore(cocopod): deactivate full assist mode` exists in log
+- [ ] `.cocoplus/memory/`, `.cocoplus/meter/history.jsonl`, and `.cocoplus/grove/` data files still exist (not deleted)

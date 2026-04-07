@@ -11,7 +11,7 @@ tags:
 Your objective is to guide the developer in creating a well-structured Cortex ML prompt.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 ## Guided Prompt Creation Workflow
 
@@ -78,3 +78,18 @@ Check the generated prompt for:
 Report any anti-patterns found.
 
 Output: "Prompt created: `.cocoplus/prompts/cortex-[name]-v[version].md`. Use `/prompt compare` to test variants."
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Skip few-shot examples | Uncalibrated prompts drift on edge cases and become hard to evaluate |
+| Leave output format vague | Ambiguity causes inconsistent downstream parsing and weak comparisons |
+| Skip anti-pattern review because prompt "looks fine" | Subtle contradictions remain hidden until runtime failures |
+
+## Exit Criteria
+
+- [ ] `.cocoplus/prompts/cortex-[name]-v[version].md` exists with frontmatter fields `name`, `version`, `created`, and `task`
+- [ ] Prompt file contains `## Instruction`, `## Input Format`, `## Output Format`, `## Examples`, and `## Edge Cases` sections
+- [ ] Anti-pattern review ran and reported any ambiguous output format, contradictions, missing negative examples, or excessive length
+- [ ] Output confirms the created prompt path and suggests `/prompt compare`

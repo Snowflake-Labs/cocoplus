@@ -11,7 +11,7 @@ tags:
 Your objective is to estimate token and cost impact before executing an action.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 If no argument provided: read `.cocoplus/flow.json` to estimate the full pipeline.
 If argument provided (e.g., `/meter estimate "run 3-stage pipeline"`): estimate the described action.
@@ -53,3 +53,16 @@ Estimate vs threshold: [WITHIN / EXCEEDS by N%]
 
 Note: These are estimates. Actual usage depends on response length, query complexity, and data volume.
 ```
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Use a single flat estimate without per-stage breakdown | Different personas have very different token footprints; a flat estimate hides cost concentration in expensive stages |
+| Skip the budget threshold check | The entire value of pre-flight estimation is knowing whether to proceed — skipping the check defeats the purpose |
+
+## Exit Criteria
+
+- [ ] Per-stage token breakdown is shown with persona label for each stage
+- [ ] Total token estimate is shown
+- [ ] Configured budget threshold is compared against the estimate with WITHIN or EXCEEDS result

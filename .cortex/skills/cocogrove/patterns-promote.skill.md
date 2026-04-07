@@ -11,7 +11,7 @@ tags:
 Your objective is to promote a CocoCupper finding to a CocoGrove pattern.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Parse argument: `/patterns promote [finding-id]`
 If no finding-id provided: output "Usage: /patterns promote [finding-id] — e.g., /patterns promote Finding-001" Then stop.
@@ -60,3 +60,17 @@ promoted_at: "[ISO 8601 timestamp]"
 Update the finding in cupper-findings.md: change `**Promoted:** false` to `**Promoted:** [pattern-id]`
 
 Output: "Pattern '[pattern-name]' promoted to CocoGrove. File: `.cocoplus/grove/patterns/[pattern-name].md`. Use `/patterns view` to see all patterns."
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Promote without confirming with the developer first | Patterns in CocoGrove are authoritative reusable practices; auto-promoting without review could canonize a bad finding |
+| Skip updating the finding's `Promoted` field in cupper-findings.md | Without updating the source, the same finding can be promoted multiple times creating duplicate patterns |
+| Use a generic pattern name instead of asking the developer | A generic name makes the pattern unsearchable and unrecognizable across projects |
+
+## Exit Criteria
+
+- [ ] `.cocoplus/grove/patterns/[pattern-name].md` exists with YAML frontmatter containing `id`, `name`, `domain`, `tags`, `promoted_from`, and `promoted_at`
+- [ ] The source finding in `.cocoplus/grove/cupper-findings.md` has been updated from `**Promoted:** false` to `**Promoted:** [pattern-id]`
+- [ ] Developer confirmed promotion with "yes" before the pattern file was written

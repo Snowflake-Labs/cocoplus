@@ -126,3 +126,12 @@ Next steps:
 | Skip template copy, create files inline | Templates are the user's customization point — always copy from source |
 | Initialize all mode flags | Modes are opt-in. Only safety.normal is default. |
 | Skip git commit | Every pod init must create a commit for rollback traceability |
+
+## Exit Criteria
+
+- [ ] `.cocoplus/` directory exists with all 11 required subdirectories (`lifecycle/`, `memory/`, `prompts/`, `monitors/`, `grove/`, `grove/patterns/`, `meter/`, `snapshots/`, `modes/`, `fleet/`)
+- [ ] `.cocoplus/modes/safety.normal` flag file exists; no other safety flags exist
+- [ ] `.cocoplus/modes/memory.on` flag file exists
+- [ ] `.cocoplus/AGENTS.md`, `.cocoplus/project.md`, `.cocoplus/flow.json`, and all four monitor JSON files exist
+- [ ] `.cocoplus/lifecycle/meta.json` exists with `"current_phase": "not_started"` and empty `phases_completed`
+- [ ] Git commit with message `feat: initialize CocoPod project structure` exists in log

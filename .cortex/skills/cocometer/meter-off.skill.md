@@ -14,7 +14,7 @@ Your objective is to disable CocoMeter token tracking.
 ## Pre-flight Check
 
 Check that `.cocoplus/` directory exists. If not, output:
-"CocoPlus is not initialized. Run `/pod init` first."
+"CocoPlus not initialized in this directory. Run `/pod init` to begin."
 Then stop.
 
 ## Check Current State
@@ -63,3 +63,16 @@ Session Summary:
 Session saved to .cocoplus/meter/history.jsonl
 Use `/meter history` to review past sessions.
 ```
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Skip appending to history.jsonl and just reset current-session.json | The session record is lost forever if not appended to history before reset — there is no recovery path |
+| Mark `metering_active: false` without computing duration | Duration is part of the history record; a missing duration makes the history row incomplete and the totals wrong |
+
+## Exit Criteria
+
+- [ ] `.cocoplus/meter/current-session.json` has `"metering_active": false` and `session_id: null`
+- [ ] The finalized session record (with `ended_at` and `duration_minutes`) has been appended to `.cocoplus/meter/history.jsonl`
+- [ ] Output shows the session summary with duration, tokens, and tool call counts

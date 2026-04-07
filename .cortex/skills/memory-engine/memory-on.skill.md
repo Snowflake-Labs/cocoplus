@@ -11,7 +11,7 @@ tags:
 Your objective is to enable the Memory Engine.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Create mode flag: `touch .cocoplus/modes/memory.on`
 
@@ -23,3 +23,17 @@ Initialize memory files if they don't exist:
 Update AGENTS.md (keep ≤200 lines): replace Memory line with `- Memory: ON (capturing decisions)`
 
 Output: "✓ Memory Engine enabled. Decisions, patterns, and error lessons will be captured automatically and persisted across sessions. Existing memory: [decision count] decisions, [pattern count] patterns."
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Overwrite memory files if they already exist instead of checking first | Existing memory files contain historical records; overwriting them destroys cross-session context |
+| Skip updating AGENTS.md since the flag is set | AGENTS.md drives session-start behavior; a stale "Memory: off" entry means memory context won't be loaded |
+
+## Exit Criteria
+
+- [ ] `.cocoplus/modes/memory.on` flag exists
+- [ ] `.cocoplus/memory/decisions.md`, `patterns.md`, and `errors.md` all exist with correct headers
+- [ ] `.cocoplus/AGENTS.md` Memory line reads `- Memory: ON (capturing decisions)`
+- [ ] Output reports existing decision and pattern counts

@@ -11,7 +11,7 @@ tags:
 Your objective is to conclude an active CocoSpark brainstorm session.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 If `.cocoplus/modes/coco-spark.on` does not exist:
 - Output: "No active CocoSpark session found. Run `/spark` to start a brainstorm." Then stop.
@@ -34,3 +34,18 @@ Brainstorm concluded.
 [Insights captured | No changes made]
 Ready for `/spec` when you are.
 ```
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| End spark mode without removing flag | Leaves session state inconsistent and confuses later commands |
+| Auto-inject brainstorm notes into lifecycle artifacts | Conflates exploration with approved plan/spec decisions |
+| Skip explicit yes/no capture prompt | Insight persistence becomes accidental and non-deterministic |
+
+## Exit Criteria
+
+- [ ] `.cocoplus/modes/coco-spark.on` flag is removed when a session is active
+- [ ] If insights are captured and `spec.md` exists, a `## Brainstorm Insights` section is appended and commit `docs(spec): added brainstorm insights` is created
+- [ ] If insights are captured and `spec.md` is absent, notes are appended to the active `.cocoplus/spark-[timestamp].md` file without lifecycle commit
+- [ ] Output confirms brainstorm closure and next-step guidance toward `/spec`

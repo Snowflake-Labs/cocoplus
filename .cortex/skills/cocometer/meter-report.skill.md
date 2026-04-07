@@ -14,7 +14,7 @@ Your objective is to generate a CocoMeter usage report.
 ## Pre-flight Check
 
 Check that `.cocoplus/` directory exists. If not, output:
-"CocoPlus is not initialized. Run `/pod init` first."
+"CocoPlus not initialized in this directory. Run `/pod init` to begin."
 Then stop.
 
 ## Read Session Data
@@ -89,3 +89,17 @@ Actual billing may differ.
 
 Otherwise omit the cost section and note:
 "Cost estimation requires Snowflake Cortex pricing data. Check your Snowflake account for actual billing."
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Show only current session and skip history | Developers need cross-session trends to understand cost patterns; single-session view misses cumulative impact |
+| Fabricate cost estimates when pricing data is absent | Invented cost numbers are worse than no numbers — always omit the cost section if pricing data is unavailable |
+
+## Exit Criteria
+
+- [ ] Report includes CURRENT SESSION block with status, token usage, tool activity, and model breakdown
+- [ ] Report includes SESSION HISTORY block showing last 5 sessions in tabular form
+- [ ] TOTALS block with cumulative sessions, tokens, and tool calls is shown
+- [ ] If pricing data is available, an ESTIMATED COST section is included; if not, an explanatory note replaces it

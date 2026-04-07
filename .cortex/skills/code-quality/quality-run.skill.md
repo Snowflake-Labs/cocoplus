@@ -11,7 +11,7 @@ tags:
 Your objective is to run a code quality review.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Parse argument: `/quality run [file-path]`
 If no argument: find all `.sql` files in the current directory tree (excluding `.git/` and `.cocoplus/`).
@@ -59,3 +59,17 @@ Write `.cocoplus/quality-findings-[timestamp].md`:
 ```
 
 Output: "Quality review complete. [N] findings ([C] critical, [H] high, [M] medium, [L] low). Report: `.cocoplus/quality-findings-[timestamp].md`."
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Report "no findings" without scanning the file (assuming clean code) | Anti-pattern detection requires actually running regex checks — assumptions produce false negatives |
+| Skip writing the findings file if there are zero findings | An empty findings report is still a valid audit record; zero findings must be explicitly documented |
+| Scan `.cocoplus/` SQL files along with project SQL files | CocoPlus internal files should never be analyzed — always exclude `.git/` and `.cocoplus/` from the scan |
+
+## Exit Criteria
+
+- [ ] `.cocoplus/quality-findings-[timestamp].md` exists with Date, Files Analyzed, and Findings summary header
+- [ ] Each SQL file in scope was checked against all 6 anti-pattern rules (QA-001 through QA-006)
+- [ ] Output shows finding counts by severity (critical, high, medium, low)

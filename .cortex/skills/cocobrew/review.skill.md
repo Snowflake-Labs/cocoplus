@@ -11,7 +11,7 @@ tags:
 You are executing the Review phase (5/6) of CocoBrew.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized in this directory. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Read `.cocoplus/lifecycle/meta.json`. Verify `phases_completed` contains `"test"`.
 If not: output "The Test phase must be completed before review. Run `/test` first." Then stop.
@@ -95,3 +95,18 @@ git commit -m "docs(review): quality and compliance review approved"
 ```
 
 Output: "Review approved. Commit created. You may now proceed to `/ship`."
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Approve the review automatically if no critical findings exist | Developer must explicitly approve — auto-approval bypasses the mandatory human gate |
+| Skip spec compliance check if tests all passed | Tests passing does not mean spec criteria are covered; compliance check verifies mapping, not just pass rate |
+| Write review.md before aggregating all sources | Missing a source (CocoCupper, quality findings) produces an incomplete review that under-reports problems |
+
+## Exit Criteria
+
+- [ ] `.cocoplus/lifecycle/review.md` exists with a `## Spec Compliance` table and a `## Approval Status` field
+- [ ] `## Approval Status` contains `APPROVED` (not just `PENDING`)
+- [ ] `.cocoplus/lifecycle/meta.json` `phases_completed` array contains `"review"`
+- [ ] Git commit with message `docs(review): quality and compliance review approved` exists in log

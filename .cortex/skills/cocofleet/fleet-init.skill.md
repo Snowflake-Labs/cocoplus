@@ -11,7 +11,7 @@ tags:
 Your objective is to initialize a CocoFleet manifest.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Parse argument: `/fleet init [fleet-name]`
 If no fleet-name: output "Usage: /fleet init [fleet-name] — e.g., /fleet init data-pipeline-fleet" Then stop.
@@ -81,3 +81,18 @@ Document all required inputs, schemas, and context within the task file itself.
 Maximum 10 instances per fleet manifest.
 Run `/fleet run [fleet-name]` to execute the fleet.
 ```
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Create a manifest without verifying `coco` is in PATH | Fleet execution requires the `coco` CLI; a manifest without a working CLI is not executable |
+| Pre-populate instances with real tasks inline | Each instance's task_file must be self-contained in its own file; inlining tasks bypasses the isolation contract |
+| Skip creating the `.cocoplus/fleet/` directory | `/fleet run` expects this directory to exist; missing it causes the first run to fail |
+
+## Exit Criteria
+
+- [ ] `.cocoplus/fleet/[fleet-name]-manifest.json` exists with valid `id`, `defaults`, and `instances` fields
+- [ ] `.cocoplus/fleet/` directory exists
+- [ ] `coco` CLI is confirmed available in PATH before the manifest is written
+- [ ] Output confirms manifest path and explains how to add real instances

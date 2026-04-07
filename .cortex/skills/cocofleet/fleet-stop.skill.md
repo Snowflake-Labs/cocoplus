@@ -11,7 +11,7 @@ tags:
 Your objective is to stop a running CocoFleet.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus is not initialized. Run `/pod init` first." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Parse argument: `/fleet stop [fleet-id]`
 If no fleet-id: output "Usage: /fleet stop [fleet-id]" Then stop.
@@ -49,3 +49,17 @@ Write `.cocoplus/fleet/[fleet-id]-stop-record.md`:
 ```
 
 Output: "Fleet [fleet-id] stopped. [N] processes terminated. Stop record: `.cocoplus/fleet/[fleet-id]-stop-record.md`."
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Skip SIGKILL after SIGTERM timeout | A process that ignores SIGTERM will keep running and orphan log files; SIGKILL ensures termination |
+| Update state.json before sending signals | State must reflect reality — only mark "stopped" after confirming the process is dead |
+| Skip writing the stop record | The stop record is audit evidence; missing it means no trace of when/why the fleet was halted |
+
+## Exit Criteria
+
+- [ ] All instances previously in "running" state now have `status: "stopped"` in `.cocoplus/fleet/[fleet-id]-state.json`
+- [ ] `.cocoplus/fleet/[fleet-id]-stop-record.md` exists with a list of stopped instances
+- [ ] No PIDs from the fleet remain alive (verified with `kill -0`)
