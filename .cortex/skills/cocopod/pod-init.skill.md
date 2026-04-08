@@ -66,11 +66,9 @@ Copy template files from the plugin templates directory to `.cocoplus/`:
 
 ## Initialize Mode Flags
 
-Create the default safety mode flag:
-- `touch .cocoplus/modes/safety.normal`
-
-Create the default memory mode flag:
-- `touch .cocoplus/modes/memory.on`
+Create the following empty flag files using the Write tool (cross-platform — do not use `touch`):
+- `.cocoplus/modes/safety.normal` — empty file (default safety mode)
+- `.cocoplus/modes/memory.on` — empty file (memory enabled by default)
 
 Do NOT create other mode flags (inspector, context-mode, quality, cocometer, etc.) unless the developer enables them explicitly later.
 

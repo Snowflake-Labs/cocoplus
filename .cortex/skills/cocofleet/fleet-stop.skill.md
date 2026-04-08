@@ -22,16 +22,22 @@ Read `.cocoplus/fleet/[fleet-id]-state.json`. If not found: output "Fleet state 
 
 For each instance with status == "running":
 1. Read PID from state.json
-2. Send SIGTERM: `kill -TERM [pid] 2>/dev/null || true`
-3. Wait up to 10 seconds for graceful shutdown:
-   ```bash
-   for i in $(seq 1 10); do
-     kill -0 [pid] 2>/dev/null || break
-     sleep 1
-   done
+2. Terminate the process using cross-platform Node.js via the Bash tool:
    ```
-4. Send SIGKILL if still running: `kill -KILL [pid] 2>/dev/null || true`
-5. Update state.json: status = "stopped", completed_at = [timestamp]
+   node -e "try{process.kill([pid],'SIGTERM')}catch(e){}" 
+   ```
+3. Wait up to 10 seconds for graceful shutdown, checking liveness each second:
+   ```
+   node -e "
+     const pid=[pid];
+     let waited=0;
+     const iv=setInterval(()=>{
+       try{process.kill(pid,0);waited++;}
+       catch(e){clearInterval(iv);}
+       if(waited>=10){try{process.kill(pid,'SIGKILL')}catch(_){}clearInterval(iv);}
+     },1000);"
+   ```
+4. Update state.json: status = "stopped", completed_at = [timestamp]
 
 ## Write Stop Record
 
@@ -62,4 +68,4 @@ Output: "Fleet [fleet-id] stopped. [N] processes terminated. Stop record: `.coco
 
 - [ ] All instances previously in "running" state now have `status: "stopped"` in `.cocoplus/fleet/[fleet-id]-state.json`
 - [ ] `.cocoplus/fleet/[fleet-id]-stop-record.md` exists with a list of stopped instances
-- [ ] No PIDs from the fleet remain alive (verified with `kill -0`)
+- [ ] No PIDs from the fleet remain alive (verified with `node -e "process.kill([pid],0)"` returning an error)

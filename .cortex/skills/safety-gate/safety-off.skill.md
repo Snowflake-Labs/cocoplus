@@ -18,15 +18,12 @@ Warn the developer:
 
 If no: restore safety.normal and output "Safety Gate left at normal mode." Then stop.
 
-Remove any existing safety mode flags:
+Remove any existing safety mode flags (cross-platform using the Bash tool):
 ```
-rm -f .cocoplus/modes/safety.strict .cocoplus/modes/safety.normal
+node -e "['safety.strict','safety.normal'].forEach(f=>{try{require('fs').unlinkSync('.cocoplus/modes/'+f)}catch(_){}});console.log('Old flags cleared.');"
 ```
 
-Create off flag:
-```
-touch .cocoplus/modes/safety.off
-```
+Create off flag: create the file `.cocoplus/modes/safety.off` with empty content using the Write tool.
 
 Update AGENTS.md: replace Safety line with `- Safety: OFF (no protection — all SQL allowed)`
 

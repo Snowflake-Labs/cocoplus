@@ -13,7 +13,7 @@ Your objective is to enable the Memory Engine.
 Before proceeding, verify that `.cocoplus/` exists.
 If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
-Create mode flag: `touch .cocoplus/modes/memory.on`
+Create mode flag: create the file `.cocoplus/modes/memory.on` with empty content using the Write tool (cross-platform: do not use `touch`)
 
 Initialize memory files if they don't exist:
 - `.cocoplus/memory/decisions.md` — with header `# Decisions Log\n\n_Decisions captured by CocoPlus Memory Engine_\n`
