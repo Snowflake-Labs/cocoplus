@@ -85,12 +85,70 @@ Create `.cocoplus/lifecycle/meta.json`:
 }
 ```
 
+## Create Project Gitignore
+
+Create `.cocoplus/.gitignore` to exclude transient runtime files from version control:
+
+```
+# Transient session data
+meter/current-session.json
+hook-errors.log
+hook-log.jsonl
+
+# Regenerable environment snapshots
+snapshots/
+
+# Fleet runtime logs
+fleet/*/output.log
+
+# SecondEye staging temp files
+lifecycle/.secondeye-staging/
+```
+
+## Create Root AGENTS.md Shim
+
+Create `AGENTS.md` in the project root (not inside `.cocoplus/`). This thin shim tells Coco where to find the live session context:
+
+```markdown
+# [Project Name] — CocoPlus Active
+
+This project uses CocoPlus. Session state, active phase, and persona context
+are maintained in `.cocoplus/AGENTS.md`.
+
+<!-- cocoplus-agents-redirect: .cocoplus/AGENTS.md -->
+```
+
+Replace `[Project Name]` with the project name collected in the Copy Template Files step.
+
+## Initialize Persona and Subagent Registries
+
+Create `.cocoplus/personas.json` with the default shorthand map:
+
+```json
+{
+  "$de":  "data-engineer",
+  "$ae":  "analytics-engineer",
+  "$ds":  "data-scientist",
+  "$da":  "data-analyst",
+  "$bi":  "bi-analyst",
+  "$dpm": "data-product-manager",
+  "$dst": "data-steward",
+  "$cdo": "chief-data-officer"
+}
+```
+
+Create `.cocoplus/subagents.json` as an empty registry:
+
+```json
+{}
+```
+
 ## Create Initial Git Commit
 
-Stage all new `.cocoplus/` files and create commit:
+Stage all new files and create commit:
 ```
-git add .cocoplus/
-git commit -m "feat: initialize CocoPod project structure"
+git add .cocoplus/ AGENTS.md
+git commit -m "chore(cocopod): initialize CocoPlus project structure"
 ```
 
 ## Success Output
@@ -102,6 +160,9 @@ CocoPlus initialized successfully.
 
 .cocoplus/
 ├── AGENTS.md          ← hot context (auto-loaded each session)
+├── .gitignore         ← excludes transient runtime files
+├── personas.json      ← shorthand persona map ($de, $ae, etc.)
+├── subagents.json     ← active subagent registry
 ├── project.md         ← project charter
 ├── flow.json          ← pipeline definition (empty)
 ├── lifecycle/         ← phase artifacts (spec, plan, build, test, review, ship)
@@ -110,6 +171,8 @@ CocoPlus initialized successfully.
 ├── meter/             ← CocoMeter token tracking
 ├── snapshots/         ← Environment Inspector results
 └── modes/             ← feature flags (safety.normal active)
+
+AGENTS.md              ← project root shim → .cocoplus/AGENTS.md
 
 Next steps:
   /spec       — capture project requirements (start here)
@@ -132,4 +195,8 @@ Next steps:
 - [ ] `.cocoplus/modes/memory.on` flag file exists
 - [ ] `.cocoplus/AGENTS.md`, `.cocoplus/project.md`, `.cocoplus/flow.json`, and all four monitor JSON files exist
 - [ ] `.cocoplus/lifecycle/meta.json` exists with `"current_phase": "not_started"` and empty `phases_completed`
-- [ ] Git commit with message `feat: initialize CocoPod project structure` exists in log
+- [ ] `.cocoplus/.gitignore` exists excluding transient session files
+- [ ] Root `AGENTS.md` shim exists at project root with `cocoplus-agents-redirect` directive
+- [ ] `.cocoplus/personas.json` exists with 8 default shorthand entries (`$de` through `$cdo`)
+- [ ] `.cocoplus/subagents.json` exists as empty `{}`
+- [ ] Git commit with message `chore(cocopod): initialize CocoPlus project structure` exists in log
