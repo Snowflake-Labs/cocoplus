@@ -10,10 +10,40 @@
 
 const fs   = require('fs');
 const path = require('path');
+const { spawn } = require('child_process');
 const { isoUtc, appendJsonLine, atomicWrite, logError, readJsonString } = require('./_common.js');
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
+const SPAWN_QUEUE  = path.join(COCOPLUS_DIR, 'subagent-spawn-requests.jsonl');
+
+function queueAndAttemptBackgroundSpawn(request, ts) {
+  appendJsonLine(SPAWN_QUEUE, request);
+  appendJsonLine(HOOK_LOG, {
+    hook: 'session-start',
+    action: 'background_spawn_queued',
+    agent: request.agent,
+    ts,
+  });
+
+  try {
+    const child = spawn('coco', ['agent', 'run', request.agent, '--background'], {
+      detached: true,
+      stdio: 'ignore',
+      windowsHide: true,
+    });
+    child.on('error', (err) => logError('session-start', `background spawn failed: ${err.message}`));
+    child.unref();
+    appendJsonLine(HOOK_LOG, {
+      hook: 'session-start',
+      action: 'background_spawn_attempted',
+      agent: request.agent,
+      ts,
+    });
+  } catch (err) {
+    logError('session-start', `background spawn setup failed: ${err.message}`);
+  }
+}
 
 function main() {
   if (!fs.existsSync(COCOPLUS_DIR)) return;
@@ -33,6 +63,13 @@ function main() {
   // 2. Flag inspector trigger (non-blocking — skill handles actual inspection)
   if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'inspector.on'))) {
     appendJsonLine(HOOK_LOG, { hook: 'session-start', action: 'inspector_triggered', session: sessionId, ts });
+    queueAndAttemptBackgroundSpawn({
+      source: 'hook.session-start',
+      requested_at: ts,
+      session_id: sessionId,
+      agent: 'environment-inspector',
+      reason: 'session-start-inspector-on',
+    }, ts);
   }
 
   // 3. Log warm memory count if memory is enabled

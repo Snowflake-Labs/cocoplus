@@ -1,5 +1,5 @@
 ---
-name: "data-product-manager"
+name: "Data Product Manager"
 description: "Defines data product requirements, manages roadmap, writes PRDs for data features, and ensures data products meet stakeholder needs. Invoke with $dpm."
 model: "sonnet"
 mode: "plan"

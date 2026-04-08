@@ -1,5 +1,5 @@
 ---
-name: "bi-analyst"
+name: "BI Analyst"
 description: "Designs dashboards, builds Snowsight reports, creates visualizations, and translates business questions into BI artifacts. Invoke with $bi."
 model: "haiku"
 mode: "auto"

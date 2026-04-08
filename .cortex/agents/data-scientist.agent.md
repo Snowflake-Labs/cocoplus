@@ -1,5 +1,5 @@
 ---
-name: "data-scientist"
+name: "Data Scientist"
 description: "Develops ML models, engineers features, works with Snowpark notebooks and Cortex ML functions, and conducts statistical analysis. Invoke with $ds."
 model: "sonnet"
 mode: "auto"

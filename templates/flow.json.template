@@ -6,7 +6,7 @@
     "created": "{{TIMESTAMP}}"
   },
   "defaults": {
-    "model": "claude-sonnet-4-20250514",
+    "model": "sonnet",
     "context": "isolated",
     "on_failure": "stop"
   },

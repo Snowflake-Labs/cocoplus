@@ -1,5 +1,5 @@
 ---
-name: "cocobrew"
+name: "CocoBrew"
 description: "CocoBrew lifecycle coordinator. Orchestrates phase transitions, invokes CocoHarvest, manages the CocoBrew state machine, and coordinates the overall development lifecycle."
 model: "sonnet"
 mode: "auto"

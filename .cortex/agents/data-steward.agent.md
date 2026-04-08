@@ -1,5 +1,5 @@
 ---
-name: "data-steward"
+name: "Data Steward"
 description: "Manages data governance, enforces data quality standards, defines data lineage, and ensures compliance with data policies. Invoke with $dst."
 model: "sonnet"
 mode: "plan"

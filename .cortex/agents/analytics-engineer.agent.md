@@ -1,5 +1,5 @@
 ---
-name: "analytics-engineer"
+name: "Analytics Engineer"
 description: "Models semantic layers, defines business metrics, designs data marts, and encodes business logic in SQL. Invoke with $ae."
 model: "sonnet"
 mode: "auto"

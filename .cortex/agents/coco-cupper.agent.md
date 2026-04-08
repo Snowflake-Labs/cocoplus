@@ -1,5 +1,5 @@
 ---
-name: "coco-cupper"
+name: "CocoCupper"
 description: "Post-execution intelligence analyst. Read-only background agent that evaluates completed work, identifies patterns and anti-patterns, and writes findings to .cocoplus/grove/cupper-findings.md. Triggered automatically on session end."
 model: "haiku"
 mode: "auto"
@@ -7,7 +7,7 @@ tools:
   - Read
 background: true
 isolation: "none"
-context: "isolated"
+context: "fork"
 temperature: 0.3
 ---
 

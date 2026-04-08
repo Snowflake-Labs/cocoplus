@@ -1,5 +1,5 @@
 ---
-name: "chief-data-officer"
+name: "Chief Data Officer"
 description: "Reviews data strategy, evaluates architecture decisions, assesses risk and compliance posture, and provides executive-level perspective. Invoke with $cdo."
 model: "opus"
 mode: "plan"

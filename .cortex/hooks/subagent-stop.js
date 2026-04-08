@@ -13,10 +13,40 @@
 
 const fs   = require('fs');
 const path = require('path');
+const { spawn } = require('child_process');
 const { isoUtc, appendJsonLine, logError, readStdinJson } = require('./_common.js');
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
+const SPAWN_QUEUE  = path.join(COCOPLUS_DIR, 'subagent-spawn-requests.jsonl');
+
+function queueAndAttemptBackgroundSpawn(request, ts) {
+  appendJsonLine(SPAWN_QUEUE, request);
+  appendJsonLine(HOOK_LOG, {
+    hook: 'subagent-stop',
+    action: 'background_spawn_queued',
+    agent: request.agent,
+    ts,
+  });
+
+  try {
+    const child = spawn('coco', ['agent', 'run', request.agent, '--background'], {
+      detached: true,
+      stdio: 'ignore',
+      windowsHide: true,
+    });
+    child.on('error', (err) => logError('subagent-stop', `background spawn failed: ${err.message}`));
+    child.unref();
+    appendJsonLine(HOOK_LOG, {
+      hook: 'subagent-stop',
+      action: 'background_spawn_attempted',
+      agent: request.agent,
+      ts,
+    });
+  } catch (err) {
+    logError('subagent-stop', `background spawn setup failed: ${err.message}`);
+  }
+}
 
 function main() {
   if (!fs.existsSync(COCOPLUS_DIR)) return;
@@ -112,6 +142,14 @@ function main() {
       timestamp:  ts,
       source:     'hook.SubagentStop',
     });
+
+    queueAndAttemptBackgroundSpawn({
+      source: 'hook.subagent-stop',
+      requested_at: ts,
+      completed_subagent: subagentId,
+      agent: 'coco-cupper',
+      reason: 'persona-complete',
+    }, ts);
     return;
   }
 

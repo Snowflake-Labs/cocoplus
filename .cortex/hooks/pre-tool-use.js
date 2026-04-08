@@ -54,10 +54,9 @@ function main() {
   const event    = readStdinJson();
   const toolName = event.tool || process.env.COCO_TOOL_NAME || 'unknown';
 
-  appendJsonLine(HOOK_LOG, { hook: 'pre-tool-use', tool: toolName, ts });
-
   // Only intercept SnowflakeSqlExecute
   if (toolName !== 'SnowflakeSqlExecute') { allow(); return; }
+  appendJsonLine(HOOK_LOG, { hook: 'pre-tool-use', tool: toolName, ts });
 
   // Extract SQL from parameters.sql (spec-defined path)
   const params = event.parameters || {};
@@ -72,21 +71,20 @@ function main() {
   // Safety off: pass through immediately
   if (safetyMode === 'off') { allow(); return; }
 
-  // Also check production schema patterns from safety-config.json if present
-  let productionPatterns = [];
-  try {
-    const cfg = JSON.parse(fs.readFileSync(path.join(COCOPLUS_DIR, 'safety-config.json'), 'utf8'));
-    productionPatterns = cfg.production_schema_patterns || [];
-  } catch (_) { /* file may not exist yet */ }
-
   // Detect destructive pattern
   let pattern = null;
   for (const { re, label } of DESTRUCTIVE_PATTERNS) {
     if (re.test(sql)) { pattern = label; break; }
   }
 
-  // Check production schema patterns in ALTER TABLE
-  if (!pattern && productionPatterns.length && /ALTER\s+TABLE/i.test(sql)) {
+  // Check production schema patterns in ALTER TABLE using safety-config.json
+  if (!pattern && /ALTER\s+TABLE/i.test(sql)) {
+    let productionPatterns = [];
+    try {
+      const cfg = JSON.parse(fs.readFileSync(path.join(COCOPLUS_DIR, 'safety-config.json'), 'utf8'));
+      productionPatterns = cfg.production_schema_patterns || cfg.production_patterns || [];
+    } catch (_) { /* file may not exist yet */ }
+
     for (const prod of productionPatterns) {
       const escaped = prod.replace(/\*/g, '.*').replace(/\?/g, '.');
       if (new RegExp(escaped, 'i').test(sql)) {

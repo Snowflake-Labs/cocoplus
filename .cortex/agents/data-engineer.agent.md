@@ -1,5 +1,5 @@
 ---
-name: "data-engineer"
+name: "Data Engineer"
 description: "Designs schemas, builds SQL pipelines, writes dbt models and stored procedures, and optimizes data transformations. Invoke with $de."
 model: "sonnet"
 mode: "auto"

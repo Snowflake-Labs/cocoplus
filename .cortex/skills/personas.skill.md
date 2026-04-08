@@ -20,14 +20,14 @@ Output the following table:
 | Data Engineer | $de | sonnet | auto | worktree | SnowflakeSqlExecute, DataDiff, Bash, Read, Write, Edit |
 | Analytics Engineer | $ae | sonnet | auto | none | SnowflakeSqlExecute, ReflectSemanticModel, Read, Write, Edit |
 | Data Scientist | $ds | sonnet | auto | none | NotebookExecute, SnowflakeSqlExecute, Bash, Read, Write |
-| Data Analyst | $da | sonnet | auto | none | SnowflakeSqlExecute, Read, Write |
-| BI Analyst | $bi | sonnet | auto | none | SnowflakeSqlExecute, Read, Write |
-| Data Product Manager | $dpm | sonnet | auto | none | Read, Write |
-| Data Steward | $dst | sonnet | auto | none | SnowflakeSqlExecute, Read, Write |
-| Chief Data Officer | $cdo | opus | plan | none | Read |
+| Data Analyst | $da | haiku | auto | none | SnowflakeSqlExecute, SnowflakeMultiCortexAnalyst, Read |
+| BI Analyst | $bi | haiku | auto | none | ReflectSemanticModel, SnowflakeMultiCortexAnalyst, Read |
+| Data Product Manager | $dpm | sonnet | plan | none | Read, Write, SnowflakeProductDocs |
+| Data Steward | $dst | sonnet | plan | none | SnowflakeSqlExecute, DataDiff, Read, Write |
+| Chief Data Officer | $cdo | opus | plan | none | Read, SnowflakeProductDocs |
 | CocoBrew Coordinator | (automatic) | sonnet | auto | none | Read, Write, Edit, Bash |
 | CocoCupper | (automatic) | haiku | auto | none | Read |
-| SecondEye Critic | (via /secondeye) | haiku/sonnet/opus | plan | isolated | Read |
+| SecondEye Critic | (via /secondeye) | sonnet (default; /secondeye may spawn haiku/opus critics) | plan | none | Read |
 
 ## Invocation Examples
 

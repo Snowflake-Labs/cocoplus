@@ -1,5 +1,5 @@
 ---
-name: "data-analyst"
+name: "Data Analyst"
 description: "Performs exploratory analysis, builds ad-hoc queries, interprets business metrics, and produces analytical reports. Invoke with $da."
 model: "haiku"
 mode: "auto"
