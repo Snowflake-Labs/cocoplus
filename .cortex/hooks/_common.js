@@ -1,6 +1,6 @@
 /**
- * CocoPlus hook shared utilities — cross-platform (Windows/Mac/Linux)
- * Required by all hook scripts. Sourced via require('./_common.js')
+ * CocoPlus hook shared utilities — cross-platform (Node.js)
+ * Required by all hook scripts via require('./_common.js')
  */
 
 'use strict';
@@ -58,42 +58,50 @@ function logError(hookName, message) {
   });
 }
 
-/**
- * Read a string field from a flat JSON file without a full JSON parse.
- * Safe to call even if the file doesn't exist.
- */
+/** Read a string field from a JSON file. Safe to call even if missing. */
 function readJsonString(filePath, key) {
   try {
-    const content = fs.readFileSync(filePath, 'utf8');
-    const data = JSON.parse(content);
+    const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     return String(data[key] || '');
   } catch (_) {
     return '';
   }
 }
 
-/** Read a numeric field from a flat JSON file */
+/** Read a numeric field from a JSON file */
 function readJsonNumber(filePath, key) {
   try {
-    const content = fs.readFileSync(filePath, 'utf8');
-    const data = JSON.parse(content);
+    const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     return Number(data[key]) || 0;
   } catch (_) {
     return 0;
   }
 }
 
-/** Read all of stdin as a string (synchronous) */
+/**
+ * Read all of stdin synchronously as a string.
+ * Returns empty string if stdin has no data (e.g. no pipe).
+ */
 function readStdin() {
   try {
-    return fs.readFileSync('/dev/stdin', 'utf8');
-  } catch (_) {
-    try {
-      // Windows fallback
-      return fs.readFileSync('\\\\.\\CON', 'utf8');
-    } catch (_2) {
-      return '';
+    // Only read if stdin is a pipe (not a TTY)
+    if (!process.stdin.isTTY) {
+      return fs.readFileSync(process.stdin.fd, 'utf8');
     }
+  } catch (_) { /* ignore */ }
+  return '';
+}
+
+/**
+ * Parse stdin as JSON. Returns empty object on parse failure or no input.
+ */
+function readStdinJson() {
+  const raw = readStdin().trim();
+  if (!raw) return {};
+  try {
+    return JSON.parse(raw);
+  } catch (_) {
+    return {};
   }
 }
 
@@ -106,4 +114,5 @@ module.exports = {
   readJsonString,
   readJsonNumber,
   readStdin,
+  readStdinJson,
 };

@@ -1,32 +1,39 @@
 #!/usr/bin/env node
 /**
  * CocoPlus PreToolUse hook — cross-platform (Node.js)
- * Fires before every tool call.
- * Responsibilities: Safety Gate — intercept SnowflakeSqlExecute and block/warn
- * on destructive SQL patterns based on active safety mode.
  *
- * Output protocol: print a single JSON object to stdout.
- *   {"action":"allow"}                      → permit the tool call
- *   {"action":"block","reason":"..."}       → block with message shown to user
- *   {"action":"allow","warning":"..."}      → allow but surface a warning
+ * Stdin JSON format from Coco:
+ *   { "tool": "SnowflakeSqlExecute", "parameters": { "sql": "...", ... } }
+ *
+ * Stdout JSON response:
+ *   {"action":"allow"}
+ *   {"action":"block","reason":"..."}
+ *   {"action":"allow","warning":"..."}
+ *
+ * Features: Safety Gate (hard layer), CocoMeter timing start.
+ * Must complete in <10ms — no expensive I/O beyond mode file existence check.
  */
 
 'use strict';
 
 const fs   = require('fs');
 const path = require('path');
-const { isoUtc, appendJsonLine, logError } = require('./_common.js');
+const { isoUtc, appendJsonLine, logError, readStdinJson } = require('./_common.js');
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const SAFETY_LOG   = path.join(COCOPLUS_DIR, 'safety-decisions.log');
 
-/** Destructive SQL patterns to detect */
+/** Destructive SQL patterns — case-insensitive, simple string match per spec */
 const DESTRUCTIVE_PATTERNS = [
-  { re: /DROP\s+(TABLE|DATABASE|SCHEMA|INDEX|PROCEDURE|FUNCTION)/i, label: 'DROP statement' },
-  { re: /TRUNCATE\s+TABLE/i,                                         label: 'TRUNCATE TABLE' },
-  { re: /DELETE\s+FROM\s+\S+\s*;?\s*$/i,                            label: 'DELETE without WHERE' },
-  { re: /ALTER\s+TABLE\s+\S+.*DROP\s+COLUMN/i,                      label: 'ALTER TABLE DROP COLUMN' },
+  { re: /DROP\s+TABLE/i,              label: 'DROP TABLE' },
+  { re: /DROP\s+SCHEMA/i,             label: 'DROP SCHEMA' },
+  { re: /DROP\s+DATABASE/i,           label: 'DROP DATABASE' },
+  { re: /DROP\s+PROCEDURE/i,          label: 'DROP PROCEDURE' },
+  { re: /DROP\s+FUNCTION/i,           label: 'DROP FUNCTION' },
+  { re: /TRUNCATE\s+TABLE/i,          label: 'TRUNCATE TABLE' },
+  { re: /DELETE\s+FROM\s+\S+\s*;?\s*$/i, label: 'DELETE without WHERE' },
+  { re: /ALTER\s+TABLE.*DROP\s+COLUMN/i, label: 'ALTER TABLE DROP COLUMN' },
 ];
 
 function allow(warning) {
@@ -38,27 +45,39 @@ function block(reason) {
 }
 
 function main() {
-  const toolName = process.env.COCO_TOOL_NAME || 'unknown';
-  const ts       = isoUtc();
-
   // No-op if CocoPlus not initialized
   if (!fs.existsSync(COCOPLUS_DIR)) { allow(); return; }
 
+  const ts = isoUtc();
+
+  // Read structured event from stdin
+  const event    = readStdinJson();
+  const toolName = event.tool || process.env.COCO_TOOL_NAME || 'unknown';
+
   appendJsonLine(HOOK_LOG, { hook: 'pre-tool-use', tool: toolName, ts });
 
-  // Only intercept SQL executor
+  // Only intercept SnowflakeSqlExecute
   if (toolName !== 'SnowflakeSqlExecute') { allow(); return; }
 
-  // Extract SQL from COCO_TOOL_INPUT (JSON env var set by Coco)
-  let input = process.env.COCO_TOOL_INPUT || '';
-  if (!input) {
-    try { input = fs.readFileSync('/dev/fd/0', 'utf8'); } catch (_) { }
-  }
-  let sql = input;
+  // Extract SQL from parameters.sql (spec-defined path)
+  const params = event.parameters || {};
+  const sql    = params.sql || params.query || params.statement || '';
+
+  // Determine safety mode from flag files (fast existence check only)
+  let safetyMode = 'normal'; // default per spec
+  if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'safety.off')))    safetyMode = 'off';
+  else if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'safety.strict'))) safetyMode = 'strict';
+  else if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'safety.normal'))) safetyMode = 'normal';
+
+  // Safety off: pass through immediately
+  if (safetyMode === 'off') { allow(); return; }
+
+  // Also check production schema patterns from safety-config.json if present
+  let productionPatterns = [];
   try {
-    const parsed = JSON.parse(input);
-    sql = parsed.sql || parsed.query || parsed.statement || input;
-  } catch (_) { /* use raw input */ }
+    const cfg = JSON.parse(fs.readFileSync(path.join(COCOPLUS_DIR, 'safety-config.json'), 'utf8'));
+    productionPatterns = cfg.production_schema_patterns || [];
+  } catch (_) { /* file may not exist yet */ }
 
   // Detect destructive pattern
   let pattern = null;
@@ -66,26 +85,38 @@ function main() {
     if (re.test(sql)) { pattern = label; break; }
   }
 
+  // Check production schema patterns in ALTER TABLE
+  if (!pattern && productionPatterns.length && /ALTER\s+TABLE/i.test(sql)) {
+    for (const prod of productionPatterns) {
+      const escaped = prod.replace(/\*/g, '.*').replace(/\?/g, '.');
+      if (new RegExp(escaped, 'i').test(sql)) {
+        pattern = `ALTER TABLE on production schema (${prod})`;
+        break;
+      }
+    }
+  }
+
   if (!pattern) { allow(); return; }
 
-  // Determine safety mode from flag files
-  let safetyMode = 'normal';
-  if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'safety.strict'))) safetyMode = 'strict';
-  else if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'safety.off'))) safetyMode = 'off';
-
+  // Log the safety decision
   if (safetyMode !== 'off') {
     appendJsonLine(SAFETY_LOG, { ts, tool: toolName, pattern, mode: safetyMode });
   }
 
+  // CocoMeter: record tool call start time for duration tracking in PostToolUse
+  if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'cocometer.on'))) {
+    appendJsonLine(path.join(COCOPLUS_DIR, 'meter', 'tool-timing.jsonl'), {
+      tool: toolName, start: ts,
+    });
+  }
+
   switch (safetyMode) {
     case 'strict':
-      block(`Safety Gate (strict): ${pattern} detected. Operation blocked. Switch to /safety normal to allow with confirmation, or /safety off to disable (not recommended).`);
+      block(`SnowflakeSqlExecute: ${pattern} detected in safety.strict mode. This operation is blocked. Switch to /safety normal to allow with confirmation.`);
       break;
     case 'normal':
-      allow(`Safety Gate (normal): ${pattern} detected. Operation allowed but flagged. Confirm this is intentional.`);
-      break;
     default:
-      allow();
+      allow(`SnowflakeSqlExecute: ${pattern} detected in safety.normal mode. This is allowed but flagged.`);
   }
 }
 
