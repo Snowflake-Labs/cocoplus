@@ -19,17 +19,26 @@ Record which flags currently exist before removing them (for reporting).
 
 ## Remove All Feature Flags
 
-Run:
+Delete each of the following flag files if they exist (use the Bash tool with a cross-platform command, or the Write tool set to empty — do not assume `rm` is available on Windows):
+
+Cross-platform deletion using Node.js via the Bash tool:
 ```
-rm -f .cocoplus/modes/memory.on
-rm -f .cocoplus/modes/inspector.on
-rm -f .cocoplus/modes/quality.on
-rm -f .cocoplus/modes/context-mode.on
-rm -f .cocoplus/modes/cocometer.on
-rm -f .cocoplus/modes/full-assist.on
-rm -f .cocoplus/modes/safety.strict
-rm -f .cocoplus/modes/safety.normal
-rm -f .cocoplus/modes/safety.off
+node -e "
+  const fs=require('fs');
+  const flags=[
+    '.cocoplus/modes/memory.on',
+    '.cocoplus/modes/inspector.on',
+    '.cocoplus/modes/quality.on',
+    '.cocoplus/modes/context-mode.on',
+    '.cocoplus/modes/cocometer.on',
+    '.cocoplus/modes/full-assist.on',
+    '.cocoplus/modes/safety.strict',
+    '.cocoplus/modes/safety.normal',
+    '.cocoplus/modes/safety.off',
+  ];
+  flags.forEach(f=>{try{fs.unlinkSync(f)}catch(_){}});
+  console.log('All feature flags removed.');
+"
 ```
 
 **DO NOT delete any data files.** Only flag files are removed. These data files are NEVER deleted:

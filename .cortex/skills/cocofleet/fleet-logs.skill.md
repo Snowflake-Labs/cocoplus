@@ -20,7 +20,8 @@ Log file: `.cocoplus/fleet/[instance-id]/output.log`
 If not found: output "No log file found for [instance-id]. The instance may not have started yet." Then stop.
 
 Read state file to determine if instance is still running.
-Check if PID in state.json is alive: `kill -0 [pid] 2>/dev/null && echo "alive" || echo "dead"`
+Check if PID in state.json is alive using a cross-platform Node.js one-liner:
+`node -e "try{process.kill([pid],0);console.log('alive')}catch(e){console.log('dead')}"`
 
 If alive (instance still running):
 - Output last 50 lines of output.log

@@ -13,7 +13,7 @@ Your objective is to enable automatic environment scanning at session start.
 Before proceeding, verify that `.cocoplus/` exists.
 If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
-Create mode flag: `touch .cocoplus/modes/inspector.on`
+Create mode flag: create the file `.cocoplus/modes/inspector.on` with empty content using the Write tool (cross-platform: do not use `touch`)
 
 Update AGENTS.md (keep ≤200 lines): replace Inspector line with `- Inspector: ON (auto-scan at session start)`
 

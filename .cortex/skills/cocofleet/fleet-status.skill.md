@@ -18,9 +18,9 @@ If no fleet-id: list all state files in `.cocoplus/fleet/` matching `*-state.jso
 
 Read `.cocoplus/fleet/[fleet-id]-state.json`.
 
-For each running instance (status == "running"), check if PID is still alive:
-```bash
-kill -0 [pid] 2>/dev/null && echo "alive" || echo "dead"
+For each running instance (status == "running"), check if PID is still alive using a cross-platform Node.js one-liner via the Bash tool:
+```
+node -e "try{process.kill([pid],0);console.log('alive')}catch(e){console.log('dead')}"
 ```
 
 Output:
@@ -49,5 +49,5 @@ For failed instances, last 3 lines of output.log:
 ## Exit Criteria
 
 - [ ] A status table with columns Instance, Name, Status, PID, Runtime, Checkpoints is output for each instance
-- [ ] For each "running" instance, PID liveness was checked with `kill -0` before reporting status
+- [ ] For each "running" instance, PID liveness was checked with `node -e "process.kill([pid],0)"` before reporting status
 - [ ] Failed instances show last 3 lines of their `output.log`

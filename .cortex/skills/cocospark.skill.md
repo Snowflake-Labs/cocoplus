@@ -17,7 +17,7 @@ If not: output "CocoPlus not initialized in this directory. Run `/pod init` to b
 
 ## Activation
 
-Create mode flag: `touch .cocoplus/modes/coco-spark.on`
+Create mode flag: create the file `.cocoplus/modes/coco-spark.on` with empty content using the Write tool (cross-platform — do not use `touch`).
 
 Generate timestamp for the spark session file.
 Write `.cocoplus/spark-[timestamp].md` (exploration output will be appended here):
@@ -50,7 +50,7 @@ Append all output to the spark session file.
 ## Ending a Session
 
 When the developer runs `/spark-off`:
-- Remove mode flag: `rm -f .cocoplus/modes/coco-spark.on`
+- Remove mode flag: delete `.cocoplus/modes/coco-spark.on` using `node -e "try{require('fs').unlinkSync('.cocoplus/modes/coco-spark.on')}catch(_){}"` via the Bash tool.
 - Output: "CocoSpark session ended. Exploration saved to `.cocoplus/spark-[timestamp].md`. Nothing in this session modified project state."
 
 ## Anti-Rationalization

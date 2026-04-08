@@ -16,11 +16,14 @@ If not: output "CocoPlus not initialized in this directory. Run `/pod init` to b
 Parse argument: `/fleet init [fleet-name]`
 If no fleet-name: output "Usage: /fleet init [fleet-name] — e.g., /fleet init data-pipeline-fleet" Then stop.
 
-Check if `coco` is in PATH:
-```
-which coco
-```
-If not found: output "ERROR: 'coco' CLI not found in PATH. CocoFleet requires the Coco CLI to be installed and accessible. Install it and ensure it is in your PATH before using CocoFleet." Then stop.
+Check if `coco` is available (cross-platform):
+- On Windows: run `where coco` via the Bash tool
+- On Mac/Linux: run `which coco` via the Bash tool
+- Alternatively: run `coco --version` and check the exit code
+
+If `coco` is not found, output:
+"ERROR: 'coco' CLI not found in PATH. CocoFleet requires the Coco CLI to be installed and accessible. Install it and ensure it is in your PATH before using CocoFleet."
+Then stop.
 
 Create directory: `.cocoplus/fleet/`
 

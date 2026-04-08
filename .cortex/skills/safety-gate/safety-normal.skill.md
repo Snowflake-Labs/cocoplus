@@ -13,15 +13,12 @@ Your objective is to set the Safety Gate to normal mode.
 Before proceeding, verify that `.cocoplus/` exists.
 If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
-Remove any existing safety mode flags:
+Remove any existing safety mode flags (cross-platform using the Bash tool):
 ```
-rm -f .cocoplus/modes/safety.strict .cocoplus/modes/safety.off
+node -e "['safety.strict','safety.off'].forEach(f=>{try{require('fs').unlinkSync('.cocoplus/modes/'+f)}catch(_){}});console.log('Old flags cleared.');"
 ```
 
-Create normal mode flag:
-```
-touch .cocoplus/modes/safety.normal
-```
+Create normal mode flag: create the file `.cocoplus/modes/safety.normal` with empty content using the Write tool.
 
 Update AGENTS.md (keep ≤200 lines): replace Safety line with `- Safety: normal (WARN + confirm for destructive SQL)`
 

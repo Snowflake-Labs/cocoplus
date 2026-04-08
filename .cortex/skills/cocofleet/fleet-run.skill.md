@@ -22,7 +22,7 @@ Read the manifest file at `[manifest-path]`. If not found: output "Manifest not 
 
 Check: instance count ≤ 10. If exceeded: output "WARNING: Fleet has [N] instances, exceeding the 10-instance maximum. Edit manifest to reduce instance count." Then stop.
 
-Check `which coco` is available. If not: output "ERROR: 'coco' CLI not in PATH." Then stop.
+Check if `coco` is available (cross-platform: run `coco --version` and verify exit code 0). If not found: output "ERROR: 'coco' CLI not in PATH. Install Coco and ensure it is accessible before running a fleet." Then stop.
 
 ## Create Fleet State File
 
@@ -48,11 +48,10 @@ Algorithm:
 2. For each ready instance:
    a. Create directory: `.cocoplus/fleet/[instance-id]/`
    b. Verify task_file exists. If not: mark instance as failed, log error.
-   c. Spawn Coco process via Bash:
-      ```bash
-      coco --task-file .cocoplus/fleet/[instance-id]/task.md > .cocoplus/fleet/[instance-id]/output.log 2>&1 &
-      echo $! > .cocoplus/fleet/[instance-id]/pid.txt
-      ```
+   c. Spawn Coco process using the Bash tool (cross-platform):
+      - On Windows (PowerShell): `Start-Process coco -ArgumentList "--task-file .cocoplus/fleet/[instance-id]/task.md" -RedirectStandardOutput ".cocoplus/fleet/[instance-id]/output.log" -PassThru | Select-Object -ExpandProperty Id | Out-File ".cocoplus/fleet/[instance-id]/pid.txt"`
+      - On Mac/Linux (bash): `coco --task-file .cocoplus/fleet/[instance-id]/task.md > .cocoplus/fleet/[instance-id]/output.log 2>&1 & echo $! > .cocoplus/fleet/[instance-id]/pid.txt`
+      - Detect platform with `node -e "console.log(process.platform)"` — use `win32` for Windows check.
    d. Record PID in state.json, set status = "running", started_at = [timestamp]
 
 3. Record each launched instance in state.json and leave blocked instances in `pending`.

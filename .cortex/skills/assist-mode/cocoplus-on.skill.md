@@ -15,19 +15,17 @@ If not: output "CocoPlus not initialized in this directory. Run `/pod init` to b
 
 ## Create All Mode Flags
 
-Run these commands:
-```
-touch .cocoplus/modes/memory.on
-touch .cocoplus/modes/inspector.on
-touch .cocoplus/modes/quality.on
-touch .cocoplus/modes/context-mode.on
-touch .cocoplus/modes/cocometer.on
-touch .cocoplus/modes/full-assist.on
-```
+Create the following empty flag files using the Write tool (cross-platform — do not use `touch`):
+- `.cocoplus/modes/memory.on` — empty file
+- `.cocoplus/modes/inspector.on` — empty file
+- `.cocoplus/modes/quality.on` — empty file
+- `.cocoplus/modes/context-mode.on` — empty file
+- `.cocoplus/modes/cocometer.on` — empty file
+- `.cocoplus/modes/full-assist.on` — empty file
 
-For safety mode: only create safety.normal if no safety flag already exists (preserve stricter settings):
+For safety mode: only create `safety.normal` if no safety flag already exists (preserve stricter settings):
 - Check if `.cocoplus/modes/safety.strict`, `.cocoplus/modes/safety.normal`, or `.cocoplus/modes/safety.off` exists
-- If none exist: `touch .cocoplus/modes/safety.normal`
+- If none exist: create `.cocoplus/modes/safety.normal` as an empty file using the Write tool
 
 Initialize memory files if they don't exist:
 - `.cocoplus/memory/decisions.md` — create with header `# Decisions Log\n\n_Decisions captured by CocoPlus Memory Engine_\n` if missing
