@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design Principles — CocoPlus</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="brand">CocoPlus</a>
+  <a href="index.html">Home</a>
+  <a href="getting-started.html">Getting Started</a>
+  <a href="data-context.html">Data Context</a>
+  <a href="concepts.html">Concepts</a>
+  <a href="architecture.html">Architecture</a>
+  <a href="features.html">Features</a>
+  <a href="workflows.html">Workflows</a>
+  <a href="command-reference.html">Commands</a>
+  <a href="principles.html" class="active">Principles</a>
+  <a href="manifesto.html">Manifesto</a>
+</nav>
+
+<div class="page-header">
+  <div class="label">The Philosophy</div>
+  <h1>Design Principles</h1>
+  <p class="subtitle">Twelve ideas that govern every decision in CocoPlus — with the reasoning behind each. Not rules. A compass.</p>
+</div>
+
+<div class="content">
+
+  <p>These are the twelve ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
+  <p>A principle without a reason is just a constraint. With a reason, it becomes a compass.</p>
+
+  <hr>
+
+  <h2>1. Native First, Always</h2>
+  <p>CocoPlus uses only what Coco already provides: skills, subagents, hooks, slash commands, and AGENTS.md. Nothing external. No third-party services bolted on, no external databases, no runtime dependencies beyond the Snowflake connection Coco already manages.</p>
+  <p>The reason for this is not purity — it is reliability. Every external dependency is a failure vector that lies outside your control. A cloud service rate-limits under load. A database pool exhausts at midnight. An API changes its response format without notice. When any of these happen inside CocoPlus, the developer has to debug a distributed system problem to understand why their AI plugin failed.</p>
+  <p>Native constructs fail in ways you can read and understand. A hook script that fails leaves an error message in a format you recognize. A skill file that has a logic error is a file you can open and read. The failure modes are local, legible, and fixable without calling anyone.</p>
+  <p>If a feature requires breaking this principle, the feature does not belong in CocoPlus.</p>
+
+  <hr>
+
+  <h2>2. Structure Enables Flow</h2>
+  <p>The CocoBrew phases feel like overhead — until the moment you realize you haven't written a spec for your last three AI sessions and the outputs are inconsistent in ways you can't trace.</p>
+  <p>Structure is not the opposite of speed. Unstructured development feels faster at first because you're skipping steps. Then you spend twice as long on the steps you skipped — debugging misaligned expectations, re-running tests you didn't design, shipping code that doesn't match what the stakeholder asked for.</p>
+  <p>The phases in CocoBrew are cognitive handrails. Each phase enforces a mental discipline that the next phase depends on. You can't write a good test if you don't have a spec defining success. You can't do a meaningful review if you don't have tested code. You can't ship responsibly if your review is open.</p>
+  <p>This sequencing is not bureaucratic. It is the shape that good development naturally takes when you're paying attention.</p>
+
+  <hr>
+
+  <h2>3. Inspect Before Act</h2>
+  <p>Acting on stale context is one of the most reliable ways to produce wrong outputs.</p>
+  <p>Before any agent executes SQL, it should understand the schema it's operating on. Before any deployment, it should understand the target environment. Before any migration, it should understand the current state of what it's migrating from.</p>
+  <p>Inspection has a cost. A 30-second environment scan uses tokens and time. But the cost of inspection is fixed. The cost of acting on wrong assumptions is variable — and the upper end of that variable is "you dropped the wrong table."</p>
+  <p>The inspection habit is cheap discipline that prevents expensive mistakes.</p>
+
+  <hr>
+
+  <h2>4. Evidence Over Assertion</h2>
+  <p>A subagent that reports completion is not done. A subagent whose checkpoint files exist and contain valid data — that one is done.</p>
+  <p>This distinction matters because language models are very good at describing what they intended to do and somewhat less reliable about verifying that they actually did it. The CocoFlow checkpoint system is designed to make completion measurable rather than reportable.</p>
+  <p>Stages emit specific files as their completion evidence. Downstream stages read from those files, not from the previous stage's session context. The Safety Gate re-validates before allowing Ship. The system is designed to make assertions costly and evidence cheap.</p>
+
+  <hr>
+
+  <h2>5. Hard Gates for Irreversible Operations</h2>
+  <p>Some mistakes cannot be undone. Dropped tables. Truncated schemas. Deleted rows without a WHERE clause.</p>
+  <p>For these operations, a warning is insufficient. A language model that is prompted carefully follows its instructions most of the time. Most of the time is not acceptable for irreversible operations on production data.</p>
+  <p>Hard gates are technical enforcements that operate before any reasoning happens. The Safety Gate's PreToolUse interceptor fires before the SQL reaches Snowflake. It does not ask the language model for permission. It reads the SQL, recognizes the pattern, and blocks the call. This cannot be bypassed with a clever prompt.</p>
+  <p>The distinction between hard and soft protection is architectural, not merely preferential. Confusing them — making hard things soft, or making soft things hard — degrades the system in both directions.</p>
+
+  <hr>
+
+  <h2>6. Progressive Disclosure</h2>
+  <p>Load the minimum context needed for the current task. Not slightly less. Not roughly the right amount. Exactly the minimum.</p>
+  <p>AGENTS.md is capped at 200 lines because every character in it is loaded into every session. Skills are loaded on demand because they contain detailed implementation logic that most sessions don't need. Monitors run per-stage because global monitors create context overhead that accumulates across every stage.</p>
+  <p>The temptation is always to add more "just in case." Just-in-case context becomes noise. Noise makes it harder for the agent to reason about the signal. The hard limit is a forcing function for clear boundaries. Progressive disclosure is how the system scales. At session 10, it works. At session 200, it still works.</p>
+
+  <hr>
+
+  <h2>7. Classify Failure Before Retry</h2>
+  <p>When a stage fails, the failure must be understood before it is addressed.</p>
+  <p>Blind retry is not a strategy — it is an absence of strategy dressed up as action. Running the same failing stage again without understanding why it failed produces the same failure, or a different failure, unpredictably. Either way, you learn nothing.</p>
+  <p>Failure classification is the first step. Did the checkpoint file not get created? Did it get created with invalid content? Did the SQL error? Did the test fail? Each of these failure types has a different root cause and a different repair. The CocoFlow loop construct exists for structured retry after classification, not for hope-based repetition.</p>
+  <p>Logging the classification is what makes the Memory Engine valuable. CocoCupper can identify patterns in failure classifications across sessions. Unclassified retries produce no learning.</p>
+
+  <hr>
+
+  <h2>8. Institutional Memory Over Rediscovery</h2>
+  <p>Every session should leave the project in a better-documented state than it found it.</p>
+  <p>This is not a nice-to-have. It is the difference between a project that gets smarter with time and one that resets with every new session.</p>
+  <p>The Memory Engine captures decisions as they happen. CocoCupper identifies patterns after sessions complete. CocoGrove stores the patterns worth keeping permanently. Three-layer memory architecture exists because different knowledge has different durability: some decisions are relevant for today's session, some for the next month of sessions, and some indefinitely.</p>
+  <p>The cost of documentation is paid once. The benefit of not re-discovering something is paid every time it would have been re-discovered.</p>
+
+  <hr>
+
+  <h2>9. Token Economics as Architecture</h2>
+  <p>Token budgets are not constraints to work around. They are parameters that shape the system's design.</p>
+  <p>CocoPlus makes explicit model assignments across the system: Haiku for pattern recognition (CocoCupper), Haiku with Sonnet escalation for analytical tasks (Data Analyst, BI Analyst), Sonnet for execution and reasoning (most personas), Opus for strategic decisions (CDO). These are architectural decisions about where depth is required and where efficiency is sufficient.</p>
+  <p>When designing a new feature, the first question is not "what should it do" — it is "what does it cost to do that, and is the cost justified at scale?" A feature that works beautifully for the first twenty iterations and breaks the context budget by iteration thirty is not a well-designed feature.</p>
+
+  <hr>
+
+  <h2>10. Isolation Prevents Contamination</h2>
+  <p>CocoHarvest agents run in isolated git worktrees. CocoFlow stages marked as isolated start with clean context. Unverified output from one stage does not become assumed truth in the next.</p>
+  <p>Isolation is not just about parallelism — it is about correctness. When one stage contaminates the next with incomplete or incorrect assumptions, the error propagates. By the time you notice it, the contamination has compound interest. Debugging requires tracing back through multiple stages to find where the wrong assumption was introduced.</p>
+  <p>Isolated stages prevent this. Each stage has explicit inputs (files and checkpoints from prior stages) and explicit outputs (checkpoint files it produces). The interface is clear. A failure is localized. The cost of isolation is always lower than the cost of debugging a contaminated failure.</p>
+
+  <hr>
+
+  <h2>11. Personas Are Contracts</h2>
+  <p>A persona is not a suggestion for how to approach a task. It is a specification of who handles the task, what tools they have, how they operate, and what model reasons on their behalf. These specifications are locked.</p>
+  <p>The Data Steward operates in plan mode because autonomous execution defeats the purpose of governance review. The CDO uses Opus because the cost is appropriate for decisions at the level of strategic architecture. These are decisions made for reasons, and honoring them is what gives the persona system its value.</p>
+  <p>Persona contracts matter because CocoPlus is a team system. When you assign a task to a persona, you know exactly what will happen: which tools will be available, which model will reason, which output format to expect. A persona whose contracts can be arbitrarily overridden is a persona without identity. Override the contract, and you have a generalist again.</p>
+
+  <hr>
+
+  <h2>12. The Plugin Serves the Developer</h2>
+  <p>Every feature must produce visible, direct value to the developer working in the terminal.</p>
+  <p>This sounds obvious. It is often violated. Features that add process overhead without developer benefit are not features — they are compliance theater. Before any feature is built, the test is: does the developer experience value directly? Does it save them time? Does it prevent an error they would have made? Does it produce an artifact they actually want?</p>
+  <p>CocoPlus is not a governance layer. It is a productivity layer. The difference is where the value lands. Governance lands in reports. Productivity lands in the developer's experience of doing the work.</p>
+  <p>If CocoPlus ever starts to feel like something to work around rather than something to work with, this principle has been violated.</p>
+
+  <blockquote>
+    <p>Principles are only principles when they are applied in the cases where violating them would be convenient.</p>
+  </blockquote>
+
+</div>
+
+<footer>
+  CocoPlus Documentation &nbsp;·&nbsp; <a href="features.html">← Features</a> &nbsp;·&nbsp; <a href="data-context.html">Data Context →</a>
+</footer>
+
+</body>
+</html>
