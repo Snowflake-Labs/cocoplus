@@ -38,15 +38,13 @@ See [docs/index.html](docs/index.html) for the full documentation site.
 
 | Document | Description |
 |----------|-------------|
-| [Architecture](reference requirements/docs/architecture.md) | System design and component overview |
-| [Features](reference requirements/docs/features.md) | Full feature reference |
-| [Concepts](reference requirements/docs/concepts.md) | Core ideas and mental models |
-| [Design Principles](reference requirements/instructions/DESIGN_PRINCIPLES.md) | Guiding philosophy |
-| [Commands Spec](reference requirements/instructions/COMMANDS_SPEC.md) | All `/commands` reference |
-| [Hooks Spec](reference requirements/instructions/HOOKS_SPEC.md) | Hook event protocol |
-| [Personas](reference requirements/instructions/PERSONAS.md) | Specialist agent definitions |
-| [Directory Structure](reference requirements/instructions/DIRECTORY_STRUCTURE.md) | Profile vs project folder layout |
-| [CocoFlow Spec](reference requirements/instructions/COCOFLOW_SPEC.md) | Pipeline language reference |
+| [Overview](docs/index.html) | Documentation home |
+| [Architecture](docs/architecture.html) | System design and component overview |
+| [Features](docs/features.html) | Full feature reference |
+| [Concepts](docs/concepts.html) | Core ideas and mental models |
+| [Design Principles](docs/principles.html) | Guiding philosophy |
+| [Data Context](docs/data-context.html) | Snowflake data context integration |
+| [Manifesto](docs/manifesto.html) | Vision and motivation |
 
 ---
 
