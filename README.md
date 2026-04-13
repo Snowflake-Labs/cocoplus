@@ -30,21 +30,7 @@ Built using only Coco-native constructs: Skills, Agents, Hooks, and AGENTS.md.
 /cocoplus on    — activate all features
 ```
 
-See [docs/index.html](docs/index.html) for the full documentation site.
-
----
-
-## Documentation
-
-| Document | Description |
-|----------|-------------|
-| [Overview](docs/index.html) | Documentation home |
-| [Architecture](docs/architecture.html) | System design and component overview |
-| [Features](docs/features.html) | Full feature reference |
-| [Concepts](docs/concepts.html) | Core ideas and mental models |
-| [Design Principles](docs/principles.html) | Guiding philosophy |
-| [Data Context](docs/data-context.html) | Snowflake data context integration |
-| [Manifesto](docs/manifesto.html) | Vision and motivation |
+See [docs/index.html](https://sgsshankar.github.io/cocoplus/) for the full documentation site.
 
 ---
 
