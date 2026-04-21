@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "default_mode": "normal",
+  "production_patterns": [
+    "prod_*",
+    "production",
+    "live_*",
+    "customer_data",
+    "prd_*"
+  ],
+  "production_schema_patterns": [
+    "prod_*",
+    "production",
+    "live_*",
+    "customer_data",
+    "prd_*"
+  ],
+  "destructive_patterns": [
+    "DROP TABLE",
+    "DROP DATABASE",
+    "DROP SCHEMA",
+    "DROP INDEX",
+    "TRUNCATE TABLE",
+    "DELETE FROM [^\\s]+ WHERE 1=1",
+    "ALTER TABLE .* DROP COLUMN"
+  ],
+  "audit_log": ".cocoplus/safety-decisions.log"
+}

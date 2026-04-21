@@ -1,0 +1,7 @@
+{
+  "monitor": "narrator",
+  "version": "1.0",
+  "enabled": false,
+  "prepend_template": "## CocoPlus Context\n**Phase:** {{PHASE}}\n**Active Modes:** {{MODES}}\n**Recent Checkpoints:** {{CHECKPOINTS}}\n---\n",
+  "max_context_tokens": 200
+}

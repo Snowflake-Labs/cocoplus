@@ -1,0 +1,10 @@
+{
+  "monitor": "quality-advisor",
+  "version": "1.0",
+  "enabled": false,
+  "trigger_on": ["Write", "Edit"],
+  "file_patterns": ["**/*.sql", "**/*.py"],
+  "output_dir": ".cocoplus/",
+  "severity_levels": ["critical", "high", "medium", "low"],
+  "async": true
+}

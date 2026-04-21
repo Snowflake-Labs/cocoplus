@@ -1,0 +1,34 @@
+{
+  "name": "cocoplus",
+  "version": "1.1.0",
+  "description": "CocoPlus — AI-powered development lifecycle plugin for Snowflake Cortex Code CLI",
+  "author": "sgsshankar",
+  "license": "MIT",
+  "entry": ".cortex/",
+  "minCocoVersion": "1.0.0",
+  "runtime": "node",
+  "agents": [
+    "cocobrew",
+    "data-engineer",
+    "analytics-engineer",
+    "data-scientist",
+    "data-analyst",
+    "bi-analyst",
+    "data-product-manager",
+    "data-steward",
+    "chief-data-officer",
+    "coco-cupper",
+    "secondeye-critic"
+  ],
+  "hooks": [
+    "session-start",
+    "session-end",
+    "pre-tool-use",
+    "post-tool-use",
+    "user-prompt-submit",
+    "stop",
+    "subagent-stop",
+    "pre-compact",
+    "notification"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "version": "1.0",
+  "channels": {
+    "coco_ui": true,
+    "log_file": true,
+    "log_path": ".cocoplus/notifications.log"
+  },
+  "events": {
+    "phase_transition": { "enabled": true, "channel": "coco_ui" },
+    "agent_completion": { "enabled": true, "channel": "coco_ui" },
+    "flow_stage_completion": { "enabled": true, "channel": "coco_ui" },
+    "safety_gate_trigger": { "enabled": true, "channel": "coco_ui" },
+    "cupper_findings_ready": { "enabled": true, "channel": "coco_ui" },
+    "meter_budget_threshold": { "enabled": true, "channel": "coco_ui" }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "meta": {
+    "name": "Project Build",
+    "version": "1.0",
+    "phase": "plan",
+    "created": "{{TIMESTAMP}}"
+  },
+  "defaults": {
+    "model": "sonnet",
+    "context": "isolated",
+    "on_failure": "stop"
+  },
+  "stages": []
+}

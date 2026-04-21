@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manifesto — CocoPlus</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="brand">CocoPlus</a>
+  <a href="index.html">Home</a>
+  <a href="getting-started.html">Getting Started</a>
+  <a href="data-context.html">Data Context</a>
+  <a href="concepts.html">Concepts</a>
+  <a href="architecture.html">Architecture</a>
+  <a href="features.html">Features</a>
+  <a href="workflows.html">Workflows</a>
+  <a href="command-reference.html">Commands</a>
+  <a href="principles.html">Principles</a>
+  <a href="manifesto.html" class="active">Manifesto</a>
+</nav>
+
+<div class="page-header">
+  <div class="label">The Why</div>
+  <h1>Why CocoPlus Exists</h1>
+  <p class="subtitle">An argument that AI-assisted development fails not from AI incapability, but from the absence of structure.</p>
+</div>
+
+<div class="content">
+
+  <p>There is a moment every developer recognizes. You've been deep in a complex Snowflake build for two sessions. You return on Monday morning, open your terminal, and realize: you have no idea where you left off. Not roughly — precisely. Which schema decisions were finalized. Which SQL ran on the wrong environment. Which beautiful pattern you invented last Thursday that you'll spend an hour reinventing today.</p>
+  <p>The AI didn't forget. The AI was never there on Friday. Each session starts clean.</p>
+  <p>This is the problem CocoPlus is built to solve. Not the capability problem — Coco is already capable. The <em>structure</em> problem.</p>
+
+  <hr>
+
+  <h2>The Real Failure Mode of AI-Assisted Development</h2>
+
+  <p>When AI-assisted development goes wrong, we tend to blame the model. The SQL was wrong. The schema was off. The subagent hallucinated a function that doesn't exist.</p>
+  <p>But look closer at how those failures actually happened. The SQL was wrong because nobody inspected the target schema first. The schema was off because the spec was never written down — it existed as a mental model in the developer's head, and the developer and the AI were operating from different mental models. The subagent hallucinated because it was asked to build something without a validated plan.</p>
+  <p>The model is rarely the problem. The absence of structure is the problem.</p>
+  <p>CocoPlus is an opinion, rendered in software, about what structured AI development looks like for Snowflake engineers.</p>
+
+  <hr>
+
+  <h2>An Opinion, Not a Framework</h2>
+
+  <p>"Framework" implies neutrality. A framework gives you tools and lets you decide what to build. CocoPlus is more opinionated than that.</p>
+  <p>CocoPlus says: you should spec before you code. It says: parallel workstreams need isolated execution contexts. It says: production environments should be protected by something harder than a language model's judgment. It says: every session should leave behind documentation, not just output.</p>
+  <p>These aren't features you can mix and match. They form a coherent worldview. You can disagree with the worldview. But if you work within it, you get a system that compounds rather than accumulates debt.</p>
+  <p>The alternative — and every developer has tried it — is to use the AI like a very fast search engine. You throw problems at it, it throws answers back, and you stitch together an output. This works, for a while, until the project is complex enough that the absence of structure becomes the dominant cost.</p>
+  <p>CocoPlus is for the moment when you've crossed that threshold.</p>
+
+  <hr>
+
+  <h2>What CocoPlus Actually Is</h2>
+
+  <p>CocoPlus is a plugin for Snowflake Cortex Code CLI (Coco). It runs entirely inside Coco's native architecture — no external services, no databases, no side-car processes. Everything it does, it does through Coco's own mechanisms: skills, subagents, hooks, and a single configuration file.</p>
+  <p>It adds nineteen capabilities to Coco, organized around a central idea: <strong>your development lifecycle has phases, those phases have natural transitions, and a good tool should make those transitions visible and deliberate</strong>.</p>
+  <p>The phases are: Spec, Plan, Build, Test, Review, Ship. Not novel. Versions of this sequence have been in software engineering for decades. What CocoPlus adds is the discipline to actually follow them inside an AI session — where the temptation to skip ahead is constant and the cost of skipping is invisible until it isn't.</p>
+  <p>Around this lifecycle, CocoPlus adds:</p>
+  <ul style="margin: 1rem 0 1.25rem 1.5rem; line-height: 2;">
+    <li><strong>Specialist agents</strong> — because a single generalist AI produces mediocre results across every domain.</li>
+    <li><strong>Memory</strong> — because rediscovering something you already knew is waste, and waste compounds.</li>
+    <li><strong>Safety</strong> — because not every mistake is recoverable, and the ones that aren't deserve harder protection than a strongly-worded prompt.</li>
+    <li><strong>Intelligence capture</strong> — because every session produces patterns worth keeping and anti-patterns worth documenting, and neither should be allowed to evaporate.</li>
+    <li><strong>Independent critique</strong> — because a plan reviewed only by the model that wrote it is a plan reviewed by a single perspective.</li>
+  </ul>
+
+  <hr>
+
+  <h2>The Snowflake Context Matters</h2>
+
+  <p>CocoPlus is not a general-purpose AI productivity tool. It is built for Snowflake engineers.</p>
+  <p>That specificity is deliberate. Snowflake has a particular shape: schemas that matter, production environments that are genuinely expensive to break, data products that sit at the intersection of engineering and business, semantic models that require a specific kind of domain expertise to design correctly. The CDO persona exists because someone needs to think architecturally about the whole data estate. The Data Steward persona exists because governance isn't an afterthought — it's a discipline.</p>
+  <p>A generic plugin would have none of this. CocoPlus names the domain it serves and builds specialist depth into the system.</p>
+
+  <hr>
+
+  <h2>The Design Constraint That Drives Everything</h2>
+
+  <p>There is one constraint that shapes every CocoPlus decision more than any other: <strong>token economics as architecture</strong>.</p>
+  <p>Context window space is finite. Every line added to the ambient configuration file, every monitor activated globally, every agent loaded by default, has a cost. That cost compounds across hundreds of iterations. A system designed without token discipline becomes unusable by iteration thirty.</p>
+  <p>So CocoPlus makes choices. AGENTS.md — the file loaded into every session — is capped at 200 lines. Skills are loaded on demand, not pre-loaded. The background analyst (CocoCupper) uses Haiku because its job is pattern recognition, not reasoning. The CDO uses Opus because strategic architectural decisions require depth.</p>
+  <p>These are not arbitrary choices. They are a coherent stance: <strong>use the cheapest model that does the job well, and design the system so you know which model that is</strong>.</p>
+
+  <hr>
+
+  <h2>What CocoPlus Is Not</h2>
+
+  <p>It is not a governance layer. It does not report compliance to anyone. It does not restrict what developers can build.</p>
+  <p>It is not a replacement for developer judgment. The Safety Gate blocks obviously destructive SQL, but the developer makes every substantive decision.</p>
+  <p>It is not a dependency. Remove it, and Coco still works. Install it, and Coco works better.</p>
+  <p>It is not finished. The pattern library grows with use. The memory system learns from sessions. The system gets more useful the longer you work with it — not because it has more features, but because it has accumulated more of your specific project's knowledge.</p>
+  <p>That accumulation is the point.</p>
+
+  <blockquote>
+    <p>Structure enables speed. Not the speed of individual keystrokes — the speed of a project that doesn't collapse under its own complexity.</p>
+  </blockquote>
+
+</div>
+
+<footer>
+  CocoPlus Documentation &nbsp;·&nbsp; <a href="index.html">Home</a> &nbsp;·&nbsp; <a href="concepts.html">Next: Core Concepts →</a>
+</footer>
+
+</body>
+</html>

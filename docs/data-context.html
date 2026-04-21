@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Context — CocoPlus</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="brand">CocoPlus</a>
+  <a href="index.html">Home</a>
+  <a href="getting-started.html">Getting Started</a>
+  <a href="data-context.html" class="active">Data Context</a>
+  <a href="concepts.html">Concepts</a>
+  <a href="architecture.html">Architecture</a>
+  <a href="features.html">Features</a>
+  <a href="workflows.html">Workflows</a>
+  <a href="command-reference.html">Commands</a>
+  <a href="principles.html">Principles</a>
+  <a href="manifesto.html">Manifesto</a>
+</nav>
+
+<div class="page-header">
+  <div class="label">Read This First — If You're a Data Engineer</div>
+  <h1>CocoPlus in Context</h1>
+  <p class="subtitle">Why data projects need different orchestration than software projects. How CocoPlus specifically extends Coco. The ideology of deterministic execution in a probabilistic domain.</p>
+</div>
+
+<div class="content">
+
+  <p>There is a quiet assumption embedded in most developer tooling: the world is predictable. Write a function, test it, deploy it. Same inputs, same outputs, always. The artifact is deterministic. Done means done.</p>
+  <p>Data engineering breaks this assumption in multiple places simultaneously. CocoPlus is designed specifically for the world that results from those breakages.</p>
+
+  <hr>
+
+  <h2>What Coco Brings. What CocoPlus Adds.</h2>
+
+  <p>Cortex Code CLI is not a code editor with AI autocomplete bolted on. It is an agentic shell that operates against a live Snowflake environment — it can introspect your schemas, execute SQL, run notebooks, query your data, and reason about governance, all in a single terminal session.</p>
+  <p>But Coco, by default, is stateless across sessions. Each session is a fresh start. The environment knowledge accumulated in Tuesday's session is gone by Thursday. The decisions made during the Plan phase are not automatically available during Build. The patterns discovered during one project do not propagate to the next. The safety behavior depends on prompts in flight — and prompts can be worked around.</p>
+  <p>CocoPlus is the layer that makes Coco stateful, structured, and safe across the full lifecycle of a data project. Not by replacing what Coco does well — but by extending it with exactly what it lacks.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>What Coco Provides Natively</th><th>What CocoPlus Adds</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Agentic shell with Snowflake tools</td><td>Lifecycle structure across sessions</td></tr>
+        <tr><td>Model routing (Haiku / Sonnet / Opus / GPT)</td><td>Specialist personas with locked domain identities</td></tr>
+        <tr><td>Native subagent spawning</td><td>Dependency-ordered parallel execution with checkpoint validation</td></tr>
+        <tr><td>Hook system for lifecycle events</td><td>Persistent ambient context (AGENTS.md) maintained across sessions</td></tr>
+        <tr><td>Session-level context</td><td>Three-layer memory architecture (hot, warm, cold)</td></tr>
+        <tr><td>Language model reasoning about SQL</td><td>Hard technical gates that cannot be reasoned around</td></tr>
+        <tr><td>In-session tool use</td><td>Cross-session institutional memory (CocoGrove)</td></tr>
+        <tr><td>Plan mode for human approval</td><td>CocoBrew as a full six-phase lifecycle with enforced gates</td></tr>
+        <tr><td>Native CLI output</td><td>CocoMeter token tracking and pre-flight estimation</td></tr>
+        <tr><td>Single-model evaluation of artifacts</td><td>SecondEye multi-model parallel critique (Efficiency, Completeness, Risk lenses)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>CocoPlus is not a workaround for Coco's limitations. It is an amplification of Coco's strengths, built using Coco's own native extension mechanisms — the same hooks, skills, and subagents that Coco exposes for exactly this purpose.</p>
+
+  <hr>
+
+  <h2>The Data Project Is Not a Software Project</h2>
+
+  <p>This is the foundational difference. Everything else follows from it.</p>
+  <p>In a software project, the artifact is code. Code is deterministic: given the same inputs, it produces the same outputs. You can test it in isolation. You can version it completely. You can roll it back cleanly. The environment it runs in is typically something you provision — it can be spun up fresh, torn down, and rebuilt.</p>
+  <p>In a data project, the environment is not separate from the artifact — <strong>the environment is the artifact</strong>. You are building schemas that hold live data. You are creating semantic models that define how business concepts are measured. You are deploying AI functions that will be called by production processes. The work product and the production environment are the same thing.</p>
+  <p>This changes everything about how you must approach development:</p>
+
+  <h3>Testing Is Not Binary</h3>
+  <p>A unit test passes or fails. A data pipeline produces outputs with a quality distribution. An AI function's accuracy ranges from 60% to 95% depending on data characteristics. "Does it work?" is the wrong question. The right question is: "Does it perform within acceptable bounds for this data distribution?" That requires evaluation infrastructure, not test cases.</p>
+
+  <h3>Rollback Is Not Clean</h3>
+  <p>Reverting a code commit restores the code. It does not restore data that was transformed and loaded. It does not un-drop a schema. It does not reverse the effects of a migration that ran on 50 million rows. Some operations are irreversible in ways that no git reset can address. This is why CocoPlus treats the distinction between reversible and irreversible operations as an architectural concern, not a developer preference.</p>
+
+  <h3>Parallelism Has Data-Structure Conflicts</h3>
+  <p>If two engineers work on separate software features and merge them together, git handles the conflicts. If two data engineering agents modify the same schema in parallel — one adding a column, one redefining a view that depends on that column's type — the conflict is not in files. It is in the live database state. And it may produce silent failures: the view still exists, but it now returns incorrect results for a reason that isn't visible without deep inspection.</p>
+
+  <h3>The Environment Is Not Yours to Provision</h3>
+  <p>Software developers typically have clean development environments — fresh databases, isolated instances, controlled test fixtures. Data engineers often work against environments that already contain production data, real business processes, and shared infrastructure. The target of your work is also the system other people are depending on. Mistakes have immediate, real consequences.</p>
+
+  <h3>Governance Is Intrinsic, Not Added</h3>
+  <p>In software, security review is something that happens to code before it ships. In data engineering, governance is embedded in the work itself: column-level masking policies, row access policies, PII handling in AI function prompts, data classification tags, cross-region data transfer constraints. A Snowflake AI function that sends masked columns to an LLM is not just a security issue — it is a violation of the data contract that protects that column. You cannot separate "building the function" from "knowing what the function is allowed to do."</p>
+
+  <hr>
+
+  <h2>The Determinism Problem in Data Development</h2>
+
+  <p>Software engineers reason about code because code is the deterministic part. Data engineers must reason about something harder: a system where the code is only one of many variables.</p>
+  <p>Consider an AI function built on <code>AI_COMPLETE</code>. The same SQL function called with the same prompt today and in three months may produce measurably different outputs — because the underlying model was updated. The same function called against training data and production data may produce different accuracy profiles — because data distributions diverge. None of this is a bug. It is the nature of probabilistic systems.</p>
+  <p>But it means that "the function works" is not a stable truth. It is a snapshot. A snapshot that must be re-verified when data distributions shift, when models update, when call volumes change.</p>
+  <p>This probabilistic core creates a temptation: give up on rigor. Accept that AI outputs are approximate. Ship something that seems to work and monitor it in production.</p>
+  <p>CocoPlus takes the opposite position.</p>
+
+  <div class="summary-box">
+    <h3>The Core Ideology</h3>
+    <p><strong>You cannot make AI outputs deterministic.</strong></p>
+    <p>But you can make everything around them deterministic.</p>
+    <p>The process of building an AI data product — the sequence in which environments are inspected, plans are approved, stages are executed, checkpoints are validated — can be fully deterministic. It can be specified precisely, executed consistently, and audited completely. Process determinism does not guarantee output quality, but it creates the conditions under which output quality can be reliably evaluated and improved.</p>
+  </div>
+
+  <p>CocoPlus implements process determinism through three mechanisms:</p>
+
+  <h3>Checkpoint-Gated Stage Transitions</h3>
+  <p>A CocoFlow stage does not proceed to the next stage because an agent reports that it is done. It proceeds because specific checkpoint files exist with valid content. The transition condition is a file check, not a language model assertion. Checkpoints make completion verifiable by inspection, not by belief.</p>
+
+  <h3>Hard Technical Gates for Irreversible Operations</h3>
+  <p>The Safety Gate's PreToolUse interceptor does not ask the language model whether a DROP TABLE is appropriate. It reads the SQL, recognizes the pattern, and blocks the call. This happens before any reasoning. It cannot be prompted around. The behavior is unconditional — the same input always produces the same output. This is what "hard gate" means: not "strongly discouraged" but "technically prevented."</p>
+
+  <h3>File-Based State as the Source of Truth</h3>
+  <p>All CocoPlus state lives in files. AGENTS.md reflects the current phase because a hook wrote to it, not because an agent remembers. The pipeline status in <code>flow.json</code> is accurate because the SubagentStop hook updated it, not because the executing agent reported it. Files are static, inspectable, and diffable. Session memory is dynamic, ephemeral, and context-dependent. CocoPlus treats the former as authoritative and the latter as disposable.</p>
+
+  <hr>
+
+  <h2>Contained Orchestration: Why Locality Is a Feature</h2>
+
+  <p>Modern orchestration systems typically operate on distributed infrastructure. State lives in a central service. Events flow through message queues. Logs accumulate in monitoring platforms.</p>
+  <p>This works well for software deployment pipelines because the artifact being deployed (code) is separate from the runtime environment. The pipeline operates on code; the environment is independently stable.</p>
+  <p>For data projects, this model breaks down. The orchestration system and the environment are deeply entangled. When your orchestration decides to run Stage 4 because Stage 3's checkpoints passed, it is making a decision that will directly modify the live database. The orchestration's state must be readable in the same audit trail as the Snowflake operation logs. Separating them creates a reconciliation problem.</p>
+  <p>CocoPlus uses <strong>contained orchestration</strong>. All orchestration state lives in <code>.cocoplus/</code> and git history. Nothing outside.</p>
+  <p>The <code>flow.json</code> file is the pipeline definition and the execution log simultaneously. It specifies what should run and records what did run. A developer who wants to understand what happened to their Snowflake environment during yesterday's build session can read two things: the git log and <code>flow.json</code>. These are local files, readable with any text editor, correlatable without a logging platform.</p>
+  <p>This locality is not a constraint born of technical limitation. It is a deliberate choice about where the source of truth should live. When something goes wrong in a data pipeline, you need to debug it. Debugging a distributed orchestration system requires correlating logs across multiple services with different retention policies. Debugging a local file-based system requires opening three files.</p>
+  <p>Contained orchestration also means the system works identically in any environment: a developer's laptop, a team's shared workstation, a CI server. No infrastructure to provision, no services to configure, no external dependencies to authenticate.</p>
+
+  <blockquote>
+    <p>A system whose state you can read is a system you can reason about. The <code>.cocoplus/</code> directory is designed to be legible at all times. When the system is opaque — when state lives in services that require authentication to inspect — the developer is not in control. They are a passenger.</p>
+  </blockquote>
+
+  <hr>
+
+  <h2>The Snowflake-Specific Gap CocoPlus Fills</h2>
+
+  <p>Snowflake Cortex is not a general-purpose database with AI features appended. It is an AI operating layer built into a data platform — and the implications of that specific architecture matter for how you build on it.</p>
+  <p>When you build <code>AI_COMPLETE</code> functions, you are building probabilistic policies, not deterministic code. The function specifies a behavior; the model approximates it. The accuracy of that approximation is a function of prompt design, model selection, data distribution, and token budget. Testing it means running evaluations against representative data, not writing assertions.</p>
+  <p>When you build Cortex Analyst semantic models, you are defining how natural language questions map to SQL. The quality of that mapping is not binary — it is a distribution across question types, and it degrades gracefully (or catastrophically) in ways that depend on model reasoning, not code logic.</p>
+  <p>None of the general-purpose AI developer tools were built for this terrain. CocoPlus was built specifically for the terrain where the development artifact is an AI-powered data product operating inside Snowflake's security boundary — where governance, cost, quality, and safety are not separate concerns but faces of the same problem.</p>
+  <p>The eight specialist personas reflect the actual roles that Snowflake data teams play: the engineer who builds the infrastructure, the analytics engineer who defines meaning, the data scientist who builds the models, the steward who maintains governance, the CDO who makes architectural decisions. These are not generic software roles renamed. They are roles that exist because building on Snowflake Cortex requires domain-specific expertise at each layer.</p>
+
+  <blockquote>
+    <p>The goal of determinism in data development is not to make AI outputs predictable — it is to make everything around AI outputs auditable, repeatable, and improvable. You cannot guarantee the output. You can guarantee the process.</p>
+  </blockquote>
+
+</div>
+
+<footer>
+  CocoPlus Documentation &nbsp;·&nbsp; <a href="index.html">← Home</a> &nbsp;·&nbsp; <a href="manifesto.html">Next: Manifesto →</a>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Features — CocoPlus</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="brand">CocoPlus</a>
+  <a href="index.html">Home</a>
+  <a href="getting-started.html">Getting Started</a>
+  <a href="data-context.html">Data Context</a>
+  <a href="concepts.html">Concepts</a>
+  <a href="architecture.html">Architecture</a>
+  <a href="features.html" class="active">Features</a>
+  <a href="workflows.html">Workflows</a>
+  <a href="command-reference.html">Commands</a>
+  <a href="principles.html">Principles</a>
+  <a href="manifesto.html">Manifesto</a>
+</nav>
+
+<div class="page-header">
+  <div class="label">What It Does</div>
+  <h1>All 19 Features</h1>
+  <p class="subtitle">Nineteen expressions of one idea — that structure and intelligence, applied together, produce better outcomes than either alone.</p>
+</div>
+
+<div class="content">
+
+  <p>CocoPlus has nineteen features. They are not nineteen independent capabilities you can pick from a menu. They are nineteen expressions of the same underlying design — a system where each piece reinforces the others.</p>
+
+  <!-- ── Feature 1 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">1 — CocoBrew <span class="tag">Lifecycle Engine</span></div>
+    <div class="feature-meta">
+      <span><span class="cmd">/spec</span> <span class="cmd">/plan</span> <span class="cmd">/build</span> <span class="cmd">/test</span> <span class="cmd">/review</span> <span class="cmd">/ship</span> <span class="cmd">/rewind</span> <span class="cmd">/fork</span></span>
+    </div>
+    <p>CocoBrew is the spine of CocoPlus. Every other feature exists in relation to it. Six phases — each with a specific purpose, each producing a specific artifact, each gated on the completion of the one before it.</p>
+    <p><strong>Spec</strong> captures requirements before any code is written. <strong>Plan</strong> decomposes the spec and ends with a human approval gate — nothing in Build begins without it. <strong>Build</strong> executes the approved plan in isolated, checkpoint-validated stages. <strong>Test</strong> validates against the spec's success criteria, not the developer's mental model. <strong>Review</strong> runs the Code Quality Advisor and CocoCupper findings, categorized as must-fix, should-fix, and consider. <strong>Ship</strong> is gated on Review — open must-fix items block it unconditionally.</p>
+    <p><code>/rewind [step-id]</code> walks back to a specific stage commit after confirmation. <code>/fork [branch-name]</code> creates an isolated exploration branch without touching the main thread of work.</p>
+    <h3>When to Use</h3>
+    <p>For any non-trivial Snowflake development task that spans more than a single session, involves multiple schemas or personas, or needs to reach production. If you're tempted to start coding before writing a spec, CocoBrew is exactly where you should start — the spec phase alone regularly surfaces assumptions that would cost hours to untangle mid-build. Use the full lifecycle for any task where "it worked in dev but broke in prod" would be a costly outcome.</p>
+  </div>
+
+  <!-- ── Feature 2 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">2 — CocoSpark <span class="tag">Optional</span></div>
+    <div class="feature-meta"><span><span class="cmd">/spark [topic]</span> <span class="cmd">/spark-off</span></span></div>
+    <p>A divergent thinking mode. When active, it generates at least three distinct approaches, challenges your assumptions, and raises questions you haven't thought to ask. Explicitly optional — brainstorming is a developer choice, not a lifecycle gate.</p>
+    <p>CocoSpark output is explicitly marked as exploration. It never flows automatically into <code>spec.md</code>. The developer decides what, if anything, carries forward. <code>/spark-off</code> exits brainstorm mode with an optional capture offer.</p>
+    <h3>When to Use</h3>
+    <p>When the problem space is genuinely ambiguous and you're not sure which architectural direction to take. If the path is already clear, skip it — CocoSpark adds value at the edges of certainty, not at the center. It's most useful immediately before writing a spec: run CocoSpark first, discover the angles you hadn't considered, then write a spec that reflects the real complexity. Not every task needs it. The ones that do usually feel uncomfortably open-ended before you start.</p>
+  </div>
+
+  <!-- ── Feature 3 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">3 — CocoHarvest <span class="tag">Orchestration Engine</span></div>
+    <div class="feature-meta"><span>Automatic at Plan phase · <span class="cmd">$&lt;persona&gt;</span> for direct invocation</span></div>
+    <p>The intelligence behind parallelism. CocoHarvest reads an approved plan, decomposes it into workstreams, assigns each to the appropriate specialist persona, and encodes dependency relationships in <code>flow.json</code>. Parallel stages run in isolated git worktrees — one agent's incomplete work cannot contaminate another's context.</p>
+    <p>A stage marked as dependent on another does not start until the prerequisite's checkpoint files are validated. For simple plans — single workstream, single persona — CocoHarvest delegates directly without creating a formal pipeline.</p>
+    <h3>When to Use</h3>
+    <p>CocoHarvest is automatically invoked at the Plan phase whenever the task has multiple distinct workstream types — you don't choose it, it chooses itself. Use direct persona invocation (<code>$de</code>, <code>$ae</code>, etc.) when you want to consult a specific specialist without running the full lifecycle — a quick performance review, a targeted schema question, or a governance check mid-session. The <code>--continue</code> flag is particularly useful: <code>$de --continue Fix the issue you identified</code> hands the specialist the current context without restarting from scratch.</p>
+  </div>
+
+  <!-- ── Feature 4 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">4 — Personas <span class="tag">8 Specialist Agents</span></div>
+    <div class="feature-meta"><span><span class="cmd">$de</span> <span class="cmd">$ae</span> <span class="cmd">$ds</span> <span class="cmd">$da</span> <span class="cmd">$bi</span> <span class="cmd">$dpm</span> <span class="cmd">$dst</span> <span class="cmd">$cdo</span> · <span class="cmd">/personas</span></span></div>
+    <p>Eight specialists with locked domains, locked tool sets, and locked invocation modes. Specialists beat generalists in structured development work — not sometimes, always. The Data Engineer writes SQL with performance context. The Data Steward reviews governance with authority. The CDO reasons strategically with Opus-level depth.</p>
+    <p>Invocation modes are architectural decisions: <code>$dpm</code>, <code>$dst</code>, and <code>$cdo</code> always run in plan mode — they advise, they never execute autonomously. Add <code>--model</code> to override compute for a specific call. Add <code>--continue</code> to pass current session context for continuation work.</p>
+    <h3>When to Use</h3>
+    <p>Whenever the work has a clear domain owner. Don't default to the general Coco session for tasks that belong to a specialist — the specialist has a locked tool set and domain instructions that produce qualitatively better output. Use <code>$cdo</code> when reasoning about the full data estate, not just a single pipeline. Use <code>$dst</code> before any change that touches access policies, sensitive data, or column-level security. Use <code>$de</code> when SQL performance or schema correctness is the primary concern — this is not a task for a generalist.</p>
+  </div>
+
+  <!-- ── Feature 5 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">5 — CocoPod <span class="tag">Project Bundle</span></div>
+    <div class="feature-meta"><span><span class="cmd">/pod init</span> <span class="cmd">/pod status</span> <span class="cmd">/pod resume</span></span></div>
+    <p>CocoPod is initialization. Before any CocoPlus feature runs, the project must have a CocoPod. <code>/pod init</code> creates the complete <code>.cocoplus/</code> directory structure, sets default modes, and creates the initial git commit.</p>
+    <p><code>/pod status</code> is the dashboard: current phase, active modes, pipeline status, last CocoMeter summary, and the three most recent CocoCupper findings. <code>/pod resume</code> reads the state and produces a focused brief — where you were and what the immediate next action is. It reads from files, not AI memory. The accuracy is deterministic.</p>
+    <h3>When to Use</h3>
+    <p>Every time you start a new Snowflake data project with CocoPlus — run <code>/pod init</code> before anything else. Run <code>/pod status</code> at the start of any session to orient yourself before diving into work. Run <code>/pod resume</code> when returning to a project after more than a day away — it compresses the "where was I?" problem into a focused brief that is faster and more reliable than trying to reconstruct context from memory.</p>
+  </div>
+
+  <!-- ── Feature 6 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">6 — Project Execution Engine <span class="tag">Pipeline Executor</span></div>
+    <div class="feature-meta"><span><span class="cmd">/flow run</span> <span class="cmd">/flow status</span> <span class="cmd">/flow pause</span> <span class="cmd">/flow resume [stage-id]</span></span></div>
+    <p>Reads and executes CocoFlow JSON pipelines. Where CocoHarvest generates the plan, the Execution Engine runs it. Stage status is updated in real time. <code>/flow pause</code> halts after the current stage completes — running stages are never killed mid-execution. <code>/flow resume [stage-id]</code> validates that all prior checkpoints are intact before restarting.</p>
+    <p>Runtime <code>--model</code> override applies across all stages without modifying <code>flow.json</code> on disk.</p>
+    <h3>When to Use</h3>
+    <p>When a plan has been generated and needs to be executed as a formal pipeline. For simple, single-persona tasks, the Build phase handles execution directly — you won't need <code>/flow run</code> explicitly. Use it when you want precise control: running only from a specific stage after a failure, pausing mid-pipeline to inspect outputs before proceeding, or applying a runtime model override without changing the stored plan. <code>/flow status</code> is useful any time you want a clear picture of where a running pipeline stands.</p>
+  </div>
+
+  <!-- ── Feature 7 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">7 — Memory Engine <span class="tag">Cross-Session Persistence</span></div>
+    <div class="feature-meta"><span><span class="cmd">/memory on</span> <span class="cmd">/memory off</span></span></div>
+    <p>Three layers. Hot (AGENTS.md, 200 lines, always loaded), warm (<code>decisions.md</code>, <code>patterns.md</code>, <code>errors.md</code>), cold (CocoGrove). Each layer serves a different time horizon. The 200-line limit on AGENTS.md is enforced — when new entries would exceed it, older entries compress to the warm layer automatically.</p>
+    <p>When memory is on, the PostToolUse hook captures significant events: schema changes, decisions stated explicitly, errors and their resolutions. Captures are brief — the fact and the reason, not the full content.</p>
+    <h3>When to Use</h3>
+    <p>Leave it on by default — this is the right posture for any real project work. The overhead is minimal; the compound benefit across sessions is significant. Turn it off only for explicitly throwaway sessions: prototype experiments, hypothetical walkthroughs, or one-off queries against an environment you don't intend to revisit. If you're unsure, leave it on. A session with memory that you didn't need leaves behind a few captured decisions. A session without memory that you did need leaves behind nothing.</p>
+  </div>
+
+  <!-- ── Feature 8 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">8 — Environment Inspector <span class="tag">Pre-Action Context</span></div>
+    <div class="feature-meta"><span><span class="cmd">/inspect</span> <span class="cmd">/inspect --schema &lt;name&gt;</span> <span class="cmd">/inspect --full</span> <span class="cmd">/inspector on</span></span></div>
+    <p>Before you build, look at what's there. The inspector scans the connected Snowflake environment — schemas, tables, views, stored procedures, Cortex endpoints, semantic models, access grants — and produces a structured snapshot. Compares against the last snapshot to surface what's new or changed.</p>
+    <p>When auto-mode is active, the inspector runs as a background subagent at every session start without blocking the session. Results are cached in <code>.cocoplus/snapshots/</code>.</p>
+    <h3>When to Use</h3>
+    <p>Before any Build phase that writes to or reads from Snowflake schemas. Especially valuable when returning to a project after a break — schemas may have changed in the interim. Essential when joining a shared environment for the first time, when you can't assume objects you expect actually exist. Run <code>/inspect --full</code> when you need column-level statistics or access policy details before writing sensitive SQL. If auto-mode is on, you get this automatically at session start without thinking about it.</p>
+  </div>
+
+  <!-- ── Feature 9 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">9 — Safety Gate <span class="tag">Execution Protection</span></div>
+    <div class="feature-meta"><span><span class="cmd">/safety strict</span> <span class="cmd">/safety normal</span> <span class="cmd">/safety off</span></span></div>
+    <p>Two layers. The <strong>hard gate</strong> is a PreToolUse hook interceptor — it fires before every SnowflakeSqlExecute call. In strict mode, SQL containing DROP TABLE, DROP SCHEMA, TRUNCATE, DELETE without WHERE, or ALTER on production objects is <em>blocked entirely</em>. The tool call does not execute. This cannot be prompted around.</p>
+    <p>The <strong>soft gate</strong> fires before any batch destructive operation and requires explicit developer confirmation. It cannot be silent — the developer always sees a summary before anything runs. Configuration in <code>safety-config.json</code> defines which schema name patterns are protected. Default: schemas containing "PROD", "PRODUCTION", or "LIVE".</p>
+    <h3>When to Use</h3>
+    <p>Always on — this is the default posture and there is almost never a reason to deviate from it. Use <code>/safety strict</code> when working in or near production schemas where a single dropped object would affect live data or real users. Use <code>/safety normal</code> for active development environments where you need occasional destructive operations but still want warnings. Reserve <code>/safety off</code> only for isolated test environments where you're deliberately exercising destructive patterns and fully understand the consequences. When in doubt, default to strict.</p>
+  </div>
+
+  <!-- ── Feature 10 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">10 — Code Quality Advisor <span class="tag">Anti-Pattern Review</span></div>
+    <div class="feature-meta"><span><span class="cmd">/quality on</span> <span class="cmd">/quality off</span> <span class="cmd">/quality run</span></span></div>
+    <p>Reviews generated SQL and code against a library of Snowflake-specific anti-patterns. Not a generic linter — it understands Snowflake execution context: query patterns that cause full table scans, Cortex function misuse, semantic model design mistakes that produce incorrect results. Findings are categorized as performance, correctness, governance, and cost.</p>
+    <p>Runs automatically during the Review phase. When quality mode is active, it runs as a non-blocking background monitor on every CocoFlow stage.</p>
+    <h3>When to Use</h3>
+    <p>During the Review phase it runs automatically — you don't need to think about it. Turn <code>/quality on</code> proactively when you're in an active Build phase generating complex SQL or Cortex AI functions, so findings surface continuously rather than only at review time. Run <code>/quality run</code> on-demand after generating stored procedures or batch SQL that will touch large tables. Catching must-fix items before the Ship gate is far cheaper than catching them after a production incident.</p>
+  </div>
+
+  <!-- ── Feature 11 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">11 — Prompt Studio <span class="tag">Prompt Engineering</span></div>
+    <div class="feature-meta"><span><span class="cmd">/prompt new</span> <span class="cmd">/prompt compare [a] [b]</span></span></div>
+    <p>A structured workflow for designing Cortex AI prompts. <code>/prompt new</code> guides you through goal definition, model selection, few-shot examples, initial draft, and anti-pattern review. Output is a versioned prompt file.</p>
+    <p><code>/prompt compare</code> runs two prompt versions against the same test inputs and surfaces differences in accuracy, format compliance, verbosity, and token consumption. Prompt iteration becomes empirical rather than impressionistic. Prompts designed here feed directly into CocoFlow stage definitions.</p>
+    <h3>When to Use</h3>
+    <p>Whenever you're building or refining Snowflake Cortex AI functions where output quality depends on how the prompt is structured — AI_COMPLETE classifiers, AI_EXTRACT schemas, AI_CLASSIFY category definitions. Use <code>/prompt compare</code> when you have two candidate approaches and need evidence of which performs better on your actual data before committing to production. If you're iterating on a prompt more than twice, Prompt Studio will save you time — ad-hoc iteration has no memory and no record.</p>
+  </div>
+
+  <!-- ── Feature 12 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">12 — CocoGrove <span class="tag">Pattern Library</span></div>
+    <div class="feature-meta"><span><span class="cmd">/patterns view [tag]</span> <span class="cmd">/patterns promote [finding-id]</span></span></div>
+    <p>The institutional memory of your project, expressed as a library of reusable patterns. Patterns enter CocoGrove through deliberate promotion — a developer reviews CocoCupper findings and promotes the ones worth keeping. This human filter is intentional. Not everything CocoCupper identifies is worth preserving forever.</p>
+    <p>Once promoted, a pattern is structured: name, description, when to apply, when not to apply, example. By session twenty, CocoGrove contains your project's hard-won knowledge. The Data Engineer doesn't reinvent your schema naming convention — it reads CocoGrove first.</p>
+    <h3>When to Use</h3>
+    <p>After completing significant work — review what CocoCupper surfaced and promote anything durable before closing the session. Before starting new work in a domain you've built in before — run <code>/patterns view</code> to check if relevant patterns already exist. Think of CocoGrove as your project's living style guide: consult it before generating code, update it after learning something worth keeping. A CocoGrove that grows with the project is one of the highest-leverage investments CocoPlus enables.</p>
+  </div>
+
+  <!-- ── Feature 13 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">13 — Doc Engine <span class="tag">Auto Documentation</span></div>
+    <div class="feature-meta"><span><span class="cmd">/doc run</span></span></div>
+    <p>Generates documentation from code artifacts: SQL files, Snowpark notebooks, stored procedures, schema definitions. Produces column-level descriptions for tables and views, function docstrings, schema lineage notes, and data dictionary entries.</p>
+    <p>Documentation is proposed, not auto-applied. Missing memory entries produce missing documentation sections — this is the correct behavior. Gaps in documentation reflect gaps in recorded decisions, and that honesty is useful.</p>
+    <h3>When to Use</h3>
+    <p>Before shipping — run <code>/doc run</code> as part of Ship phase preparation to ensure documentation reflects the current state of the build. When onboarding a new team member to an existing data product, to give them a navigable entry point into the project's decisions and structure. After a major schema change where existing documentation is stale. The Doc Engine is most valuable when the Memory Engine has been running throughout the project — the richer the recorded decisions, the richer the generated documentation.</p>
+  </div>
+
+  <!-- ── Feature 14 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">14 — Context Mode <span class="tag">Transparency Layer</span></div>
+    <div class="feature-meta"><span><span class="cmd">/context on</span> <span class="cmd">/context off</span></span></div>
+    <p>Activates narration. When on, the system surfaces its reasoning before acting: what it is about to do, why it is choosing this approach, what alternatives it considered. It does not change what the system does — only what you see about what the system is doing.</p>
+    <h3>When to Use</h3>
+    <p>When you're new to CocoPlus and want to understand what the system is doing and why before trusting it. When debugging a pipeline that is behaving unexpectedly — narration gives you visibility into reasoning before actions execute. When walking a colleague through a session to explain the workflow. Turn it off once you're fluent with the system; the narration becomes overhead rather than signal when the behavior is familiar.</p>
+  </div>
+
+  <!-- ── Feature 15 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">15 — CocoMeter <span class="tag">Token Tracker</span></div>
+    <div class="feature-meta"><span><span class="cmd">/meter</span> <span class="cmd">/meter estimate</span> <span class="cmd">/meter history [n]</span> <span class="cmd">/meter on</span> <span class="cmd">/meter off</span></span></div>
+    <p>Makes token usage visible and predictable. Tracks consumption per session, per stage, and per persona. <code>/meter estimate</code> provides pre-flight cost estimation before an operation runs. Token visibility is not just about cost — it is about system health. A pipeline whose token usage grows session-over-session is accumulating unnecessary context.</p>
+    <h3>When to Use</h3>
+    <p>Before running any large or complex pipeline — use <code>/meter estimate</code> to get a cost envelope before committing. After any session that felt unexpectedly expensive — use <code>/meter history</code> to identify which features and stages drove the cost. In enterprise environments with token budgets, keep <code>/meter on</code> continuously. The estimate feature is most valuable immediately before the Build phase on plans with many parallel stages or Opus-level persona assignments.</p>
+  </div>
+
+  <!-- ── Feature 16 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">16 — CocoCupper <span class="tag">Post-Execution Intelligence</span></div>
+    <div class="feature-meta"><span><span class="cmd">/cup</span> <span class="cmd">/cup history [n]</span></span></div>
+    <p>The session debrief, automated. After every session — triggered by Stop and SubagentStop hooks — CocoCupper reads what just happened and identifies patterns: what worked, what failed consistently, what was reinvented unnecessarily. Findings go to <code>.cocoplus/grove/cupper-findings.md</code>.</p>
+    <p>CocoCupper runs on Haiku. It is read-only and cannot modify any artifact outside its designated output path. The name comes from coffee cupping — a professional evaluator scores and documents a brew's qualities <em>after</em> it is made, never during.</p>
+    <h3>When to Use</h3>
+    <p>It runs automatically — you don't need to invoke it for the background behavior. Run <code>/cup</code> manually after any session where you resolved a difficult problem, discovered a performance issue, or established a pattern you expect to reuse. Run <code>/cup history</code> periodically — every five to ten sessions — to look for cross-session patterns that wouldn't be visible session by session. Particularly valuable before a long break from a project: capture what was learned before the context fades.</p>
+  </div>
+
+  <!-- ── Feature 17 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">17 — Assist Mode <span class="tag">Master Toggle</span></div>
+    <div class="feature-meta"><span><span class="cmd">/cocoplus on</span> <span class="cmd">/cocoplus off</span></span></div>
+    <p>A single command that activates all mode-based features simultaneously: memory, inspector, safety (normal), quality, context, and meter. The recommended starting state for a new CocoPlus project. Intercepted by the UserPromptSubmit hook and takes effect immediately. AGENTS.md is updated to reflect the new state.</p>
+    <h3>When to Use</h3>
+    <p>At the start of every new project and at the start of any session where you want the full CocoPlus system active. It replaces six individual feature toggles with a single command. Use <code>/cocoplus off</code> when you're doing something lightweight and don't want CocoPlus overhead — a quick exploratory query, a throwaway experiment, a one-off question about the environment. If you're doing real project work, <code>/cocoplus on</code> is the right starting point.</p>
+  </div>
+
+  <!-- ── Feature 18 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">18 — CocoFleet <span class="tag">Multi-Process Orchestration</span></div>
+    <div class="feature-meta"><span><span class="cmd">/fleet init</span> <span class="cmd">/fleet run</span> <span class="cmd">/fleet status</span> <span class="cmd">/fleet stop</span> <span class="cmd">/fleet logs</span></span></div>
+    <p>For when the work is genuinely too large for a single Coco session. CocoFleet spawns independent Coco CLI processes at the operating system level — separate processes, separate context windows, coordinated through shared file state and PID tracking. This is distinct from CocoHarvest, which operates within a single session.</p>
+    <p>Fleet coordination is file-based: no message queues, no service buses. Each process writes its state to shared files; the coordinator reads those files. Simple, debuggable, and consistent with CocoPlus's commitment to legible file-based state.</p>
+    <h3>When to Use</h3>
+    <p>When you've genuinely hit the practical context budget of a single Coco session and still have work to coordinate across multiple independent workstreams. Large-scale data migrations. Multi-schema rebuilds spanning days of parallel work. Development streams that must eventually converge on a shared result. If CocoHarvest and CocoFlow can handle your parallelism within a single session, prefer them — CocoFleet adds OS-level coordination complexity that is only justified by genuine scale requirements that can't be met any other way.</p>
+  </div>
+
+  <!-- ── Feature 19 ─────────────────────────────────────── -->
+  <div class="feature" style="border-color: #a5b4fc; background: #f5f3ff;">
+    <div class="feature-name">19 — SecondEye <span class="tag">Multi-Model Plan Critic</span></div>
+    <div class="feature-meta"><span><span class="cmd">/secondeye</span> <span class="cmd">/secondeye --artifact &lt;target&gt;</span> <span class="cmd">/secondeye --model &lt;model&gt;</span> <span class="cmd">/secondeye acknowledge</span></span></div>
+
+    <p>A plan reviewed by the same model that wrote it is a plan reviewed by a single perspective. SecondEye fixes that by running three Claude model tiers in parallel — each with a genuinely different evaluative mandate — and aggregating their findings into a single structured critique.</p>
+    <p>The underlying insight is architectural: within Claude's model family, each tier reasons differently. Haiku naturally challenges over-engineering. Sonnet challenges logical completeness and missing edge cases. Opus challenges architectural risk and unconsidered alternatives. These are not the same critique at different quality levels — they are different critiques. Aggregating them produces a breadth no single model can match.</p>
+
+    <div class="lens-grid">
+      <div class="lens haiku">
+        <div class="lens-model">Haiku</div>
+        <div class="lens-name">Efficiency Lens</div>
+        <p>Is this plan over-specified? Are there steps that add complexity without proportionate value? Would a simpler approach achieve the same outcome?</p>
+      </div>
+      <div class="lens sonnet">
+        <div class="lens-model">Sonnet</div>
+        <div class="lens-name">Completeness Lens</div>
+        <p>What assumptions does this plan make that are not validated? Which edge cases are unaddressed? Are all spec success criteria traceable to a plan stage?</p>
+      </div>
+      <div class="lens opus">
+        <div class="lens-model">Opus</div>
+        <div class="lens-name">Risk Lens</div>
+        <p>What are the highest-consequence failure modes? Are there architectural decisions that constrain future flexibility? What would have to be true for this plan to fail despite correct execution?</p>
+      </div>
+    </div>
+
+    <h3>How It Works</h3>
+    <p>Three SecondEye Critic subagents spawn simultaneously — one per model tier. All three read the same target artifact (default: <code>plan.md</code>, or any artifact via <code>--artifact</code>). Each writes findings to a temporary staging directory. When all three complete, the skill aggregates and deduplicates findings — those agreed upon by two or more critics are marked <code>[Consensus]</code>. Everything is classified as Critical, Advisory, or Observation, and a single report is produced. If any Critical findings exist, a soft gate activates on the Build phase — the developer must either revise the plan or run <code>/secondeye acknowledge</code> to accept the risk. SecondEye Critic agents are read-only: they cannot write to any lifecycle artifact or take any action beyond their staging directory output.</p>
+
+    <h3>When to Use</h3>
+    <p>Before moving from Plan to Build on any work that involves irreversible operations, significant compute cost, or architectural decisions with long-term implications. Invoke it when you want a critical perspective that goes beyond what the model that generated the plan can offer — particularly for plans that are complex, have unclear trade-offs, or where the consequences of a wrong turn are expensive to undo. It is not necessary for every build — simple, well-understood tasks don't need it. But for plans where "what could go wrong?" is a question worth asking carefully, SecondEye is where you ask it rigorously.</p>
+  </div>
+
+  <blockquote>
+    <p>Nineteen features, one idea: give structure a lower cost than chaos.</p>
+  </blockquote>
+
+</div>
+
+<footer>
+  CocoPlus Documentation &nbsp;·&nbsp; <a href="architecture.html">← Architecture</a> &nbsp;·&nbsp; <a href="principles.html">Next: Principles →</a>
+</footer>
+
+</body>
+</html>
