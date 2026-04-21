@@ -1,0 +1,25 @@
+# Project Charter
+
+**Name:** {{PROJECT_NAME}}
+**Description:** {{PROJECT_DESCRIPTION}}
+**Created:** {{TIMESTAMP}}
+**Owner:** {{OWNER}}
+
+## Goal
+{{PROJECT_GOAL}}
+
+## Stakeholders
+- {{STAKEHOLDER_1}}
+
+## Key Data Sources
+- {{DATA_SOURCE_1}}
+
+## Current Phase
+Not Started
+
+## Key Decisions
+(None yet)
+
+## Phase History
+| Phase | Started | Completed | Phase ID |
+|-------|---------|-----------|----------|

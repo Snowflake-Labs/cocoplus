@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started — CocoPlus</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="brand">CocoPlus</a>
+  <a href="index.html">Home</a>
+  <a href="getting-started.html" class="active">Getting Started</a>
+  <a href="data-context.html">Data Context</a>
+  <a href="concepts.html">Concepts</a>
+  <a href="architecture.html">Architecture</a>
+  <a href="features.html">Features</a>
+  <a href="workflows.html">Workflows</a>
+  <a href="command-reference.html">Commands</a>
+  <a href="principles.html">Principles</a>
+  <a href="manifesto.html">Manifesto</a>
+</nav>
+
+<div class="page-header">
+  <div class="label">Start Here</div>
+  <h1>Getting Started</h1>
+  <p class="subtitle">From zero to a fully initialized CocoPlus project in under ten minutes.</p>
+</div>
+
+<div class="content">
+
+  <p>You're reading this because you have Coco, you have a Snowflake project, and you've decided that unstructured AI development has a cost you'd rather not keep paying. Good. The only irreversible decision you need to make upfront is which project to apply it to. Everything else is undoable, configurable, or skippable.</p>
+
+  <h2>Prerequisites</h2>
+
+  <p><strong>Coco CLI</strong> — Snowflake Cortex Code CLI installed and connected to a Snowflake account. Run <code>coco --version</code> to verify.</p>
+
+  <p><strong>Git</strong> — Your project directory must be a git repository. CocoPlus is tightly coupled to git — lifecycle phase commits, worktree isolation for parallel builds, rollback by commit hash. If your project isn't in git, run <code>git init &amp;&amp; git commit --allow-empty -m "init"</code> before proceeding.</p>
+
+  <p><strong>CocoPlus plugin installed</strong> — Install it once per machine using <code>npx skills add</code>:</p>
+
+  <pre><code>npx skills add https://github.com/Snowflake-Labs/cocoplus</code></pre>
+
+  <p>Verify with:</p>
+
+  <pre><code>coco plugins list
+# cocoplus should appear in the output</code></pre>
+
+  <p>That's the full list. CocoPlus adds no external services, no databases, no background processes. If the plugin is installed and Coco is connected to Snowflake, you have everything.</p>
+
+  <h2>Initialize Your Project</h2>
+
+  <p>Navigate to the root of your project directory — the same directory where your <code>.git/</code> folder lives. Then run:</p>
+
+  <pre><code>/pod init</code></pre>
+
+  <p>This creates the <code>.cocoplus/</code> directory and writes the initial state files that every CocoPlus feature reads from and writes to. You'll be prompted for a project name and a brief description.</p>
+
+  <p>What <code>/pod init</code> does:</p>
+
+  <ul style="margin: 1rem 0 1.5rem 1.5rem; line-height: 2;">
+    <li>Creates <code>.cocoplus/</code> with the complete directory structure</li>
+    <li>Writes <code>AGENTS.md</code> — the hot memory layer Coco loads automatically each session</li>
+    <li>Writes <code>project.md</code> with your project metadata</li>
+    <li>Initializes <code>flow.json</code> as an empty pipeline template</li>
+    <li>Sets default safety configuration (normal mode)</li>
+    <li>Creates the initial git commit</li>
+  </ul>
+
+  <p>If the directory already has a CocoPlus initialization, <code>/pod init</code> will refuse with a clear message. Use <code>/pod status</code> or <code>/pod resume</code> instead.</p>
+
+  <p>If you're working in a monorepo, initialize CocoPlus at the subdirectory level for the specific data workstream — not at the repo root.</p>
+
+  <h2>Activate All Features</h2>
+
+  <pre><code>/cocoplus on</code></pre>
+
+  <p>This is the single command that enables everything. It creates mode flag files in <code>.cocoplus/modes/</code> for each feature, immediately runs an Environment Inspector scan in the background, updates AGENTS.md to show <code>FULL ASSIST MODE: ACTIVE</code>, and creates a git commit marking the activation.</p>
+
+  <pre><code>✓ Memory Engine — on
+✓ Environment Inspector — auto (background scan starting)
+✓ Safety Gate — normal
+✓ Code Quality Advisor — on
+✓ Context Mode — on
+✓ CocoMeter — on
+✓ Full Assist Mode — ACTIVE</code></pre>
+
+  <p><strong>What <code>/cocoplus on</code> does not activate:</strong> CocoBrew lifecycle phases (start those yourself with <code>/spec</code>), CocoSpark (always explicit), and CocoFleet (requires deliberate setup). These are intentional — a tool that starts things without you is a tool you can't trust.</p>
+
+  <h2>Verify Your Setup</h2>
+
+  <pre><code>/pod status</code></pre>
+
+  <p>This is your dashboard. It reads from <code>.cocoplus/</code> and reports everything: current phase, active modes, Environment Inspector snapshot, Safety Gate status, CocoMeter session data, and CocoGrove patterns.</p>
+
+  <h2>Personas Available to You</h2>
+
+  <pre><code>/personas</code></pre>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Shorthand</th><th>Role</th><th>Domain</th><th>Mode</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>$de</code></td><td>Data Engineer</td><td>Schema design, SQL, stored procedures</td><td>auto</td></tr>
+        <tr><td><code>$ae</code></td><td>Analytics Engineer</td><td>Semantic models, transformations</td><td>auto</td></tr>
+        <tr><td><code>$ds</code></td><td>Data Scientist</td><td>Notebooks, ML, Cortex AI functions</td><td>auto</td></tr>
+        <tr><td><code>$da</code></td><td>Data Analyst</td><td>Query writing, exploration</td><td>auto</td></tr>
+        <tr><td><code>$bi</code></td><td>BI Analyst</td><td>Dashboards, semantic layer</td><td>auto</td></tr>
+        <tr><td><code>$dpm</code></td><td>Data Product Manager</td><td>Requirements, documentation</td><td>plan only</td></tr>
+        <tr><td><code>$dst</code></td><td>Data Steward</td><td>Governance, data quality</td><td>plan only</td></tr>
+        <tr><td><code>$cdo</code></td><td>Chief Data Officer</td><td>Strategic architecture (uses Opus)</td><td>plan only</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>The three plan-mode personas advise — they don't execute. If you ask <code>$dpm</code> to write SQL, it will explain why that's not its job and suggest who you should ask instead.</p>
+
+  <h2>Your Ongoing Dashboard Commands</h2>
+
+  <p><strong><code>/pod status</code></strong> — Full state report. Run this at the start of any session.</p>
+
+  <p><strong><code>/pod resume</code></strong> — For returning developers. Produces a focused narrative of where you left off, what was completed, what remains, and what to do next.</p>
+
+  <p><strong><code>/meter</code></strong> — Token and cost summary for the current session.</p>
+
+  <p><strong><code>/inspect</code></strong> — On-demand Snowflake environment scan. Add <code>--schema &lt;name&gt;</code> to limit scope.</p>
+
+  <h2>Your First Actual Work</h2>
+
+  <p>CocoPlus is initialized. Features are active. Your Snowflake environment is scanned. The right next command is:</p>
+
+  <pre><code>/spec</code></pre>
+
+  <p>This opens the Spec phase of CocoBrew — a structured dialogue that helps you articulate what you're building before a single line of SQL is written. The spec is not bureaucracy. It is the mirror that shows you your own assumptions.</p>
+
+  <p>If you want to explore alternatives before committing to a direction:</p>
+
+  <pre><code>/spark [topic]</code></pre>
+
+  <p>CocoSpark generates multiple approaches and raises the questions you may not have thought to ask. Its output is explicitly marked as exploration and never flows automatically into your spec. When you're ready to commit, <code>/spec</code> is always the next step.</p>
+
+  <h2>If Something Goes Wrong</h2>
+
+  <p><strong><code>/pod init</code> fails — "CocoPlus already initialized"</strong> — Your pod exists. Run <code>/pod status</code>. If you genuinely want to start fresh, remove <code>.cocoplus/</code> manually, but this discards all existing state.</p>
+
+  <p><strong>Command not recognized</strong> — Verify the plugin is installed with <code>coco plugins list</code>.</p>
+
+  <p><strong>Safety Gate blocking an intended operation</strong> — The default normal mode warns but doesn't block. If you're in strict mode, run <code>/safety normal</code> to reduce protection level. Never use <code>/safety off</code> with production data.</p>
+
+  <blockquote>
+    <p>Setup is not overhead. Setup is the first act of professional intent — the moment you decide to build deliberately instead of by accident.</p>
+  </blockquote>
+
+</div>
+
+<footer>
+  CocoPlus — A plugin for Snowflake Cortex Code CLI &nbsp;·&nbsp; Version 1.1
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture — CocoPlus</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="brand">CocoPlus</a>
+  <a href="index.html">Home</a>
+  <a href="getting-started.html">Getting Started</a>
+  <a href="data-context.html">Data Context</a>
+  <a href="concepts.html">Concepts</a>
+  <a href="architecture.html" class="active">Architecture</a>
+  <a href="features.html">Features</a>
+  <a href="workflows.html">Workflows</a>
+  <a href="command-reference.html">Commands</a>
+  <a href="principles.html">Principles</a>
+  <a href="manifesto.html">Manifesto</a>
+</nav>
+
+<div class="page-header">
+  <div class="label">How It's Built</div>
+  <h1>Architecture</h1>
+  <p class="subtitle">Four native Coco pillars, one file-based state store, zero external dependencies.</p>
+</div>
+
+<div class="content">
+
+  <p>CocoPlus does not introduce any new runtime infrastructure. No additional processes, no sidecar services, no external APIs. Every capability it provides is expressed through the constructs that Coco already understands: configuration files, subagent definitions, skill scripts, and hooks.</p>
+  <p>This is a choice about reliability. When something breaks, you should be able to understand why by reading files, not by debugging a service mesh.</p>
+
+  <hr>
+
+  <h2>The Four Pillars</h2>
+
+  <h3>Pillar 1 — Rules: The Ambient Context</h3>
+  <p>Every CocoPlus-initialized project contains a file at <code>.cocoplus/AGENTS.md</code>. Coco loads this file automatically at the start of every session. Every agent, every skill, every hook — they all operate within the constraints this file establishes.</p>
+  <p>AGENTS.md contains the current CocoBrew phase, the active feature modes, the most recent key decisions, and the Git state summary. It is capped at <strong>200 lines — enforced, not suggested</strong>. When a session ends, the hook that updates AGENTS.md compresses older entries if adding new ones would breach the limit.</p>
+  <p>Why the hard limit? Because everything in AGENTS.md is loaded into every session, whether or not it's needed. Space here is shared with everything else the developer is doing. 200 lines is enough to orient any agent at the start of a session. More than that is noise.</p>
+  <p>AGENTS.md is never written by hand. Hooks update it automatically. The ambient context is authoritative and current because the system maintains it, not because developers remember to update it.</p>
+
+  <h3>Pillar 2 — Agents: The Domain Specialists</h3>
+  <p>The <code>.cortex/agents/</code> directory holds subagent definition files — one for each specialist persona in CocoPlus, plus CocoCupper.</p>
+  <p>Each definition specifies four things: <strong>identity</strong> (who this agent is and what domain it owns), <strong>model</strong> (locked, not a suggestion), <strong>tools</strong> (which native Coco tools it can access, also locked), and <strong>mode</strong> (auto = executes, plan = advises only).</p>
+  <p>These definitions are contracts. The Data Steward operates in plan mode because autonomous execution defeats the purpose of governance review. The CDO uses Opus because strategic architectural decisions warrant the reasoning depth.</p>
+  <p>CocoCupper is also a subagent. It runs in the background, triggered by the Stop and SubagentStop hooks. It uses Haiku. It is read-only — it cannot write code or modify files outside its designated output path. Its only job is observation and categorization.</p>
+
+  <h3>Pillar 3 — Skills: The User-Facing Capabilities</h3>
+  <p>Skills are SKILL.md files in <code>.cortex/skills/</code>. Each skill implements one user-facing capability — one slash command, or one group of closely related commands.</p>
+  <p>Skills are <strong>loaded on demand</strong>. They are not in the context window by default. When a developer runs <code>/plan</code>, the plan skill is loaded, executes its workflow, and exits. The context window returns to baseline.</p>
+  <p>Each skill is self-contained. It reads from <code>.cocoplus/</code> (the current state store), executes its workflow, and writes its outputs back to <code>.cocoplus/</code>. Skills don't share state through the session context — they share state through files. This makes skills independently testable and independently auditable.</p>
+
+  <h3>Pillar 4 — Hooks: The Nervous System</h3>
+  <p>Hooks are shell scripts that fire when Coco lifecycle events occur. They are invisible to the developer during normal operation. They are what keeps CocoPlus coherent across time.</p>
+  <p>CocoPlus registers nine hooks:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Hook</th><th>When It Fires</th><th>What It Does</th></tr></thead>
+      <tbody>
+        <tr><td><code>SessionStart</code></td><td>Session opens</td><td>Reads phase/modes from AGENTS.md; initializes CocoMeter; triggers Environment Inspector if auto-mode is on</td></tr>
+        <tr><td><code>SessionEnd</code></td><td>Session closes</td><td>Writes CocoMeter session data; updates AGENTS.md summary; optionally queues CocoCupper</td></tr>
+        <tr><td><code>PreToolUse</code></td><td>Before any tool call</td><td>Safety Gate primary layer — intercepts SnowflakeSqlExecute and blocks destructive SQL in strict mode</td></tr>
+        <tr><td><code>PostToolUse</code></td><td>After any tool call</td><td>Memory Engine capture — records decisions, schema changes, error/resolution pairs to warm layer</td></tr>
+        <tr><td><code>UserPromptSubmit</code></td><td>Developer types a prompt</td><td>Routes <code>$&lt;persona&gt;</code> shortcuts to the correct agent; handles <code>/cocoplus on/off</code></td></tr>
+        <tr><td><code>SubagentStop</code></td><td>A subagent completes</td><td>Validates checkpoints; updates <code>flow.json</code> stage status; triggers next stage if dependencies are resolved</td></tr>
+        <tr><td><code>Stop</code></td><td>Main session ends</td><td>Final state capture</td></tr>
+        <tr><td><code>PreCompact</code></td><td>Before context compaction</td><td>Flushes important state from context to warm memory before it is lost</td></tr>
+        <tr><td><code>Notification</code></td><td>Any significant event</td><td>Routes events to developer via Coco's native notification mechanism or log file</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr>
+
+  <h2>How the Pillars Talk to Each Other</h2>
+  <p>The four pillars interact through a shared state store: the <code>.cocoplus/</code> directory. Rules are updated by Hooks. Skills read from AGENTS.md. Agents write their outputs to paths specified in their definitions. Hooks validate those outputs against checkpoints.</p>
+  <p>Here is a complete lifecycle walkthrough — from <code>/spec</code> to <code>/ship</code>:</p>
+  <ol style="margin: 1rem 0 1.25rem 1.5rem; line-height: 2.2;">
+    <li>Developer runs <code>/spec</code>. The spec skill loads and opens a guided dialogue.</li>
+    <li>Developer runs <code>/plan</code>. The plan skill reads <code>spec.md</code>, triggers CocoHarvest to generate <code>flow.json</code>, and enters Coco's native plan mode for human approval.</li>
+    <li>Developer approves. The skill commits <code>plan.md</code> and updates AGENTS.md to reflect Build phase.</li>
+    <li>Developer runs <code>/build</code>. The build skill reads <code>flow.json</code> and begins execution.</li>
+    <li>As each subagent completes a stage, the <code>SubagentStop</code> hook fires, validates checkpoints, and updates <code>flow.json</code> stage status.</li>
+    <li>The <code>PostToolUse</code> hook captures significant decisions into warm memory throughout execution.</li>
+    <li>Developer runs <code>/secondeye</code> if they want independent multi-model critique of the plan before proceeding. Three critic instances run in parallel; findings are aggregated.</li>
+    <li>Developer runs <code>/test</code>. Tests run against spec success criteria; results recorded.</li>
+    <li>Developer runs <code>/review</code>. Code Quality Advisor reviews SQL; CocoCupper findings are surfaced; spec compliance checked.</li>
+    <li>Developer runs <code>/ship</code>. Gated on review. Creates structured commit, version tag, optional PR.</li>
+    <li>Session ends. <code>Stop</code> and <code>SessionEnd</code> hooks write CocoMeter data, update AGENTS.md, and queue CocoCupper.</li>
+    <li>Next session starts. AGENTS.md is loaded. Developer sees exactly where they left off.</li>
+  </ol>
+  <p>This sequence is the ordinary experience of working with CocoPlus. Every session is a conversation between the pillars, mediated by files.</p>
+
+  <hr>
+
+  <h2>The CocoPod Directory</h2>
+  <p>The <code>.cocoplus/</code> directory is the physical manifestation of a CocoPlus project. It contains everything the system needs to be stateful.</p>
+  <pre>.cocoplus/
+├── AGENTS.md              ← hot memory, auto-loaded every session (≤200 lines)
+├── project.md             ← project identity and initialization metadata
+├── flow.json              ← CocoFlow pipeline definition + execution log
+├── lifecycle/             ← spec, plan, test, review, deployment artifacts
+│   └── .secondeye-staging/ ← temp directory for SecondEye critic outputs
+├── memory/                ← decisions.md, patterns.md, errors.md
+├── prompts/               ← per-stage prompt files (generated at Plan phase)
+├── monitors/              ← four standard monitor configs
+├── grove/                 ← CocoGrove: curated patterns + cupper findings
+├── meter/                 ← session tracking and cost history
+├── snapshots/             ← Environment Inspector scan results
+├── modes/                 ← mode flag files (inspector.on, memory.on, etc.)
+├── safety-config.json     ← protected schema patterns
+└── notifications.json     ← notification routing configuration</pre>
+  <p>This directory goes into version control. The entire project state — decisions, patterns, lifecycle artifacts, pipeline definitions — is versionable, diffable, and recoverable.</p>
+  <p>File-based persistence was chosen because it aligns with how developers already think about project state. You can read any of these files with a text editor. You can diff them with git. You can restore a previous state with <code>git checkout</code>. The system's intelligence lives in legible files, not in opaque service state.</p>
+
+  <hr>
+
+  <h2>The Four-Tier Model Hierarchy</h2>
+  <p>Model selection across the system follows a four-tier precedence hierarchy, resolved from lowest to highest:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Tier</th><th>Where It's Set</th><th>Scope</th><th>Persists?</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Tier 1</strong></td><td>Persona default in <code>.agent.md</code></td><td>Always applies unless overridden</td><td>Yes</td></tr>
+        <tr><td><strong>Tier 2</strong></td><td><code>defaults.model</code> in <code>flow.json</code></td><td>All stages in a pipeline</td><td>Yes (in file)</td></tr>
+        <tr><td><strong>Tier 3</strong></td><td>Stage-level <code>model</code> field in <code>flow.json</code></td><td>That specific stage</td><td>Yes (in file)</td></tr>
+        <tr><td><strong>Tier 4</strong></td><td><code>--model</code> flag at runtime</td><td>That specific invocation only</td><td>No</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>CocoCupper's model is not in this hierarchy. It cannot be overridden. This is an intentional exception — CocoCupper's cost architecture is a design requirement, not a preference.</p>
+
+  <hr>
+
+  <h2>CocoFleet — A Different Kind of Parallelism</h2>
+  <p>CocoHarvest runs parallel subagents within a single Coco session — these are Coco's native subagents, coordinated by the parent session.</p>
+  <p>CocoFleet is different. It spawns independent Coco CLI processes at the operating system level. Separate processes, separate sessions, separate context windows. Coordinated through shared file state, PID tracking, and dependency resolution logic.</p>
+  <p>This distinction matters for very large workstreams. When the work is too large for a single Coco session's context budget, you need multiple sessions, not multiple subagents. CocoFleet manages that orchestration. It is not for everyday use. It is for the projects where scale genuinely demands it.</p>
+
+  <blockquote>
+    <p>A well-designed system is one where the complexity is in the right place — not eliminated, but located where it can be reasoned about.</p>
+  </blockquote>
+
+</div>
+
+<footer>
+  CocoPlus Documentation &nbsp;·&nbsp; <a href="concepts.html">← Core Concepts</a> &nbsp;·&nbsp; <a href="features.html">Next: Features →</a>
+</footer>
+
+</body>
+</html>
