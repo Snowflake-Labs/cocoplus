@@ -1,8 +1,0 @@
-name: sf_ai_env
-channels:
-  - snowflake
-dependencies:
-  - streamlit
-  - snowflake-snowpark-python
-  - snowflake-ml-python
-  - streamlit-option-menu
