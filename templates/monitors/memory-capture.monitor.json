@@ -1,0 +1,10 @@
+{
+  "monitor": "memory-capture",
+  "version": "1.0",
+  "enabled": false,
+  "decision_keywords": ["decided", "determined", "approved", "pattern", "chosen", "selected"],
+  "capture_file": ".cocoplus/memory/decisions.md",
+  "patterns_file": ".cocoplus/memory/patterns.md",
+  "errors_file": ".cocoplus/memory/errors.md",
+  "max_decisions_per_session": 50
+}

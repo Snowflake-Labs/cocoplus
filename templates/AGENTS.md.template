@@ -1,0 +1,30 @@
+# AGENTS.md — Active Personas & Session State
+# Auto-loaded by Coco on every session start. Keep ≤200 lines.
+
+## Current Session
+Started: {{TIMESTAMP}}
+Session ID: {{SESSION_ID}}
+
+## CocoBrew Lifecycle
+Phase: Not Started
+Last Phase Completed: None
+
+## Active Modes
+- Safety: normal
+- Memory: off
+- Inspector: off
+- Context Mode: off
+- CocoMeter: off
+- Code Quality: off
+
+## Active Personas
+(None yet — use $de, $ae, $ds, $da, $bi, $dpm, $dst, $cdo)
+
+## Recent Decisions
+(None yet)
+
+## Quick Links
+- Full Project: .cocoplus/project.md
+- Current Plan: .cocoplus/lifecycle/plan.md
+- Active Flow: .cocoplus/flow.json
+- Patterns: .cocoplus/grove/patterns/

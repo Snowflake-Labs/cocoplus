@@ -1,0 +1,9 @@
+{
+  "monitor": "cost-tracker",
+  "version": "1.0",
+  "enabled": false,
+  "session_file": ".cocoplus/meter/current-session.json",
+  "history_file": ".cocoplus/meter/history.jsonl",
+  "budget_threshold_tokens": 50000,
+  "alert_on_threshold": true
+}
