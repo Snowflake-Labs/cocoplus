@@ -22,15 +22,28 @@ Built using only Coco-native constructs: Skills, Agents, Hooks, and AGENTS.md.
 
 ---
 
+## Installation
+
+```
+npx skills add https://github.com/Snowflake-Labs/cocoplus
+```
+
+Verify:
+
+```
+coco plugins list
+# cocoplus should appear in the output
+```
+
 ## Getting Started
 
 ```
 /pod init       — initialize CocoPlus in your project
-/spec           — start the requirements phase
 /cocoplus on    — activate all features
+/spec           — start the requirements phase
 ```
 
-See [docs/index.html](https://sgsshankar.github.io/cocoplus/) for the full documentation site.
+See [docs/index.html](docs/index.html) for the full documentation site.
 
 ---
 
