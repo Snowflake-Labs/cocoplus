@@ -43,7 +43,7 @@ coco plugins list
 /spec           — start the requirements phase
 ```
 
-See [docs/index.html](docs/index.html) for the full documentation site.
+See [cocoplus.dev](https://cocoplus.dev) for the full documentation site.
 
 ---
 
