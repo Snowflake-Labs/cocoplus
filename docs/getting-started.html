@@ -20,6 +20,7 @@
   <a href="command-reference.html">Commands</a>
   <a href="principles.html">Principles</a>
   <a href="manifesto.html">Manifesto</a>
+  <a href="https://github.com/Snowflake-Labs/cocoplus/" target="_blank" rel="noopener">Repo ↗</a>
 </nav>
 
 <div class="page-header">
@@ -34,7 +35,7 @@
 
   <h2>Prerequisites</h2>
 
-  <p><strong>Coco CLI</strong> — Snowflake Cortex Code CLI installed and connected to a Snowflake account. Run <code>coco --version</code> to verify.</p>
+  <p><strong>Coco CLI</strong> — Snowflake Cortex Code CLI installed and connected to a Snowflake account. Run <code>cortex --version</code> to verify.</p>
 
   <p><strong>Git</strong> — Your project directory must be a git repository. CocoPlus is tightly coupled to git — lifecycle phase commits, worktree isolation for parallel builds, rollback by commit hash. If your project isn't in git, run <code>git init &amp;&amp; git commit --allow-empty -m "init"</code> before proceeding.</p>
 
@@ -44,7 +45,7 @@
 
   <p>Verify with:</p>
 
-  <pre><code>coco plugins list
+  <pre><code>cortex plugins list
 # cocoplus should appear in the output</code></pre>
 
   <p>That's the full list. CocoPlus adds no external services, no databases, no background processes. If the plugin is installed and Coco is connected to Snowflake, you have everything.</p>
