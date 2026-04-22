@@ -31,7 +31,7 @@ npx skills add https://github.com/Snowflake-Labs/cocoplus
 Verify:
 
 ```
-coco plugins list
+cortex plugins list
 # cocoplus should appear in the output
 ```
 
