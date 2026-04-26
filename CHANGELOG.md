@@ -4,7 +4,7 @@ All notable changes to CocoPlus are documented here.
 
 ---
 
-## [1.0.0] — 2025
+## [1.0.0] — April 2026
 
 ### Added
 
