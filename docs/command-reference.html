@@ -214,7 +214,7 @@
 
   <h2>Code Quality Advisor</h2>
 
-  <pre><code>/quality on              # Enable background review after every .sql file write
+  <pre><code>/quality on              # Enable queued background review after every .sql file write
 /quality off             # Disable background review
 
 /quality run             # Immediate review of all SQL modified this session
@@ -232,7 +232,7 @@
 
   <h2>CocoCupper — Post-Execution Intelligence</h2>
 
-  <pre><code>/cup              # Manually trigger CocoCupper analysis (Haiku, read-only)
+  <pre><code>/cup              # Manually trigger CocoCupper analysis (Haiku, findings-file only)
 /cup history      # All historical findings
 /cup history 3    # Last N sessions' findings</code></pre>
 
@@ -302,8 +302,8 @@
         <tr><td><strong>SessionStart</strong></td><td>Session begins</td><td>Reads state, initializes CocoMeter, triggers inspector background scan if enabled</td></tr>
         <tr><td><strong>SessionEnd</strong></td><td>Session ends</td><td>Writes CocoMeter data, updates AGENTS.md with session summary</td></tr>
         <tr><td><strong>PreToolUse</strong></td><td>Before any tool call</td><td>Safety Gate — intercepts SnowflakeSqlExecute, blocks or warns per safety mode</td></tr>
-        <tr><td><strong>PostToolUse</strong></td><td>After any tool call</td><td>Memory Engine — captures significant events to warm memory layer</td></tr>
-        <tr><td><strong>UserPromptSubmit</strong></td><td>Developer submits a prompt</td><td>Routes <code>$&lt;persona&gt;</code> shorthand; intercepts <code>/cocoplus on|off</code></td></tr>
+        <tr><td><strong>PostToolUse</strong></td><td>After any tool call</td><td>Memory Engine — captures significant events to warm memory and queues SQL quality review when enabled</td></tr>
+        <tr><td><strong>UserPromptSubmit</strong></td><td>Developer submits a prompt</td><td>Routes <code>$&lt;persona&gt;</code> shorthand and records subagent routing state</td></tr>
         <tr><td><strong>SubagentStop</strong></td><td>A subagent completes</td><td>Validates checkpoints, updates <code>flow.json</code> stage status, triggers next stage</td></tr>
         <tr><td><strong>Stop</strong></td><td>Main session ends</td><td>Final state capture, queues CocoCupper</td></tr>
         <tr><td><strong>PreCompact</strong></td><td>Before context compaction</td><td>Flushes important state to warm memory before it's lost</td></tr>

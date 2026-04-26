@@ -1,10 +1,11 @@
 ---
 name: "SecondEye Critic"
-description: "SecondEye adversarial reviewer. Read-only critic that analyzes lifecycle artifacts from a specific lens (efficiency, completeness, or risk) and outputs structured findings. Invoked by /secondeye in parallel at three model tiers."
+description: "SecondEye adversarial reviewer. Constrained critic that analyzes lifecycle artifacts from a specific lens (efficiency, completeness, or risk) and outputs structured findings. Invoked by /secondeye in parallel at three model tiers."
 model: "sonnet"
 mode: "plan"
 tools:
   - Read
+  - Write
 background: false
 isolation: "none"
 context: "isolated"

@@ -4,12 +4,24 @@ All notable changes to CocoPlus are documented here.
 
 ---
 
+## [1.0.1] — April 2026
+
+### Fixed
+- Registered the background `environment-inspector` and `quality-advisor` agents in `plugin.json` so hook-triggered automation has valid runtime targets
+- Added runtime definitions for `environment-inspector` and `quality-advisor` background agents to match documented CocoPlus behavior
+- Updated `post-tool-use.js` to queue and trigger background quality review after SQL writes when Quality mode is enabled
+- Corrected `CocoCupper` and `SecondEye Critic` agent tool contracts so their allowed write targets match their documented outputs
+
+### Documentation
+- Updated HTML documentation to align hook behavior, background agent behavior, and constrained-write agent semantics with the implementation
+- Added `scripts/validate-cocoplus.js` to validate manifest-to-agent consistency, hook-spawned agent registration, and agent write-contract accuracy
+
 ## [1.0.0] — April 2026
 
 ### Added
 
 #### Core Plugin
-- `plugin.json` — Coco plugin manifest with Node.js runtime, 9 hooks, 11 agents
+- `plugin.json` — Coco plugin manifest with Node.js runtime, 9 hooks, 13 agents
 - Plugin scaffold with `.cortex/` directory structure (agents, hooks, skills, templates)
 
 #### CocoPod
@@ -75,6 +87,7 @@ All notable changes to CocoPlus are documented here.
 - `/quality on`, `/quality off` — background review after every `.sql` write
 - `/quality run` — immediate full review; optional file path argument
 - Findings categorized: performance, correctness, governance, cost
+- `quality-advisor` background agent — consumes queued SQL review requests and writes findings reports
 
 #### CocoMeter
 - `/meter on`, `/meter off` — token tracking via `PostToolUse` hook
@@ -140,6 +153,7 @@ All notable changes to CocoPlus are documented here.
 - `notification.js` — deduplication (60s window); routes to `ui-notifications.jsonl` for high-priority events
 - `lib/agents-update.js` — shared AGENTS.md utility; 200-line hard enforcement; `readActiveModes`, `readRecentDecisions`
 - `_common.js` — shared utilities: `isoUtc`, `atomicWrite`, `appendJsonLine`, `readStdinJson`, `logError`
+- `environment-inspector` background agent — session-start inspector execution target
 
 #### Templates
 - `AGENTS.md.template` — hot memory layer with phase/modes/decisions sections
@@ -178,3 +192,4 @@ All notable changes to CocoPlus are documented here.
 ---
 
 [1.0.0]: https://github.com/Snowflake-Labs/cocoplus/releases/tag/v1.0.0
+[1.0.1]: https://github.com/Snowflake-Labs/cocoplus/releases/tag/v1.0.1

@@ -45,10 +45,10 @@
   <p>AGENTS.md is never written by hand. Hooks update it automatically. The ambient context is authoritative and current because the system maintains it, not because developers remember to update it.</p>
 
   <h3>Pillar 2 — Agents: The Domain Specialists</h3>
-  <p>The <code>.cortex/agents/</code> directory holds subagent definition files — one for each specialist persona in CocoPlus, plus CocoCupper.</p>
+  <p>The <code>.cortex/agents/</code> directory holds subagent definition files — one for each specialist persona in CocoPlus, plus operational agents such as CocoCupper, SecondEye Critic, Environment Inspector, and Quality Advisor.</p>
   <p>Each definition specifies four things: <strong>identity</strong> (who this agent is and what domain it owns), <strong>model</strong> (locked, not a suggestion), <strong>tools</strong> (which native Coco tools it can access, also locked), and <strong>mode</strong> (auto = executes, plan = advises only).</p>
   <p>These definitions are contracts. The Data Steward operates in plan mode because autonomous execution defeats the purpose of governance review. The CDO uses Opus because strategic architectural decisions warrant the reasoning depth.</p>
-  <p>CocoCupper is also a subagent. It runs in the background, triggered by the Stop and SubagentStop hooks. It uses Haiku. It is read-only — it cannot write code or modify files outside its designated output path. Its only job is observation and categorization.</p>
+  <p>CocoCupper is also a subagent. It runs in the background, triggered by the Stop and SubagentStop hooks. It uses Haiku. It cannot modify project code or lifecycle state; its only write target is its findings file. Its only job is observation and categorization.</p>
 
   <h3>Pillar 3 — Skills: The User-Facing Capabilities</h3>
   <p>Skills are SKILL.md files in <code>.cortex/skills/</code>. Each skill implements one user-facing capability — one slash command, or one group of closely related commands.</p>
@@ -56,19 +56,19 @@
   <p>Each skill is self-contained. It reads from <code>.cocoplus/</code> (the current state store), executes its workflow, and writes its outputs back to <code>.cocoplus/</code>. Skills don't share state through the session context — they share state through files. This makes skills independently testable and independently auditable.</p>
 
   <h3>Pillar 4 — Hooks: The Nervous System</h3>
-  <p>Hooks are shell scripts that fire when Coco lifecycle events occur. They are invisible to the developer during normal operation. They are what keeps CocoPlus coherent across time.</p>
+  <p>Hooks are Node.js scripts that fire when Coco lifecycle events occur. They are invisible to the developer during normal operation. They are what keeps CocoPlus coherent across time.</p>
   <p>CocoPlus registers nine hooks:</p>
   <div class="table-wrap">
     <table>
       <thead><tr><th>Hook</th><th>When It Fires</th><th>What It Does</th></tr></thead>
       <tbody>
-        <tr><td><code>SessionStart</code></td><td>Session opens</td><td>Reads phase/modes from AGENTS.md; initializes CocoMeter; triggers Environment Inspector if auto-mode is on</td></tr>
-        <tr><td><code>SessionEnd</code></td><td>Session closes</td><td>Writes CocoMeter session data; updates AGENTS.md summary; optionally queues CocoCupper</td></tr>
+        <tr><td><code>SessionStart</code></td><td>Session opens</td><td>Reads current CocoPlus state, initializes CocoMeter, and triggers Environment Inspector if auto-mode is on</td></tr>
+        <tr><td><code>SessionEnd</code></td><td>Session closes</td><td>Writes CocoMeter session data and updates AGENTS.md summary</td></tr>
         <tr><td><code>PreToolUse</code></td><td>Before any tool call</td><td>Safety Gate primary layer — intercepts SnowflakeSqlExecute and blocks destructive SQL in strict mode</td></tr>
-        <tr><td><code>PostToolUse</code></td><td>After any tool call</td><td>Memory Engine capture — records decisions, schema changes, error/resolution pairs to warm layer</td></tr>
-        <tr><td><code>UserPromptSubmit</code></td><td>Developer types a prompt</td><td>Routes <code>$&lt;persona&gt;</code> shortcuts to the correct agent; handles <code>/cocoplus on/off</code></td></tr>
+        <tr><td><code>PostToolUse</code></td><td>After any tool call</td><td>Memory Engine capture — records decisions and write activity to warm memory, and queues SQL quality review when enabled</td></tr>
+        <tr><td><code>UserPromptSubmit</code></td><td>Developer types a prompt</td><td>Routes <code>$&lt;persona&gt;</code> shortcuts to the correct agent and records subagent context</td></tr>
         <tr><td><code>SubagentStop</code></td><td>A subagent completes</td><td>Validates checkpoints; updates <code>flow.json</code> stage status; triggers next stage if dependencies are resolved</td></tr>
-        <tr><td><code>Stop</code></td><td>Main session ends</td><td>Final state capture</td></tr>
+        <tr><td><code>Stop</code></td><td>Main session ends</td><td>Final state capture and CocoCupper background queueing</td></tr>
         <tr><td><code>PreCompact</code></td><td>Before context compaction</td><td>Flushes important state from context to warm memory before it is lost</td></tr>
         <tr><td><code>Notification</code></td><td>Any significant event</td><td>Routes events to developer via Coco's native notification mechanism or log file</td></tr>
       </tbody>
