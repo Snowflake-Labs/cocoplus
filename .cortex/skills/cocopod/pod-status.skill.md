@@ -1,7 +1,7 @@
 ---
 name: "pod-status"
 description: "Display complete CocoPlus project state: lifecycle phase, CocoFlow pipeline status, active modes, memory state, safety gate, inspector, meter, personas, patterns, and cupper findings. Run at any time to get a full project overview."
-version: "1.0.0"
+version: "1.0.1"
 author: "CocoPlus"
 tags:
   - cocoplus

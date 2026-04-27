@@ -20,7 +20,8 @@
     "environment-inspector",
     "quality-advisor",
     "coco-cupper",
-    "secondeye-critic"
+    "secondeye-critic",
+    "coco-scout"
   ],
   "hooks": [
     "session-start",

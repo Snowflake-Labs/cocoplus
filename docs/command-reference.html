@@ -294,6 +294,36 @@
 
 /fleet stop fleet-001       # Graceful shutdown (SIGTERM → SIGKILL)</code></pre>
 
+  <h2>CocoView — Flow Visualizer</h2>
+
+  <pre><code>/flow view                         # Render flow.json as HTML DAG, open in browser
+/flow view --output path/to/out.html  # Write HTML to custom path (no browser open)</code></pre>
+
+  <h2>CocoMeter Enhanced — Token Attribution</h2>
+
+  <pre><code>/meter view    # Generate attribution dashboard, query Snowflake usage history, open in browser
+/meter sync    # Refresh dashboard with updated Snowflake data (no browser open)</code></pre>
+
+  <h2>CocoContext — Organizational Standards</h2>
+
+  <pre><code>/context add           # Guided wizard: capture or update an org standards file
+/context list          # Show all six standard slots with line counts and last-modified dates
+/context view          # List files then prompt for selection
+/context view approved-models  # Display a specific context file directly</code></pre>
+
+  <h2>CocoRecipe — Pipeline Templates</h2>
+
+  <pre><code>/recipe list                         # List all available recipe templates
+/recipe use cortex-add-classifier    # Generate flow.json from template (interactive params)
+/recipe use cortex-add-classifier --params labels=positive|negative target_table=REVIEWS.COMMENTS
+/recipe new my-pipeline              # Save current flow.json as a reusable recipe template</code></pre>
+
+  <h2>CocoDream — Pattern Distillation</h2>
+
+  <pre><code>/dream            # Distil prompt iteration patterns into lesson candidates (requires 3+ versions per function)
+/dream history    # List past distillation sessions (default: last 3)
+/dream history 5  # List last 5 sessions</code></pre>
+
   <h2>Hooks — Automatic Reference</h2>
 
   <div class="table-wrap">
@@ -305,7 +335,7 @@
         <tr><td><strong>SessionStart</strong></td><td>Session begins</td><td>Reads state, initializes CocoMeter, triggers inspector background scan if enabled</td></tr>
         <tr><td><strong>SessionEnd</strong></td><td>Session ends</td><td>Writes CocoMeter data, updates AGENTS.md with session summary</td></tr>
         <tr><td><strong>PreToolUse</strong></td><td>Before any tool call</td><td>Safety Gate — intercepts SnowflakeSqlExecute; unconditionally blocks during spec/plan phases; blocks or warns per safety mode during build phase and beyond</td></tr>
-        <tr><td><strong>PostToolUse</strong></td><td>After any tool call</td><td>Memory Engine — captures significant events to warm memory and queues SQL quality review when enabled</td></tr>
+        <tr><td><strong>PostToolUse</strong></td><td>After any tool call</td><td>Memory Engine capture, SQL quality queue trigger, CocoMeter counter increment, and request_id capture for CocoMeter Enhanced stage attribution</td></tr>
         <tr><td><strong>UserPromptSubmit</strong></td><td>Developer submits a prompt</td><td>Routes <code>$&lt;persona&gt;</code> shorthand and records subagent routing state</td></tr>
         <tr><td><strong>SubagentStop</strong></td><td>A subagent completes</td><td>Validates checkpoints, updates <code>flow.json</code> stage status, triggers next stage</td></tr>
         <tr><td><strong>Stop</strong></td><td>Main session ends</td><td>Final state capture, queues CocoCupper</td></tr>

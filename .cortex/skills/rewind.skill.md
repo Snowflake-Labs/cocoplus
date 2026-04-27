@@ -1,7 +1,7 @@
 ---
 name: "rewind"
 description: "Roll back the CocoBrew lifecycle to a prior phase commit. Performs a git soft reset to the specified phase ID commit, discards subsequent commits, and updates AGENTS.md phase state. Use with caution — subsequent phase artifacts will be removed."
-version: "1.0.0"
+version: "1.0.1"
 author: "CocoPlus"
 tags:
   - cocoplus

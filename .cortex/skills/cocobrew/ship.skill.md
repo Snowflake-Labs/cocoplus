@@ -1,7 +1,7 @@
 ---
 name: "ship"
 description: "Enter the Ship phase of CocoBrew. Reads review.md approval, generates structured commit, creates semantic version tag, optionally creates PR via gh CLI, and records deployment details. Requires approved review."
-version: "1.0.0"
+version: "1.0.1"
 author: "CocoPlus"
 tags:
   - cocoplus
