@@ -6,6 +6,37 @@ All notable changes to CocoPlus are documented here.
 
 ## [1.0.1] — April 2026
 
+### Added
+
+#### CocoView — Flow Visualizer (Feature 20)
+- `flow-view.skill.md` — `/flow view` renders `flow.json` as an interactive HTML DAG; injects pipeline data into `flow-view.html.template` and opens in the default browser; `--output <path>` writes to a custom path without opening the browser
+
+#### CocoMeter Enhanced — Token Attribution & Dashboard (Feature 21)
+- `meter-view.skill.md` — `/meter view` queries `SNOWFLAKE.ACCOUNT_USAGE.CORTEX_CODE_CLI_USAGE_HISTORY` (two-pass query for direct and subagent-anchor request IDs), joins with local `request-map.jsonl` attribution data, injects into `meter-view.html.template`, and opens in browser
+- `meter-sync.skill.md` — `/meter sync` refreshes the dashboard with updated Snowflake data without reopening the browser; intended for use after the 90-minute usage history latency window
+- Updated `post-tool-use.js` — Section 5 captures `request_id` from every Snowflake tool result when CocoMeter is active, appending to `.cocoplus/meter/request-map.jsonl` with `stage_id`, `persona`, `tool_name`, `session_id`, and `timestamp` for per-stage attribution
+
+#### CocoContext — Organizational Standards Capture (Feature 23)
+- `context-add.skill.md` — `/context add` guided wizard captures org standards into `.cocoplus/context/<category>.md`; six categories: approved-models, quality-thresholds, pii-policy, warehouse-policy, naming-conventions, governance-gates; enforces ≤200 line limit; auto-commits with `feat(context):` message
+- `context-view.skill.md` — `/context view [name]` displays a context file with line count and last-modified date
+- `context-list.skill.md` — `/context list` shows all six standard slots with status (line count, date, or "not created")
+
+#### CocoRecipe — Pre-Built Pipeline Templates (Feature 25)
+- `recipe-list.skill.md` — `/recipe list` enumerates all templates from profile `recipes/` folder and project-local `.cocoplus/recipes/`
+- `recipe-use.skill.md` — `/recipe use <name>` collects `{{param}}` values interactively, validates generated JSON against CocoFlow schema, writes to `.cocoplus/flow.json`
+- `recipe-new.skill.md` — `/recipe new <name>` saves the current `flow.json` as a parameterized template in the profile `recipes/` folder
+
+#### CocoDream — Supervised Pattern Distillation (Feature 26)
+- `dream.skill.md` — `/dream` distils prompt iteration patterns from `.cocoplus/prompts/` histories (requires ≥3 versions per function); launches CocoCupper to cluster worked-patterns, anti-patterns, and neutral changes; writes candidates to `.cocoplus/grove/dream-<timestamp>.md` for developer review
+- `dream-history.skill.md` — `/dream history [n]` lists past distillation sessions newest-first with function count and candidate breakdown
+
+#### CocoBehavior — Ambient Behavioral Constraints (Feature 22)
+- `cocobehavior/SKILL.md` — ambient constraint layer (`user_invocable: false`) loaded into all persona agents at startup; four constraints: Think Before Coding, Simplicity First, Scope Discipline, Goal-Driven
+
+#### CocoScout — Relevance-Ranked Context Loading (Feature 24)
+- `cocoscout/SKILL.md` — ambient context ranker (`user_invocable: false`) fires before every persona invocation and build stage; scores CocoGrove patterns, CocoContext files, environment snapshots, and prompt history by keyword relevance; prepends top-ranked context; completes in <5 seconds
+- Registered `coco-scout` agent in `plugin.json`
+
 ### Fixed
 - Registered the background `environment-inspector` and `quality-advisor` agents in `plugin.json` so hook-triggered automation has valid runtime targets
 - Added runtime definitions for `environment-inspector` and `quality-advisor` background agents to match documented CocoPlus behavior
@@ -13,6 +44,10 @@ All notable changes to CocoPlus are documented here.
 - Corrected `CocoCupper` and `SecondEye Critic` agent tool contracts so their allowed write targets match their documented outputs
 
 ### Documentation
+- Updated `docs/features.html` — added Features 20–26 with full descriptions and "When to Use" guidance; updated feature count from 19 to 26
+- Updated `docs/command-reference.html` — added command reference sections for CocoView, CocoMeter Enhanced, CocoContext, CocoRecipe, and CocoDream; updated PostToolUse hook description to include request_id capture
+- Updated `docs/index.html` — added Features 20–26 to the feature overview table
+- Updated `AGENTS.md` — listed all new features and commands
 - Updated HTML documentation to align hook behavior, background agent behavior, and constrained-write agent semantics with the implementation
 - Added `scripts/validate-cocoplus.js` to validate manifest-to-agent consistency, hook-spawned agent registration, and agent write-contract accuracy
 

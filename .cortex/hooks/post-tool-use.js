@@ -136,6 +136,47 @@ function main() {
       summary: `${toolName}: ${fileName}`, ts,
     });
   }
+
+  // 5. CocoMeter Enhanced (Feature 21) — request_id capture for flow stage attribution
+  if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'cocometer.on'))) {
+    const requestId = result.request_id || result.requestId || null;
+    if (requestId) {
+      const stateFile = path.join(COCOPLUS_DIR, 'state.json');
+      let stageId    = null;
+      let persona    = null;
+      let sessionId  = null;
+      let parentRequestId = result.parent_request_id || result.parentRequestId || null;
+
+      if (fs.existsSync(stateFile)) {
+        try {
+          const state = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
+          stageId   = state.active_stage_id  || null;
+          persona   = state.active_persona   || null;
+          sessionId = state.session_id       || null;
+        } catch (_) { /* non-fatal */ }
+      }
+
+      const requestMapFile = path.join(COCOPLUS_DIR, 'meter', 'request-map.jsonl');
+      const entry = {
+        request_id:        requestId,
+        parent_request_id: parentRequestId,
+        stage_id:          stageId,
+        persona:           persona,
+        tool_name:         toolName,
+        timestamp:         ts,
+        session_id:        sessionId,
+        is_subagent_anchor: false,
+      };
+      try {
+        const dir = path.join(COCOPLUS_DIR, 'meter');
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        appendJsonLine(requestMapFile, entry);
+        appendJsonLine(HOOK_LOG, { hook: 'post-tool-use', action: 'request_id_captured', request_id: requestId, stage_id: stageId, ts });
+      } catch (err) {
+        logError('post-tool-use', `request_id capture failed: ${err.message}`);
+      }
+    }
+  }
 }
 
 try {

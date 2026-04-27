@@ -1,7 +1,7 @@
 ---
 name: "spec"
 description: "Enter the Spec phase of CocoBrew. Guides the developer through structured requirements capture: goal, success criteria, constraints, personas involved, data sources, and deliverables. Writes spec.md to .cocoplus/lifecycle/ and creates a git commit."
-version: "1.0.0"
+version: "1.0.1"
 author: "CocoPlus"
 tags:
   - cocoplus

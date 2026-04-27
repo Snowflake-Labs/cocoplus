@@ -11,12 +11,19 @@ You have the CocoPlus plugin active. CocoPlus enhances Coco with:
 - **Specialist Personas** ($de, $ae, $ds, $da, $bi, $dpm, $dst, $cdo)
 - **Safety Gate** (SQL protection — safety strict/normal/off)
 - **Memory Engine** (cross-session persistence — /memory on/off)
-- **CocoFlow** pipeline execution (/flow run/status/pause/resume)
+- **CocoFlow** pipeline execution (/flow run/status/pause/resume/view)
 - **SecondEye** multi-model critic (/secondeye)
 - **CocoFleet** multi-process orchestration (/fleet init/run/status/stop/logs)
 - **CocoCupper** background intelligence analyst (/cup)
 - **CocoGrove** pattern library (/patterns)
-- **CocoMeter** token tracking (/meter)
+- **CocoMeter** token tracking (/meter, /meter view, /meter sync)
+- **CocoMeter Enhanced** flow token attribution & HTML dashboard (/meter view, /meter sync)
+- **CocoView** flow pipeline visualizer (/flow view)
+- **CocoContext** organizational standards capture (/context add, /context view, /context list)
+- **CocoRecipe** pre-built pipeline templates (/recipe list, /recipe use, /recipe new)
+- **CocoDream** supervised pattern distillation (/dream, /dream history)
+- **CocoBehavior** ambient behavioral constraints (auto-loaded by all personas)
+- **CocoScout** relevance-ranked context loading (automatic)
 
 ## Core Behavioral Rules
 
