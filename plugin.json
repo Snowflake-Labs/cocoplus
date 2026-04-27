@@ -1,6 +1,6 @@
 {
   "name": "cocoplus",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CocoPlus — AI-powered development lifecycle plugin for Snowflake Cortex Code CLI",
   "author": "sgsshankar, viveksrinivasanss",
   "license": "MIT",
@@ -17,6 +17,8 @@
     "data-product-manager",
     "data-steward",
     "chief-data-officer",
+    "environment-inspector",
+    "quality-advisor",
     "coco-cupper",
     "secondeye-critic"
   ],

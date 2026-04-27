@@ -14,10 +14,40 @@
 
 const fs   = require('fs');
 const path = require('path');
+const { spawn } = require('child_process');
 const { isoUtc, appendJsonLine, atomicWrite, logError, readJsonString, readJsonNumber, readStdinJson } = require('./_common.js');
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
+const SPAWN_QUEUE  = path.join(COCOPLUS_DIR, 'subagent-spawn-requests.jsonl');
+
+function queueAndAttemptBackgroundSpawn(request, ts) {
+  appendJsonLine(SPAWN_QUEUE, request);
+  appendJsonLine(HOOK_LOG, {
+    hook: 'post-tool-use',
+    action: 'background_spawn_queued',
+    agent: request.agent,
+    ts,
+  });
+
+  try {
+    const child = spawn('coco', ['agent', 'run', request.agent, '--background'], {
+      detached: true,
+      stdio: 'ignore',
+      windowsHide: true,
+    });
+    child.on('error', (err) => logError('post-tool-use', `background spawn failed: ${err.message}`));
+    child.unref();
+    appendJsonLine(HOOK_LOG, {
+      hook: 'post-tool-use',
+      action: 'background_spawn_attempted',
+      agent: request.agent,
+      ts,
+    });
+  } catch (err) {
+    logError('post-tool-use', `background spawn setup failed: ${err.message}`);
+  }
+}
 
 function main() {
   if (!fs.existsSync(COCOPLUS_DIR)) return;
@@ -88,6 +118,13 @@ function main() {
         ts, file: filePath, tool: toolName,
       });
       appendJsonLine(HOOK_LOG, { hook: 'post-tool-use', action: 'quality_queued', file: filePath, ts });
+      queueAndAttemptBackgroundSpawn({
+        source: 'hook.post-tool-use',
+        requested_at: ts,
+        file: filePath,
+        agent: 'quality-advisor',
+        reason: 'sql-write-quality-review',
+      }, ts);
     }
   }
 

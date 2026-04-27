@@ -40,6 +40,27 @@ Perform a soft reset:
 git reset --soft [target-commit-sha]
 ```
 
+## Prune Stale Worktrees
+
+After the reset, remove any CocoHarvest worktrees from the now-removed Build phase to prevent naming collisions on future builds:
+```
+node -e "
+const { execSync } = require('child_process');
+try {
+  const out = execSync('git worktree list --porcelain').toString();
+  const trees = out.split('\n\n').filter(Boolean);
+  for (const tree of trees) {
+    const lines = tree.trim().split('\n');
+    const wtPath = lines[0].replace(/^worktree /, '');
+    if (/[/\\\\]agent[/\\\\]stage-/.test(wtPath)) {
+      try { execSync('git worktree remove --force \"' + wtPath + '\"'); } catch(_) {}
+    }
+  }
+  execSync('git worktree prune');
+} catch(e) { /* worktree cleanup is best-effort */ }
+"
+```
+
 ## Update State
 
 Read the phase from the step-id (e.g., `spec-*` → phase is spec).
@@ -47,7 +68,7 @@ Update `.cocoplus/lifecycle/meta.json`: set `current_phase` to the target phase,
 
 Update AGENTS.md: replace phase line with rolled-back phase.
 
-Output: "Rolled back to [step-id]. Current phase: [phase]. Subsequent phase artifacts have been unstaged. Use `git checkout -- .cocoplus/` to also discard working tree changes if needed."
+Output: "Rolled back to [step-id]. Current phase: [phase]. Subsequent phase artifacts have been unstaged. Stale build worktrees have been pruned. Use `git checkout -- .cocoplus/` to also discard working tree changes if needed."
 
 ## Anti-Rationalization
 

@@ -71,6 +71,19 @@ function main() {
   // Safety off: pass through immediately
   if (safetyMode === 'off') { allow(); return; }
 
+  // Phase-aware gate: block SQL execution during Spec and Plan phases
+  const metaPath = path.join(COCOPLUS_DIR, 'lifecycle', 'meta.json');
+  if (fs.existsSync(metaPath)) {
+    try {
+      const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+      const phase = (meta.current_phase || '').toLowerCase();
+      if (phase === 'spec' || phase === 'plan') {
+        block(`SnowflakeSqlExecute is blocked during the ${phase} phase. SQL execution is only permitted from the Build phase onward. Use /build to advance the lifecycle.`);
+        return;
+      }
+    } catch (_) { /* malformed meta.json — fail open */ }
+  }
+
   // Detect destructive pattern
   let pattern = null;
   for (const { re, label } of DESTRUCTIVE_PATTERNS) {
