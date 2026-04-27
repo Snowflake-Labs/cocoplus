@@ -64,7 +64,7 @@
       <tbody>
         <tr><td><code>SessionStart</code></td><td>Session opens</td><td>Reads current CocoPlus state, initializes CocoMeter, and triggers Environment Inspector if auto-mode is on</td></tr>
         <tr><td><code>SessionEnd</code></td><td>Session closes</td><td>Writes CocoMeter session data and updates AGENTS.md summary</td></tr>
-        <tr><td><code>PreToolUse</code></td><td>Before any tool call</td><td>Safety Gate primary layer — intercepts SnowflakeSqlExecute and blocks destructive SQL in strict mode</td></tr>
+        <tr><td><code>PreToolUse</code></td><td>Before any tool call</td><td>Safety Gate — two layers: (1) phase-aware block: unconditionally rejects SnowflakeSqlExecute during <code>spec</code> and <code>plan</code> phases regardless of safety mode; (2) pattern-aware block: intercepts destructive SQL (DROP, TRUNCATE, DELETE without WHERE, ALTER on prod schemas) per strict/normal mode from build phase onward</td></tr>
         <tr><td><code>PostToolUse</code></td><td>After any tool call</td><td>Memory Engine capture — records decisions and write activity to warm memory, and queues SQL quality review when enabled</td></tr>
         <tr><td><code>UserPromptSubmit</code></td><td>Developer types a prompt</td><td>Routes <code>$&lt;persona&gt;</code> shortcuts to the correct agent and records subagent context</td></tr>
         <tr><td><code>SubagentStop</code></td><td>A subagent completes</td><td>Validates checkpoints; updates <code>flow.json</code> stage status; triggers next stage if dependencies are resolved</td></tr>

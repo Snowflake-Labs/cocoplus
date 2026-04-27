@@ -56,7 +56,7 @@
 
   <pre><code>/pod status</code></pre>
 
-  <p>Reads all state from <code>.cocoplus/</code> and reports: current CocoBrew phase, active feature modes, CocoFlow pipeline status, recent CocoMeter session summary, latest CocoCupper findings, and Environment Inspector snapshot age. No state changes.</p>
+  <p>Reads all state from <code>.cocoplus/</code> and reports: current CocoBrew phase, active feature modes, CocoFlow pipeline status, recent CocoMeter session summary, latest CocoCupper findings, and Environment Inspector snapshot age. Also performs a self-heal check: compares the flag files in <code>.cocoplus/modes/</code> against the <code>## Active Modes</code> section in <code>AGENTS.md</code>. If they are out of sync, a warning is shown and the developer is offered a one-step sync. No state changes unless sync is accepted.</p>
 
   <h3><code>/pod resume</code></h3>
 
@@ -85,9 +85,11 @@
 
   <h3><code>/spec</code></h3>
 
-  <pre><code>/spec</code></pre>
+  <pre><code>/spec
+/spec --force</code></pre>
 
   <p>Opens a structured requirements dialogue: goal, success criteria, explicit out-of-scope, involved Snowflake objects, constraints. Output written to <code>.cocoplus/lifecycle/spec.md</code>. Git commit: <code>feat(spec): initial project specification captured</code>.</p>
+  <p>Re-running <code>/spec</code> during <code>plan</code> phase prompts for confirmation. Re-running during <code>build</code>, <code>test</code>, <code>review</code>, or <code>shipped</code> phase requires <code>--force</code> — the skill warns that active CocoHarvest worktrees (<code>agent/stage-*</code>) will become stale and must be pruned manually before the flag is accepted.</p>
 
   <h3><code>/plan</code></h3>
 
@@ -118,14 +120,14 @@
 
   <pre><code>/ship</code></pre>
 
-  <p>Gated on review completion with no open must-fix items. Creates final commit with full lifecycle summary. Applies semantic version tag. Writes <code>deployment.md</code>. Optionally creates a pull request via <code>gh pr create</code> if configured.</p>
+  <p>Gated on review completion with no open must-fix items. Verifies that <code>spec.md</code>, <code>plan.md</code>, and <code>review.md</code> all exist on disk before proceeding — meta.json alone is not sufficient. Creates final commit with full lifecycle summary. Applies a semantic version tag (validated as <code>v&lt;major&gt;.&lt;minor&gt;.&lt;patch&gt;</code>; the highest existing tag is found programmatically, filtering only well-formed <code>v*.*.*</code> tags). Prunes stale CocoHarvest worktrees (<code>agent/stage-*</code>) after the release commit. Optionally creates a pull request via <code>gh pr create</code> if configured.</p>
 
   <h3><code>/rewind [step-id]</code></h3>
 
   <pre><code>/rewind plan-v1
 /rewind build-stage-003</code></pre>
 
-  <p>Identifies CocoBrew phase commits in git log, shows the target state and what would be discarded, then resets to the target after confirmation. Uses soft reset — history is preserved.</p>
+  <p>Identifies CocoBrew phase commits in git log, shows the target state and what would be discarded, then resets to the target after confirmation. Uses soft reset — history is preserved. After reset, prunes any stale CocoHarvest worktrees (<code>agent/stage-*</code>) to prevent naming collisions on future builds.</p>
 
   <h3><code>/fork [branch-name]</code></h3>
 
@@ -211,6 +213,7 @@
 /safety off     # No hard blocks, no warnings (development environments only)</code></pre>
 
   <p>Protected schema patterns are configured in <code>.cocoplus/safety-config.json</code> under <code>production_schema_patterns</code>. Changes take effect immediately.</p>
+  <p><strong>Phase-aware blocking:</strong> Regardless of safety mode, <code>SnowflakeSqlExecute</code> is unconditionally blocked during the <code>spec</code> and <code>plan</code> lifecycle phases. SQL execution is only permitted from the <code>build</code> phase onward. This cannot be overridden by <code>/safety off</code> — phase-awareness is a separate gate layer.</p>
 
   <h2>Code Quality Advisor</h2>
 
@@ -301,7 +304,7 @@
       <tbody>
         <tr><td><strong>SessionStart</strong></td><td>Session begins</td><td>Reads state, initializes CocoMeter, triggers inspector background scan if enabled</td></tr>
         <tr><td><strong>SessionEnd</strong></td><td>Session ends</td><td>Writes CocoMeter data, updates AGENTS.md with session summary</td></tr>
-        <tr><td><strong>PreToolUse</strong></td><td>Before any tool call</td><td>Safety Gate — intercepts SnowflakeSqlExecute, blocks or warns per safety mode</td></tr>
+        <tr><td><strong>PreToolUse</strong></td><td>Before any tool call</td><td>Safety Gate — intercepts SnowflakeSqlExecute; unconditionally blocks during spec/plan phases; blocks or warns per safety mode during build phase and beyond</td></tr>
         <tr><td><strong>PostToolUse</strong></td><td>After any tool call</td><td>Memory Engine — captures significant events to warm memory and queues SQL quality review when enabled</td></tr>
         <tr><td><strong>UserPromptSubmit</strong></td><td>Developer submits a prompt</td><td>Routes <code>$&lt;persona&gt;</code> shorthand and records subagent routing state</td></tr>
         <tr><td><strong>SubagentStop</strong></td><td>A subagent completes</td><td>Validates checkpoints, updates <code>flow.json</code> stage status, triggers next stage</td></tr>
