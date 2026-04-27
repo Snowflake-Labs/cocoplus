@@ -1,7 +1,7 @@
 ---
 name: "build"
 description: "Enter the Build phase of CocoBrew. Reads plan.md, invokes CocoHarvest to decompose the plan into parallel workstreams, assigns personas, generates flow.json stages, and begins execution via /flow run. Must have /plan completed and approved first."
-version: "1.0.0"
+version: "1.0.1"
 author: "CocoPlus"
 tags:
   - cocoplus

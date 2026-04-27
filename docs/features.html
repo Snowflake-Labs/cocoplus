@@ -25,13 +25,13 @@
 
 <div class="page-header">
   <div class="label">What It Does</div>
-  <h1>All 19 Features</h1>
-  <p class="subtitle">Nineteen expressions of one idea — that structure and intelligence, applied together, produce better outcomes than either alone.</p>
+  <h1>All 26 Features</h1>
+  <p class="subtitle">Twenty-six expressions of one idea — that structure and intelligence, applied together, produce better outcomes than either alone.</p>
 </div>
 
 <div class="content">
 
-  <p>CocoPlus has nineteen features. They are not nineteen independent capabilities you can pick from a menu. They are nineteen expressions of the same underlying design — a system where each piece reinforces the others.</p>
+  <p>CocoPlus has twenty-six features. They are not twenty-six independent capabilities you can pick from a menu. They are twenty-six expressions of the same underlying design — a system where each piece reinforces the others.</p>
 
   <!-- ── Feature 1 ─────────────────────────────────────── -->
   <div class="feature">
@@ -249,8 +249,78 @@
     <p>Before moving from Plan to Build on any work that involves irreversible operations, significant compute cost, or architectural decisions with long-term implications. Invoke it when you want a critical perspective that goes beyond what the model that generated the plan can offer — particularly for plans that are complex, have unclear trade-offs, or where the consequences of a wrong turn are expensive to undo. It is not necessary for every build — simple, well-understood tasks don't need it. But for plans where "what could go wrong?" is a question worth asking carefully, SecondEye is where you ask it rigorously.</p>
   </div>
 
+  <!-- ── Feature 20 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">20 — CocoView <span class="tag">Flow Visualizer</span></div>
+    <div class="feature-meta"><span><span class="cmd">/flow view</span> <span class="cmd">/flow view --output &lt;path&gt;</span></span></div>
+    <p>CocoView renders the current <code>flow.json</code> pipeline as an interactive HTML DAG — a directed acyclic graph where each stage is a node, dependencies are edges, and live status is color-coded. The HTML is self-contained, requires no CDN, and opens in any browser.</p>
+    <p>Nodes are laid out left-to-right by topological depth. Clicking a node highlights its predecessors and successors, dims all other nodes, and slides in a detail panel showing stage ID, agent, model, status, timestamps, and checkpoint paths. A "Load JSON" button in the toolbar lets you paste a different <code>flow.json</code> to compare two pipeline states in the same tab. The visualization regenerates fresh on every invocation — it always reflects the current state of <code>flow.json</code>.</p>
+    <h3>When to Use</h3>
+    <p>Any time you want to understand the shape of a pipeline before running it, inspect which stages are blocked on dependencies, or share a snapshot of pipeline progress with a stakeholder. Use <code>--output &lt;path&gt;</code> to write the HTML to a custom location for documentation or handoff.</p>
+  </div>
+
+  <!-- ── Feature 21 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">21 — CocoMeter Enhanced <span class="tag">Token Attribution</span></div>
+    <div class="feature-meta"><span><span class="cmd">/meter view</span> <span class="cmd">/meter sync</span></span></div>
+    <p>CocoMeter Enhanced extends base CocoMeter with two capabilities: per-flow-stage token attribution via captured <code>request_id</code> values, and an interactive HTML dashboard that queries <code>SNOWFLAKE.ACCOUNT_USAGE.CORTEX_CODE_CLI_USAGE_HISTORY</code> to show actual billing data correlated back to individual pipeline stages.</p>
+    <p>The <code>PostToolUse</code> hook captures <code>request_id</code> from every Snowflake tool result and writes it to <code>.cocoplus/meter/request-map.jsonl</code> alongside the active stage ID and persona. <code>/meter view</code> joins this local map against the Snowflake usage table (two-pass query to handle subagent parent/child request hierarchies), injects the merged dataset into the meter dashboard template, and opens it in the browser. The dashboard shows total tokens, credits, cache efficiency, per-stage attribution, model distribution, and a full request log with clickable <code>REQUEST_ID</code> values.</p>
+    <p>Snowflake's usage history has up to 90-minute latency. If you run <code>/meter view</code> immediately after a pipeline, the dashboard renders with local attribution data only. Run <code>/meter sync</code> after the latency window to refresh the Snowflake data without reopening the browser.</p>
+    <h3>When to Use</h3>
+    <p>After any pipeline run where you want to understand which stages drove token cost, identify cache inefficiency, or justify AI spend to a stakeholder. Essential for cost governance on recurring pipelines — the per-stage breakdown makes it immediately obvious if one stage is consuming a disproportionate share of credits.</p>
+  </div>
+
+  <!-- ── Feature 22 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">22 — CocoBehavior <span class="tag">Ambient Constraints</span></div>
+    <div class="feature-meta"><span>Automatic — no commands</span></div>
+    <p>CocoBehavior is an ambient behavioral constraint layer loaded automatically into every persona agent at startup. It is not a user command — it shapes how all personas reason before producing output. Four constraints: Think Before Coding (state what code will do, identify the riskiest assumption, name the simplest implementation before writing anything), Simplicity First (prefer fewer moving parts, avoid premature abstraction), Scope Discipline (implement only what the current phase artifact requires, never expand scope silently), and Goal-Driven (verify output satisfies the stated goal before claiming completion).</p>
+    <h3>When to Use</h3>
+    <p>Always active — no action required. The constraints exist because well-intentioned agents regularly over-engineer, over-scope, and under-verify. CocoBehavior is a corrective for those patterns embedded at the agent level rather than in prompts.</p>
+  </div>
+
+  <!-- ── Feature 23 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">23 — CocoContext <span class="tag">Org Standards</span></div>
+    <div class="feature-meta"><span><span class="cmd">/context add</span> <span class="cmd">/context view [name]</span> <span class="cmd">/context list</span></span></div>
+    <p>CocoContext captures organizational Snowflake and Cortex standards into versioned, committed context files in <code>.cocoplus/context/</code>. Six standard types: approved models, quality thresholds, PII policy, warehouse policy, naming conventions, and governance gates. Each file is ≤200 lines, committed to git, and loaded on demand by CocoScout before relevant tasks.</p>
+    <p><code>/context add</code> runs a guided wizard — select a category, answer 5–10 targeted questions in multi-turn dialogue, and the responses are compiled into structured markdown. If a file already exists, you choose to update or replace. The file is committed automatically with a <code>feat(context):</code> message. <code>/context list</code> shows all six slots with line counts and last-modified dates, making governance coverage gaps immediately visible.</p>
+    <h3>When to Use</h3>
+    <p>At project setup, after any organizational policy change, or whenever a persona makes a model or warehouse choice that doesn't match your organization's standards. CocoContext is the mechanism for encoding "what we've decided" once so it flows into every future persona invocation automatically.</p>
+  </div>
+
+  <!-- ── Feature 24 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">24 — CocoScout <span class="tag">Context Ranker</span></div>
+    <div class="feature-meta"><span>Automatic — fires before persona invocations and build stages</span></div>
+    <p>CocoScout fires automatically before every persona subagent invocation and build stage execution. It ranks CocoGrove patterns, CocoContext files, environment snapshots, and prompt history by relevance to the current task, then prepends only the highest-scoring context to the persona's startup prompt. This replaces bulk context loading — which wastes tokens on irrelevant material — with targeted loading of what the task actually needs.</p>
+    <p>Relevance scoring uses keyword overlap against the current task prompt. Context is capped per source type (5 patterns, 400 lines of standards, 1 snapshot, 3 prompt versions) and the entire process completes in &lt;5 seconds. If no context sources exist, CocoScout exits immediately with zero overhead.</p>
+    <h3>When to Use</h3>
+    <p>Always active — no action required. CocoScout becomes more valuable as your project accumulates context: more CocoGrove patterns, more CocoContext standards, more prompt history. The first few sessions may see minimal loading; by the tenth, CocoScout is meaningfully shaping what each persona knows before it starts.</p>
+  </div>
+
+  <!-- ── Feature 25 ─────────────────────────────────────── -->
+  <div class="feature">
+    <div class="feature-name">25 — CocoRecipe <span class="tag">Pipeline Templates</span></div>
+    <div class="feature-meta"><span><span class="cmd">/recipe list</span> <span class="cmd">/recipe use &lt;name&gt;</span> <span class="cmd">/recipe new &lt;name&gt;</span></span></div>
+    <p>CocoRecipe provides parameterized CocoFlow pipeline templates for common Snowflake Cortex tasks. Four built-in recipes: <code>cortex-add-classifier</code> (7 stages), <code>cortex-add-search</code> (5 stages), <code>cortex-semantic-model</code> (6 stages), and <code>cortex-add-extraction</code> (8 stages). Each template has <code>{{parameter}}</code> slots for environment-specific values — table names, column names, model choices, label sets.</p>
+    <p><code>/recipe use &lt;name&gt;</code> prompts for required parameters interactively, substitutes all slots, validates the resulting JSON against the CocoFlow schema, and writes to <code>.cocoplus/flow.json</code>. Generated pipelines pass through the standard <code>/plan</code> approval gate before execution. <code>/recipe new &lt;name&gt;</code> captures the current <code>flow.json</code> as a new template — mark which field values become parameters and which stay fixed.</p>
+    <h3>When to Use</h3>
+    <p>Whenever you're starting a well-understood Cortex task type that matches an existing recipe. Recipes eliminate the scaffolding work of building a flow.json from scratch and encode proven stage sequences with appropriate persona assignments. Use <code>/recipe new</code> to capture pipelines your team runs repeatedly so they become reusable across projects.</p>
+  </div>
+
+  <!-- ── Feature 26 ─────────────────────────────────────── -->
+  <div class="feature" style="border-color: #a5b4fc; background: #f5f3ff;">
+    <div class="feature-name">26 — CocoDream <span class="tag">Pattern Distillation</span></div>
+    <div class="feature-meta"><span><span class="cmd">/dream</span> <span class="cmd">/dream history [n]</span></span></div>
+    <p>CocoDream distills prompt iteration patterns from past sessions into reviewed lesson candidates. It is a supervised ceremony — the developer reviews all candidates before any lesson enters CocoGrove. CocoCupper analyses versioned prompt histories, clusters iteration patterns into worked-patterns (&gt;2% improvement), anti-patterns (&gt;2% regression), and neutral changes, then writes candidates to a timestamped <code>dream-*.md</code> file for review.</p>
+    <p>Requires at least one Cortex function with 3 or more prompt versions in <code>.cocoplus/prompts/</code> — the threshold ensures enough iteration signal for meaningful pattern detection. After reviewing the dream file, promote valid lessons to CocoGrove with <code>/patterns promote "&lt;lesson title&gt;"</code>. Promoted lessons become part of the CocoScout context pool for future persona invocations.</p>
+    <h3>When to Use</h3>
+    <p>After a few sessions of active prompt iteration — when you've tried multiple approaches on the same Cortex function and want to extract transferable lessons before moving on. The value compounds: lessons promoted from CocoDream become CocoScout context that shapes the next round of prompt work. Run it periodically, not after every session — the signal-to-noise ratio improves as version histories grow.</p>
+  </div>
+
   <blockquote>
-    <p>Nineteen features, one idea: give structure a lower cost than chaos.</p>
+    <p>Twenty-six features, one idea: give structure a lower cost than chaos.</p>
   </blockquote>
 
 </div>
