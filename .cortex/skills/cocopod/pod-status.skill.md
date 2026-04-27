@@ -71,6 +71,20 @@ Check for presence of these flag files and report on/off:
 
 Output as a clean markdown table per section. Complete in under 2 seconds.
 
+## Self-Heal: Modes Sync Check
+
+After rendering the Active Modes section, perform a cross-check between the `modes/` directory and the `## Active Modes` section in `.cocoplus/AGENTS.md`:
+
+1. Read the list of flag files present in `.cocoplus/modes/` (e.g., `memory.on`, `quality.on`, `safety.strict`).
+2. Read the `## Active Modes` block from `.cocoplus/AGENTS.md`.
+3. Compare them. If any mode flag exists on disk but is NOT reflected in AGENTS.md, or vice versa:
+   - Output a warning: "⚠️  Modes out of sync: [list discrepancies]. AGENTS.md reports [X] but modes/ directory has [Y]."
+   - Offer: "Sync AGENTS.md to match the modes/ directory now? (yes/no)"
+   - If yes: rewrite the `## Active Modes` section of AGENTS.md to match the current `modes/` directory state (keep ≤200 lines total).
+   - If no: continue.
+
+If no discrepancy exists, output nothing for this section (silent pass).
+
 ## Anti-Rationalization
 
 | Shortcut / Temptation | Why It Fails |

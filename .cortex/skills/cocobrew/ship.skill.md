@@ -16,14 +16,29 @@ If not: output "CocoPlus not initialized in this directory. Run `/pod init` to b
 Read `.cocoplus/lifecycle/meta.json`. Verify `phases_completed` contains `"review"`.
 If not: output "The Review phase must be approved before shipping. Run `/review` first." Then stop.
 
+Verify that required lifecycle artifact files exist on disk — meta.json alone is not sufficient:
+- Check `.cocoplus/lifecycle/spec.md` exists. If not: output "spec.md is missing. Run `/spec` to regenerate it before shipping." Then stop.
+- Check `.cocoplus/lifecycle/plan.md` exists. If not: output "plan.md is missing. Run `/plan` to regenerate it before shipping." Then stop.
+- Check `.cocoplus/lifecycle/review.md` exists. If not: output "review.md is missing. Run `/review` to regenerate it before shipping." Then stop.
+
 Read `.cocoplus/lifecycle/review.md`. Verify `## Approval Status` contains `APPROVED`.
 If not: output "Review has not been approved. Run `/review` to complete the approval process." Then stop.
 
 ## Determine Version
 
-Read git tags to find the highest existing version tag matching `v*.*.*`.
-Prompt: "Current version: [current or 0.0.0]. What semantic version should this release be? (e.g., v1.0.0, v0.2.1)"
-Use the developer's answer as the version.
+Find the highest existing semantic version tag using:
+```
+node -e "
+const { execSync } = require('child_process');
+const tags = execSync('git tag --list').toString().trim().split('\n');
+const semver = tags.filter(t => /^v\d+\.\d+\.\d+$/.test(t));
+if (!semver.length) { console.log('0.0.0'); process.exit(0); }
+semver.sort((a,b)=>{ const x=a.slice(1).split('.').map(Number),y=b.slice(1).split('.').map(Number); for(let i=0;i<3;i++){if(x[i]!==y[i])return y[i]-x[i];} return 0; });
+console.log(semver[0]);
+"
+```
+Prompt: "Current version: [result or 0.0.0]. What semantic version should this release be? (e.g., v1.0.0, v0.2.1)"
+Validate the developer's answer matches `v<major>.<minor>.<patch>` exactly. If it does not, re-prompt once. Use the developer's answer as the version.
 
 ## Full Diff Review
 
@@ -83,6 +98,27 @@ If yes:
 - If not available: output "gh CLI not found. Install it from https://cli.github.com/ to create PRs automatically."
 
 Update `deployment.md` with commit SHA and PR URL.
+
+## Prune Stale Worktrees
+
+Remove any CocoHarvest worktrees that remain from the Build phase:
+```
+node -e "
+const { execSync } = require('child_process');
+try {
+  const out = execSync('git worktree list --porcelain').toString();
+  const trees = out.split('\n\n').filter(Boolean);
+  for (const tree of trees) {
+    const lines = tree.trim().split('\n');
+    const wtPath = lines[0].replace(/^worktree /, '');
+    if (/[/\\\\]agent[/\\\\]stage-/.test(wtPath)) {
+      try { execSync('git worktree remove --force \"' + wtPath + '\"'); } catch(_) {}
+    }
+  }
+  execSync('git worktree prune');
+} catch(e) { /* worktree cleanup is best-effort */ }
+"
+```
 
 ## Update State
 

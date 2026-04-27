@@ -16,6 +16,10 @@ If it does not, output: "CocoPlus not initialized in this directory. Run `/pod i
 Read `.cocoplus/lifecycle/meta.json`. Verify `phases_completed` contains both `"spec"` and `"plan"`.
 If not: output "The Spec and Plan phases must be completed before building. Check `/pod status` for current state." Then stop.
 
+Verify that the artifact files actually exist on disk — meta.json alone is not sufficient:
+- Check `.cocoplus/lifecycle/spec.md` exists. If not: output "spec.md is missing from `.cocoplus/lifecycle/`. The Spec phase record is incomplete. Re-run `/spec` to regenerate it." Then stop.
+- Check `.cocoplus/lifecycle/plan.md` exists. If not: output "plan.md is missing from `.cocoplus/lifecycle/`. The Plan phase record is incomplete. Re-run `/plan` to regenerate it." Then stop.
+
 ## SecondEye Gate Check
 
 Scan `.cocoplus/lifecycle/` for any files matching `secondeye-*.md`.

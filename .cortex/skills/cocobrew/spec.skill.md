@@ -14,7 +14,21 @@ Before proceeding, verify that `.cocoplus/` exists in the current directory.
 If it does not, output: "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
 Check `.cocoplus/lifecycle/meta.json`. If `current_phase` is not `not_started` and not `spec`:
-Output: "Current phase is [phase]. The Spec phase can only be entered from the beginning or re-entered to update requirements. Proceed? (yes/no)"
+
+If `current_phase` is `build`, `test`, `review`, or `shipped`:
+Output:
+```
+⚠️  WARNING: Current phase is [phase]. Re-entering Spec at this stage will invalidate downstream artifacts.
+
+Active git worktrees from CocoHarvest (agent/stage-*) will become stale and out of sync with the new specification. You must clean them up manually with:
+  git worktree remove --force agent/stage-<name>
+  git worktree prune
+
+To proceed anyway, re-run /spec with the --force flag: /spec --force
+```
+Then stop — unless the `--force` flag was provided in the invocation arguments. If `--force` was provided, output "Proceeding with forced Spec re-entry. Existing downstream artifacts will be invalidated." and continue.
+
+Otherwise (phase is `plan`): Output "Current phase is [phase]. The Spec phase can only be entered from the beginning or re-entered to update requirements. Proceed? (yes/no)"
 If no: stop.
 
 ## Requirements Capture Dialogue
