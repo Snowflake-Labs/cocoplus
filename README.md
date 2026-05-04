@@ -25,7 +25,7 @@ Built using only Coco-native constructs: Skills, Agents, Hooks, and AGENTS.md.
 ## Installation
 
 ```
-npx skills add https://github.com/Snowflake-Labs/cocoplus
+cortex skill add Snowflake-Labs/cocoplus
 ```
 
 Verify:
