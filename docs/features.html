@@ -368,7 +368,7 @@
   <p class="feature-use"><strong>When to use:</strong> After a series of Prompt Studio optimization sessions on a significant AI function — typically when you've run four or more iterations on the same function. Run it before starting the next optimization project in the same domain, so the lessons from prior work are available for CocoScout to load. Run it as a periodic review ceremony when the project accumulates significant optimization history. Don't run it on a project with fewer than three prompt versions — there isn't enough signal to identify patterns, only noise.</p>
   </div>
 
-  <div class="feature">
+  <div class="feature new-gen">
     <div class="feature-name">27 — CocoHealth <span class="tag">Context Utilization Monitor</span></div>
     <div class="feature-meta"><span><span class="cmd">/pod checkpoint</span></span></div>
   <p>Context windows degrade silently. There is no error, no warning, no obvious signal — the model simply begins making decisions that contradict earlier conclusions it can no longer reliably recall. By the time the developer notices, the reasoning has already been quietly compromised for some time.</p>
@@ -379,7 +379,7 @@
   <p class="feature-use"><strong>When to use:</strong> You don't explicitly invoke CocoHealth — it monitors every session automatically. What you do is build the habit of running <code>/pod checkpoint</code> before context-heavy operations: long optimization loops, multi-iteration Prompt Studio cycles, complex multi-stage pipeline builds. The checkpoint costs seconds. A context reset without one costs a rebuild from scratch.</p>
   </div>
 
-  <div class="feature">
+  <div class="feature new-gen">
     <div class="feature-name">28 — CocoMap <span class="tag">Cortex Function Knowledge Graph</span></div>
     <div class="feature-meta"><span><span class="cmd">/map</span>, <span class="cmd">/map diff</span>, <span class="cmd">/map explain &lt;target&gt;</span></span></div>
   <p>Most AI function development projects grow in one direction: forward. New functions are added, old ones extended, evaluation infrastructure accumulated. What rarely keeps pace is a coherent picture of the whole — what depends on what, which functions share evaluation sets, which business capabilities are actually implemented, and where the gaps are.</p>
@@ -390,7 +390,7 @@
   <p class="feature-use"><strong>When to use:</strong> Run <code>/map</code> when the project accumulates enough Cortex AI functions that dependencies are no longer obvious from code inspection — typically after building three or more related functions. After that first run, re-run periodically: when significant new functions are added, before a large refactor, before a governance review. Use <code>/map diff</code> as a pre-commit habit on any change that touches functions other things depend on. Use <code>/map explain</code> when onboarding someone to a complex function ecosystem, or when you've returned after time away and need context fast.</p>
   </div>
 
-  <div class="feature">
+  <div class="feature new-gen">
     <div class="feature-name">29 — CocoSeed <span class="tag">Deferred Ideas with Trigger Conditions</span></div>
     <div class="feature-meta"><span><span class="cmd">/seed add "&lt;idea&gt;" --trigger "&lt;condition&gt;"</span>, <span class="cmd">/seed list</span>, <span class="cmd">/seed promote &lt;id&gt;</span></span></div>
   <p>Good ideas that arrive at the wrong time either get acted on immediately (scope creep) or forgotten entirely (lost signal). Neither outcome is acceptable. CocoSeed provides the third option: capture the idea with a trigger condition, and surface it when the condition is met.</p>
@@ -401,7 +401,7 @@
   <p class="feature-use"><strong>When to use:</strong> Any time a thought about future work arrives during active work on something else. The discipline is simple: don't act on it now, don't lose it — <code>/seed add</code> with a trigger condition, and let the project tell you when the time is right. The trigger condition is the commitment. A seed without a trigger is just a note. A seed with a trigger is a deferred decision with a built-in promotion mechanism.</p>
   </div>
 
-  <div class="feature">
+  <div class="feature new-gen">
     <div class="feature-name">30 — CocoDiscuss <span class="tag">Decision-Locking Pre-Plan Phase</span></div>
     <div class="feature-meta"><span><span class="cmd">/discuss</span></span></div>
   <p>Plans fail not because they're incompetent but because they silently encode decisions the developer never consciously made. The planning agent fills in gaps the spec left open. It makes reasonable choices. Those choices may be wrong — not wrong in a way that produces an error, but wrong in a way that produces a plan the developer wouldn't have approved if they'd known what choices were being made.</p>
@@ -413,7 +413,7 @@
   <p class="feature-use"><strong>When to use:</strong> Before any spec whose implementation involves choices you'd regret discovering implicitly in the plan. Most AI function builds, any build that touches production schemas, anything with an evaluation methodology that must be agreed-upon. The discuss session adds five minutes; the plan-checker adds none. The decisions it captures are the ones you were going to make anyway — CocoDiscuss just makes sure you made them consciously, before the agent made them for you.</p>
   </div>
 
-  <div class="feature">
+  <div class="feature new-gen">
     <div class="feature-name">31 — CocoLens <span class="tag">HITL/AFK Task Classification</span></div>
     <div class="feature-meta"><span>None — integrated into CocoHarvest decomposition</span></div>
   <p>CocoHarvest decomposes large plans into parallel subagent workstreams. The decomposition produces a list of tasks. Historically, all of those tasks either ran autonomously or didn't — the autonomous/supervised boundary was implicit, discovered when something happened that the developer didn't expect.</p>
