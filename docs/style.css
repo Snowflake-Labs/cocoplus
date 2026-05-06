@@ -7,7 +7,7 @@
   --accent: #0052cc;
   --accent-light: #e8f0fe;
   --border: #e4e4e7;
-  --code-bg: #f6f7f9;
+  --code-bg: #f0f4ff;
   --nav-bg: #0f172a;
   --nav-text: #cbd5e1;
   --nav-active: #ffffff;
@@ -133,6 +133,8 @@ h3 {
   margin-top: 2rem;
   margin-bottom: 0.6rem;
   color: #1e293b;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--accent);
 }
 
 p { margin-bottom: 1.25rem; }
@@ -149,7 +151,7 @@ p:last-child { margin-bottom: 0; }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
-strong { font-weight: 600; }
+strong { font-weight: 600; color: #0f172a; }
 
 em { font-style: italic; }
 
@@ -193,6 +195,7 @@ pre {
   margin: 1.5rem 0;
   font-size: 0.85rem;
   line-height: 1.6;
+  border-top: 3px solid var(--accent);
 }
 
 pre code {
@@ -231,6 +234,12 @@ td {
   vertical-align: top;
 }
 
+td code {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  color: #3730a3;
+}
+
 tr:last-child td { border-bottom: none; }
 tr:hover td { background: #f8fafc; }
 
@@ -241,6 +250,7 @@ tr:hover td { background: #f8fafc; }
   border-radius: 8px;
   padding: 1.5rem;
   margin: 2rem 0;
+  border-left: 4px solid var(--accent);
 }
 
 .feature > p {
@@ -309,14 +319,21 @@ tr:hover td { background: #f8fafc; }
   color: #166534;
 }
 
+.tag.v102 {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
 .cmd {
   font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
   font-size: 0.82rem;
-  background: var(--code-bg);
-  border: 1px solid var(--border);
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
   border-radius: 4px;
   padding: 0.1em 0.5em;
-  color: #0052cc;
+  color: #3730a3;
+  font-weight: 500;
 }
 
 /* ── Index / doc cards ───────────────────────────────────── */
@@ -396,6 +413,17 @@ tr:hover td { background: #f8fafc; }
   letter-spacing: 0.05em;
   text-transform: uppercase;
   margin-bottom: 1rem;
+  border-left: none;
+  padding-left: 0;
+}
+
+/* Command subtitle — short descriptor line under a command h3 in command-reference */
+.cmd-subtitle {
+  font-size: 0.88rem;
+  color: var(--muted);
+  margin-top: -0.3rem;
+  margin-bottom: 0.85rem;
+  font-style: italic;
 }
 
 .summary-box p {
@@ -406,6 +434,31 @@ tr:hover td { background: #f8fafc; }
 
 .summary-box p strong {
   color: #e2e8f0;
+}
+
+.summary-box code {
+  background: #1e293b;
+  border-color: #334155;
+  color: #93c5fd;
+}
+
+/* h3 inside feature cards — suppress left border accent, use subdued style */
+.feature h3 {
+  border-left: none;
+  padding-left: 0;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ── v1.0.2 feature variant ──────────────────────────────── */
+
+.feature.new-gen {
+  border-left-color: #16a34a;
+  background: #f0fdf4;
 }
 
 /* ── SecondEye lens pills ────────────────────────────────── */
