@@ -1,7 +1,7 @@
 ---
 name: "secondeye"
-description: "Multi-model parallel plan critique. Spawns three SecondEye Critic instances in parallel (Haiku: efficiency, Sonnet: completeness, Opus: risk), aggregates findings, and writes a structured report. Critical findings create a soft gate on /build. Usage: /secondeye [--artifact spec|plan|review] [--model haiku|sonnet|opus]."
-version: "1.0.0"
+description: "Multi-model parallel plan critique. Spawns three SecondEye Critic instances in parallel (Haiku: efficiency, Sonnet: completeness, Opus: risk), aggregates findings with HITL/AFK and BLOCKING/MINOR classification, and writes a structured report. Critical findings create a soft gate on /build. Usage: /secondeye [--artifact spec|plan|review] [--model haiku|sonnet|opus]."
+version: "1.0.2"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -73,8 +73,22 @@ Wait for all three to complete.
 
 Read all three staging files.
 Deduplicate: findings from different critics that describe the same issue → merge, mark [Consensus].
-Classify: Critical / Advisory / Observation
+Classify severity: Critical / Advisory / Observation.
 Sort: Critical first, then Advisory, then Observation.
+
+**HITL/AFK classification** — for each finding:
+- **HITL:** Requires human judgment before resolution. Default for: Critical severity findings, findings about evaluation methodology, architectural decisions, scope changes, findings where resolution involves a choice between options with different trade-offs.
+- **AFK:** Can be resolved autonomously in the next `/build` pass. Default for: Warning and Info findings that map to known fix patterns (add a NULL check, refactor a subquery, apply an existing CocoGrove pattern).
+
+**BLOCKING/MINOR classification** — for each finding (orthogonal to HITL/AFK):
+- **BLOCKING:** Must be resolved by the developer — involves correctness, security, architectural conflict, or genuine ambiguity about intent. Critical severity findings are always BLOCKING. Advisory/Observation findings are BLOCKING only if they touch correctness, security, or architectural scope.
+- **MINOR:** Can be auto-resolved without developer input — involves style, naming, missing documentation, or a non-critical coverage gap mapping to a known fix pattern.
+
+Compute `action_summary`:
+- `hitl_count`: count of HITL-classified findings
+- `afk_count`: count of AFK-classified findings
+- `blocking_count`: count of BLOCKING-classified findings
+- `minor_count`: count of MINOR-classified findings
 
 `critical_open = any Critical finding exists`
 
@@ -91,21 +105,27 @@ models_used: [haiku, sonnet, opus]
 critical_open: [true/false]
 acknowledged: false
 acknowledged_at: null
+action_summary:
+  hitl_count: [N]
+  afk_count: [N]
+  blocking_count: [N]
+  minor_count: [N]
 ---
 
 # SecondEye Review: [artifact name]
 
 **Date:** [ISO 8601 timestamp]
 **Models:** Haiku (Efficiency) + Sonnet (Completeness) + Opus (Risk)
+**Action Summary:** [blocking_count] BLOCKING · [minor_count] MINOR · [hitl_count] HITL · [afk_count] AFK
 
 ## Critical Findings
-[Critical findings]
+[Critical findings — each tagged [HITL/AFK] [BLOCKING/MINOR]]
 
 ## Advisory Findings
-[Advisory findings]
+[Advisory findings — each tagged [HITL/AFK] [BLOCKING/MINOR]]
 
 ## Observations
-[Observations]
+[Observations — each tagged [HITL/AFK] [BLOCKING/MINOR]]
 
 ## Consensus Findings
 [Findings identified by multiple critics]
@@ -120,16 +140,19 @@ Delete `.cocoplus/lifecycle/.secondeye-staging/[timestamp]/` and all contents.
 If `critical_open = true`:
 ```
 SecondEye review complete. CRITICAL FINDINGS DETECTED.
-[list critical finding titles]
+[list critical finding titles — each with HITL/AFK and BLOCKING/MINOR tags]
+Action required: [blocking_count] BLOCKING · [hitl_count] HITL requiring developer attention
 /build is soft-gated until you acknowledge these findings.
-Run `/secondeye acknowledge` to review and acknowledge before building.
+Run `/secondeye acknowledge --hitl-only` to acknowledge HITL stages.
+Run `/secondeye acknowledge --blocking-only` to acknowledge BLOCKING findings only.
 Report: .cocoplus/lifecycle/secondeye-[timestamp].md
 ```
 
 If no critical findings:
 ```
 SecondEye review complete. No critical findings.
-[N] advisory findings, [N] observations.
+[N] advisory findings ([blocking_count] BLOCKING, [minor_count] MINOR) · [N] observations
+HITL stages: [hitl_count] · AFK stages: [afk_count]
 Report: .cocoplus/lifecycle/secondeye-[timestamp].md
 ```
 
@@ -145,5 +168,7 @@ Report: .cocoplus/lifecycle/secondeye-[timestamp].md
 
 - [ ] Artifact path is resolved and validated before critic execution
 - [ ] `.cocoplus/lifecycle/.secondeye-staging/[timestamp]/` is created for critic task files and removed during cleanup
+- [ ] Every finding is tagged with both HITL/AFK and BLOCKING/MINOR labels
+- [ ] Report frontmatter includes `action_summary` with `hitl_count`, `afk_count`, `blocking_count`, `minor_count`
 - [ ] Critic outputs are aggregated into `.cocoplus/lifecycle/secondeye-[timestamp].md` with `critical_open` and acknowledgment metadata
-- [ ] Output clearly indicates whether `/build` is soft-gated and points to `/secondeye acknowledge` when critical findings exist
+- [ ] Output clearly indicates whether `/build` is soft-gated and shows the `--hitl-only` and `--blocking-only` acknowledge options
