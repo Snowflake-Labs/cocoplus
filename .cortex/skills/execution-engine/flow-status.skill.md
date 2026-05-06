@@ -1,7 +1,7 @@
 ---
 name: "flow-status"
-description: "Show the current execution state of the CocoFlow pipeline: per-stage status, completion percentage, failed stages with error details, and the next stage to run."
-version: "1.0.0"
+description: "Show the current execution state of the CocoFlow pipeline: per-stage status, completion percentage, concurrency mode, failed stages with error details, and the next stage to run."
+version: "1.0.2"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -21,15 +21,18 @@ Read `.cocoplus/flow.json`. Count stages by status:
 - skipped: status == "skipped"
 - pending: status == "pending" or no status field
 
+Read `flow.json` `runtime.concurrency_mode` (default: `normal` if not set). Read `runtime.harvest_id` to find the dual-file state files in `harvest/`.
+
 Output:
 
 ```
 # Pipeline Status: [pipeline name]
 
 Overall: [completed count]/[total] complete ([%])
+Concurrency Mode: [normal|caution|single-track] — [trigger event that caused last transition, if any]
 
-| Stage | Name | Persona | Status | Started | Duration |
-|-------|------|---------|--------|---------|----------|
+| Stage | Name | Persona | HITL | Status | Started | Duration |
+|-------|------|---------|------|--------|---------|----------|
 [one row per stage]
 
 Paused: [yes/no — check for .cocoplus/flow.pause flag]
@@ -54,7 +57,8 @@ Action required: Fix issue and run `/flow run [stage-id]`
 
 ## Exit Criteria
 
-- [ ] Status table with columns Stage, Name, Persona, Status, Started, Duration is output for every stage
+- [ ] Status table with columns Stage, Name, Persona, HITL, Status, Started, Duration is output for every stage
 - [ ] Overall completion percentage (completed/total) is shown
+- [ ] Concurrency Mode field with current mode and last transition trigger is shown
 - [ ] Pause status (checked via `.cocoplus/flow.pause` existence) and Next Action are shown
 - [ ] `## Failures` section present for any failed stages with checkpoint details and retry command

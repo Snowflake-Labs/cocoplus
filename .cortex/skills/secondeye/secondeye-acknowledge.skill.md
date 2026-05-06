@@ -1,7 +1,7 @@
 ---
 name: "secondeye-acknowledge"
-description: "Review and acknowledge open Critical findings from a SecondEye report. Presents each Critical finding to the developer, requires confirmation, then clears the /build soft gate."
-version: "1.0.0"
+description: "Review and acknowledge open Critical findings from a SecondEye report. Supports --hitl-only (acknowledge HITL-classified stages) and --blocking-only (acknowledge BLOCKING-classified findings only). Clears /build soft gate when all critical findings are acknowledged."
+version: "1.0.2"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -13,6 +13,12 @@ Your objective is to process Critical SecondEye findings and clear the build gat
 Before proceeding, verify that `.cocoplus/` exists.
 If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
 
+## Parse Arguments
+
+- `--hitl-only`: acknowledge only HITL-classified findings. MINOR/AFK findings are queued for autonomous resolution in the next `/build` pass.
+- `--blocking-only`: acknowledge only BLOCKING-classified findings, leaving MINOR findings for autonomous resolution.
+- No flag: present all Critical findings for acknowledgment (existing behavior).
+
 ## Find Unacknowledged Reports
 
 Scan `.cocoplus/lifecycle/` for files matching `secondeye-*.md`.
@@ -22,28 +28,33 @@ Find files with `critical_open: true` AND `acknowledged: false`.
 If none found:
 Output: "No unacknowledged Critical SecondEye findings. /build is not gated." Then stop.
 
-## Present Each Critical Finding
+## Present Findings Based on Mode
 
-For each unacknowledged report:
-Display all Critical findings.
-For each finding ask:
-"Acknowledge finding [SE-NNN]: [title]? (yes to acknowledge / no to keep it open)"
+**No flag (default):** Present all Critical findings one at a time. For each:
+"Acknowledge finding [SE-NNN]: [title] [[HITL/AFK]] [[BLOCKING/MINOR]]? (yes to acknowledge / no to keep it open)"
+
+**`--hitl-only`:** Present only HITL-classified findings. AFK findings are listed as "queued for autonomous resolution" and not presented for acknowledgment.
+
+**`--blocking-only`:** Present only BLOCKING-classified findings. MINOR findings are listed as "queued for autonomous resolution" and not presented for acknowledgment.
 
 ## Update Report Metadata
 
-If all Critical findings acknowledged:
+If all required findings acknowledged (based on mode):
 Update the report file's YAML frontmatter:
 - `acknowledged: true`
 - `acknowledged_at: [ISO 8601 timestamp]`
 - `critical_open: false`
 
-If any critical finding left unacknowledged:
+Track which findings were acknowledged vs. queued. Update `action_summary` in frontmatter to reflect remaining counts.
+
+If any required finding left unacknowledged:
 Output: "[N] findings still unacknowledged. /build remains gated."
 
 ## Output
 
-If all acknowledged:
-Output: "All Critical findings acknowledged. /build gate cleared. You may now run `/build`."
+If all required findings acknowledged:
+Output: "All required findings acknowledged. /build gate cleared. You may now run `/build`."
+If AFK or MINOR findings were queued: "Note: [N] AFK/MINOR findings queued for autonomous resolution in next `/build` pass."
 
 ## Anti-Rationalization
 
@@ -56,6 +67,8 @@ Output: "All Critical findings acknowledged. /build gate cleared. You may now ru
 ## Exit Criteria
 
 - [ ] Unacknowledged reports are identified using `critical_open: true` and `acknowledged: false`
-- [ ] Each critical finding is presented for explicit acknowledgment decision
-- [ ] Report frontmatter is updated to `acknowledged: true`, `acknowledged_at: [ISO timestamp]`, and `critical_open: false` only when all critical findings are acknowledged
-- [ ] Output states whether `/build` remains gated or is cleared
+- [ ] Each finding is presented with its HITL/AFK and BLOCKING/MINOR tags
+- [ ] `--hitl-only` presents only HITL-classified findings; AFK findings listed as queued
+- [ ] `--blocking-only` presents only BLOCKING-classified findings; MINOR findings listed as queued
+- [ ] Report frontmatter is updated to `acknowledged: true`, `acknowledged_at: [ISO timestamp]`, and `critical_open: false` only when all required findings are acknowledged
+- [ ] Output states whether `/build` remains gated or is cleared, and how many findings were queued for autonomous resolution

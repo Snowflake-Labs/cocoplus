@@ -1,7 +1,7 @@
 ---
 name: "review"
-description: "Enter the Review phase of CocoBrew. Aggregates findings from Code Quality Advisor, CocoCupper intelligence, and spec compliance check. Produces review.md with decision points. Requires developer approval before /ship can proceed."
-version: "1.0.0"
+description: "Enter the Review phase of CocoBrew. Aggregates findings from Code Quality Advisor, CocoCupper intelligence, spec compliance check, and decision coverage gate. Produces review.md with decision points. Requires developer approval before /ship can proceed."
+version: "1.0.2"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -34,6 +34,16 @@ For each deliverable: does the file/table/artifact exist?
 **4. Test Summary**
 Read `.cocoplus/lifecycle/test.md`. Extract pass/fail summary.
 
+**5. Decision Coverage Check**
+
+Extract key decisions from `plan.md` (and `discuss.md` if it exists): evaluation target, data source, accuracy threshold, model to use, warehouse assignment, production safety requirements.
+
+For each extracted decision, scan implementation artifacts — SQL functions, evaluation configurations, `flow.json` stage definitions, prompt files — for evidence that the decision is honored in the implementation.
+
+A decision is **honored** if the artifact reflects the stated value or approach. A decision is a **Coverage Gap** if it is present in plan/discuss but absent or contradicted in the implementation.
+
+Coverage Gaps are severity-equivalent to must-fix. `/ship` is blocked until all Coverage Gaps are resolved or explicitly acknowledged with a documented rationale written into `review.md`.
+
 ## Write Review Document
 
 Write `.cocoplus/lifecycle/review.md`:
@@ -65,6 +75,12 @@ If none: "No CocoCupper analysis available."
 
 ## Test Summary
 Passed: [N] / [Total]
+
+## Decision Coverage
+| Decision | Source | Honored | Notes |
+|----------|--------|---------|-------|
+[Table of plan/discuss decisions vs implementation evidence]
+Coverage Gaps (if any): [list — each blocks /ship until resolved or acknowledged with rationale]
 
 ## Decision Points
 [List any items requiring developer decision before shipping]
@@ -102,11 +118,13 @@ Output: "Review approved. Commit created. You may now proceed to `/ship`."
 |-----------------------|--------------|
 | Approve the review automatically if no critical findings exist | Developer must explicitly approve — auto-approval bypasses the mandatory human gate |
 | Skip spec compliance check if tests all passed | Tests passing does not mean spec criteria are covered; compliance check verifies mapping, not just pass rate |
-| Write review.md before aggregating all sources | Missing a source (CocoCupper, quality findings) produces an incomplete review that under-reports problems |
+| Write review.md before aggregating all sources | Missing a source (CocoCupper, quality findings, decision coverage) produces an incomplete review that under-reports problems |
+| Treat Coverage Gaps as advisory | Coverage Gaps block /ship the same as must-fix findings — tests verify what code does; coverage verifies what it was meant to do |
 
 ## Exit Criteria
 
-- [ ] `.cocoplus/lifecycle/review.md` exists with a `## Spec Compliance` table and a `## Approval Status` field
+- [ ] `.cocoplus/lifecycle/review.md` exists with `## Spec Compliance`, `## Decision Coverage`, and `## Approval Status` sections
+- [ ] `## Decision Coverage` table lists every key decision from `plan.md` and `discuss.md` (if present) with honored/gap status
 - [ ] `## Approval Status` contains `APPROVED` (not just `PENDING`)
 - [ ] `.cocoplus/lifecycle/meta.json` `phases_completed` array contains `"review"`
 - [ ] Git commit with message `docs(review): quality and compliance review approved` exists in log

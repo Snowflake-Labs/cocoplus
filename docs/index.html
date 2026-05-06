@@ -33,21 +33,20 @@
 
   <div class="summary-box">
     <h3>The Quick Picture</h3>
+    <p>If you want the shortest possible summary of CocoPlus:</p>
     <p><strong>What it is:</strong> A plugin for Coco CLI that adds lifecycle structure, specialist agents, persistent memory, safety protection, and continuous learning to your Snowflake development workflow.</p>
-    <p><strong>What it runs on:</strong> Four Coco-native pillars — Rules, Agents, Skills, Hooks — and a file-based state store in <code>.cocoplus/</code>. No external services.</p>
+    <p><strong>What it runs on:</strong> Four Coco-native pillars (Rules, Agents, Skills, Hooks) and a file-based state store in <code>.cocoplus/</code>. No external services.</p>
     <p><strong>What it believes:</strong> Structure enables speed. Specialists outperform generalists. Hard gates protect irreversible operations. Institutional memory compounds. Token economics are architecture.</p>
-    <p><strong>How to install:</strong> <code>cortex skill add Snowflake-Labs/cocoplus</code></p>
-    <p><strong>How to start:</strong> <code>/pod init</code> in your project directory. Then <code>/cocoplus on</code>. Then <code>/spec</code> to begin work.</p>
+    <p><strong>How to install:</strong> <code>cortex skill add Snowflake-Labs/cocoplus</code>. If <code>skill add</code> reports "No valid skills found", launch with <code>cortex --plugin-dir Snowflake-Labs/cocoplus</code> instead. Then <code>/pod init</code> in your project directory, <code>/cocoplus on</code> to activate all features, and <code>/spec</code> to begin work.</p>
   </div>
 
   <h2>Documentation</h2>
 
   <div class="doc-grid">
-
     <a href="getting-started.html" class="doc-card featured">
       <div class="card-label">Start Here</div>
       <div class="card-title">Getting Started</div>
-      <div class="card-desc">From zero to a fully initialized CocoPlus project in under ten minutes. Prerequisites, <code>/pod init</code>, <code>/cocoplus on</code>, and your first <code>/spec</code>.</div>
+      <div class="card-desc">From zero to a fully initialized CocoPlus project: prerequisites, plugin installation, pod initialization, feature activation, and your first orientation commands.</div>
     </a>
 
     <a href="data-context.html" class="doc-card">
@@ -59,45 +58,44 @@
     <a href="concepts.html" class="doc-card">
       <div class="card-label">Mental Models</div>
       <div class="card-title">Core Concepts</div>
-      <div class="card-desc">Seven foundational ideas — the lifecycle, CocoFlow, the persona system, three-layer memory, the Safety Gate, CocoCupper and CocoGrove, token economics, and CocoPod.</div>
+      <div class="card-desc">The lifecycle, CocoFlow pipelines, the persona system, memory, Safety Gate, CocoCupper and CocoGrove, token economics, CocoPod, CocoMap, and CocoSeed.</div>
     </a>
 
     <a href="architecture.html" class="doc-card">
       <div class="card-label">How It's Built</div>
       <div class="card-title">Architecture</div>
-      <div class="card-desc">Four pillars, one coherent system. Rules, Agents, Skills, and Hooks working together through a shared file-based state store. Includes a complete lifecycle walkthrough.</div>
+      <div class="card-desc">Four pillars, one coherent system. Rules, Agents, Skills, and Hooks working together through a shared file-based state store.</div>
     </a>
 
     <a href="features.html" class="doc-card">
       <div class="card-label">What It Does</div>
-      <div class="card-title">All 19 Features</div>
-      <div class="card-desc">Every feature in plain language — what it does, what commands it exposes, why it exists, and when to use it. Includes SecondEye, the multi-model plan critic.</div>
+      <div class="card-title">All 31 Features</div>
+      <div class="card-desc">Every feature in plain language — what it does, what commands it exposes, why it exists, and when to use it.</div>
     </a>
 
     <a href="workflows.html" class="doc-card">
       <div class="card-label">Real-World Usage</div>
       <div class="card-title">Workflows</div>
-      <div class="card-desc">Nine scenarios showing how someone with professional intent uses CocoPlus — full lifecycle builds, parallel CocoHarvest runs, SecondEye critique, safety gate handling, and more.</div>
+      <div class="card-desc">Scenario walkthroughs showing how someone with professional intent uses CocoPlus in real project situations.</div>
     </a>
 
     <a href="command-reference.html" class="doc-card">
       <div class="card-label">Every Command</div>
       <div class="card-title">Command Reference</div>
-      <div class="card-desc">Complete reference for all CocoPlus commands organized by feature — flags, behavior, and expected output. Includes the hooks reference table.</div>
+      <div class="card-desc">All commands, flags, behavior, and expected output, organized by the feature that owns each command.</div>
     </a>
 
     <a href="principles.html" class="doc-card">
       <div class="card-label">The Philosophy</div>
       <div class="card-title">Design Principles</div>
-      <div class="card-desc">Twelve design principles with the reasoning behind each. Not rules to memorize — a compass for making decisions that aren't in the documentation.</div>
+      <div class="card-desc">Twelve design principles and the reasoning behind every major decision.</div>
     </a>
 
     <a href="manifesto.html" class="doc-card">
       <div class="card-label">The Why</div>
       <div class="card-title">Manifesto</div>
-      <div class="card-desc">Why CocoPlus exists. The problem it solves. What it believes. The central argument that AI-assisted development fails not from AI incapability, but from lack of structure.</div>
+      <div class="card-desc">Why CocoPlus exists, the problem it solves, and what it believes.</div>
     </a>
-
   </div>
 
   <hr>
@@ -115,32 +113,37 @@
         </tr>
       </thead>
       <tbody>
-        <tr><td>1</td><td><strong>CocoBrew</strong></td><td>Lifecycle engine (Spec→Plan→Build→Test→Review→Ship)</td><td><code>/spec</code> <code>/plan</code> <code>/build</code> <code>/ship</code></td></tr>
-        <tr><td>2</td><td><strong>CocoSpark</strong></td><td>Optional divergent brainstorm mode</td><td><code>/spark</code> <code>/spark-off</code></td></tr>
-        <tr><td>3</td><td><strong>CocoHarvest</strong></td><td>Task decomposition and parallel agent spawner</td><td>Auto + <code>$&lt;persona&gt;</code></td></tr>
-        <tr><td>4</td><td><strong>Personas</strong></td><td>8 specialist agents with locked domains and tools</td><td><code>$de</code> <code>$ae</code> <code>$ds</code> <code>$cdo</code> …</td></tr>
-        <tr><td>5</td><td><strong>CocoPod</strong></td><td>Project bundle and persistent state store</td><td><code>/pod init</code> <code>/pod status</code> <code>/pod resume</code></td></tr>
-        <tr><td>6</td><td><strong>Execution Engine</strong></td><td>CocoFlow pipeline executor</td><td><code>/flow run</code> <code>/flow status</code></td></tr>
-        <tr><td>7</td><td><strong>Memory Engine</strong></td><td>Cross-session three-layer persistence</td><td><code>/memory on</code> <code>/memory off</code></td></tr>
-        <tr><td>8</td><td><strong>Environment Inspector</strong></td><td>Pre-action Snowflake schema scan</td><td><code>/inspect</code> <code>/inspector on</code></td></tr>
-        <tr><td>9</td><td><strong>Safety Gate</strong></td><td>Hard + soft protection for destructive operations</td><td><code>/safety strict</code> <code>/safety normal</code></td></tr>
-        <tr><td>10</td><td><strong>Code Quality Advisor</strong></td><td>Snowflake-specific anti-pattern review</td><td><code>/quality run</code> <code>/quality on</code></td></tr>
-        <tr><td>11</td><td><strong>Prompt Studio</strong></td><td>Structured Cortex AI prompt engineering</td><td><code>/prompt new</code> <code>/prompt compare</code></td></tr>
-        <tr><td>12</td><td><strong>CocoGrove</strong></td><td>Curated pattern library and skill promoter</td><td><code>/patterns view</code> <code>/patterns promote</code></td></tr>
-        <tr><td>13</td><td><strong>Doc Engine</strong></td><td>Auto-documentation from code artifacts</td><td><code>/doc run</code></td></tr>
-        <tr><td>14</td><td><strong>Context Mode</strong></td><td>Narrated transparency of system actions</td><td><code>/context on</code> <code>/context off</code></td></tr>
-        <tr><td>15</td><td><strong>CocoMeter</strong></td><td>Token tracking and pre-flight cost estimation</td><td><code>/meter</code> <code>/meter estimate</code></td></tr>
-        <tr><td>16</td><td><strong>CocoCupper</strong></td><td>Post-execution background intelligence analyst</td><td><code>/cup</code> <code>/cup history</code></td></tr>
-        <tr><td>17</td><td><strong>Assist Mode</strong></td><td>Master toggle for all mode-based features</td><td><code>/cocoplus on</code> <code>/cocoplus off</code></td></tr>
-        <tr><td>18</td><td><strong>CocoFleet</strong></td><td>Multi-process OS-level Coco orchestration</td><td><code>/fleet init</code> <code>/fleet run</code></td></tr>
-        <tr><td>19</td><td><strong>SecondEye</strong></td><td>Multi-model plan critic — parallel Haiku/Sonnet/Opus critique</td><td><code>/secondeye</code> <code>/secondeye acknowledge</code></td></tr>
-        <tr><td>20</td><td><strong>CocoView</strong></td><td>Interactive HTML DAG visualizer for flow.json pipelines</td><td><code>/flow view</code></td></tr>
-        <tr><td>21</td><td><strong>CocoMeter Enhanced</strong></td><td>Per-stage token attribution dashboard via Snowflake usage history</td><td><code>/meter view</code> <code>/meter sync</code></td></tr>
-        <tr><td>22</td><td><strong>CocoBehavior</strong></td><td>Ambient behavioral constraints loaded into all personas automatically</td><td>Automatic</td></tr>
-        <tr><td>23</td><td><strong>CocoContext</strong></td><td>Organizational standards capture (models, PII, warehouses, governance)</td><td><code>/context add</code> <code>/context list</code></td></tr>
-        <tr><td>24</td><td><strong>CocoScout</strong></td><td>Relevance-ranked context loading before every persona invocation</td><td>Automatic</td></tr>
-        <tr><td>25</td><td><strong>CocoRecipe</strong></td><td>Parameterized CocoFlow pipeline templates for common Cortex tasks</td><td><code>/recipe list</code> <code>/recipe use</code> <code>/recipe new</code></td></tr>
-        <tr><td>26</td><td><strong>CocoDream</strong></td><td>Supervised prompt pattern distillation into CocoGrove lessons</td><td><code>/dream</code> <code>/dream history</code></td></tr>
+        <tr><td>1</td><td><strong>CocoBrew</strong></td><td>The Lifecycle Engine</td><td><code>/spec</code>, <code>/plan</code>, <code>/build</code>, <code>/test</code>, <code>/review</code>, <code>/ship</code>, <code>/rewind</code>, <code>/fork</code></td></tr>
+        <tr><td>2</td><td><strong>CocoSpark</strong></td><td>Brainstorm Mode</td><td><code>/spark [topic]</code>, <code>/spark-off</code></td></tr>
+        <tr><td>3</td><td><strong>CocoHarvest</strong></td><td>Task Decomposition &amp; Agent Spawner</td><td>Automatic at Plan phase; <code>$&lt;persona&gt;</code> for direct invocation</td></tr>
+        <tr><td>4</td><td><strong>Personas</strong></td><td>Eight Specialist Agents</td><td><code>$de</code>, <code>$ae</code>, <code>$ds</code>, <code>$da</code>, <code>$bi</code>, <code>$dpm</code>, <code>$dst</code>, <code>$cdo</code>; <code>/personas</code> to list</td></tr>
+        <tr><td>5</td><td><strong>CocoPod</strong></td><td>Project Bundle</td><td><code>/pod init</code>, <code>/pod status</code>, <code>/pod resume</code>, <code>/pod kb</code>, <code>/pod checkpoint</code></td></tr>
+        <tr><td>6</td><td><strong>Project Execution Engine</strong></td><td>Pipeline Executor</td><td><code>/flow run</code>, <code>/flow status</code>, <code>/flow pause</code>, <code>/flow resume</code></td></tr>
+        <tr><td>7</td><td><strong>Memory Engine</strong></td><td>Cross-Session Persistence</td><td><code>/memory on</code>, <code>/memory off</code></td></tr>
+        <tr><td>8</td><td><strong>Environment Inspector</strong></td><td>Pre-Action Context</td><td><code>/inspect</code>, <code>/inspector on</code>, <code>/inspector off</code></td></tr>
+        <tr><td>9</td><td><strong>Safety Gate</strong></td><td>Execution Protection</td><td><code>/safety strict</code>, <code>/safety normal</code>, <code>/safety off</code></td></tr>
+        <tr><td>10</td><td><strong>Code Quality Advisor</strong></td><td>Anti-Pattern Review</td><td><code>/quality on</code>, <code>/quality off</code>, <code>/quality run</code></td></tr>
+        <tr><td>11</td><td><strong>Prompt Studio</strong></td><td>Prompt Engineering</td><td><code>/prompt new</code>, <code>/prompt compare</code></td></tr>
+        <tr><td>12</td><td><strong>CocoGrove</strong></td><td>Pattern Library</td><td><code>/patterns view</code>, <code>/patterns promote</code>, <code>/grove glossary</code>, <code>/grove glossary view</code></td></tr>
+        <tr><td>13</td><td><strong>Doc Engine</strong></td><td>Auto Documentation</td><td><code>/doc run</code></td></tr>
+        <tr><td>14</td><td><strong>Context Mode</strong></td><td>Transparency Layer</td><td><code>/context on</code>, <code>/context off</code></td></tr>
+        <tr><td>15</td><td><strong>CocoMeter</strong></td><td>Token Tracker</td><td><code>/meter</code>, <code>/meter on</code>, <code>/meter off</code>, <code>/meter estimate</code>, <code>/meter history</code></td></tr>
+        <tr><td>16</td><td><strong>CocoCupper</strong></td><td>Post-Execution Intelligence</td><td><code>/cup</code>, <code>/cup history</code></td></tr>
+        <tr><td>17</td><td><strong>Assist Mode</strong></td><td>The Master Toggle</td><td><code>/cocoplus on</code>, <code>/cocoplus off</code></td></tr>
+        <tr><td>18</td><td><strong>CocoFleet</strong></td><td>Multi-Process Orchestration</td><td><code>/fleet init</code>, <code>/fleet run</code>, <code>/fleet status</code>, <code>/fleet stop</code>, <code>/fleet logs</code></td></tr>
+        <tr><td>19</td><td><strong>SecondEye</strong></td><td>Multi-Model Plan Critic</td><td><code>/secondeye</code>, <code>/secondeye --artifact &lt;target&gt;</code>, <code>/secondeye --model &lt;model&gt;</code>, <code>/secondeye acknowledge</code></td></tr>
+        <tr><td>20</td><td><strong>CocoView</strong></td><td>Flow Visualizer</td><td><code>/flow view</code>, <code>/flow view --output &lt;path&gt;</code></td></tr>
+        <tr><td>21</td><td><strong>CocoMeter Enhanced</strong></td><td>Flow Token Attribution &amp; Usage Dashboard</td><td><code>/meter view</code>, <code>/meter sync</code></td></tr>
+        <tr><td>22</td><td><strong>CocoBehavior</strong></td><td>Ambient Behavioral Constraint Layer</td><td>None — always on, not user-invocable</td></tr>
+        <tr><td>23</td><td><strong>CocoContext</strong></td><td>Organizational Standards Capture</td><td><code>/context add</code>, <code>/context view [file-name]</code>, <code>/context list</code></td></tr>
+        <tr><td>24</td><td><strong>CocoScout</strong></td><td>Relevance-Ranked Context Loading</td><td>None — automatic, not user-invocable</td></tr>
+        <tr><td>25</td><td><strong>CocoRecipe</strong></td><td>Pre-Built Pipeline Templates</td><td><code>/recipe list</code>, <code>/recipe use &lt;name&gt; [--params]</code>, <code>/recipe new &lt;name&gt;</code></td></tr>
+        <tr><td>26</td><td><strong>CocoDream</strong></td><td>Supervised Cross-Session Pattern Distillation</td><td><code>/dream</code>, <code>/dream history [n]</code></td></tr>
+        <tr><td>27</td><td><strong>CocoHealth</strong></td><td>Context Utilization Monitor</td><td><code>/pod checkpoint</code></td></tr>
+        <tr><td>28</td><td><strong>CocoMap</strong></td><td>Cortex Function Knowledge Graph</td><td><code>/map</code>, <code>/map diff</code>, <code>/map explain &lt;target&gt;</code></td></tr>
+        <tr><td>29</td><td><strong>CocoSeed</strong></td><td>Deferred Ideas with Trigger Conditions</td><td><code>/seed add "&lt;idea&gt;" --trigger "&lt;condition&gt;"</code>, <code>/seed list</code>, <code>/seed promote &lt;id&gt;</code></td></tr>
+        <tr><td>30</td><td><strong>CocoDiscuss</strong></td><td>Decision-Locking Pre-Plan Phase</td><td><code>/discuss</code></td></tr>
+        <tr><td>31</td><td><strong>CocoLens</strong></td><td>HITL/AFK Task Classification</td><td>None — integrated into CocoHarvest decomposition</td></tr>
       </tbody>
     </table>
   </div>
