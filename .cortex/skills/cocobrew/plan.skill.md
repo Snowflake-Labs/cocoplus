@@ -1,7 +1,7 @@
 ---
 name: "plan"
-description: "Enter the Plan phase of CocoBrew. Reads spec.md, presents planning options, invokes Coco native plan mode as a mandatory gate, captures the approved plan to plan.md, creates initial flow.json template, and commits. Must have /spec completed first."
-version: "1.0.0"
+description: "Enter the Plan phase of CocoBrew. Runs CocoSpec quality gate pre-flight, reads spec.md and discuss.md (if present), invokes Coco native plan mode as a mandatory gate, captures the approved plan to plan.md, creates initial flow.json template, and commits. Must have /spec completed first."
+version: "1.0.2"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -16,9 +16,37 @@ If it does not, output: "CocoPlus not initialized in this directory. Run `/pod i
 Read `.cocoplus/lifecycle/meta.json`. Verify `phases_completed` contains `"spec"`.
 If not: output "The Spec phase must be completed before planning. Run `/spec` to capture requirements first." Then stop.
 
+## CocoSpec Pre-Flight Quality Gate
+
+Before entering plan mode, run the CocoSpec scoring gate. Spawn a background Haiku subagent (read-only) to score `spec.md` and `discuss.md` (if it exists) against five dimensions:
+
+| Dimension | Score 0 | Score 1 | Score 2 |
+|-----------|---------|---------|---------|
+| **Value** | No rationale | Rationale present but benefits not measurable | Clear rationale with verifiable success metrics |
+| **Scope** | No scope definition | MVP defined but out-of-scope not stated | Both MVP and explicit out-of-scope defined |
+| **Acceptance** | No acceptance criteria | Criteria stated but not testable | Testable criteria with clear pass/fail determination |
+| **Boundaries** | None addressed | Partial coverage | All four (error handling, performance, compatibility, security) addressed |
+| **Risk** | No risk assessment | Risks identified but no mitigation | Risks identified with explicit mitigation or escalation plan |
+
+The scoring agent writes the score and per-dimension rationale to `lifecycle/spec-score.md`.
+
+**Gate behavior:**
+- Score ≥9: Gate passes. Check Quick Mode eligibility (see below).
+- Score 8: Hold. Show which dimension scored below 2. Ask developer to address the gap before proceeding.
+- Score ≤7: Hold. Output an Uncertainty Declaration for every sub-2 dimension — name each assumption being made rather than stated. Developer must address before planning proceeds.
+
+**Uncertainty Declaration format (for score ≤7):**
+```
+UNCERTAIN: [dimension description] | ASSUMPTION: [what is being assumed]
+```
+
+**Quick Mode check (score ≥9 only):** If score ≥9 AND spec scope is ≤3 files (detectable from spec.md's Deliverables section) AND no EHRB indicators in the planned operations: offer Quick Mode — "Your specification qualifies for Quick Mode. Skip Plan phase and proceed directly to Build?" Quick Mode requires explicit developer confirmation. If accepted, record `"quick_mode": true` in `lifecycle/meta.json` and add `"plan"` to `phases_completed` with a note, then skip to Build.
+
 ## Read the Specification
 
-Read `.cocoplus/lifecycle/spec.md` completely. Extract:
+Read `.cocoplus/lifecycle/spec.md` completely. If `lifecycle/discuss.md` exists, also read it and extract any additional decisions (evaluation methodology, accuracy threshold, model selection, warehouse assignment, production safety requirements) that must be honored in the plan.
+
+Extract from spec:
 - Goal
 - Deliverables
 - Personas list
@@ -120,13 +148,18 @@ Output: "Plan captured and approved. Commit created: `feat(plan): approved execu
 
 | Temptation | Why Not |
 |------------|---------|
+| Skip CocoSpec gate | CocoSpec is a pre-flight check that prevents plan-time decisions from filling in missing spec content silently; never skip |
 | Skip Coco native plan mode | Plan mode is a HARD GATE — it is not optional under any circumstances |
 | Proceed without explicit developer approval | Developer must approve before plan.md is written |
 | Create detailed flow.json stages here | CocoHarvest creates stages — plan.skill.md only creates the empty skeleton |
+| Ignore discuss.md when it exists | Decisions captured in /discuss must be traceable into the plan and are checked again at review time |
 
 ## Exit Criteria
 
+- [ ] `lifecycle/spec-score.md` exists with CocoSpec scores for all five dimensions and the total score
+- [ ] CocoSpec gate passed (score ≥9) or developer explicitly addressed gaps before proceeding
 - [ ] `.cocoplus/lifecycle/plan.md` exists with YAML-like header fields (Date, Phase, Phase ID, Spec ID) and a `## Workstreams` section
+- [ ] If `discuss.md` exists, plan.md reflects the key decisions from it (evaluation target, model, threshold, warehouse, safety requirements)
 - [ ] `.cocoplus/flow.json` exists with `meta.phase` set to `"plan"` and an empty `"stages": []` array
 - [ ] `.cocoplus/lifecycle/meta.json` `phases_completed` array contains `"plan"`
 - [ ] Git commit with message `feat(plan): approved execution plan v1` exists in log

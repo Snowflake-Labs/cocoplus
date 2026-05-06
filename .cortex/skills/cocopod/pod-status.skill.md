@@ -1,7 +1,7 @@
 ---
 name: "pod-status"
 description: "Display complete CocoPlus project state: lifecycle phase, CocoFlow pipeline status, active modes, memory state, safety gate, inspector, meter, personas, patterns, and cupper findings. Run at any time to get a full project overview."
-version: "1.0.1"
+version: "1.0.2"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -62,6 +62,7 @@ Check for presence of these flag files and report on/off:
 ### 6. CocoGrove
 - Pattern count (count `.md` files in `grove/patterns/`)
 - CocoCupper findings (line count of `grove/cupper-findings.md`)
+- Project KB: count entries in `lifecycle/kb.md` (count lines starting with `-` under `## Patterns`, `## Decisions`, `## Gotchas`); display as "Project KB: N entries" or "Project KB: not yet populated"
 
 ### 7. Safety Gate
 - Current level (strict / normal / off)
