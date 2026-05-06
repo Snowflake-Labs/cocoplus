@@ -138,6 +138,14 @@ h3 {
 p { margin-bottom: 1.25rem; }
 p:last-child { margin-bottom: 0; }
 
+.content ul,
+.content ol {
+  margin: 1rem 0 1.25rem 1.5rem;
+  line-height: 1.9;
+}
+
+.content li { margin-bottom: 0.45rem; }
+
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
@@ -235,6 +243,11 @@ tr:hover td { background: #f8fafc; }
   margin: 2rem 0;
 }
 
+.feature > p {
+  font-size: 0.96rem;
+  line-height: 1.7;
+}
+
 .feature-name {
   font-size: 1.2rem;
   font-weight: 700;
@@ -249,6 +262,35 @@ tr:hover td { background: #f8fafc; }
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+}
+
+.feature-note,
+.feature-use {
+  border: 1px solid #e0e7f0;
+  border-left: 3px solid #94a3b8;
+  border-radius: 6px;
+  padding: 0.85rem 1rem;
+  background: #f8fafc;
+}
+
+.feature-note strong:first-child,
+.feature-use strong:first-child {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #1e293b;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.feature-use {
+  border-color: #c7d8f0;
+  border-left-color: var(--accent);
+  background: var(--accent-light);
+}
+
+.feature-use strong:first-child {
+  color: #174ea6;
 }
 
 .tag {
