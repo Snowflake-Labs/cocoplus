@@ -4,6 +4,66 @@ All notable changes to CocoPlus are documented here.
 
 ---
 
+## [1.0.2] — May 2026
+
+### Added
+
+#### CocoHealth — Context Utilization Monitor (Feature 27)
+- `pod-checkpoint.skill.md` — `/pod checkpoint` writes a structured recovery snapshot to `lifecycle/checkpoint.md`; captures current phase, in-progress flow stage, last 5 decisions, open must-fix items, HITL stages awaiting approval, active CocoHarvest harvest status, and triggered seeds; includes Context Window Recovery Decision Matrix recommendation when context is at/near 70% utilization
+
+#### CocoMap — Cortex Function Knowledge Graph (Feature 28)
+- `map.skill.md` — `/map` triggers a 5-agent parallel analysis pipeline (Function Scanner, Dependency Mapper, Domain Analyzer, Evaluation Mapper, Gap Detector); agents write intermediate results to `.cocoplus/map/intermediate/` without returning to orchestrator context; merges into committed `coco-map.json` with structural dependency graph and domain intent map; creates git commit
+- `map-diff.skill.md` — `/map diff` reads staged git changes and `coco-map.json` to trace downstream impact of modified functions before commit lands; shows affected dependents, shared evaluation sets, and capability definitions
+- `map-explain.skill.md` — `/map explain <target>` produces natural-language explanation of a specific function, business capability, or vocabulary term from the committed knowledge graph
+
+#### CocoSeed — Deferred Ideas with Trigger Conditions (Feature 29)
+- `seed-add.skill.md` — `/seed add "<idea>" --trigger "<condition>"` stores a forward-looking idea with a trigger condition as a YAML file in `.cocoplus/seeds/`; captures current lifecycle phase for context
+- `seed-list.skill.md` — `/seed list` evaluates all pending seed trigger conditions against current project state (filesystem, lifecycle phase, mode flags); updates `status: triggered` for newly-fired seeds; displays Ready to Promote and Waiting sections
+- `seed-promote.skill.md` — `/seed promote <id>` moves a triggered seed into `lifecycle/spec.md` under a Backlog Items section; marks seed as `status: promoted`
+
+#### CocoDiscuss — Decision-Locking Pre-Plan Phase (Feature 30)
+- `discuss.skill.md` — `/discuss` runs a structured wizard capturing model selection, evaluation methodology, accuracy threshold, warehouse assignment, production safety requirements, and scope boundaries into `lifecycle/discuss.md`; adapts questions to work type (AI function, Cortex Search, semantic model); auto-skips questions answered by CocoContext organizational standards; includes CocoSpec 5-dimension quality scoring gate (0–10, required ≥9) with Quick Mode bypass (skips Plan phase when score ≥9, scope ≤3 files, no EHRB indicators)
+
+#### CocoGrove — Ubiquitous Language Section (Feature 12 improvement)
+- `grove-glossary.skill.md` — `/grove glossary` scans project artifacts for domain vocabulary candidates and proposes additions to `.cocoplus/grove/language/glossary.md`; developer reviews and confirms each term before writing; creates git commit for accepted entries
+- `grove-glossary-view.skill.md` — `/grove glossary view` displays the current glossary in alphabetical order with definitions, aliases, and associated functions
+
+#### CocoPod — Project Knowledge Base (Feature 5 improvement)
+- `pod-kb.skill.md` — `/pod kb` displays `lifecycle/kb.md` — the project-specific knowledge base populated by CocoCupper with Patterns, Decisions, and Gotchas across sessions; shows entry count by section and last update date
+
+### Updated (Existing Features)
+
+#### CocoBrew — Review Phase (Feature 1)
+- `review.skill.md` — Decision Coverage Gate added: extracts key decisions from `plan.md` and `discuss.md`, scans implementation artifacts for evidence each decision is honored, flags Coverage Gaps as must-fix severity that block `/ship` until resolved or acknowledged with documented rationale
+
+#### CocoBrew — Plan Phase (Feature 1 / Feature 30)
+- `plan.skill.md` — CocoSpec pre-flight quality gate added as mandatory pre-plan step; spawns background Haiku scorer against 5 dimensions (Value, Scope, Acceptance, Boundaries, Risk) with 0–2 scoring; score ≥9 required; Quick Mode offered when score ≥9 + scope ≤3 files + no EHRB indicators; discuss.md is read and its decisions reflected in plan.md
+
+#### CocoHarvest (Feature 3)
+- `cocoharvest.skill.md` — added: CocoLens HITL/AFK classification per stage at decomposition time with developer override; Enhancement G adaptive parallelism (Normal → Caution → Single-track concurrency modes based on SubagentStop failure signals); stall detection by output token rate (threshold: 150 tokens/step, 5-step minimum, re-prompt before escalation); shell identity injection (COCOPLUS_FUNCTION, COCOPLUS_PERSONA, COCOPLUS_EVAL_ID, COCOPLUS_HARVEST_ID); consecutive failure escalation after 3 hard failures (configurable per stage); dual-file state initialization (`harvest/[run-id]-progress.txt` + `harvest/[run-id]-tasks.json`) for context-reset recovery
+
+#### CocoFlow — Execution Engine (Feature 6)
+- `flow-run.skill.md` — added: `--concurrency <normal|caution|single-track>` flag to force concurrency mode for a run; dual-file state recovery on resume (reads `harvest/[run-id]-tasks.json` to skip already-completed stages); intermediate result persistence for parallel evaluation stages (detailed results to `.cocoplus/harvest/intermediate/`, only summaries return to orchestrator); HITL stage pausing with developer review before downstream stages spawn; consecutive failure tracking with escalation at threshold
+- `flow-status.skill.md` — added Concurrency Mode field showing current mode and last transition trigger event; added HITL column to stage status table
+
+#### Safety Gate (Feature 9)
+- `pre-tool-use.js` — added Prompt Injection Defense: structural anomaly scan on planning artifact reads (injection-type pattern detection, including base64-encoded content), logged to `safety-audit.jsonl`; added EHRB (Elevated-Hazard Requiring Buy-in) classification for SnowflakeSqlExecute calls, covering 5 categories (Production systems, Sensitive/PII, Destructive operations, Billing-significant, Security-critical); EHRB fires before Layer 1 hard gate and surfaces confirmation warning; EHRB billing threshold configurable in `safety-config.json`; execution order: injection scan → EHRB → Layer 1
+
+#### SecondEye (Feature 19)
+- `secondeye.skill.md` — added HITL/AFK classification per finding (HITL for Critical, architectural, or ambiguous findings; AFK for fix-pattern-mapped findings); added BLOCKING/MINOR classification (BLOCKING for correctness/security/architectural scope; MINOR for style/naming/non-critical coverage); report frontmatter gains `action_summary` with `hitl_count`, `afk_count`, `blocking_count`, `minor_count`
+- `secondeye-acknowledge.skill.md` — added `--hitl-only` flag (acknowledge only HITL-classified findings; queue AFK for autonomous resolution) and `--blocking-only` flag (acknowledge only BLOCKING-classified findings; queue MINOR for autonomous resolution)
+
+#### CocoScout (Feature 24)
+- `cocoscout/SKILL.md` — added Two-Lens Relevance Ranking: Technical relevance (implementation approach) and Domain relevance (business intent), combined as weighted composite per persona type (DE/DS/AE: 70/30 technical/domain; DA/BI: 40/60; DPM/DST/CDO: 20/80); weights configurable in `plugin.json` under `cocoScout.weights`; added Anchor Lens: pre-compiled methodology vocabulary catalog at `grove/anchors/catalog.md`, pattern-matched against task message (<50ms, no LLM call), injects anchor names into build agent context preamble; per-persona anchor weighting; added `lifecycle/kb.md` as always-loaded low-tier context source for Build phase tasks; added CocoGrove glossary as context source ranked by term overlap
+
+#### CocoPod — Status (Feature 5)
+- `pod-status.skill.md` — added Project KB entry count to Section 6 (CocoGrove): shows "Project KB: N entries" or "Project KB: not yet populated"
+
+### Notes
+- Feature 31 (CocoLens) is integrated into CocoHarvest decomposition as a behavioral enhancement to `cocoharvest.skill.md` — no separate skill file required; HITL/AFK classification is applied automatically during plan decomposition with developer override available before spawning
+
+---
+
 ## [1.0.1] — April 2026
 
 ### Added
