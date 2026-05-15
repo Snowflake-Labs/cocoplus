@@ -33,9 +33,9 @@ cortex plugins list
 ## Getting Started
 
 ```
-/pod init       — initialize CocoPlus in your project
-/cocoplus on    — activate all features
-/spec           — start the requirements phase
+$pod init       — initialize CocoPlus in your project
+$cocoplus on    — activate all features
+$spec           — start the requirements phase
 ```
 
 See [cocoplus.dev](https://cocoplus.dev) for the full documentation site.
