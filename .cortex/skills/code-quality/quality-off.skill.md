@@ -11,12 +11,12 @@ tags:
 Your objective is to disable the Code Quality Advisor.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 Remove mode flag: delete the file `.cocoplus/modes/quality.on` if it exists. Use the Bash tool with `node -e "try{require('fs').unlinkSync('.cocoplus/modes/quality.on')}catch(_){}"` for cross-platform compatibility.
 Update AGENTS.md (keep ≤200 lines): replace Quality line with `- Quality: off`
 
-Output: "✓ Code Quality Advisor disabled. Existing findings preserved. Run `/quality on` to re-enable."
+Output: "✓ Code Quality Advisor disabled. Existing findings preserved. Run `$quality on` to re-enable."
 
 ## Anti-Rationalization
 

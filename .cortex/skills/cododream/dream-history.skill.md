@@ -13,14 +13,14 @@ Your objective is to display a summary of past CocoDream distillation sessions.
 ## Pre-flight Check
 
 Check that `.cocoplus/` exists. If not:
-Output: "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+Output: "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 ## Find Dream Files
 
 Scan `.cocoplus/grove/` for all files matching `dream-*.md`. Sort by timestamp, newest first.
 
 If no dream files found:
-Output: "No CocoDream sessions found. Run `/dream` to start your first distillation session." Then stop.
+Output: "No CocoDream sessions found. Run `$dream` to start your first distillation session." Then stop.
 
 ## Read Session Metadata
 
@@ -43,7 +43,7 @@ CocoDream History (last <n> sessions)
 <timestamp>  <N> functions  <M> candidates  (<K> promoted)
   .cocoplus/grove/dream-<timestamp>.md
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-To promote a lesson, run: /patterns promote "<lesson title>"
+To promote a lesson, run: $patterns promote "<lesson title>"
 ```
 
 ## Anti-Rationalization
@@ -56,4 +56,4 @@ To promote a lesson, run: /patterns promote "<lesson title>"
 
 - [ ] Sessions displayed newest-first
 - [ ] Each session shows timestamp, function count, candidate count, and file path
-- [ ] If no sessions exist, actionable message pointing to `/dream` is shown
+- [ ] If no sessions exist, actionable message pointing to `$dream` is shown

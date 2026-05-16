@@ -11,13 +11,13 @@ tags:
 Your objective is to promote a CocoCupper finding to a CocoGrove pattern.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
-Parse argument: `/patterns promote [finding-id]`
-If no finding-id provided: output "Usage: /patterns promote [finding-id] — e.g., /patterns promote Finding-001" Then stop.
+Parse argument: `$patterns promote [finding-id]`
+If no finding-id provided: output "Usage: $patterns promote [finding-id] — e.g., $patterns promote Finding-001" Then stop.
 
 Read `.cocoplus/grove/cupper-findings.md`. Find the finding with the specified ID.
-If not found: output "Finding [id] not found. Run `/cup history` to see available findings." Then stop.
+If not found: output "Finding [id] not found. Run `$cup history` to see available findings." Then stop.
 
 Display the full finding to the developer.
 
@@ -59,7 +59,7 @@ promoted_at: "[ISO 8601 timestamp]"
 
 Update the finding in cupper-findings.md: change `**Promoted:** false` to `**Promoted:** [pattern-id]`
 
-Output: "Pattern '[pattern-name]' promoted to CocoGrove. File: `.cocoplus/grove/patterns/[pattern-name].md`. Use `/patterns view` to see all patterns."
+Output: "Pattern '[pattern-name]' promoted to CocoGrove. File: `.cocoplus/grove/patterns/[pattern-name].md`. Use `$patterns view` to see all patterns."
 
 ## Anti-Rationalization
 

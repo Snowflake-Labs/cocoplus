@@ -1,6 +1,6 @@
 ---
 name: "plan"
-description: "Enter the Plan phase of CocoBrew. Runs CocoSpec quality gate pre-flight, reads spec.md and discuss.md (if present), invokes Coco native plan mode as a mandatory gate, captures the approved plan to plan.md, creates initial flow.json template, and commits. Must have /spec completed first."
+description: "Enter the Plan phase of CocoBrew. Runs CocoSpec quality gate pre-flight, reads spec.md and discuss.md (if present), invokes Coco native plan mode as a mandatory gate, captures the approved plan to plan.md, creates initial flow.json template, and commits. Must have $spec completed first."
 version: "1.0.2"
 author: "CocoPlus"
 tags:
@@ -11,10 +11,10 @@ tags:
 You are executing the Plan phase (2/6) of CocoBrew. Your objective is to transform the approved specification into an executable plan.
 
 Before proceeding, verify that `.cocoplus/` exists in the current directory.
-If it does not, output: "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If it does not, output: "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 Read `.cocoplus/lifecycle/meta.json`. Verify `phases_completed` contains `"spec"`.
-If not: output "The Spec phase must be completed before planning. Run `/spec` to capture requirements first." Then stop.
+If not: output "The Spec phase must be completed before planning. Run `$spec` to capture requirements first." Then stop.
 
 ## CocoSpec Pre-Flight Quality Gate
 
@@ -54,7 +54,7 @@ Extract from spec:
 
 ## Invoke Coco Native Plan Mode (MANDATORY)
 
-This is a hard gate. You MUST invoke Coco's native `/plan` mode. You cannot skip this step.
+This is a hard gate. You MUST invoke Coco's native `$plan` mode. You cannot skip this step.
 
 Tell the developer:
 "Entering Coco plan mode to generate the execution plan. This will structure the work into a reviewable plan before any code is written."
@@ -142,7 +142,7 @@ git commit -m "feat(plan): approved execution plan v1"
 
 ## Completion Output
 
-Output: "Plan captured and approved. Commit created: `feat(plan): approved execution plan v1`. You may now proceed to `/build`."
+Output: "Plan captured and approved. Commit created: `feat(plan): approved execution plan v1`. You may now proceed to `$build`."
 
 ## Anti-Rationalization
 
@@ -152,7 +152,7 @@ Output: "Plan captured and approved. Commit created: `feat(plan): approved execu
 | Skip Coco native plan mode | Plan mode is a HARD GATE — it is not optional under any circumstances |
 | Proceed without explicit developer approval | Developer must approve before plan.md is written |
 | Create detailed flow.json stages here | CocoHarvest creates stages — plan.skill.md only creates the empty skeleton |
-| Ignore discuss.md when it exists | Decisions captured in /discuss must be traceable into the plan and are checked again at review time |
+| Ignore discuss.md when it exists | Decisions captured in $discuss must be traceable into the plan and are checked again at review time |
 
 ## Exit Criteria
 

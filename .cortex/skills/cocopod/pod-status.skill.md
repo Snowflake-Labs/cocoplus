@@ -11,7 +11,7 @@ tags:
 Your objective is to produce a comprehensive status report of the CocoPlus project bundle.
 
 Before proceeding, verify that `.cocoplus/` exists in the current directory.
-If it does not, output: "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If it does not, output: "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 ## Read State From These Files
 

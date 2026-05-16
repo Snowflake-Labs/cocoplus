@@ -13,7 +13,7 @@ Your objective is to distill prompt iteration patterns from past sessions into l
 ## Pre-flight Check
 
 Check that `.cocoplus/` exists. If not:
-Output: "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+Output: "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 ## Scan for Qualifying Prompt Histories
 
@@ -27,7 +27,7 @@ Output:
 No functions have enough iteration history for distillation yet.
 CocoDream requires at least 3 prompt versions for a function.
 Current state: <list each function with its version count>
-Continue building with /prompt new and /prompt compare to accumulate iteration history.
+Continue building with $prompt new and $prompt compare to accumulate iteration history.
 ```
 Then stop.
 
@@ -62,7 +62,7 @@ Lesson candidates: <total> (<w> worked-patterns, <a> anti-patterns, <n> neutral)
 Written to: .cocoplus/grove/dream-<timestamp>.md
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Review the candidates above. For each lesson you find valid, run:
-  /patterns promote "<lesson title>"
+  $patterns promote "<lesson title>"
 to add it to CocoGrove for future CocoScout loading.
 ```
 
@@ -82,4 +82,4 @@ Open the dream file for developer review after outputting the summary.
 - [ ] Each candidate has Title, Category, Evidence, and Recommended action sections
 - [ ] Output confirms function count, version count, and candidate breakdown by category
 - [ ] Dream file opened for developer review
-- [ ] No lessons auto-promoted to CocoGrove (developer must run `/patterns promote` explicitly)
+- [ ] No lessons auto-promoted to CocoGrove (developer must run `$patterns promote` explicitly)

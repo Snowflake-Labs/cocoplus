@@ -14,14 +14,14 @@ Your objective is to refresh the CocoMeter dashboard with updated Snowflake data
 ## Pre-flight Check
 
 Check that `.cocoplus/meter-view.html` exists. If not:
-Output: "No meter dashboard found. Run /meter view first." Then stop.
+Output: "No meter dashboard found. Run $meter view first." Then stop.
 
 Check that `.cocoplus/meter/request-map.jsonl` exists. If not:
-Output: "No attribution data found. Run /meter on and execute some pipeline stages first." Then stop.
+Output: "No attribution data found. Run $meter on and execute some pipeline stages first." Then stop.
 
 ## Re-execute Dashboard Generation
 
-Execute steps 2–11 of `/meter view` exactly:
+Execute steps 2–11 of `$meter view` exactly:
 1. Read and partition `request-map.jsonl` (Direct IDs vs Anchor IDs)
 2. Execute Pass 1 and Pass 2 Snowflake queries
 3. Join Snowflake rows with attribution data
@@ -47,7 +47,7 @@ Do NOT open the browser. Only refresh the file.
 
 | Shortcut / Temptation | Why It Fails |
 |-----------------------|--------------|
-| Open the browser after sync | `/meter sync` is a background refresh — the developer has the tab open already |
+| Open the browser after sync | `$meter sync` is a background refresh — the developer has the tab open already |
 | Skip if Snowflake returns same row count | Row count may be the same but token values may have updated |
 
 ## Exit Criteria

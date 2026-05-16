@@ -11,7 +11,7 @@ tags:
 Your objective is to pause the CocoFlow pipeline.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 Create flag file `.cocoplus/flow.pause` with content:
 ```
@@ -19,7 +19,7 @@ paused_at: [ISO 8601 timestamp]
 reason: developer_requested
 ```
 
-Output: "Pipeline paused. Currently running stages will complete their current action before stopping. Run `/flow resume` to continue."
+Output: "Pipeline paused. Currently running stages will complete their current action before stopping. Run `$flow resume` to continue."
 
 ## Anti-Rationalization
 
@@ -30,4 +30,4 @@ Output: "Pipeline paused. Currently running stages will complete their current a
 ## Exit Criteria
 
 - [ ] `.cocoplus/flow.pause` flag file exists with `paused_at` timestamp and `reason: developer_requested`
-- [ ] Output confirms pause with instruction to run `/flow resume`
+- [ ] Output confirms pause with instruction to run `$flow resume`

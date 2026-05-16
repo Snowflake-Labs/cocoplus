@@ -3,11 +3,14 @@ name: map
 description: Build and commit a Cortex function knowledge graph — maps structural dependencies and domain intent relationships across all AI functions in the project
 version: 1.0.2
 user-invocable: true
-command: /map
+command: $map
+author: "CocoPlus"
+tags:
+  - cocoplus
 feature: CocoMap (Feature 28)
 ---
 
-# /map
+# $map
 
 Build and commit a knowledge graph of all Cortex AI functions in the project. Produces `coco-map.json` with structural dependency data and a domain intent map.
 
@@ -19,12 +22,12 @@ Build and commit a knowledge graph of all Cortex AI functions in the project. Pr
 
 ## Step-by-Step Behavior
 
-1. **Verify initialization:** Check `.cocoplus/` exists. If not, output: "CocoPlus not initialized. Run `/pod init` first." and exit.
+1. **Verify initialization:** Check `.cocoplus/` exists. If not, output: "CocoPlus not initialized. Run `$pod init` first." and exit.
 
 2. **Count Cortex AI functions:** Scan project SQL files and configuration for functions using: `AI_COMPLETE`, `AI_CLASSIFY`, `AI_EXTRACT`, `AI_FILTER`, `AI_SENTIMENT`, `AI_TRANSLATE`, `AI_EMBED`, `AI_SIMILARITY`, `AI_REDACT`, `AI_PARSE_DOCUMENT`, `AI_TRANSCRIBE`, `AI_AGG`, `AI_COUNT_TOKENS`, Cortex Search service definitions, and Semantic Model files. If fewer than 2 found, output:
    ```
    CocoMap requires at least 2 Cortex AI functions. Only [N] found.
-   Add more Cortex AI functions before running /map.
+   Add more Cortex AI functions before running $map.
    ```
    and exit.
 
@@ -106,8 +109,8 @@ CocoMap complete — [timestamp]
   Gaps detected: [P]
 
 Map committed to .cocoplus/map/coco-map.json
-Run /map diff to analyze impact of pending changes.
-Run /map explain <function-name> to understand a specific function.
+Run $map diff to analyze impact of pending changes.
+Run $map explain <function-name> to understand a specific function.
 ```
 
 ## Error Cases

@@ -1,6 +1,6 @@
 ---
 name: "fleet-status"
-description: "Show the current execution state of a CocoFleet run. Displays per-instance status, runtime, and checkpoint results. Usage: /fleet status [fleet-id]."
+description: "Show the current execution state of a CocoFleet run. Displays per-instance status, runtime, and checkpoint results. Usage: $fleet status [fleet-id]."
 version: "1.0.0"
 author: "CocoPlus"
 tags:
@@ -11,9 +11,9 @@ tags:
 Your objective is to display CocoFleet execution status.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
-Parse argument: `/fleet status [fleet-id]`
+Parse argument: `$fleet status [fleet-id]`
 If no fleet-id: list all state files in `.cocoplus/fleet/` matching `*-state.json` and show their fleet names and statuses. Then stop.
 
 Read `.cocoplus/fleet/[fleet-id]-state.json`.

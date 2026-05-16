@@ -11,7 +11,7 @@ tags:
 Your objective is to activate Full Assist Mode — enabling all CocoPlus features at once.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 ## Create All Mode Flags
 
@@ -73,7 +73,7 @@ git commit -m "chore(cocopod): activate full assist mode"
 | Context Mode | ON | Phase context prepended to every prompt |
 | CocoMeter | ON | Token and credit usage tracking |
 
-All flags created. Run `/cocoplus off` to deactivate all features at once.
+All flags created. Run `$cocoplus off` to deactivate all features at once.
 ```
 
 ## Anti-Rationalization

@@ -11,7 +11,7 @@ tags:
 Your objective is to disable the Safety Gate.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 Warn the developer:
 "WARNING: Disabling the Safety Gate allows all SQL operations — including DROP TABLE, TRUNCATE, and DELETE without WHERE — to execute without any interception. Only do this if you are certain you are working in a non-production environment with no real data. Continue? (yes/no)"
@@ -27,7 +27,7 @@ Create off flag: create the file `.cocoplus/modes/safety.off` with empty content
 
 Update AGENTS.md: replace Safety line with `- Safety: OFF (no protection — all SQL allowed)`
 
-Output: "⚠ Safety Gate disabled. No SQL operations will be intercepted. Run `/safety normal` or `/safety strict` to re-enable protection."
+Output: "⚠ Safety Gate disabled. No SQL operations will be intercepted. Run `$safety normal` or `$safety strict` to re-enable protection."
 
 ## Anti-Rationalization
 

@@ -47,7 +47,7 @@ When utilization first crosses 70% in a session, evaluate the current project st
 |--------------------|----------------|-------------------|--------------------|
 | None | Yes | Any | `Resume from last commit` — no work at risk; start new session |
 | Yes (small, <20 lines) | Any | Yes | `Commit partial + resume` — commit current state, resume from checkpoint in new session |
-| Yes (large, ≥20 lines) | Any | Yes | `Checkpoint + new session` — run `$pod checkpoint` immediately, then `/clear` + `$pod resume` |
+| Yes (large, ≥20 lines) | Any | Yes | `Checkpoint + new session` — run `$pod checkpoint` immediately, then `$clear` + `$pod resume` |
 | Yes | No | No | `Emergency commit` — commit all modified files with `chore(recovery): emergency state preservation`, then restart |
 | None | No | No | `Clean restart` — no work at risk; `.cocoplus/` state files are the recovery source |
 
@@ -80,3 +80,19 @@ When `$pod resume` is invoked and `lifecycle/checkpoint.md` exists, CocoHealth's
 - Threshold warnings are shown ONCE per threshold crossing per session — not repeated on every tool call
 - The 70% matrix evaluation runs as a shell script read by the PostToolUse hook — target <100ms
 - MUST NOT block any operation — CocoHealth is advisory only
+
+## Exit Criteria
+
+This background monitor is complete when:
+- Context utilization is sampled or approximated after tool use
+- 60% and 70% threshold messages are emitted at most once per crossing per session
+- 70% recovery guidance includes the decision matrix state and recommended action
+- Observations are logged without blocking the developer's current operation
+
+## Anti-Rationalization
+
+Do NOT:
+- Block tool execution because context utilization is high
+- Repeat threshold warnings on every subsequent tool call
+- Fail if the session API is unavailable; use the token-count fallback
+- Run expensive analysis in the PostToolUse critical path

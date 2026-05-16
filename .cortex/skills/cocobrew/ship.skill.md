@@ -11,18 +11,18 @@ tags:
 You are executing the Ship phase (6/6) of CocoBrew.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 Read `.cocoplus/lifecycle/meta.json`. Verify `phases_completed` contains `"review"`.
-If not: output "The Review phase must be approved before shipping. Run `/review` first." Then stop.
+If not: output "The Review phase must be approved before shipping. Run `$review` first." Then stop.
 
 Verify that required lifecycle artifact files exist on disk — meta.json alone is not sufficient:
-- Check `.cocoplus/lifecycle/spec.md` exists. If not: output "spec.md is missing. Run `/spec` to regenerate it before shipping." Then stop.
-- Check `.cocoplus/lifecycle/plan.md` exists. If not: output "plan.md is missing. Run `/plan` to regenerate it before shipping." Then stop.
-- Check `.cocoplus/lifecycle/review.md` exists. If not: output "review.md is missing. Run `/review` to regenerate it before shipping." Then stop.
+- Check `.cocoplus/lifecycle/spec.md` exists. If not: output "spec.md is missing. Run `$spec` to regenerate it before shipping." Then stop.
+- Check `.cocoplus/lifecycle/plan.md` exists. If not: output "plan.md is missing. Run `$plan` to regenerate it before shipping." Then stop.
+- Check `.cocoplus/lifecycle/review.md` exists. If not: output "review.md is missing. Run `$review` to regenerate it before shipping." Then stop.
 
 Read `.cocoplus/lifecycle/review.md`. Verify `## Approval Status` contains `APPROVED`.
-If not: output "Review has not been approved. Run `/review` to complete the approval process." Then stop.
+If not: output "Review has not been approved. Run `$review` to complete the approval process." Then stop.
 
 ## Determine Version
 

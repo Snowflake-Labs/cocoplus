@@ -3,11 +3,14 @@ name: pod-kb
 description: Display the project knowledge base (lifecycle/kb.md) — project-specific patterns, decisions, and gotchas accumulated by CocoCupper across sessions
 version: 1.0.2
 user-invocable: true
-command: /pod kb
+command: $pod kb
+author: "CocoPlus"
+tags:
+  - cocoplus
 feature: CocoPod — Project Knowledge Base (Feature 5 improvement)
 ---
 
-# /pod kb
+# $pod kb
 
 Display `lifecycle/kb.md` — the project-specific, session-spanning knowledge base populated by CocoCupper after each completed stage. Distinct from CocoGrove (team-level patterns) and CocoDream (prompt optimization lessons).
 
@@ -17,14 +20,14 @@ Display `lifecycle/kb.md` — the project-specific, session-spanning knowledge b
 
 ## Step-by-Step Behavior
 
-1. **Verify initialization:** Check `.cocoplus/` exists. If not, output: "CocoPlus not initialized. Run `/pod init` first." and exit.
+1. **Verify initialization:** Check `.cocoplus/` exists. If not, output: "CocoPlus not initialized. Run `$pod init` first." and exit.
 
 2. **Check kb.md:** Read `.cocoplus/lifecycle/kb.md`.
 
 3. **If file does not exist or is empty:**
    ```
    No project knowledge accumulated yet.
-   Run /build to begin a session — CocoCupper will populate the knowledge base
+   Run $build to begin a session — CocoCupper will populate the knowledge base
    after each completed stage.
    ```
    Exit.

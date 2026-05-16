@@ -126,3 +126,19 @@ Zone classification MUST be presented as advisory, never prescriptive — "This 
 - Signals MUST NOT influence any CocoPlus gate, classification, or recommendation
 - Zone classification MUST be advisory only
 - Session file MUST be excluded from git
+
+## Exit Criteria
+
+This background observer is complete when:
+- Collaboration observations are recorded to `lifecycle/cocowatch-session.md`
+- Engagement summaries are surfaced only at `$ship` or FULL checkpoints
+- Zone classification remains advisory and never gates execution
+- `blocking: false` remains present in frontmatter
+
+## Anti-Rationalization
+
+Do NOT:
+- Block, pause, or redirect the pipeline based on engagement signals
+- Surface observations during active pipeline execution
+- Use engagement observations as inputs to any other CocoPlus decision
+- Treat rapid approvals as proof of poor engagement without session context

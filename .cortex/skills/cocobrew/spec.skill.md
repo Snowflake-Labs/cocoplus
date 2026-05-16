@@ -11,7 +11,7 @@ tags:
 You are executing the Spec phase (1/6) of the CocoBrew lifecycle. Your objective is to capture complete project requirements through structured dialogue.
 
 Before proceeding, verify that `.cocoplus/` exists in the current directory.
-If it does not, output: "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If it does not, output: "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 Check `.cocoplus/lifecycle/meta.json`. If `current_phase` is not `not_started` and not `spec`:
 
@@ -24,7 +24,7 @@ Active git worktrees from CocoHarvest (agent/stage-*) will become stale and out 
   git worktree remove --force agent/stage-<name>
   git worktree prune
 
-To proceed anyway, re-run /spec with the --force flag: /spec --force
+To proceed anyway, re-run $spec with the --force flag: $spec --force
 ```
 Then stop — unless the `--force` flag was provided in the invocation arguments. If `--force` was provided, output "Proceeding with forced Spec re-entry. Existing downstream artifacts will be invalidated." and continue.
 
@@ -139,7 +139,7 @@ git commit -m "feat(spec): initial project specification captured"
 
 ## Completion Output
 
-Output: "Spec captured. Commit created: `feat(spec): initial project specification captured`. You may now proceed to `/plan`."
+Output: "Spec captured. Commit created: `feat(spec): initial project specification captured`. You may now proceed to `$plan`."
 
 ## Anti-Rationalization
 

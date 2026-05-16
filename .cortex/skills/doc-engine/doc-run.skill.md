@@ -1,6 +1,6 @@
 ---
 name: "doc-run"
-description: "Generate documentation for Snowflake objects. Runs SQL to extract column metadata, creates a data dictionary, and builds a lineage diagram. Usage: /doc run [schema.table] or /doc run (for all accessible tables)."
+description: "Generate documentation for Snowflake objects. Runs SQL to extract column metadata, creates a data dictionary, and builds a lineage diagram. Usage: $doc run [schema.table] or $doc run (for all accessible tables)."
 version: "1.0.0"
 author: "CocoPlus"
 tags:
@@ -11,9 +11,9 @@ tags:
 Your objective is to generate documentation for Snowflake objects.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
-Parse argument: `/doc run [schema.table]`
+Parse argument: `$doc run [schema.table]`
 If no argument: document all accessible tables (use SHOW TABLES to enumerate).
 
 ## For Each Table

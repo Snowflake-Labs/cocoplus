@@ -11,12 +11,12 @@ tags:
 Your objective is to disable Context Mode.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 Remove mode flag: delete the file `.cocoplus/modes/context-mode.on` if it exists. Use the Bash tool with `node -e "try{require('fs').unlinkSync('.cocoplus/modes/context-mode.on')}catch(_){}"` for cross-platform compatibility.
 Update AGENTS.md (keep ≤200 lines): replace Context line with `- Context Mode: off`
 
-Output: "✓ Context Mode disabled. Prompts will no longer be prepended with context. Run `/context on` to re-enable."
+Output: "✓ Context Mode disabled. Prompts will no longer be prepended with context. Run `$context on` to re-enable."
 
 ## Anti-Rationalization
 

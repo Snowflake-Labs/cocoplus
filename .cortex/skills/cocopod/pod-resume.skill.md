@@ -11,7 +11,7 @@ tags:
 Your objective is to reconstruct context for a developer returning to this project after time away.
 
 Before proceeding, verify that `.cocoplus/` exists in the current directory.
-If it does not, output: "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If it does not, output: "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 ## Read Context
 
@@ -71,7 +71,7 @@ Complete in under 5 seconds.
 |-----------------------|--------------|
 | Read only AGENTS.md and skip the other context files | AGENTS.md is a summary; accurate resume context requires reading meta.json, flow.json, and memory files directly |
 | Show a long verbose dump of all files | Resume is a narrative oriented output — overwhelming detail defeats the purpose of fast re-orientation |
-| Recommend a next action without checking current phase | Recommending `/spec` when the project is in the Test phase gives actively wrong guidance |
+| Recommend a next action without checking current phase | Recommending `$spec` when the project is in the Test phase gives actively wrong guidance |
 
 ## Exit Criteria
 

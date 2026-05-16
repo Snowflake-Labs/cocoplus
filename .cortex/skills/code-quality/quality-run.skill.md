@@ -1,6 +1,6 @@
 ---
 name: "quality-run"
-description: "Run the Code Quality Advisor on demand against a specified file or all SQL files. Usage: /quality run [file-path] or /quality run (for all .sql files). Finds anti-patterns and writes a findings report."
+description: "Run the Code Quality Advisor on demand against a specified file or all SQL files. Usage: $quality run [file-path] or $quality run (for all .sql files). Finds anti-patterns and writes a findings report."
 version: "1.0.0"
 author: "CocoPlus"
 tags:
@@ -11,9 +11,9 @@ tags:
 Your objective is to run a code quality review.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
-Parse argument: `/quality run [file-path]`
+Parse argument: `$quality run [file-path]`
 If no argument: find all `.sql` files in the current directory tree (excluding `.git/` and `.cocoplus/`).
 If file-path provided: verify the file exists.
 

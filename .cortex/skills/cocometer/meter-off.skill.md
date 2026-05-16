@@ -14,7 +14,7 @@ Your objective is to disable CocoMeter token tracking.
 ## Pre-flight Check
 
 Check that `.cocoplus/` directory exists. If not, output:
-"CocoPlus not initialized in this directory. Run `/pod init` to begin."
+"CocoPlus not initialized in this directory. Run `$pod init` to begin."
 Then stop.
 
 ## Check Current State
@@ -22,7 +22,7 @@ Then stop.
 Check if `.cocoplus/meter/current-session.json` exists with `"metering_active": true`.
 
 If metering is NOT active, output:
-"CocoMeter is not currently active. Use `/meter on` to enable tracking."
+"CocoMeter is not currently active. Use `$meter on` to enable tracking."
 Then stop.
 
 ## Finalize Session
@@ -61,7 +61,7 @@ Session Summary:
 - Top models: <model: count>
 
 Session saved to .cocoplus/meter/history.jsonl
-Use `/meter history` to review past sessions.
+Use `$meter history` to review past sessions.
 ```
 
 ## Anti-Rationalization

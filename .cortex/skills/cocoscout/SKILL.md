@@ -112,3 +112,19 @@ Append to `.cocoplus/hook-log.jsonl`:
 - MUST NOT load context below relevance threshold even if it is the only available item in a category
 - Documentation fetching MUST use `WebFetch` (Coco-native) — no external HTTP libraries
 - No persistent state — CocoScout operates ephemerally each invocation
+
+## Exit Criteria
+
+This background skill is complete when:
+- The current task has been analyzed for persona, Snowflake object names, and Cortex AI function names
+- Relevant context has been ranked with technical, domain, and anchor lenses
+- Only context above the relevance threshold is included in the injected preamble
+- Timeouts and missing sources degrade gracefully without blocking the invoking agent
+
+## Anti-Rationalization
+
+Do NOT:
+- Load every context file because ranking feels uncertain
+- Spend more than the scout time budget trying to improve relevance
+- Fetch documentation with non-Coco-native HTTP mechanisms
+- Surface directly to the developer or appear in help text

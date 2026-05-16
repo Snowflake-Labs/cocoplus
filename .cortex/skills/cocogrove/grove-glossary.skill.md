@@ -3,11 +3,14 @@ name: grove-glossary
 description: Scan project artifacts for domain vocabulary candidates and propose additions to the CocoGrove ubiquitous language glossary — developer reviews and confirms before entries are written
 version: 1.0.2
 user-invocable: true
-command: /grove glossary
+command: $grove glossary
+author: "CocoPlus"
+tags:
+  - cocoplus
 feature: CocoGrove — Ubiquitous Language Section (Feature 12 improvement)
 ---
 
-# /grove glossary
+# $grove glossary
 
 Scan project artifacts for candidate domain terms and propose additions to `.cocoplus/grove/language/glossary.md`. Developer reviews and confirms each proposed entry before it is written.
 
@@ -18,7 +21,7 @@ Scan project artifacts for candidate domain terms and propose additions to `.coc
 
 ## Step-by-Step Behavior
 
-1. **Verify initialization:** Check `.cocoplus/` exists. If not, output: "CocoPlus not initialized. Run `/pod init` first." and exit.
+1. **Verify initialization:** Check `.cocoplus/` exists. If not, output: "CocoPlus not initialized. Run `$pod init` first." and exit.
 
 2. **Create glossary directory:** Ensure `.cocoplus/grove/language/` exists. Create if missing.
 
@@ -76,7 +79,7 @@ Scan project artifacts for candidate domain terms and propose additions to `.coc
     ✓ Glossary updated
     [N] terms added. [M] skipped.
     
-    View glossary: /grove glossary view
+    View glossary: $grove glossary view
     Glossary is available to CocoScout for context loading.
     ```
 
@@ -87,12 +90,12 @@ If no new candidates are found beyond existing glossary terms:
 No new domain terms found.
 [N] terms already in glossary.
 
-Run /grove glossary view to see existing entries.
+Run $grove glossary view to see existing entries.
 ```
 
 ## Error Cases
 
-- **No source artifacts found:** Output warning and list which artifacts are missing; suggest running `/spec` first
+- **No source artifacts found:** Output warning and list which artifacts are missing; suggest running `$spec` first
 - **Cannot write glossary file:** Output filesystem error; do not commit partial entries
 - **Developer skips all candidates:** Output: "No terms added. Run again after adding more project artifacts."
 

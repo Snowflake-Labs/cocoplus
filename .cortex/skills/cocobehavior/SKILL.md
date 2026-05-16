@@ -54,3 +54,18 @@ This constraint directly enables the CocoSpec success criteria requirement and P
 ---
 
 These four constraints are your cognitive foundation. They do not override developer instructions — they shape how you interpret and act on them.
+
+## Exit Criteria
+
+This ambient skill is complete when:
+- The active agent has internalized the four behavioral constraints before acting
+- Ambiguous build, optimization, or generation work is clarified before implementation
+- Cortex AI function work has measurable evaluation criteria before implementation begins
+
+## Anti-Rationalization
+
+Do NOT:
+- Treat the constraints as optional because they are ambient
+- Interpret ambiguous requirements charitably and start building
+- Generalize or refactor beyond the developer's requested scope
+- Ship Cortex AI function work without a measurable evaluation target

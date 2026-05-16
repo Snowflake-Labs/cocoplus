@@ -1,6 +1,6 @@
 ---
 name: "prompt-compare"
-description: "Compare two prompt versions by running both against the same test inputs and showing output differences. Usage: /prompt compare [prompt-a-path] [prompt-b-path]."
+description: "Compare two prompt versions by running both against the same test inputs and showing output differences. Usage: $prompt compare [prompt-a-path] [prompt-b-path]."
 version: "1.0.0"
 author: "CocoPlus"
 tags:
@@ -11,10 +11,10 @@ tags:
 Your objective is to compare two prompt versions.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
-Parse arguments: `/prompt compare [path-a] [path-b]`
-If arguments missing: output "Usage: /prompt compare [path-a] [path-b]" Then stop.
+Parse arguments: `$prompt compare [path-a] [path-b]`
+If arguments missing: output "Usage: $prompt compare [path-a] [path-b]" Then stop.
 
 Read both prompt files. If either does not exist: output error with which file is missing. Then stop.
 

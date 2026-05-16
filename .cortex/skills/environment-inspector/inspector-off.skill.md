@@ -11,13 +11,13 @@ tags:
 Your objective is to disable automatic environment scanning.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 Remove mode flag: delete the file `.cocoplus/modes/inspector.on` if it exists. Use the Bash tool with `node -e "try{require('fs').unlinkSync('.cocoplus/modes/inspector.on')}catch(_){}"` for cross-platform compatibility.
 
 Update AGENTS.md (keep ≤200 lines): replace Inspector line with `- Inspector: off`
 
-Output: "✓ Environment Inspector disabled. Existing snapshots in .cocoplus/snapshots/ are preserved. Run `/inspector on` to re-enable."
+Output: "✓ Environment Inspector disabled. Existing snapshots in .cocoplus/snapshots/ are preserved. Run `$inspector on` to re-enable."
 
 ## Anti-Rationalization
 

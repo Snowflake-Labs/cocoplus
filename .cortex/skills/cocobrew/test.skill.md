@@ -11,10 +11,10 @@ tags:
 You are executing the Test phase (4/6) of CocoBrew.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 Read `.cocoplus/lifecycle/meta.json`. Verify `phases_completed` contains `"build"`.
-If not: output "The Build phase must be completed before testing. Run `/build` first." Then stop.
+If not: output "The Build phase must be completed before testing. Run `$build` first." Then stop.
 
 ## Generate Test Cases
 
@@ -70,7 +70,7 @@ git add .cocoplus/lifecycle/test.md .cocoplus/lifecycle/meta.json .cocoplus/AGEN
 git commit -m "test: test execution and validation"
 ```
 
-Output: "Test phase complete. [N] tests passed, [M] failed. Check `.cocoplus/lifecycle/test.md` for details. Proceed to `/review`."
+Output: "Test phase complete. [N] tests passed, [M] failed. Check `.cocoplus/lifecycle/test.md` for details. Proceed to `$review`."
 
 ## Anti-Rationalization
 

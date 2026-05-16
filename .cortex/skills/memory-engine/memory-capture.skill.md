@@ -14,19 +14,19 @@ Your objective is to capture a specific item to the CocoPlus Memory Engine.
 ## Pre-flight Check
 
 1. Check that `.cocoplus/` directory exists. If not, output:
-   "CocoPlus not initialized in this directory. Run `/pod init` to begin."
+   "CocoPlus not initialized in this directory. Run `$pod init` to begin."
    Then stop.
 
 2. Check if `memory.on` flag exists at `.cocoplus/modes/memory.on`.
    If it does NOT exist, output:
-   "Memory Engine is currently off. Run `/memory on` to enable cross-session memory capture."
+   "Memory Engine is currently off. Run `$memory on` to enable cross-session memory capture."
    Then stop.
 
 ## Identify What to Capture
 
 The developer may have:
-- Provided the item inline: `/memory capture <text>`
-- Run `/memory capture` with no arguments (interactive mode)
+- Provided the item inline: `$memory capture <text>`
+- Run `$memory capture` with no arguments (interactive mode)
 
 If no argument provided, ask:
 > "What would you like to capture to memory? Choose a type:
@@ -80,7 +80,7 @@ Format to append:
 
 1. Output confirmation: "Captured to `.cocoplus/memory/<type>.md`."
 2. If the item looks like a reusable pattern that might benefit other projects, suggest:
-   "This looks like a reusable pattern. Run `/patterns promote` to add it to CocoGrove for future projects."
+   "This looks like a reusable pattern. Run `$patterns promote` to add it to CocoGrove for future projects."
 
 ## Anti-Rationalization
 

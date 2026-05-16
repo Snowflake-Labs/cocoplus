@@ -1,6 +1,6 @@
 ---
 name: "personas"
-description: "List all available CocoPlus specialist personas with their triggers, models, modes, and locked tool sets. No preconditions required — works without /pod init."
+description: "List all available CocoPlus specialist personas with their triggers, models, modes, and locked tool sets. No preconditions required — works without $pod init."
 version: "1.0.0"
 author: "CocoPlus"
 tags:
@@ -27,7 +27,7 @@ Output the following table:
 | Chief Data Officer | $cdo | opus | plan | none | Read, SnowflakeProductDocs |
 | CocoBrew Coordinator | (automatic) | sonnet | auto | none | Read, Write, Edit, Bash |
 | CocoCupper | (automatic) | haiku | auto | none | Read |
-| SecondEye Critic | (via /secondeye) | sonnet (default; /secondeye may spawn haiku/opus critics) | plan | none | Read |
+| SecondEye Critic | (via $secondeye) | sonnet (default; $secondeye may spawn haiku/opus critics) | plan | none | Read |
 
 ## Invocation Examples
 

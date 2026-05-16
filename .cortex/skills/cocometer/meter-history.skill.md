@@ -1,6 +1,6 @@
 ---
 name: "meter-history"
-description: "Show historical CocoMeter data from past sessions. Usage: /meter history [n] where n is the number of sessions to show (default 10)."
+description: "Show historical CocoMeter data from past sessions. Usage: $meter history [n] where n is the number of sessions to show (default 10)."
 version: "1.0.0"
 author: "CocoPlus"
 tags:
@@ -11,12 +11,12 @@ tags:
 Your objective is to display historical CocoMeter data.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
-Parse argument: `/meter history [n]` — n defaults to 10.
+Parse argument: `$meter history [n]` — n defaults to 10.
 
 Read `.cocoplus/meter/history.jsonl`. If it does not exist or is empty:
-Output: "No meter history yet. CocoMeter records history when sessions end. Ensure CocoMeter is enabled (`/meter on`) and complete a session."
+Output: "No meter history yet. CocoMeter records history when sessions end. Ensure CocoMeter is enabled (`$meter on`) and complete a session."
 Then stop.
 
 Read the last N JSON objects from history.jsonl (one per line).
