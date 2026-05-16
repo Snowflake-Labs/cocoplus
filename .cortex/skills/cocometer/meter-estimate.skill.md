@@ -30,6 +30,25 @@ For pipeline estimation:
   - data-steward: ~3,000 tokens/stage (governance)
   - chief-data-officer: ~2,000 tokens/stage (review)
 
+## Apply Accuracy Learning Calibration
+
+Read `.cocoplus/meter/adjustment-factor.json` if it exists:
+```json
+{ "factor": N, "sample_size": N, "computed_at": "..." }
+```
+
+If the file exists and `sample_size` >= 2:
+- `calibrated_total = raw_total × factor`
+- Calibration label: `(baseline: [raw_total], calibration factor: [factor]x from [sample_size] prior sessions)`
+Else:
+- `calibrated_total = raw_total`
+- No calibration label
+
+Write estimate to `.cocoplus/meter/preflight-log.jsonl`:
+```json
+{ "session_id": "[current-session-id]", "estimated_tokens": [calibrated_total], "estimated_credits": [estimated_credits], "timestamp": "[ISO 8601]" }
+```
+
 Output:
 
 ```
@@ -41,7 +60,9 @@ Action: [described action or "Full pipeline execution"]
 Per stage breakdown:
 [stage name] ([persona]): ~[estimate] tokens
 ...
-Total estimate: ~[total] tokens (conservative)
+Baseline estimate: ~[raw_total] tokens
+[If calibrated:] Calibrated estimate: ~[calibrated_total] tokens [calibration label]
+[If not calibrated:] Total estimate: ~[raw_total] tokens (conservative — no calibration data yet)
 
 ## Snowflake Credit Estimate
 Estimated SQL calls: ~[N]
@@ -52,6 +73,7 @@ Configured threshold: [from cost-tracker.monitor.json]
 Estimate vs threshold: [WITHIN / EXCEEDS by N%]
 
 Note: These are estimates. Actual usage depends on response length, query complexity, and data volume.
+Run `$meter accuracy` to view calibration history.
 ```
 
 ## Anti-Rationalization
