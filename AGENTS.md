@@ -1,34 +1,34 @@
 # CocoPlus Plugin — Behavioral Rules
 # Auto-loaded by Coco when CocoPlus plugin is active.
 # This is the plugin-level AGENTS.md (≤200 lines).
-# Per-project context lives in .cocoplus/AGENTS.md after /pod init.
+# Per-project context lives in .cocoplus/AGENTS.md after $pod init.
 
 ## Plugin Identity
 
 You have the CocoPlus plugin active. CocoPlus enhances Coco with:
-- **CocoBrew** lifecycle engine (/spec, /plan, /build, /test, /review, /ship)
+- **CocoBrew** lifecycle engine ($spec, $plan, $build, $test, $review, $ship)
 - **CocoHarvest** parallel workstream decomposition (/harvest)
 - **Specialist Personas** ($de, $ae, $ds, $da, $bi, $dpm, $dst, $cdo)
 - **Safety Gate** (SQL protection — safety strict/normal/off)
-- **Memory Engine** (cross-session persistence — /memory on/off)
-- **CocoFlow** pipeline execution (/flow run/status/pause/resume/view)
-- **SecondEye** multi-model critic (/secondeye)
-- **CocoFleet** multi-process orchestration (/fleet init/run/status/stop/logs)
-- **CocoCupper** background intelligence analyst (/cup)
-- **CocoGrove** pattern library (/patterns)
-- **CocoMeter** token tracking (/meter, /meter view, /meter sync)
-- **CocoMeter Enhanced** flow token attribution & HTML dashboard (/meter view, /meter sync)
-- **CocoView** flow pipeline visualizer (/flow view)
-- **CocoContext** organizational standards capture (/context add, /context view, /context list)
-- **CocoRecipe** pre-built pipeline templates (/recipe list, /recipe use, /recipe new)
-- **CocoDream** supervised pattern distillation (/dream, /dream history)
+- **Memory Engine** (cross-session persistence — $memory on/off)
+- **CocoFlow** pipeline execution ($flow run/status/pause/resume/view)
+- **SecondEye** multi-model critic ($secondeye)
+- **CocoFleet** multi-process orchestration ($fleet init/run/status/stop/logs)
+- **CocoCupper** background intelligence analyst ($cup)
+- **CocoGrove** pattern library ($patterns)
+- **CocoMeter** token tracking ($meter, $meter view, $meter sync)
+- **CocoMeter Enhanced** flow token attribution & HTML dashboard ($meter view, $meter sync)
+- **CocoView** flow pipeline visualizer ($flow view)
+- **CocoContext** organizational standards capture ($context add, $context view, $context list)
+- **CocoRecipe** pre-built pipeline templates ($recipe list, $recipe use, $recipe new)
+- **CocoDream** supervised pattern distillation ($dream, $dream history)
 - **CocoBehavior** ambient behavioral constraints (auto-loaded by all personas)
 - **CocoScout** relevance-ranked context loading (automatic)
 
 ## Core Behavioral Rules
 
 1. **Check CocoPod state first.** Before any action, check if `.cocoplus/` exists.
-   If not initialized, prompt: "Run `/pod init` to initialize CocoPlus for this project."
+   If not initialized, prompt: "Run `$pod init` to initialize CocoPlus for this project."
 
 2. **Respect the lifecycle phase.** Current phase is in `.cocoplus/AGENTS.md`.
    Do not skip phases without explicit developer intent. Phases gate what actions are appropriate.
@@ -40,7 +40,7 @@ You have the CocoPlus plugin active. CocoPlus enhances Coco with:
    Never silently bypass the safety gate.
 
 4. **Memory is opt-in.** Memory Engine is off by default. Do not write to `.cocoplus/memory/`
-   unless `/memory on` has been run or `memory.on` flag exists in `.cocoplus/modes/`.
+   unless `$memory on` has been run or `memory.on` flag exists in `.cocoplus/modes/`.
 
 5. **Token economy matters.** Load only context needed for the current action.
    Never auto-load large files (env snapshots, full history) unless explicitly requested.
@@ -72,14 +72,14 @@ You have the CocoPlus plugin active. CocoPlus enhances Coco with:
 
 ## CocoBrew Phase Gates
 
-- `/spec` → enters Spec phase. Outputs `.cocoplus/lifecycle/spec.md`
-- `/plan` → enters Plan phase. Requires spec.md. Outputs `.cocoplus/lifecycle/plan.md`
-- `/build` → enters Build phase. Requires plan.md. Runs Safety Gate pre-flight.
-- `/test` → enters Test phase. Requires Build artifacts.
-- `/review` → enters Review phase. May invoke SecondEye.
-- `/ship` → enters Ship phase. Creates git tag, deployment record.
+- `$spec` → enters Spec phase. Outputs `.cocoplus/lifecycle/spec.md`
+- `$plan` → enters Plan phase. Requires spec.md. Outputs `.cocoplus/lifecycle/plan.md`
+- `$build` → enters Build phase. Requires plan.md. Runs Safety Gate pre-flight.
+- `$test` → enters Test phase. Requires Build artifacts.
+- `$review` → enters Review phase. May invoke SecondEye.
+- `$ship` → enters Ship phase. Creates git tag, deployment record.
 
 ## When CocoPlus Is Not Initialized
 
-If `.cocoplus/` does not exist, all CocoPlus commands should gracefully suggest `/pod init`.
+If `.cocoplus/` does not exist, all CocoPlus commands should gracefully suggest `$pod init`.
 Never error loudly — guide the developer to the right starting point.

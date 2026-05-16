@@ -8,7 +8,7 @@ Built using only Coco-native constructs: Skills, Agents, Hooks, and AGENTS.md.
 
 ## What It Does
 
-CocoPlus wraps a structured development lifecycle around every project — from requirements capture through production ship — enforcing phase gates, parallel specialist execution, and checkpoint-validated delivery at each step. It decomposes work across eight specialist personas matched to domain, runs them in isolated git worktrees, and tracks every decision, token, and quality finding across sessions. A multi-layer safety gate protects production Snowflake objects from accidental modification, while a persistent pattern library and project knowledge base compound institutional memory over time. Thirty-one features covering orchestration, evaluation, governance, cost visibility, and prompt engineering — all running on Coco-native constructs with no external services.
+CocoPlus wraps a structured development lifecycle around every project — from requirements capture through production ship — enforcing phase gates, parallel specialist execution, and checkpoint-validated delivery at each step. It decomposes work across eight specialist personas matched to domain, runs them in isolated git worktrees, and tracks every decision, token, and quality finding across sessions. A multi-layer safety gate protects production Snowflake objects from accidental modification, while a persistent pattern library and project knowledge base compound institutional memory over time. Thirty-two features covering orchestration, evaluation, governance, cost visibility, and prompt engineering — all running on Coco-native constructs with no external services.
 
 ## Specialist Personas
 
