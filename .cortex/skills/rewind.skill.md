@@ -15,12 +15,27 @@ If not: output "CocoPlus not initialized in this directory. Run `/pod init` to b
 
 ## Usage
 
-`/rewind [step-id]` — e.g., `/rewind spec-20260405-001`
+`$rewind [step-id]` — e.g., `$rewind spec-20260405-001`
+`$rewind --tag [tag-name]` — e.g., `$rewind --tag cocoplus/harvest/hr-20260511-4a2f/task-007`
+`$rewind --tag task-007` — abbreviated form (last segment only for harvest tags)
 
-If no step-id is provided, list available phase commits:
+If no step-id or tag is provided, list available phase commits and CocoPlus tags:
 ```
 git log --oneline --grep="feat(spec)\|feat(plan)\|build:\|test:\|docs(review)\|release:"
+git tag --list "cocoplus/*" --sort=-creatordate | head -20
 ```
+
+## Tag-Based Rollback (--tag flag)
+
+If `--tag` flag provided:
+1. Resolve the full tag name — if abbreviated (e.g., `task-007`), search `git tag --list "cocoplus/harvest/*/task-007"` for the full name
+2. If not found: output "Tag [tag-name] not found. Run `git tag --list 'cocoplus/*'` to see available tags." Then stop.
+3. Resolve the commit SHA: `git rev-list -n 1 [full-tag-name]`
+4. Proceed to Confirm Rollback with the resolved commit SHA and tag name as the step-id display
+
+**Sub-phase tags created by CocoHarvest:**
+- Format: `cocoplus/harvest/[run-id]/task-[N]` — created on each CocoHarvest task completion
+- Format: `cocoplus/fn/[function-name]/v[N]` — created on each Cortex function deployment stage
 
 ## Confirm Rollback
 
@@ -80,7 +95,9 @@ Output: "Rolled back to [step-id]. Current phase: [phase]. Subsequent phase arti
 
 ## Exit Criteria
 
-- [ ] Available lifecycle commits are shown when no `step-id` is provided
+- [ ] Available lifecycle commits and CocoPlus tags are shown when no `step-id` or `--tag` is provided
 - [ ] Developer receives an explicit confirmation prompt with the commit range to be removed
 - [ ] `git reset --soft [target-commit-sha]` is executed only after confirmation
 - [ ] `.cocoplus/lifecycle/meta.json` and `.cocoplus/AGENTS.md` phase state are updated to the target lifecycle phase
+- [ ] `--tag` abbreviated form resolves to full tag name before rollback
+- [ ] Tag not found produces an actionable error with the list command
