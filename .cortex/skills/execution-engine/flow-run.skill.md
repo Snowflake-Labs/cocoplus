@@ -1,7 +1,7 @@
 ---
 name: "flow-run"
 description: "Execute a CocoFlow pipeline from flow.json. Supports adaptive parallelism (--concurrency flag), dual-file state recovery, intermediate result persistence for parallel evaluation runs, and HITL stage pausing. If a stage-id is provided, execute only that stage."
-version: "1.0.2"
+version: "1.0.3"
 author: "CocoPlus"
 tags:
   - cocoplus

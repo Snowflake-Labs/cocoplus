@@ -2,7 +2,7 @@
 name: "cocobehavior"
 description: "Cortex-specific behavioral guidelines — always-on inner constraint layer for all CocoPlus personas"
 user-invocable: false
-version: "1.0.0"
+version: "1.0.3"
 author: "CocoPlus"
 tags:
   - cocoplus

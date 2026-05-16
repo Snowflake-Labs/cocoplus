@@ -2,7 +2,7 @@
 name: "cocoscout"
 description: "Relevance-ranked context loading — background subagent that fires before Build stages and persona invocations to inject ranked context from CocoGrove, CocoContext, Environment Inspector, Prompt Studio, and CocoDream."
 user-invocable: false
-version: "1.0.0"
+version: "1.0.3"
 author: "CocoPlus"
 tags:
   - cocoplus
