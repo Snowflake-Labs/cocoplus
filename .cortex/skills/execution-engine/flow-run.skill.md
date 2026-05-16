@@ -71,6 +71,43 @@ For each stage to execute:
     - If any checkpoint fails: increment `consecutive_failure_count` in tasks.json. Append `STAGE_FAILED` to progress.txt. Apply `on_failure` action. If `consecutive_failure_count` reaches `maxConsecutiveFailures`, append `ESCALATED` and halt with full escalation message.
 11. **HITL pause** (if `hitl: true`): after successful completion, output the stage results and ask developer to confirm before spawning downstream stages
 
+## Adaptive Checkpoint Typing
+
+After each stage completes, determine the checkpoint type before surfacing the status report.
+
+Read `checkpoint_type` from the stage definition in `flow.json`. Valid values: `"MANDATORY"`, `"FULL"`, `"SLIM"`.
+
+**Default assignment if not specified:**
+- First stage in any session: `"FULL"`
+- Subsequent stages in an established pipeline: `"SLIM"`
+- Stages with `hitl: true`: `"MANDATORY"` (overrides any configured value)
+- Stages adjacent to EHRB-triggering operations (detected by PreToolUse hook flag in `flow.json`): `"MANDATORY"`
+
+**Awareness Guard:** Track `consecutive_slim_responses` in `harvest/[run-id]-tasks.json`. Increment when the developer responds to a SLIM checkpoint with a bare "continue" (no modification, no comment, no question). Reset to 0 when the developer provides any substantive response. When `consecutive_slim_responses` reaches 4, promote the next checkpoint to `"FULL"` regardless of its configured type. Surface: "Four stages have completed without detailed engagement. Here is a comprehensive status update before we continue."
+
+**Checkpoint presentation by type:**
+
+`"MANDATORY"` — Present full decision context. Block execution until developer provides a substantive response (not just a keypress or bare "continue"). Output:
+```
+🔴 MANDATORY CHECKPOINT — [stage name]
+[Full deliverables list, metrics, findings summary]
+[Decision required before proceeding — describe the decision]
+Your response:
+```
+
+`"FULL"` — Present complete deliverables list plus metrics plus next decision. Output:
+```
+✅ FULL CHECKPOINT — [stage name] complete
+[Complete deliverables and metrics]
+[Next stage: description and persona]
+Continue? (yes/no/pause)
+```
+
+`"SLIM"` — One-line status plus continue prompt. Output:
+```
+✓ [stage name] complete. Next: [next-stage-name] ([persona]). Continue? (yes/no/pause)
+```
+
 ## on_failure Actions
 
 - `"stop"`: Mark stage `"failed"`. Output error with checkpoint that failed. Halt pipeline. Output: "Stage [id] failed. Checkpoint not satisfied: [pattern]. Fix the issue and run `/flow run [stage-id]` to retry."
