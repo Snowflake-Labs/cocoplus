@@ -281,7 +281,7 @@ Confirm to proceed (yes/no):</code></pre>
   <p>Some questions are answered automatically. If your <code>CocoContext</code> has an approved models list with a single production-approved option, the wizard records that standard and skips the question. You see: "Model: Claude Haiku 4.5 (from approved-models.md — team standard)." You confirm.</p>
   <p>For questions CocoContext doesn't answer, you respond directly. "Evaluation data: production sample, 500 rows from <code>ANALYTICS.CUSTOMER_EVENTS</code>, last 90 days." "Accuracy threshold: ≥88% on labeled evaluation set." Each answer is written to <code>lifecycle/discuss.md</code>.</p>
   <p><strong>The CocoSpec gate:</strong></p>
-  <p>Before <code>/plan</code> can run, the CocoSpec gate evaluates the combined <code>spec.md</code> and <code>discuss.md</code>. A Haiku subagent scores five dimensions: Value, Scope, Acceptance, Boundaries, Risk — 0 to 2 on each, maximum 10.</p>
+  <p>Before <code>$plan</code> can run, the CocoSpec gate evaluates the combined <code>spec.md</code> and <code>discuss.md</code>. A Haiku subagent scores five dimensions: Value, Scope, Acceptance, Boundaries, Risk — 0 to 2 on each, maximum 10.</p>
   <p>Your spec had no explicit error handling specification. Boundaries scored 1. Total: 9 out of 10. Gate passes — but the scoring output shows the named assumption: "UNCERTAIN: behavior when AI_COMPLETE returns null | ASSUMPTION: return default category 'UNKNOWN'." You add the error handling spec to <code>spec.md</code>. Boundaries scores 2. Gate passes cleanly.</p>
   <p><strong>What happens during planning:</strong></p>
   <pre><code>$plan</code></pre>
@@ -326,7 +326,7 @@ Capability definitions changed: churn_prediction (vocabulary shift: "text normal
   <p>You're not blocked. This is soft guidance. You're at a natural stopping point — the current prompt iteration just completed. You run it.</p>
   <pre><code>$pod checkpoint</code></pre>
   <p>Checkpoint written to <code>lifecycle/checkpoint.md</code>: current CocoBrew phase (Build), active Prompt Studio iteration ID, last five decisions, no pending must-fix items, no active CocoHarvest harvest.</p>
-  <p>"Checkpoint saved. Run <code>/clear</code> to reset context, then <code>$pod resume</code> to continue from this point."</p>
+  <p>"Checkpoint saved. Run <code>$clear</code> to reset context, then <code>$pod resume</code> to continue from this point."</p>
   <p>You're not done with the session yet. You continue.</p>
   <p><strong>The 70% critical warning:</strong></p>
   <p>Four more tool calls. The critical threshold fires:</p>
@@ -338,8 +338,8 @@ Your state:
   Recent phase commits: Y
   Checkpoint: exists
 
-Recommended next step: Commit current iteration artifacts, then /clear + $pod resume</code></pre>
-  <p>The decision matrix evaluated your state and gave you one specific action. You don't have to reason about what to save — the system already did that reasoning. Commit the iteration artifacts. Run <code>/clear</code>. Run <code>$pod resume</code>.</p>
+Recommended next step: Commit current iteration artifacts, then $clear + $pod resume</code></pre>
+  <p>The decision matrix evaluated your state and gave you one specific action. You don't have to reason about what to save — the system already did that reasoning. Commit the iteration artifacts. Run <code>$clear</code>. Run <code>$pod resume</code>.</p>
   <p><strong>Resuming in a fresh context:</strong></p>
   <pre><code>$pod resume</code></pre>
   <p>The resume summary includes the checkpoint: which phase, which iteration, what decisions were made, what the immediate next action is. You're not rebuilding from scratch — you're continuing from a known point, with a context window that can reason clearly again.</p>
