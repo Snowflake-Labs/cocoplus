@@ -1,20 +1,23 @@
 ---
 name: discuss
-description: Run a structured decision-capture dialogue before /plan — locks implementation choices (model, evaluation methodology, accuracy threshold, scope boundaries) into discuss.md to prevent silent decision drift during planning
+description: Run a structured decision-capture dialogue before $plan — locks implementation choices (model, evaluation methodology, accuracy threshold, scope boundaries) into discuss.md to prevent silent decision drift during planning
 version: 1.0.2
 user-invocable: true
-command: /discuss
+command: $discuss
+author: "CocoPlus"
+tags:
+  - cocoplus
 feature: CocoDiscuss (Feature 30)
 ---
 
-# /discuss
+# $discuss
 
-Run a structured pre-planning dialogue that captures implementation decisions before `/plan` runs. Prevents the planning agent from silently filling in gaps with choices the developer never consciously made.
+Run a structured pre-planning dialogue that captures implementation decisions before `$plan` runs. Prevents the planning agent from silently filling in gaps with choices the developer never consciously made.
 
 ## Preconditions
 
 - `.cocoplus/` must be initialized
-- `lifecycle/spec.md` must exist (run `/spec` first)
+- `lifecycle/spec.md` must exist (run `$spec` first)
 
 ## Arguments
 
@@ -24,9 +27,9 @@ None. The wizard adapts its questions to the content of `spec.md`.
 
 ### Phase 1 — Read Spec and Determine Context
 
-1. **Verify initialization:** Check `.cocoplus/` exists. If not, output: "CocoPlus not initialized. Run `/pod init` first." and exit.
+1. **Verify initialization:** Check `.cocoplus/` exists. If not, output: "CocoPlus not initialized. Run `$pod init` first." and exit.
 
-2. **Verify spec.md:** Read `.cocoplus/lifecycle/spec.md`. If not found, output: "Spec phase must complete before `/discuss`. Run `/spec` first." and exit.
+2. **Verify spec.md:** Read `.cocoplus/lifecycle/spec.md`. If not found, output: "Spec phase must complete before `$discuss`. Run `$spec` first." and exit.
 
 3. **Detect work type:** Analyze `spec.md` to determine the primary type of work:
    - **AI Function build:** spec mentions AI_COMPLETE, AI_CLASSIFY, AI_EXTRACT, or similar Cortex function development
@@ -150,7 +153,7 @@ status: complete
    Decisions captured in lifecycle/discuss.md
    Score written to lifecycle/spec-score.md
    
-   Ready for /plan.
+   Ready for $plan.
    ```
 
    **Quick Mode check (score ≥9, scope ≤3 files, no EHRB indicators):**
@@ -163,10 +166,10 @@ status: complete
    - No EHRB indicators detected
    
    Quick Mode skips the Plan phase and proceeds directly to Build.
-   Confirm Quick Mode? [Y to skip /plan and go to /build | N to proceed with /plan]
+   Confirm Quick Mode? [Y to skip $plan and go to $build | N to proceed with $plan]
    ```
-   - If developer confirms Quick Mode: update `lifecycle/meta.json` with `quick_mode: true`; output: "Quick Mode activated. Run `/build` to proceed directly."
-   - If developer declines: output: "Running full lifecycle. Run `/plan` to proceed."
+   - If developer confirms Quick Mode: update `lifecycle/meta.json` with `quick_mode: true`; output: "Quick Mode activated. Run `$build` to proceed directly."
+   - If developer declines: output: "Running full lifecycle. Run `$plan` to proceed."
 
    **Score 8 — Gate holds:**
    ```
@@ -175,7 +178,7 @@ status: complete
    Gap detected in [dimension name]:
    [Specific gap description]
    
-   Address this gap in spec.md or discuss.md, then run /discuss again.
+   Address this gap in spec.md or discuss.md, then run $discuss again.
    ```
 
    **Score ≤7 — Gate holds with Uncertainty Declaration:**
@@ -189,14 +192,14 @@ status: complete
    UNCERTAIN: [specific assumption] | ASSUMPTION: [what is being assumed]
    [Repeat for each sub-2 dimension]
    
-   Address these gaps before proceeding to /plan.
+   Address these gaps before proceeding to $plan.
    ```
 
    If developer exits mid-discuss, save partial `discuss.md` with `status: incomplete`. Warn that plan-checker will only validate answered questions.
 
 ## Error Cases
 
-- **`spec.md` not found:** Output message directing user to run `/spec` first
+- **`spec.md` not found:** Output message directing user to run `$spec` first
 - **Developer exits mid-wizard:** Save partial discuss.md with `status: incomplete`; no CocoSpec gate is run on incomplete discuss
 - **CocoSpec scorer fails:** Note failure in output; do not block developer from proceeding (scorer is advisory at this step)
 - **Cannot write discuss.md:** Output filesystem error
@@ -211,7 +214,7 @@ This skill is complete when:
 ## Anti-Rationalization
 
 Do NOT:
-- Block `/plan` if CocoDiscuss was not run — `/discuss` is always optional
+- Block `$plan` if CocoDiscuss was not run — `$discuss` is always optional
 - Auto-promote Quick Mode without explicit developer confirmation
 - Require developer to answer all questions if CocoContext provides definitive answers
 - Run CocoSpec scorer on partial (incomplete) discuss.md files

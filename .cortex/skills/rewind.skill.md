@@ -11,7 +11,7 @@ tags:
 Your objective is to roll back the CocoBrew lifecycle to a prior phase commit.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 ## Usage
 

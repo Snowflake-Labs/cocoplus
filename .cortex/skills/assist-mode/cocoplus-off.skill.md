@@ -11,7 +11,7 @@ tags:
 Your objective is to deactivate Full Assist Mode.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 ## Check Which Flags Exist
 
@@ -82,7 +82,7 @@ Preserved (not deleted):
 - .cocoplus/grove/patterns/
 - .cocoplus/grove/cupper-findings.md
 
-Run `/cocoplus on` to re-activate all features.
+Run `$cocoplus on` to re-activate all features.
 ```
 
 ## Anti-Rationalization

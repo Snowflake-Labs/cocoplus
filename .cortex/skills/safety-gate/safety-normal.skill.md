@@ -11,7 +11,7 @@ tags:
 Your objective is to set the Safety Gate to normal mode.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 Remove any existing safety mode flags (cross-platform using the Bash tool):
 ```

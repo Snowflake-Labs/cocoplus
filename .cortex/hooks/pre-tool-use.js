@@ -176,7 +176,7 @@ function main() {
       const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
       const phase = (meta.current_phase || '').toLowerCase();
       if (phase === 'spec' || phase === 'plan') {
-        block(`SnowflakeSqlExecute is blocked during the ${phase} phase. SQL execution is only permitted from the Build phase onward. Use /build to advance the lifecycle.`);
+        block(`SnowflakeSqlExecute is blocked during the ${phase} phase. SQL execution is only permitted from the Build phase onward. Use $build to advance the lifecycle.`);
         return;
       }
     } catch (_) { /* malformed meta.json — fail open */ }
@@ -235,7 +235,7 @@ function main() {
 
   switch (safetyMode) {
     case 'strict':
-      block(`SnowflakeSqlExecute: ${pattern} detected in safety.strict mode. This operation is blocked. Switch to /safety normal to allow with confirmation.`);
+      block(`SnowflakeSqlExecute: ${pattern} detected in safety.strict mode. This operation is blocked. Switch to $safety normal to allow with confirmation.`);
       break;
     case 'normal':
     default:

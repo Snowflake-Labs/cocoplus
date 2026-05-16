@@ -1,24 +1,27 @@
 ---
 name: pod-checkpoint
-description: Write a structured recovery snapshot to lifecycle/checkpoint.md before context reset — captures phase, stage, decisions, and pending items so /pod resume can restore precise context
+description: Write a structured recovery snapshot to lifecycle/checkpoint.md before context reset — captures phase, stage, decisions, and pending items so $pod resume can restore precise context
 version: 1.0.2
 user-invocable: true
-command: /pod checkpoint
+command: $pod checkpoint
+author: "CocoPlus"
+tags:
+  - cocoplus
 feature: CocoHealth (Feature 27) — CocoPod subcommand
 ---
 
-# /pod checkpoint
+# $pod checkpoint
 
-Write a structured recovery snapshot to `.cocoplus/lifecycle/checkpoint.md`. Use this before `/clear` to ensure `/pod resume` can restore your exact position.
+Write a structured recovery snapshot to `.cocoplus/lifecycle/checkpoint.md`. Use this before `$clear` to ensure `$pod resume` can restore your exact position.
 
 ## Preconditions
 
-- `.cocoplus/` directory must exist (run `/pod init` first)
+- `.cocoplus/` directory must exist (run `$pod init` first)
 - No arguments accepted
 
 ## Step-by-Step Behavior
 
-1. **Verify initialization:** Check `.cocoplus/` exists. If not, output: "CocoPlus not initialized. Run `/pod init` first." and exit.
+1. **Verify initialization:** Check `.cocoplus/` exists. If not, output: "CocoPlus not initialized. Run `$pod init` first." and exit.
 
 2. **Read current lifecycle phase:** Read `.cocoplus/lifecycle/meta.json`. Extract: current phase, phase ID, completion timestamps.
 
@@ -84,8 +87,8 @@ context_utilization: [percentage or "unavailable"]
   Decisions captured: [N]
 
 Next steps:
-  1. Run /clear to reset the context window
-  2. Run /pod resume to continue from this checkpoint
+  1. Run $clear to reset the context window
+  2. Run $pod resume to continue from this checkpoint
 ```
 
 12. **Recovery Decision Matrix (when context is at/near 70%):** If context utilization is ≥70% or if checkpoint is triggered by CocoHealth alert, additionally evaluate the following and append the recommended action:
@@ -94,7 +97,7 @@ Next steps:
 |---|---|---|---|
 | No | Yes | Any | `Resume from last commit` — no work at risk; start new session |
 | Yes (< 20 lines) | Any | Yes | `Commit partial + resume` — commit current state, resume from checkpoint |
-| Yes (≥ 20 lines) | Any | Yes | `Checkpoint + new session` — run `/clear` then `/pod resume` |
+| Yes (≥ 20 lines) | Any | Yes | `Checkpoint + new session` — run `$clear` then `$pod resume` |
 | Yes | No | No | `Emergency commit` — commit all modified files with `chore(recovery): emergency state preservation` |
 | No | No | No | `Clean restart` — `.cocoplus/` state files are the recovery source |
 
@@ -112,9 +115,9 @@ Run `git status --porcelain` and `git log --oneline -5` to assess the matrix row
   HITL stages pending: [N]
   Seeds ready: [N]
 
-Recovery recommendation: [action from matrix, or "Run /clear then /pod resume"]
+Recovery recommendation: [action from matrix, or "Run $clear then $pod resume"]
 
-Run /clear to reset context, then /pod resume to continue.
+Run $clear to reset context, then $pod resume to continue.
 ```
 
 ## Error Cases

@@ -11,10 +11,10 @@ tags:
 Your objective is to estimate token and cost impact before executing an action.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 If no argument provided: read `.cocoplus/flow.json` to estimate the full pipeline.
-If argument provided (e.g., `/meter estimate "run 3-stage pipeline"`): estimate the described action.
+If argument provided (e.g., `$meter estimate "run 3-stage pipeline"`): estimate the described action.
 
 ## Estimation Approach
 

@@ -13,7 +13,7 @@ Your objective is to generate a CocoFlow pipeline from a named recipe template.
 ## Pre-flight Check
 
 Check that `.cocoplus/` exists. If not:
-Output: "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+Output: "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 ## Locate Recipe Template
 
@@ -22,7 +22,7 @@ Look for `<name>.json.template` in:
 2. `.cocoplus/recipes/<name>.json.template` (project-local)
 
 If not found in either location, output:
-"Recipe '<name>' not found. Run `/recipe list` to see available recipes." Then stop.
+"Recipe '<name>' not found. Run `$recipe list` to see available recipes." Then stop.
 
 ## Read Parameters
 
@@ -72,7 +72,7 @@ Pipeline stages:
   ...
 
 Written to .cocoplus/flow.json
-Next: Run /plan to review and approve before executing.
+Next: Run $plan to review and approve before executing.
 ```
 
 ## Error Cases
@@ -85,7 +85,7 @@ Next: Run /plan to review and approve before executing.
 
 | Shortcut / Temptation | Why It Fails |
 |-----------------------|--------------|
-| Write flow.json without validation | An invalid flow.json crashes /flow run at start — catch schema errors now |
+| Write flow.json without validation | An invalid flow.json crashes $flow run at start — catch schema errors now |
 | Skip the overwrite prompt when flow.json exists | Silently overwriting a carefully built pipeline is data loss |
 | Error on missing required parameter instead of prompting | Interactive collection is the spec behavior — always collect, never error |
 
@@ -94,4 +94,4 @@ Next: Run /plan to review and approve before executing.
 - [ ] `.cocoplus/flow.json` written with all `{{param}}` slots substituted
 - [ ] JSON validates against CocoFlow schema before writing
 - [ ] Output lists all parameters used, stage names, agents, and models
-- [ ] Output ends with "Next: Run /plan to review and approve before executing."
+- [ ] Output ends with "Next: Run $plan to review and approve before executing."

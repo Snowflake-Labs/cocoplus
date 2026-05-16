@@ -11,7 +11,7 @@ tags:
 Your objective is to display the current pipeline execution state.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 Read `.cocoplus/flow.json`. Count stages by status:
 - Total stages
@@ -45,7 +45,7 @@ For failed stages, add:
 ### [stage-id]: [stage name]
 Checkpoint failed: [pattern]
 on_failure: stop
-Action required: Fix issue and run `/flow run [stage-id]`
+Action required: Fix issue and run `$flow run [stage-id]`
 ```
 
 ## Anti-Rationalization

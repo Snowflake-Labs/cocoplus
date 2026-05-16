@@ -3,13 +3,16 @@ name: seed-add
 description: Store a forward-looking idea with a trigger condition — the idea will surface automatically when the project reaches the specified state
 version: 1.0.2
 user-invocable: true
-command: /seed add "<idea>" --trigger "<condition>"
+command: $seed add "<idea>" --trigger "<condition>"
+author: "CocoPlus"
+tags:
+  - cocoplus
 feature: CocoSeed (Feature 29)
 ---
 
-# /seed add "\<idea\>" --trigger "\<condition\>"
+# $seed add "\<idea\>" --trigger "\<condition\>"
 
-Store a deferred idea with an explicit trigger condition. The idea is surfaced by `/seed list` and the SessionStart hook when the trigger condition is met.
+Store a deferred idea with an explicit trigger condition. The idea is surfaced by `$seed list` and the SessionStart hook when the trigger condition is met.
 
 ## Preconditions
 
@@ -27,11 +30,11 @@ Store a deferred idea with an explicit trigger condition. The idea is surfaced b
 
 ## Step-by-Step Behavior
 
-1. **Verify initialization:** Check `.cocoplus/` exists. If not, output: "CocoPlus not initialized. Run `/pod init` first." and exit.
+1. **Verify initialization:** Check `.cocoplus/` exists. If not, output: "CocoPlus not initialized. Run `$pod init` first." and exit.
 
 2. **Validate arguments:**
-   - If idea text is missing, output: "Idea text is required. Use: `/seed add \"<idea>\" --trigger \"<condition>\"`" and exit.
-   - If `--trigger` is missing, output: "A trigger condition is required. Use: `/seed add \"<idea>\" --trigger \"<condition>\"`" and exit.
+   - If idea text is missing, output: "Idea text is required. Use: `$seed add \"<idea>\" --trigger \"<condition>\"`" and exit.
+   - If `--trigger` is missing, output: "A trigger condition is required. Use: `$seed add \"<idea>\" --trigger \"<condition>\"`" and exit.
 
 3. **Generate seed ID:** Create a timestamp-based ID: `seed-[YYYYMMDD-HHmmss]` (compact ISO8601).
 
@@ -55,7 +58,7 @@ Store a deferred idea with an explicit trigger condition. The idea is surfaced b
    Idea: [idea text]
    Will surface when: [trigger condition]
    
-   Run /seed list to check trigger status.
+   Run $seed list to check trigger status.
    ```
 
 ## Error Cases
@@ -74,5 +77,5 @@ This skill is complete when:
 
 Do NOT:
 - Create a git commit (seeds are committed with the next CocoBrew lifecycle phase commit)
-- Evaluate the trigger condition at add time — that happens in `/seed list`
+- Evaluate the trigger condition at add time — that happens in `$seed list`
 - Automatically promote the idea to spec.md — that is always an explicit developer action

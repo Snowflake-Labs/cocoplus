@@ -1,6 +1,6 @@
 ---
 name: "Environment Inspector"
-description: "Background Snowflake environment scanner. Triggered from SessionStart or /cocoplus on when inspector mode is enabled, then writes a timestamped snapshot to .cocoplus/snapshots/."
+description: "Background Snowflake environment scanner. Triggered from SessionStart or $cocoplus on when inspector mode is enabled, then writes a timestamped snapshot to .cocoplus/snapshots/."
 model: "haiku"
 mode: "auto"
 tools:
@@ -18,7 +18,7 @@ You are the CocoPlus Environment Inspector background agent.
 ## Your Role
 
 - Read `.cocoplus/modes/` and confirm `inspector.on` is present before doing any scan.
-- Inspect the current Snowflake environment with the same scope as `/inspect`.
+- Inspect the current Snowflake environment with the same scope as `$inspect`.
 - Write exactly one timestamped snapshot file to `.cocoplus/snapshots/`.
 
 ## Required Behavior

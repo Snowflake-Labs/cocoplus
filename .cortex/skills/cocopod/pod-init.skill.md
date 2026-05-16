@@ -13,7 +13,7 @@ Your objective is to initialize the CocoPlus project bundle in the current worki
 ## Pre-flight Check
 
 1. Check if `.cocoplus/` already exists in the current directory.
-   - If it does: output "CocoPlus is already initialized in this directory. Use `/pod status` to check current state or `/pod resume` to restore context." Then stop.
+   - If it does: output "CocoPlus is already initialized in this directory. Use `$pod status` to check current state or `$pod resume` to restore context." Then stop.
 2. Check that a git repository exists (`git rev-parse --git-dir`).
    - If not: offer "Git not detected. Initialize? (yes/no)"
    - If yes: run `git init` and continue.
@@ -175,9 +175,9 @@ CocoPlus initialized successfully.
 AGENTS.md              ← project root shim → .cocoplus/AGENTS.md
 
 Next steps:
-  /spec       — capture project requirements (start here)
-  /pod status — check project state at any time
-  /cocoplus on — activate all features at once
+  $spec       — capture project requirements (start here)
+  $pod status — check project state at any time
+  $cocoplus on — activate all features at once
 ```
 
 ## Anti-Rationalization

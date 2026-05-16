@@ -1,6 +1,6 @@
 ---
 name: "inspect"
-description: "Scan the Snowflake environment: schemas, tables, views, stored procedures, Cortex endpoints, and user permissions. Writes timestamped snapshot to .cocoplus/snapshots/. Use /inspect --schema <name> for a schema-specific scan."
+description: "Scan the Snowflake environment: schemas, tables, views, stored procedures, Cortex endpoints, and user permissions. Writes timestamped snapshot to .cocoplus/snapshots/. Use $inspect --schema <name> for a schema-specific scan."
 version: "1.0.0"
 author: "CocoPlus"
 tags:
@@ -11,7 +11,7 @@ tags:
 Your objective is to perform a Snowflake environment scan and write a timestamped snapshot.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 Parse arguments:
 - `--schema <name>`: scan only that schema

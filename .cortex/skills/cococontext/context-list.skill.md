@@ -13,7 +13,7 @@ Your objective is to display a status table of all CocoContext organizational st
 ## Pre-flight Check
 
 Check that `.cocoplus/` exists. If not:
-Output: "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+Output: "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 ## Read File Status
 
@@ -45,8 +45,8 @@ warehouse-policy.md         —    not created
 naming-conventions.md      52    2026-04-01
 governance-gates.md         —    not created
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Run `/context add` to create or update a standards file.
-Run `/context view <name>` to read a file in full.
+Run `$context add` to create or update a standards file.
+Run `$context view <name>` to read a file in full.
 ```
 
 Replace example values with actual data from the filesystem.
@@ -62,4 +62,4 @@ Replace example values with actual data from the filesystem.
 - [ ] All six standard file slots shown regardless of whether they exist
 - [ ] Existing files show accurate line count and last-modified date
 - [ ] Missing files shown as "not created"
-- [ ] Footer links to `/context add` and `/context view`
+- [ ] Footer links to `$context add` and `$context view`

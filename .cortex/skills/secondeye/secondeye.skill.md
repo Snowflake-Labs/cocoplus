@@ -1,6 +1,6 @@
 ---
 name: "secondeye"
-description: "Multi-model parallel plan critique. Spawns three SecondEye Critic instances in parallel (Haiku: efficiency, Sonnet: completeness, Opus: risk), aggregates findings with HITL/AFK and BLOCKING/MINOR classification, and writes a structured report. Critical findings create a soft gate on /build. Usage: /secondeye [--artifact spec|plan|review] [--model haiku|sonnet|opus]."
+description: "Multi-model parallel plan critique. Spawns three SecondEye Critic instances in parallel (Haiku: efficiency, Sonnet: completeness, Opus: risk), aggregates findings with HITL/AFK and BLOCKING/MINOR classification, and writes a structured report. Critical findings create a soft gate on $build. Usage: $secondeye [--artifact spec|plan|review] [--model haiku|sonnet|opus]."
 version: "1.0.3"
 author: "CocoPlus"
 tags:
@@ -11,7 +11,7 @@ tags:
 Your objective is to run a multi-model adversarial critique of a lifecycle artifact.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 ## Parse Arguments
 
@@ -95,7 +95,7 @@ Sort: Critical first, then Advisory, then Observation.
 
 **HITL/AFK classification** — for each finding:
 - **HITL:** Requires human judgment before resolution. Default for: Critical severity findings, findings about evaluation methodology, architectural decisions, scope changes, findings where resolution involves a choice between options with different trade-offs.
-- **AFK:** Can be resolved autonomously in the next `/build` pass. Default for: Warning and Info findings that map to known fix patterns (add a NULL check, refactor a subquery, apply an existing CocoGrove pattern).
+- **AFK:** Can be resolved autonomously in the next `$build` pass. Default for: Warning and Info findings that map to known fix patterns (add a NULL check, refactor a subquery, apply an existing CocoGrove pattern).
 
 **BLOCKING/MINOR classification** — for each finding (orthogonal to HITL/AFK):
 - **BLOCKING:** Must be resolved by the developer — involves correctness, security, architectural conflict, or genuine ambiguity about intent. Critical severity findings are always BLOCKING. Advisory/Observation findings are BLOCKING only if they touch correctness, security, or architectural scope.
@@ -166,9 +166,9 @@ If `critical_open = true`:
 SecondEye review complete. CRITICAL FINDINGS DETECTED.
 [list critical finding titles — each with HITL/AFK and BLOCKING/MINOR tags]
 Action required: [blocking_count] BLOCKING · [hitl_count] HITL requiring developer attention
-/build is soft-gated until you acknowledge these findings.
-Run `/secondeye acknowledge --hitl-only` to acknowledge HITL stages.
-Run `/secondeye acknowledge --blocking-only` to acknowledge BLOCKING findings only.
+$build is soft-gated until you acknowledge these findings.
+Run `$secondeye acknowledge --hitl-only` to acknowledge HITL stages.
+Run `$secondeye acknowledge --blocking-only` to acknowledge BLOCKING findings only.
 Report: .cocoplus/lifecycle/secondeye-[timestamp].md
 ```
 
@@ -195,4 +195,4 @@ Report: .cocoplus/lifecycle/secondeye-[timestamp].md
 - [ ] Every finding is tagged with both HITL/AFK and BLOCKING/MINOR labels
 - [ ] Report frontmatter includes `action_summary` with `hitl_count`, `afk_count`, `blocking_count`, `minor_count`
 - [ ] Critic outputs are aggregated into `.cocoplus/lifecycle/secondeye-[timestamp].md` with `critical_open` and acknowledgment metadata
-- [ ] Output clearly indicates whether `/build` is soft-gated and shows the `--hitl-only` and `--blocking-only` acknowledge options
+- [ ] Output clearly indicates whether `$build` is soft-gated and shows the `--hitl-only` and `--blocking-only` acknowledge options

@@ -11,13 +11,13 @@ tags:
 Your objective is to create a git worktree for isolated exploration.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 ## Usage
 
-`/fork [branch-name]` — creates a worktree on branch `explore/[branch-name]`
+`$fork [branch-name]` — creates a worktree on branch `explore/[branch-name]`
 
-If no branch-name provided: output "Usage: /fork [branch-name] — e.g., /fork try-new-schema" Then stop.
+If no branch-name provided: output "Usage: $fork [branch-name] — e.g., $fork try-new-schema" Then stop.
 
 ## Create Worktree
 

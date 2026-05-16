@@ -1,6 +1,6 @@
 ---
 name: "review"
-description: "Enter the Review phase of CocoBrew. Aggregates findings from Code Quality Advisor, CocoCupper intelligence, spec compliance check, and decision coverage gate. Produces review.md with decision points. Requires developer approval before /ship can proceed."
+description: "Enter the Review phase of CocoBrew. Aggregates findings from Code Quality Advisor, CocoCupper intelligence, spec compliance check, and decision coverage gate. Produces review.md with decision points. Requires developer approval before $ship can proceed."
 version: "1.0.2"
 author: "CocoPlus"
 tags:
@@ -11,10 +11,10 @@ tags:
 You are executing the Review phase (5/6) of CocoBrew.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 Read `.cocoplus/lifecycle/meta.json`. Verify `phases_completed` contains `"test"`.
-If not: output "The Test phase must be completed before review. Run `/test` first." Then stop.
+If not: output "The Test phase must be completed before review. Run `$test` first." Then stop.
 
 ## Aggregate Findings
 
@@ -42,7 +42,7 @@ For each extracted decision, scan implementation artifacts — SQL functions, ev
 
 A decision is **honored** if the artifact reflects the stated value or approach. A decision is a **Coverage Gap** if it is present in plan/discuss but absent or contradicted in the implementation.
 
-Coverage Gaps are severity-equivalent to must-fix. `/ship` is blocked until all Coverage Gaps are resolved or explicitly acknowledged with a documented rationale written into `review.md`.
+Coverage Gaps are severity-equivalent to must-fix. `$ship` is blocked until all Coverage Gaps are resolved or explicitly acknowledged with a documented rationale written into `review.md`.
 
 ## Write Review Document
 
@@ -80,7 +80,7 @@ Passed: [N] / [Total]
 | Decision | Source | Honored | Notes |
 |----------|--------|---------|-------|
 [Table of plan/discuss decisions vs implementation evidence]
-Coverage Gaps (if any): [list — each blocks /ship until resolved or acknowledged with rationale]
+Coverage Gaps (if any): [list — each blocks $ship until resolved or acknowledged with rationale]
 
 ## Decision Points
 [List any items requiring developer decision before shipping]
@@ -110,7 +110,7 @@ git add .cocoplus/lifecycle/review.md .cocoplus/lifecycle/meta.json .cocoplus/AG
 git commit -m "docs(review): quality and compliance review approved"
 ```
 
-Output: "Review approved. Commit created. You may now proceed to `/ship`."
+Output: "Review approved. Commit created. You may now proceed to `$ship`."
 
 ## Anti-Rationalization
 
@@ -119,7 +119,7 @@ Output: "Review approved. Commit created. You may now proceed to `/ship`."
 | Approve the review automatically if no critical findings exist | Developer must explicitly approve — auto-approval bypasses the mandatory human gate |
 | Skip spec compliance check if tests all passed | Tests passing does not mean spec criteria are covered; compliance check verifies mapping, not just pass rate |
 | Write review.md before aggregating all sources | Missing a source (CocoCupper, quality findings, decision coverage) produces an incomplete review that under-reports problems |
-| Treat Coverage Gaps as advisory | Coverage Gaps block /ship the same as must-fix findings — tests verify what code does; coverage verifies what it was meant to do |
+| Treat Coverage Gaps as advisory | Coverage Gaps block $ship the same as must-fix findings — tests verify what code does; coverage verifies what it was meant to do |
 
 ## Exit Criteria
 

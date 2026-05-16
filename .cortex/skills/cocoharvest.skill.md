@@ -11,10 +11,10 @@ tags:
 Your objective is to decompose the approved plan into parallel workstreams and generate a complete flow.json pipeline.
 
 Before proceeding, verify that `.cocoplus/` exists in the current directory.
-If it does not, output: "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If it does not, output: "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 Read `.cocoplus/lifecycle/plan.md`. If it does not exist or is empty:
-Output: "No approved plan found. Run `/plan` to create an execution plan first." Then stop.
+Output: "No approved plan found. Run `$plan` to create an execution plan first." Then stop.
 
 ## Step 1: Parse Workstreams
 
@@ -190,7 +190,7 @@ Pipeline written to .cocoplus/flow.json
 Prompt files written to .cocoplus/prompts/
 Dual-file state initialized: harvest/[run-id]-progress.txt + harvest/[run-id]-tasks.json
 
-Next: Run `/flow run` to begin execution.
+Next: Run `$flow run` to begin execution.
 ```
 
 ## Runtime Behavior — Adaptive Parallelism (Enhancement G)

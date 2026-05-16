@@ -13,17 +13,17 @@ Your objective is to display a CocoContext organizational standards file.
 ## Pre-flight Check
 
 Check that `.cocoplus/` exists. If not:
-Output: "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+Output: "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 ## Resolve Target File
 
-If a file name argument was provided (e.g., `/context view approved-models` or `/context view approved-models.md`):
+If a file name argument was provided (e.g., `$context view approved-models` or `$context view approved-models.md`):
 - Normalize: strip `.md` suffix if present, then append `.md`
 - Read `.cocoplus/context/<file-name>.md`
-- If not found: output error listing available files (same as `/context list` output), then stop
+- If not found: output error listing available files (same as `$context list` output), then stop
 
 If no argument was provided:
-- Run `/context list` output first (show the status table)
+- Run `$context list` output first (show the status table)
 - Prompt: "Which context file would you like to view? Enter the name (e.g., approved-models):"
 - Wait for response, then read the selected file
 
@@ -35,7 +35,7 @@ Read the file and display its full content. After the content, output:
 ──────────────────────────────────────
 File: .cocoplus/context/<category>.md
 Lines: <N>  |  Last modified: <date>
-Run `/context add` to update this file.
+Run `$context add` to update this file.
 ```
 
 ## Anti-Rationalization

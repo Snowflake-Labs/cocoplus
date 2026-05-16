@@ -34,8 +34,8 @@ cortex-semantic-model   Create Analytics semantic model         6 stages
 cortex-add-extraction   Build AI_EXTRACT UDF + validation       8 stages
 [additional custom recipes if present]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Run `/recipe use <name>` to generate a flow.json from a template.
-Run `/recipe new <name>` to create a new recipe from the current flow.json.
+Run `$recipe use <name>` to generate a flow.json from a template.
+Run `$recipe new <name>` to create a new recipe from the current flow.json.
 ```
 
 Replace example values with actual data from the filesystem. If no recipes are found in either location, output:
@@ -45,10 +45,10 @@ Replace example values with actual data from the filesystem. If no recipes are f
 
 | Shortcut / Temptation | Why It Fails |
 |-----------------------|--------------|
-| Only check profile folder | Project-local recipes created via `/recipe new` live in `.cocoplus/recipes/` — missing them hides custom work |
+| Only check profile folder | Project-local recipes created via `$recipe new` live in `.cocoplus/recipes/` — missing them hides custom work |
 
 ## Exit Criteria
 
 - [ ] All recipes from both profile and project-local directories shown
 - [ ] Stage count displayed for each recipe
-- [ ] Footer shows `/recipe use` and `/recipe new` commands
+- [ ] Footer shows `$recipe use` and `$recipe new` commands

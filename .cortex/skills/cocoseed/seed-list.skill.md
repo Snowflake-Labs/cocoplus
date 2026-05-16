@@ -3,11 +3,14 @@ name: seed-list
 description: Evaluate all pending seed trigger conditions against current project state and show which ideas are ready to promote and which are still waiting
 version: 1.0.2
 user-invocable: true
-command: /seed list
+command: $seed list
+author: "CocoPlus"
+tags:
+  - cocoplus
 feature: CocoSeed (Feature 29)
 ---
 
-# /seed list
+# $seed list
 
 Evaluate all stored seeds against current project state. Shows two sections: seeds Ready to Promote (trigger has fired) and seeds Waiting (trigger not yet met).
 
@@ -18,11 +21,11 @@ Evaluate all stored seeds against current project state. Shows two sections: see
 
 ## Step-by-Step Behavior
 
-1. **Verify initialization:** Check `.cocoplus/` exists. If not, output: "CocoPlus not initialized. Run `/pod init` first." and exit.
+1. **Verify initialization:** Check `.cocoplus/` exists. If not, output: "CocoPlus not initialized. Run `$pod init` first." and exit.
 
 2. **Read all seed files:** Load all `.yaml` files from `.cocoplus/seeds/` with `status: pending` or `status: triggered`. Skip seeds with `status: promoted` or `status: discarded`.
 
-3. **If no seeds found:** Output: "No pending seeds. Add ideas with `/seed add`." and exit.
+3. **If no seeds found:** Output: "No pending seeds. Add ideas with `$seed add`." and exit.
 
 4. **Evaluate each trigger condition** against current project state:
 
@@ -52,7 +55,7 @@ Seeds Ready to Promote ([N]):
 [seed-id] — [idea]
   Triggered: [trigger condition that fired]
   Captured during: [captured_phase] phase on [captured_date]
-  Promote with: /seed promote [seed-id]
+  Promote with: $seed promote [seed-id]
 
 [repeat for each triggered seed]
 
@@ -70,7 +73,7 @@ Seeds Waiting ([N]):
 
 ## Error Cases
 
-- **Seeds directory missing:** Output "No seeds directory found. Add ideas with `/seed add`." and exit
+- **Seeds directory missing:** Output "No seeds directory found. Add ideas with `$seed add`." and exit
 - **Corrupt YAML file:** Skip and warn: "Could not read [filename]. Check file format."
 
 ## Exit Criteria
@@ -83,6 +86,6 @@ This skill is complete when:
 ## Anti-Rationalization
 
 Do NOT:
-- Automatically promote any seed — that is always `/seed promote`
+- Automatically promote any seed — that is always `$seed promote`
 - Create any git commit
 - Modify seed content (idea or trigger) — only `status` and `triggered_date` are updated

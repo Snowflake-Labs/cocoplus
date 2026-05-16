@@ -11,10 +11,10 @@ tags:
 Your objective is to display the current session CocoMeter report.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 Read `.cocoplus/meter/current-session.json`. If it does not exist:
-Output: "No active meter session. CocoMeter tracking starts automatically when a session begins with CocoMeter enabled. Run `/meter on` to enable and start a new session." Then stop.
+Output: "No active meter session. CocoMeter tracking starts automatically when a session begins with CocoMeter enabled. Run `$meter on` to enable and start a new session." Then stop.
 
 Output a formatted report:
 

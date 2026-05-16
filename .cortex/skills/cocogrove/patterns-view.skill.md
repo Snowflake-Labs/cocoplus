@@ -1,6 +1,6 @@
 ---
 name: "patterns-view"
-description: "List all patterns in the CocoGrove pattern library (.cocoplus/grove/patterns/). Optional tag filter: /patterns view [tag]."
+description: "List all patterns in the CocoGrove pattern library (.cocoplus/grove/patterns/). Optional tag filter: $patterns view [tag]."
 version: "1.0.0"
 author: "CocoPlus"
 tags:
@@ -11,13 +11,13 @@ tags:
 Your objective is to list CocoGrove patterns.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 List all `.md` files in `.cocoplus/grove/patterns/`. If directory is empty:
-Output: "No patterns in CocoGrove yet. Use `/patterns promote [finding-id]` to promote a CocoCupper finding."
+Output: "No patterns in CocoGrove yet. Use `$patterns promote [finding-id]` to promote a CocoCupper finding."
 Then stop.
 
-Parse optional tag filter: `/patterns view [tag]`
+Parse optional tag filter: `$patterns view [tag]`
 
 For each pattern file, read the YAML frontmatter to extract: name, domain, tags, summary.
 If a tag filter is provided, only include patterns whose tags include the filter value.

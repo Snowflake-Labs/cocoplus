@@ -14,15 +14,15 @@ Your objective is to render the CocoFlow pipeline as an interactive HTML visuali
 ## Pre-flight Check
 
 Check that `.cocoplus/` exists. If not:
-Output: "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+Output: "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 ## Read flow.json
 
 Read `.cocoplus/flow.json`.
 
-- If the file is absent: output "No flow.json found. Run /plan first to generate an execution flow." Then stop.
+- If the file is absent: output "No flow.json found. Run $plan first to generate an execution flow." Then stop.
 - If the file contains invalid JSON: output "flow.json contains invalid JSON: <parse error>. Fix the file and retry." Then stop.
-- If the file is valid JSON but has no `nodes` array: output "Invalid flow.json: missing \"nodes\" array. Ensure /plan has completed successfully." Then stop.
+- If the file is valid JSON but has no `nodes` array: output "Invalid flow.json: missing \"nodes\" array. Ensure $plan has completed successfully." Then stop.
 
 ## Locate the HTML Template
 

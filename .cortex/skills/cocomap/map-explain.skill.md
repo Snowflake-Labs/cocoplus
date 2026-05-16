@@ -3,18 +3,21 @@ name: map-explain
 description: Produce a natural-language explanation of a specific Cortex function, business capability, or schema element from the committed knowledge graph
 version: 1.0.2
 user-invocable: true
-command: /map explain <target>
+command: $map explain <target>
+author: "CocoPlus"
+tags:
+  - cocoplus
 feature: CocoMap (Feature 28)
 ---
 
-# /map explain \<target\>
+# $map explain \<target\>
 
 Explain a specific function, capability, or schema element in domain terms using the committed `coco-map.json`. Answers: what it does, what depends on it, what it depends on, and how it relates to the nearest business capability.
 
 ## Preconditions
 
 - `.cocoplus/` must be initialized
-- `.cocoplus/map/coco-map.json` must exist (run `/map` first)
+- `.cocoplus/map/coco-map.json` must exist (run `$map` first)
 - `<target>` argument must be provided
 
 ## Arguments
@@ -23,11 +26,11 @@ Explain a specific function, capability, or schema element in domain terms using
 
 ## Step-by-Step Behavior
 
-1. **Verify initialization:** Check `.cocoplus/` exists. If not, output: "CocoPlus not initialized. Run `/pod init` first." and exit.
+1. **Verify initialization:** Check `.cocoplus/` exists. If not, output: "CocoPlus not initialized. Run `$pod init` first." and exit.
 
 2. **Verify map exists:** Check `.cocoplus/map/coco-map.json` exists. If not, output:
    ```
-   No function knowledge graph found. Run /map first to build it.
+   No function knowledge graph found. Run $map first to build it.
    ```
    and exit.
 
@@ -44,7 +47,7 @@ Explain a specific function, capability, or schema element in domain terms using
    No function or capability named '[target]' found in coco-map.json.
    Available functions: [comma-separated list]
    Available capabilities: [comma-separated list]
-   Run /map to refresh the map if the project has changed.
+   Run $map to refresh the map if the project has changed.
    ```
    and exit.
 
@@ -115,9 +118,9 @@ Last analyzed: [timestamp from coco-map.json meta.generated_at]
 
 ## Error Cases
 
-- **Target not found:** Output message with available functions/capabilities list and suggestion to run `/map` to refresh
-- **`coco-map.json` parse error:** Output warning and suggest re-running `/map`
-- **`coco-map.json` missing:** Redirect to run `/map` first
+- **Target not found:** Output message with available functions/capabilities list and suggestion to run `$map` to refresh
+- **`coco-map.json` parse error:** Output warning and suggest re-running `$map`
+- **`coco-map.json` missing:** Redirect to run `$map` first
 
 ## Exit Criteria
 
@@ -131,4 +134,4 @@ Do NOT:
 - Create any git commit
 - Modify `coco-map.json` or any other file
 - Fetch external documentation (that is CocoScout's role)
-- Chase dependency chains beyond 3 hops for the explanation (deeper analysis belongs in `/map`)
+- Chase dependency chains beyond 3 hops for the explanation (deeper analysis belongs in `$map`)

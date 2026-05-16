@@ -14,7 +14,7 @@ Your objective is to generate and open the CocoMeter token attribution dashboard
 ## Pre-flight Check
 
 Check that `.cocoplus/` exists. If not:
-Output: "CocoPlus not initialized. Run /pod init to begin." Then stop.
+Output: "CocoPlus not initialized. Run $pod init to begin." Then stop.
 
 ## Read Attribution Data
 
@@ -111,7 +111,7 @@ If Snowflake returned no rows:
 ⚠ No usage data from Snowflake yet.
   CORTEX_CODE_CLI_USAGE_HISTORY has up to 90-minute latency.
   Dashboard generated with local attribution data only.
-  Run /meter sync after ~90 minutes to refresh.
+  Run $meter sync after ~90 minutes to refresh.
   Opening: .cocoplus/meter-view.html
 ```
 
@@ -128,7 +128,7 @@ If browser open failed:
 |-----------------------|--------------|
 | Abort if Snowflake query fails | Partial data is still valuable; the dashboard renders in local-only mode gracefully |
 | Skip atomic write for meter-view.html | A mid-write crash would leave a corrupt file that the browser opens as blank |
-| Skip last-sync.json update | `/meter sync` uses this to show when data was last refreshed |
+| Skip last-sync.json update | `$meter sync` uses this to show when data was last refreshed |
 
 ## Exit Criteria
 

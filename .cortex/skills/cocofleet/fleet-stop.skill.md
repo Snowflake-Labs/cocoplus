@@ -1,6 +1,6 @@
 ---
 name: "fleet-stop"
-description: "Terminate all running processes in a CocoFleet run. Sends SIGTERM, waits 10 seconds, then SIGKILL. Updates state file. Usage: /fleet stop [fleet-id]."
+description: "Terminate all running processes in a CocoFleet run. Sends SIGTERM, waits 10 seconds, then SIGKILL. Updates state file. Usage: $fleet stop [fleet-id]."
 version: "1.0.0"
 author: "CocoPlus"
 tags:
@@ -11,10 +11,10 @@ tags:
 Your objective is to stop a running CocoFleet.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
-Parse argument: `/fleet stop [fleet-id]`
-If no fleet-id: output "Usage: /fleet stop [fleet-id]" Then stop.
+Parse argument: `$fleet stop [fleet-id]`
+If no fleet-id: output "Usage: $fleet stop [fleet-id]" Then stop.
 
 Read `.cocoplus/fleet/[fleet-id]-state.json`. If not found: output "Fleet state not found for [fleet-id]." Then stop.
 

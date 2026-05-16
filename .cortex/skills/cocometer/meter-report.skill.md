@@ -14,7 +14,7 @@ Your objective is to generate a CocoMeter usage report.
 ## Pre-flight Check
 
 Check that `.cocoplus/` directory exists. If not, output:
-"CocoPlus not initialized in this directory. Run `/pod init` to begin."
+"CocoPlus not initialized in this directory. Run `$pod init` to begin."
 Then stop.
 
 ## Read Session Data
@@ -23,7 +23,7 @@ Then stop.
 2. Read `.cocoplus/meter/history.jsonl` — parse last 10 sessions (or all if fewer).
 
 If no meter data exists at all, output:
-"No CocoMeter data found. Use `/meter on` to enable tracking, then use `/meter` to see current usage."
+"No CocoMeter data found. Use `$meter on` to enable tracking, then use `$meter` to see current usage."
 Then stop.
 
 ## Generate Report

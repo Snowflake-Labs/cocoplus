@@ -1,6 +1,6 @@
 ---
 name: "build"
-description: "Enter the Build phase of CocoBrew. Reads plan.md, invokes CocoHarvest to decompose the plan into parallel workstreams, assigns personas, generates flow.json stages, and begins execution via /flow run. Must have /plan completed and approved first."
+description: "Enter the Build phase of CocoBrew. Reads plan.md, invokes CocoHarvest to decompose the plan into parallel workstreams, assigns personas, generates flow.json stages, and begins execution via $flow run. Must have $plan completed and approved first."
 version: "1.0.1"
 author: "CocoPlus"
 tags:
@@ -11,21 +11,21 @@ tags:
 You are executing the Build phase (3/6) of CocoBrew. Your objective is to transform the approved plan into executing workstreams.
 
 Before proceeding, verify that `.cocoplus/` exists in the current directory.
-If it does not, output: "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If it does not, output: "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 Read `.cocoplus/lifecycle/meta.json`. Verify `phases_completed` contains both `"spec"` and `"plan"`.
-If not: output "The Spec and Plan phases must be completed before building. Check `/pod status` for current state." Then stop.
+If not: output "The Spec and Plan phases must be completed before building. Check `$pod status` for current state." Then stop.
 
 Verify that the artifact files actually exist on disk — meta.json alone is not sufficient:
-- Check `.cocoplus/lifecycle/spec.md` exists. If not: output "spec.md is missing from `.cocoplus/lifecycle/`. The Spec phase record is incomplete. Re-run `/spec` to regenerate it." Then stop.
-- Check `.cocoplus/lifecycle/plan.md` exists. If not: output "plan.md is missing from `.cocoplus/lifecycle/`. The Plan phase record is incomplete. Re-run `/plan` to regenerate it." Then stop.
+- Check `.cocoplus/lifecycle/spec.md` exists. If not: output "spec.md is missing from `.cocoplus/lifecycle/`. The Spec phase record is incomplete. Re-run `$spec` to regenerate it." Then stop.
+- Check `.cocoplus/lifecycle/plan.md` exists. If not: output "plan.md is missing from `.cocoplus/lifecycle/`. The Plan phase record is incomplete. Re-run `$plan` to regenerate it." Then stop.
 
 ## SecondEye Gate Check
 
 Scan `.cocoplus/lifecycle/` for any files matching `secondeye-*.md`.
 For each file found, check YAML frontmatter for `critical_open: true` and `acknowledged: false`.
 If any such file exists:
-- Output: "Unacknowledged critical findings from SecondEye review. Run `/secondeye acknowledge` to review and acknowledge before building."
+- Output: "Unacknowledged critical findings from SecondEye review. Run `$secondeye acknowledge` to review and acknowledge before building."
 - List the finding summaries.
 - Stop.
 
@@ -74,7 +74,7 @@ git commit -m "build: begin build phase — CocoHarvest pipeline initialized"
 If HIGH complexity: Activate `flow-run` skill to begin pipeline execution.
 If LOW complexity: Execute the plan directly using the appropriate persona.
 
-Output: "Build phase initiated. Use `/flow status` to monitor pipeline progress."
+Output: "Build phase initiated. Use `$flow status` to monitor pipeline progress."
 
 ## Anti-Rationalization
 

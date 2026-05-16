@@ -11,19 +11,19 @@ tags:
 Your objective is to execute a CocoFlow pipeline.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 Read `.cocoplus/flow.json`. If `stages` is empty:
-Output: "No stages defined in flow.json. Run `/plan` then `/build` to generate the pipeline." Then stop.
+Output: "No stages defined in flow.json. Run `$plan` then `$build` to generate the pipeline." Then stop.
 
 Check for `.cocoplus/flow.pause` flag file. If it exists:
-Output: "Pipeline is paused. Run `/flow resume` to continue." Then stop.
+Output: "Pipeline is paused. Run `$flow resume` to continue." Then stop.
 
 ## Parse Arguments
 
 - `--model <haiku|sonnet|opus>`: pipeline-level model default (Tier 2). Without `--stage`, applies to all stages.
 - `--model <value> --stage <stage-id>`: stage-level override (Tier 3). Does not modify `flow.json`.
-- `--concurrency <normal|caution|single-track>`: force concurrency mode for this run. Overrides the mode inferred from SubagentStop signals. Not persisted — next `/flow run` resumes inference from signals.
+- `--concurrency <normal|caution|single-track>`: force concurrency mode for this run. Overrides the mode inferred from SubagentStop signals. Not persisted — next `$flow run` resumes inference from signals.
 
 ## Check Dual-File State for Recovery
 
@@ -34,7 +34,7 @@ Read `flow.json` `runtime.harvest_id` (if present). If a `harvest/[harvest-id]-t
 
 ## Determine Execution Scope
 
-If a stage-id argument is provided (e.g., `/flow run stage-001`):
+If a stage-id argument is provided (e.g., `$flow run stage-001`):
 - Execute only that stage, skip dependency check
 - If stage not found: output "Stage [stage-id] not found in flow.json. Available stages: [list]" Then stop.
 
@@ -110,7 +110,7 @@ Continue? (yes/no/pause)
 
 ## on_failure Actions
 
-- `"stop"`: Mark stage `"failed"`. Output error with checkpoint that failed. Halt pipeline. Output: "Stage [id] failed. Checkpoint not satisfied: [pattern]. Fix the issue and run `/flow run [stage-id]` to retry."
+- `"stop"`: Mark stage `"failed"`. Output error with checkpoint that failed. Halt pipeline. Output: "Stage [id] failed. Checkpoint not satisfied: [pattern]. Fix the issue and run `$flow run [stage-id]` to retry."
 - `"retry"`: Re-run stage up to `retry_limit` (default: 2) times. Track attempt count in flow.json.
 - `"skip"`: Mark stage `"skipped"`. Log reason. Continue to next stage.
 

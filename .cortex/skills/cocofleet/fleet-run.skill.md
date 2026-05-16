@@ -1,6 +1,6 @@
 ---
 name: "fleet-run"
-description: "Execute a CocoFleet manifest. Spawns independent Coco processes for each instance, respects dependency order, polls for completion, and writes an aggregated results summary. Usage: /fleet run [fleet-name]."
+description: "Execute a CocoFleet manifest. Spawns independent Coco processes for each instance, respects dependency order, polls for completion, and writes an aggregated results summary. Usage: $fleet run [fleet-name]."
 version: "1.0.0"
 author: "CocoPlus"
 tags:
@@ -11,10 +11,10 @@ tags:
 Your objective is to execute a CocoFleet manifest.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
-Parse argument: `/fleet run [manifest-path]`
-If no manifest-path: output "Usage: /fleet run [manifest-path]" Then stop.
+Parse argument: `$fleet run [manifest-path]`
+If no manifest-path: output "Usage: $fleet run [manifest-path]" Then stop.
 
 Read the manifest file at `[manifest-path]`. If not found: output "Manifest not found: [manifest-path]" Then stop.
 
@@ -56,7 +56,7 @@ Algorithm:
 
 3. Record each launched instance in state.json and leave blocked instances in `pending`.
 4. Return control to the developer immediately after the initial ready set is launched.
-5. Do NOT poll in this command. Ongoing monitoring belongs to `/fleet status` and follow-up fleet orchestration logic.
+5. Do NOT poll in this command. Ongoing monitoring belongs to `$fleet status` and follow-up fleet orchestration logic.
 
 ## Write Aggregated Results
 
@@ -77,7 +77,7 @@ When later orchestration determines the fleet is complete, write `.cocoplus/flee
 [COMPLETE / PARTIAL (N failed) / FAILED]
 ```
 
-Output: "Fleet started from [manifest-path]. Fleet ID: [fleet-id]. Initial ready instances were launched and the session returned immediately. Use `/fleet status [fleet-id]` to monitor. Use `/fleet stop [fleet-id]` to terminate all processes."
+Output: "Fleet started from [manifest-path]. Fleet ID: [fleet-id]. Initial ready instances were launched and the session returned immediately. Use `$fleet status [fleet-id]` to monitor. Use `$fleet stop [fleet-id]` to terminate all processes."
 
 ## Anti-Rationalization
 

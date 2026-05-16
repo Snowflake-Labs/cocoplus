@@ -1,6 +1,6 @@
 ---
 name: "spark"
-description: "Activate CocoSpark brainstorm mode. Generates multiple divergent approaches, challenges assumptions, and explores what-if scenarios. Output is marked as exploration and does NOT modify spec or lifecycle artifacts. Use /spark to start, /spark-off to end."
+description: "Activate CocoSpark brainstorm mode. Generates multiple divergent approaches, challenges assumptions, and explores what-if scenarios. Output is marked as exploration and does NOT modify spec or lifecycle artifacts. Use $spark to start, $spark-off to end."
 version: "1.0.0"
 author: "CocoPlus"
 tags:
@@ -13,7 +13,7 @@ You are activating CocoSpark — divergent brainstorm mode.
 **IMPORTANT:** CocoSpark output is exploration only. It does NOT modify spec.md, plan.md, or any lifecycle artifacts. Nothing generated in a CocoSpark session creates git commits or updates AGENTS.md phase state.
 
 Before proceeding, verify that `.cocoplus/` exists.
-If not: output "CocoPlus not initialized in this directory. Run `/pod init` to begin." Then stop.
+If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 ## Activation
 
@@ -49,7 +49,7 @@ Append all output to the spark session file.
 
 ## Ending a Session
 
-When the developer runs `/spark-off`:
+When the developer runs `$spark-off`:
 - Remove mode flag: delete `.cocoplus/modes/coco-spark.on` using `node -e "try{require('fs').unlinkSync('.cocoplus/modes/coco-spark.on')}catch(_){}"` via the Bash tool.
 - Output: "CocoSpark session ended. Exploration saved to `.cocoplus/spark-[timestamp].md`. Nothing in this session modified project state."
 

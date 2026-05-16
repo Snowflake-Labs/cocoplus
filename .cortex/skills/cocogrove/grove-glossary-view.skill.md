@@ -3,11 +3,14 @@ name: grove-glossary-view
 description: Display the current CocoGrove ubiquitous language glossary in alphabetical order — shows all defined domain terms, definitions, aliases, and associated functions
 version: 1.0.2
 user-invocable: true
-command: /grove glossary view
+command: $grove glossary view
+author: "CocoPlus"
+tags:
+  - cocoplus
 feature: CocoGrove — Ubiquitous Language Section (Feature 12 improvement)
 ---
 
-# /grove glossary view
+# $grove glossary view
 
 Display the current glossary at `.cocoplus/grove/language/glossary.md` in alphabetical order.
 
@@ -17,13 +20,13 @@ Display the current glossary at `.cocoplus/grove/language/glossary.md` in alphab
 
 ## Step-by-Step Behavior
 
-1. **Verify initialization:** Check `.cocoplus/` exists. If not, output: "CocoPlus not initialized. Run `/pod init` first." and exit.
+1. **Verify initialization:** Check `.cocoplus/` exists. If not, output: "CocoPlus not initialized. Run `$pod init` first." and exit.
 
 2. **Check glossary file:** Read `.cocoplus/grove/language/glossary.md`.
    - If the file does not exist or is empty, output:
      ```
      Glossary is empty.
-     Run /grove glossary to propose and add domain terms from project artifacts.
+     Run $grove glossary to propose and add domain terms from project artifacts.
      ```
      and exit.
 
@@ -58,12 +61,12 @@ gold standard dataset
 
 [...continues alphabetically...]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Run /grove glossary to add new terms.
+Run $grove glossary to add new terms.
 ```
 
 ## Error Cases
 
-- **Glossary file missing or empty:** Prompt user to run `/grove glossary`
+- **Glossary file missing or empty:** Prompt user to run `$grove glossary`
 - **Cannot read glossary file:** Output filesystem error
 
 ## Exit Criteria

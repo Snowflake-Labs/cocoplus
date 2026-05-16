@@ -3,32 +3,35 @@ name: map-diff
 description: Analyze the impact of staged git changes against the committed Cortex function knowledge graph — shows which downstream functions are affected before you commit
 version: 1.0.2
 user-invocable: true
-command: /map diff
+command: $map diff
+author: "CocoPlus"
+tags:
+  - cocoplus
 feature: CocoMap (Feature 28)
 ---
 
-# /map diff
+# $map diff
 
 Trace the downstream impact of staged git changes using the committed `coco-map.json`. Shows which other functions, evaluation sets, and capability definitions are affected before the commit lands.
 
 ## Preconditions
 
 - `.cocoplus/` must be initialized
-- `.cocoplus/map/coco-map.json` must exist (run `/map` first)
+- `.cocoplus/map/coco-map.json` must exist (run `$map` first)
 - Staged git changes must exist (`git diff --staged` must be non-empty)
 
 ## Step-by-Step Behavior
 
-1. **Verify initialization:** Check `.cocoplus/` exists. If not, output: "CocoPlus not initialized. Run `/pod init` first." and exit.
+1. **Verify initialization:** Check `.cocoplus/` exists. If not, output: "CocoPlus not initialized. Run `$pod init` first." and exit.
 
 2. **Verify map exists:** Check `.cocoplus/map/coco-map.json` exists. If not, output:
    ```
-   No function knowledge graph found. Run /map first to build it.
+   No function knowledge graph found. Run $map first to build it.
    ```
    and exit.
 
 3. **Read staged changes:** Run `git diff --staged --name-only` to get the list of staged files.
-   - If no staged changes, output: "No staged changes found. Stage changes with `git add` before running `/map diff`." and exit.
+   - If no staged changes, output: "No staged changes found. Stage changes with `git add` before running `$map diff`." and exit.
 
 4. **Read `coco-map.json`:** Load the structural dependency graph from `coco-map.json`.
 
@@ -83,9 +86,9 @@ Recommendation: [brief summary of what to review before committing]
 
 ## Error Cases
 
-- **`coco-map.json` missing:** Output message directing user to run `/map` first
+- **`coco-map.json` missing:** Output message directing user to run `$map` first
 - **No staged changes:** Output message and exit
-- **`coco-map.json` parse error:** Output warning and suggest re-running `/map`
+- **`coco-map.json` parse error:** Output warning and suggest re-running `$map`
 - **`git diff --staged` fails:** Output error and suggest checking git status
 
 ## Exit Criteria

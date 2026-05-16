@@ -13,7 +13,7 @@ Your objective is to save the current pipeline as a reusable CocoRecipe template
 ## Pre-flight Check
 
 Check that `.cocoplus/flow.json` exists and is valid JSON. If not:
-Output: "No valid flow.json found. A completed pipeline is required to create a recipe. Run /plan and /build first." Then stop.
+Output: "No valid flow.json found. A completed pipeline is required to create a recipe. Run $plan and $build first." Then stop.
 
 Check that `~/.coco/plugins/cocoplus/recipes/` exists (Windows: `%APPDATA%\coco\plugins\cocoplus\recipes\`). If not writable, output the error and stop.
 
@@ -61,7 +61,7 @@ Write to `~/.coco/plugins/cocoplus/recipes/<name>.json.template`.
 ✓ Recipe saved: ~/.coco/plugins/cocoplus/recipes/<name>.json.template
 Parameters: <param1> (required), <param2> (required), <param3> (optional)
 
-This recipe is now available in /recipe list and /recipe use <name>.
+This recipe is now available in $recipe list and $recipe use <name>.
 ```
 
 ## Anti-Rationalization
@@ -76,4 +76,4 @@ This recipe is now available in /recipe list and /recipe use <name>.
 - [ ] `<name>.json.template` written to profile `recipes/` folder with `__recipe_meta` block
 - [ ] All `{{param}}` slots correspond to entries in the `parameters` array
 - [ ] Output confirms recipe name and parameter list
-- [ ] Recipe immediately visible in `/recipe list`
+- [ ] Recipe immediately visible in `$recipe list`

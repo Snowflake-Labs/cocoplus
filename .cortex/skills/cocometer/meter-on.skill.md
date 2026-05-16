@@ -14,7 +14,7 @@ Your objective is to enable CocoMeter token tracking.
 ## Pre-flight Check
 
 Check that `.cocoplus/` directory exists. If not, output:
-"CocoPlus not initialized in this directory. Run `/pod init` to begin."
+"CocoPlus not initialized in this directory. Run `$pod init` to begin."
 Then stop.
 
 ## Check Current State
@@ -22,7 +22,7 @@ Then stop.
 Check if `.cocoplus/meter/current-session.json` exists and has `"metering_active": true`.
 
 If metering is already active, output:
-"CocoMeter is already active for this session. Use `/meter` to see current usage."
+"CocoMeter is already active for this session. Use `$meter` to see current usage."
 Then stop.
 
 ## Enable Metering
@@ -53,9 +53,9 @@ CocoMeter enabled.
 
 Token tracking is now active for this session.
 - Input and output tokens will be captured per tool call
-- Use `/meter` to see current usage
-- Use `/meter estimate <action>` to get a pre-flight estimate
-- Use `/meter history` to see past sessions
+- Use `$meter` to see current usage
+- Use `$meter estimate <action>` to get a pre-flight estimate
+- Use `$meter history` to see past sessions
 
 Note: Token counts are estimates based on hook-captured data.
 Actual Snowflake Cortex billing may differ.
