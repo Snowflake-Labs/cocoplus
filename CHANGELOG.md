@@ -6,12 +6,52 @@ All notable changes to CocoPlus are documented here.
 
 ## [1.0.3] — May 2026
 
+### Added
+
+#### CocoBehavior — Ambient Behavioral Constraint Layer (Feature 22)
+- `cocobehavior/SKILL.md` — rewritten as full ambient skill with four behavioral constraints (Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven = Evaluation-First); `user-invocable: false`; Exit Criteria and Anti-Rationalization sections added; version 1.0.3
+
+#### CocoScout — Relevance-Ranked Context Loading (Feature 24)
+- `cocoscout/SKILL.md` — full implementation with Two-Lens scoring (Technical/Domain weighted composite per persona), Anchor Lens (pre-compiled catalog pattern-match, <50ms), Cortex AI function documentation fetch via WebFetch, top-k threshold filtering (0.4), 5-second time budget with graceful degradation, audit record to `hook-log.jsonl`; `user-invocable: false`; Exit Criteria and Anti-Rationalization sections added; version 1.0.3
+
+#### CocoHealth — Context Utilization Monitor (Feature 27)
+- `cocohealth/cocohealth.skill.md` — new skill file; monitors context utilization via PostToolUse hook; 60% advisory threshold and 70% critical threshold (both configurable in `plugin.json`); Context Window Recovery Decision Matrix at 70% evaluates git status, recent commits, and checkpoint existence to surface a single recommended recovery action; `user-invocable: false`; version 1.0.3
+
+#### CocoWatch — Developer Engagement Observer (Feature 32)
+- `cocowatch/cocowatch.skill.md` — new skill file; non-blocking always-on observer tracking three dimensions: Delegation Intensity, Review Depth, and Engagement Zone; `blocking: false` enforced structurally in frontmatter; captures signals from `$secondeye acknowledge`, CocoHarvest decomposition reviews, SLIM/FULL checkpoint responses, and CocoSpec declarations; surfaces summary at `$ship` and FULL checkpoints only; session observations written to `.cocoplus/lifecycle/cocowatch-session.md` (ephemeral, not committed); version 1.0.3
+
+#### CocoMeter — Accuracy Learning Feedback Loop (Feature 21 enhancement)
+- `cocometer/meter-accuracy.skill.md` — new `$meter accuracy` command displays estimation history, current adjustment factor, sample size, and trend from last 5 sessions
+- `cocometer/meter-estimate.skill.md` — updated to read `adjustment-factor.json` and apply calibration factor to pre-flight estimates; logs to `preflight-log.jsonl` for SessionEnd feedback loop; surfaces calibration factor and sample size alongside estimate; version 1.0.3
+
+### Updated
+
+#### CocoBrew — Spec Phase (Feature 1)
+- `cocobrew/spec.skill.md` — added Vague Language Detector: deterministic pattern scan across 6 term categories (performance, quality, scale, safety, UX, cost) before writing spec.md; up to −3 point CocoSpec penalty per vague instance; developer offered chance to refine answers before spec is committed; version 1.0.3
+
+#### SecondEye — Devil's Advocate Fourth Lens (Feature 19)
+- `secondeye/secondeye.skill.md` — added fourth parallel critic (Sonnet-tier Devil's Advocate); adversarial mandate to find strongest argument plan should not proceed; all DA findings BLOCKING by default; rebuttal scoring (1–5) required before concession — score <4 re-asserts; DA section sorted to top of report; `da_finding_count` added to `action_summary`; version 1.0.3
+
+#### CocoFlow — Adaptive Checkpoint Typing (Feature 6)
+- `execution-engine/flow-run.skill.md` — added MANDATORY/FULL/SLIM checkpoint types with default assignment rules; Awareness Guard promotes checkpoint to FULL after 4 consecutive bare SLIM responses; HITL stages always MANDATORY; EHRB-adjacent stages auto-promoted to MANDATORY; `consecutive_slim_responses` tracked in tasks.json; version 1.0.3
+
+#### CocoBrew — Rollback by Git Tag (Feature 1)
+- `rewind.skill.md` — extended `$rewind` with `--tag <tag-name>` flag for sub-phase granularity; resolves `cocoplus/harvest/[run-id]/task-[N]` and `cocoplus/fn/[name]/v[N]` tags; abbreviated form (e.g. `task-007`) auto-resolves to full tag name; CocoPlus tag list shown alongside phase commits when no step-id provided; version 1.0.3
+
 ### Fixed
 
 - Registered and defined the CocoScout and CocoWatch background agents so the manifest matches runtime agent files.
-- Completed skill metadata and required Exit Criteria / Anti-Rationalization sections for validation compliance.
-- Normalized CocoPlus command references to the `$` prefix across docs, skills, hooks, and templates.
-- Updated public feature-count references to 32 features.
+- Completed skill metadata and required Exit Criteria / Anti-Rationalization sections across all new and updated skills for validation compliance.
+- Normalized all CocoPlus command references to the `$` prefix across docs, skills, hooks, and templates — removed all remaining `/cmd` slash-command references.
+- Updated public feature-count references to 32 features in `docs/index.html`, `docs/features.html`, and `Snow-Cocoplus/docs/features.md`.
+
+### Documentation
+
+- `docs/concepts.html`, `docs/architecture.html`, `docs/workflows.html` — fixed all remaining slash commands to `$` prefix
+- `docs/features.html` — added Feature 32 CocoWatch block; updated header count 31→32
+- `docs/index.html` — added Feature 32 row to feature table; updated card count 31→32
+- `docs/command-reference.html`, `docs/getting-started.html`, `README.md` — normalized all command prefixes to `$`
+- `CLAUDE.md` (repo root) — added agent development instructions: source-of-truth pointer to `Snow-Cocoplus/instructions/`, skill/hook standards, pre-commit validation checklist, sequential commit requirements, full validation protocol
 
 ---
 
