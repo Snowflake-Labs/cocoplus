@@ -2,7 +2,7 @@
 name: "cocohealth"
 description: "Context utilization monitor — background monitor that samples context window utilization via PostToolUse hook, surfaces advisory at 60% and critical warning with recovery decision matrix at 70%."
 user-invocable: false
-version: "1.0.0"
+version: "1.0.3"
 author: "CocoPlus"
 tags:
   - cocoplus

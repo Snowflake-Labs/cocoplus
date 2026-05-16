@@ -3,7 +3,7 @@ name: "cocowatch"
 description: "Developer engagement observer — non-blocking, always-on observational layer that tracks Delegation Intensity, Review Depth, and Engagement Zone throughout a session. Summary surfaced at $ship and FULL checkpoints."
 blocking: false
 user-invocable: false
-version: "1.0.0"
+version: "1.0.3"
 author: "CocoPlus"
 tags:
   - cocoplus

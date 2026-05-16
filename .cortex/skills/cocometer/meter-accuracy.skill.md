@@ -1,7 +1,7 @@
 ---
 name: "meter-accuracy"
 description: "CocoMeter accuracy learning — displays estimation history, current adjustment factor, sample size, and trend from the accuracy learning feedback loop. Usage: $meter accuracy"
-version: "1.0.0"
+version: "1.0.3"
 author: "CocoPlus"
 tags:
   - cocoplus

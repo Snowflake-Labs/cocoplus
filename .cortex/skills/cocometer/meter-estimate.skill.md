@@ -1,7 +1,7 @@
 ---
 name: "meter-estimate"
 description: "Pre-flight token and cost estimation for a planned action. Analyzes the current plan or a described action and estimates token consumption, Snowflake credit usage, and whether it exceeds configured thresholds."
-version: "1.0.0"
+version: "1.0.3"
 author: "CocoPlus"
 tags:
   - cocoplus

@@ -1,7 +1,7 @@
 ---
 name: "secondeye"
 description: "Multi-model parallel plan critique. Spawns three SecondEye Critic instances in parallel (Haiku: efficiency, Sonnet: completeness, Opus: risk), aggregates findings with HITL/AFK and BLOCKING/MINOR classification, and writes a structured report. Critical findings create a soft gate on /build. Usage: /secondeye [--artifact spec|plan|review] [--model haiku|sonnet|opus]."
-version: "1.0.2"
+version: "1.0.3"
 author: "CocoPlus"
 tags:
   - cocoplus
