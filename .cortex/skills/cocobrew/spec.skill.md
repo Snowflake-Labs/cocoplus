@@ -47,6 +47,33 @@ Ask each question in sequence. Wait for the developer's response before proceedi
 
 **Question 6:** What is the target timeline? (If unknown, say "TBD".)
 
+## Vague Language Detection
+
+Before writing the specification document, run vague language detection on the developer's answers.
+
+Scan all six answers for these term categories (exact word match, case-insensitive):
+- Performance: "fast", "quick", "slow", "performant", "efficient", "responsive"
+- Quality: "accurate", "precise", "reliable", "correct", "good"
+- Scale: "scalable", "flexible", "extensible", "large", "small"
+- Safety: "secure", "safe", "private", "compliant"
+- UX: "simple", "easy", "user-friendly", "intuitive", "clean"
+- Cost: "cost-effective", "affordable", "cheap", "expensive"
+
+For each detected instance, record: `{ "term": "<term>", "answer": "<question N>", "context": "<surrounding text>" }`
+
+Penalty: each unique detected instance deducts 1 point from CocoSpec score (maximum deduction: 3 points). Applied after 5-dimension scoring.
+
+If any instances detected, surface findings before writing spec.md:
+
+```
+CocoSpec Vague Language Findings: −[N] points
+  ⚠ "[term]" in [answer] — specify with a measurable value (e.g., accuracy ≥ X%, latency ≤ Yms, cost ≤ Z credits per 1,000 rows)
+```
+
+Ask the developer: "Would you like to refine these answers before I write the specification? (yes/no)"
+If yes: re-ask only the affected questions, then re-run detection on updated answers.
+If no: note the vague language findings in spec.md under a "Specification Warnings" section.
+
 ## Write Specification Document
 
 Generate a phase ID: `spec-YYYYMMDD-NNN` (use current date, NNN = 001 unless spec already exists).
