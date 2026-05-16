@@ -66,8 +66,25 @@ Staging file: .cocoplus/lifecycle/.secondeye-staging/[timestamp]/opus-findings.m
 Risk lens: hard-to-reverse decisions, external dependencies that could fail, data loss scenarios, security gaps, unvalidated assumptions.
 ```
 
-Spawn all three SecondEye Critic subagents in parallel, one per task prompt file.
-Wait for all three to complete.
+**Critic 4 — Devil's Advocate Lens (Sonnet)**
+Write task prompt to `.cocoplus/lifecycle/.secondeye-staging/[timestamp]/da-task.md`:
+```
+You are a SecondEye Critic. Your lens is: DEVIL'S ADVOCATE.
+Artifact to review: [artifact path]
+Staging file: .cocoplus/lifecycle/.secondeye-staging/[timestamp]/da-findings.md
+
+Devil's Advocate lens: Find the strongest possible argument that this plan should NOT proceed as written.
+Identify ONE of: the single most damaging assumption, the most likely architectural failure, or the most serious underspecified requirement.
+Do not seek balance. Your mandate is adversarial rigor — construct the most compelling case for why this plan will fail.
+
+All your findings are classified BLOCKING by default.
+For each finding, include a required "rebuttal_score" field (1–5) when the developer responds:
+- Score 4–5: concede (response is sufficient)
+- Score 1–3: re-assert the concern and explain why the response is insufficient
+```
+
+Spawn all four SecondEye Critic subagents in parallel, one per task prompt file.
+Wait for all four to complete.
 
 ## Aggregate Findings
 
@@ -84,11 +101,14 @@ Sort: Critical first, then Advisory, then Observation.
 - **BLOCKING:** Must be resolved by the developer — involves correctness, security, architectural conflict, or genuine ambiguity about intent. Critical severity findings are always BLOCKING. Advisory/Observation findings are BLOCKING only if they touch correctness, security, or architectural scope.
 - **MINOR:** Can be auto-resolved without developer input — involves style, naming, missing documentation, or a non-critical coverage gap mapping to a known fix pattern.
 
+Read `da-findings.md`. All DA findings are BLOCKING by default. The developer may downgrade a DA finding to Advisory with explicit override and rationale, but the default is mandatory-review.
+
 Compute `action_summary`:
 - `hitl_count`: count of HITL-classified findings
 - `afk_count`: count of AFK-classified findings
 - `blocking_count`: count of BLOCKING-classified findings
 - `minor_count`: count of MINOR-classified findings
+- `da_finding_count`: count of Devil's Advocate findings
 
 `critical_open = any Critical finding exists`
 
@@ -101,7 +121,7 @@ Write `.cocoplus/lifecycle/secondeye-[timestamp].md`:
 secondeye_id: "se-[timestamp]"
 artifact: "[artifact path]"
 generated_at: "[ISO 8601 timestamp]"
-models_used: [haiku, sonnet, opus]
+models_used: [haiku, sonnet, opus, sonnet-da]
 critical_open: [true/false]
 acknowledged: false
 acknowledged_at: null
@@ -110,13 +130,17 @@ action_summary:
   afk_count: [N]
   blocking_count: [N]
   minor_count: [N]
+  da_finding_count: [N]
 ---
 
 # SecondEye Review: [artifact name]
 
 **Date:** [ISO 8601 timestamp]
-**Models:** Haiku (Efficiency) + Sonnet (Completeness) + Opus (Risk)
-**Action Summary:** [blocking_count] BLOCKING · [minor_count] MINOR · [hitl_count] HITL · [afk_count] AFK
+**Models:** Haiku (Efficiency) + Sonnet (Completeness) + Opus (Risk) + Sonnet (Devil's Advocate)
+**Action Summary:** [blocking_count] BLOCKING · [minor_count] MINOR · [hitl_count] HITL · [afk_count] AFK · [da_finding_count] DA
+
+## [Devil's Advocate] Findings
+[DA findings — all BLOCKING by default, tagged [BLOCKING] [HITL]]
 
 ## Critical Findings
 [Critical findings — each tagged [HITL/AFK] [BLOCKING/MINOR]]
