@@ -30,86 +30,96 @@
 </div>
 
 <div class="content">
-
-  <p>This is a choice about reliability. When something breaks, you should be able to understand why by reading files, not by debugging a service mesh.</p>
-  <h2>The Four Pillars</h2>
-  <p>Four constructs, working together, compose the entire CocoPlus system.</p>
-  <h3>Rules — The Ambient Context</h3>
-  <p>Every CocoPlus-initialized project contains a file at <code>.cocoplus/AGENTS.md</code>. Coco loads this file automatically at the start of every session. Every agent, every skill, every hook — they all operate within the constraints this file establishes.</p>
-  <p>AGENTS.md contains the current CocoBrew phase, the active feature modes, the most recent key decisions, and the Git state summary. It is capped at 200 lines. Not by convention — by enforcement. When a session ends, the hook that updates AGENTS.md compresses older entries if adding new ones would breach the limit.</p>
-  <p>Why the hard limit? Because everything in AGENTS.md is loaded into every session, whether or not it's needed. Space here is shared with everything else the developer is doing. 200 lines is enough to orient any agent at the start of a session. More than that is noise.</p>
-  <p>AGENTS.md is never written by hand. Hooks update it automatically. This is important: the ambient context is authoritative and current because the system maintains it, not because developers remember to update it.</p>
-  <h3>Agents — The Domain Specialists</h3>
-  <p>The <code>.cortex/agents/</code> directory holds subagent definition files — one for each specialist persona in CocoPlus, plus CocoCupper.</p>
-  <p>Each definition specifies four things:</p>
-  <ul>
-    <li><strong>Identity</strong> — who this agent is and what domain it owns</li>
-    <li><strong>Model</strong> — which model it uses (locked, not a suggestion)</li>
-    <li><strong>Tools</strong> — which native Coco tools it can access (also locked)</li>
-    <li><strong>Mode</strong> — whether it operates in auto mode (executes) or plan mode (advises, never executes autonomously)</li>
-  </ul>
-  <p>These definitions are contracts. The Data Steward's definition says it operates in plan mode, because the Data Steward's job is governance review, not autonomous execution. The CDO's definition says it uses Opus, because strategic architectural decisions warrant the reasoning depth. These choices were made deliberately and documented in the definition files.</p>
-  <p>When CocoHarvest decomposes a task, it reads these definitions and assigns workstreams accordingly. When a developer types <code>$de</code>, Coco routes directly to the Data Engineer definition. The routing is deterministic — not probabilistic, not inferred.</p>
-  <p>CocoCupper is also a subagent. It runs in the background, triggered by the Stop and SubagentStop hooks. It uses Haiku. It is read-only — it cannot write code or modify files outside its designated output path. Its only job is observation and categorization.</p>
-  <p>CocoScout is a third background subagent — also Haiku, also non-invocable. It fires before every Build stage and every persona invocation. Where CocoCupper looks backward (what just happened), CocoScout looks sideways (what context is most relevant right now). It scans warm memory, CocoGrove patterns, CocoContext organizational standards, and Environment Inspector snapshots, ranks them by relevance to the current task, and surfaces the top results to the executing agent. The result is that each persona begins its work with a context window shaped to the task, not the full project history.</p>
-  <p>Beyond the agent definitions, there is a behavioral layer that applies to all agents simultaneously: <strong>CocoBehavior</strong>. This is a <code>user-invocable: false</code> SKILL.md file preloaded into every persona at invocation. It establishes four constraints that govern how all CocoPlus agents reason — think before coding (understand before implementing), simplicity first (solve the current problem, not the anticipated one), surgical changes (touch only what the task requires), and evaluation first (validate the approach against available context before executing). CocoBehavior is not a set of reminders — it is a structural definition of what it means for a CocoPlus agent to reason well in a data engineering context.</p>
-  <h3>Skills — The User-Facing Capabilities</h3>
-  <p>Skills are SKILL.md files in <code>.cortex/skills/</code>. Each skill implements one user-facing capability — one slash command, or one group of closely related commands.</p>
-  <p>Skills are loaded on demand. They are not in the context window by default. When a developer runs <code>$plan</code>, the plan skill is loaded, executes its workflow, and exits. The context window returns to baseline.</p>
-  <p>This is not a technical limitation — it's a design decision. Loading all skills all the time would consume context window space whether the developer needed them or not. On-demand loading means the context window reflects the current task, not the entire CocoPlus surface area.</p>
-  <p>Each skill is self-contained. It reads from <code>.cocoplus/</code> (the current state store), executes its workflow, and writes its outputs back to <code>.cocoplus/</code>. Skills don't share state through the session context — they share state through files. This makes skills independently testable and independently auditable.</p>
-  <p>The complete skill catalog covers the full lifecycle: <code>$spec</code>, <code>$plan</code>, <code>$build</code>, <code>$test</code>, <code>$review</code>, <code>$ship</code>, plus the feature-specific commands for every CocoPlus capability.</p>
-  <h3>Hooks — The Nervous System</h3>
-  <p>Hooks are dependency-free Node.js scripts that fire when Coco lifecycle events occur. They are invisible to the developer during normal operation. They are what keeps CocoPlus coherent across time.</p>
-  <p>Shared hook utilities live in <code>.cortex/hooks/lib/</code>. <code>agents-update.js</code> enforces the AGENTS.md line cap, and <code>state-reader.js</code> reads <code>.cocoplus/state.json</code> for stage, persona, phase, and session attribution.</p>
-  <p>CocoPlus registers nine hooks:</p>
-  <ul>
-    <li><strong>SessionStart</strong> — reads current state, initializes CocoMeter tracking, triggers the Environment Inspector if auto-mode is active, evaluates all CocoSeed trigger conditions and surfaces any newly-triggered seeds in the session startup summary</li>
-    <li><strong>SessionEnd</strong> — writes CocoMeter session data, updates AGENTS.md with session summary, optionally triggers CocoCupper, writes a final CocoHealth checkpoint to <code>lifecycle/checkpoint.md</code></li>
-    <li><strong>PreToolUse</strong> — the Safety Gate, two layers: (1) <strong>phase gate</strong> — unconditionally blocks SnowflakeSqlExecute during the <code>spec</code> and <code>plan</code> lifecycle phases regardless of safety mode; (2) <strong>pattern gate</strong> — intercepts SnowflakeSqlExecute from the build phase onward and blocks or warns on destructive SQL (DROP, TRUNCATE, DELETE without WHERE, ALTER on production schemas) per strict/normal mode setting.</li>
-    <li><strong>PostToolUse</strong> — the Memory Engine capture layer. Records significant tool use events into the warm memory layer, captures request IDs for CocoMeter Enhanced attribution using <code>state-reader.js</code>, and runs the CocoHealth utilization sample.</li>
-    <li><strong>UserPromptSubmit</strong> — intercepts <code>$&lt;persona&gt;</code> shorthand and routes to the appropriate subagent. Also intercepts <code>$cocoplus on</code> and <code>$cocoplus off</code> for Assist Mode toggling.</li>
-    <li><strong>SubagentStop</strong> — fires when a subagent completes. Validates checkpoints, updates flow.json stage status, triggers the next stage if dependencies are satisfied.</li>
-    <li><strong>Stop</strong> — fires when the main session ends. Final state capture.</li>
-    <li><strong>PreCompact</strong> — fires before Coco compacts the context window. Flushes important state from the context to the warm memory layer before it's lost to compaction.</li>
-    <li><strong>Notification</strong> — fires when the notification system wants to surface something to the developer. Routes to the configured notification channel.</li>
-  </ul>
-  <p>The hooks are the reason CocoPlus can maintain state across sessions without requiring the developer to do anything. They are the background machinery that keeps the system coherent.</p>
-  <h2>How the Pillars Talk to Each Other</h2>
-  <p>The four pillars interact through a shared state store: the <code>.cocoplus/</code> directory.</p>
-  <p>Rules (AGENTS.md) are updated by Hooks (SessionEnd, PreCompact, PostToolUse). Skills read from AGENTS.md to understand current phase and modes. Agents write their outputs to <code>.cocoplus/</code> paths specified in their definitions. Hooks validate those outputs against checkpoints before updating flow status.</p>
-  <p>The flow looks like this in practice:</p>
-  <ol>
-    <li>Optionally, the developer runs <code>$discuss</code> before <code>$plan</code>. The discuss skill captures implementation decisions (model selection, evaluation methodology, accuracy thresholds, scope boundaries) into <code>lifecycle/discuss.md</code>. The CocoSpec quality gate then scores the specification on five dimensions — if the score is below nine, the gate names implicit assumptions and holds until addressed.</li>
-    <li>Developer runs <code>$plan</code>. The plan skill loads.</li>
-    <li>The skill reads <code>spec.md</code> and <code>discuss.md</code> (if it exists) from the warm layer, and the current AGENTS.md from the hot layer. If <code>discuss.md</code> exists, the planning agent uses it as a constraint document; a plan-checker step validates the generated plan against its decisions and flags any contradictions before approval.</li>
-    <li>CocoHarvest decomposes the plan, generates <code>flow.json</code>, and produces prompt files. CocoLens classifies every task as HITL or AFK during this decomposition step — the developer reviews the Type column and can flip any classification before spawning begins.</li>
-    <li>The plan enters Coco's native <code>$plan</code> mode as the human approval gate.</li>
-    <li>Optionally, the developer runs <code>$secondeye</code>. Five critic subagents fire in parallel — Efficiency, Completeness, Risk, Devil's Advocate, and Edge Case Hunter. Their findings are classified (Critical / Advisory / Observation) with HITL/AFK and BLOCKING/MINOR tags. Critical findings trigger a soft gate: <code>$secondeye acknowledge</code> is required before Build can proceed.</li>
-    <li>Developer approves. The skill writes <code>plan.md</code>, commits via Git, and updates AGENTS.md to reflect the Build phase.</li>
-    <li>The developer runs <code>$build</code>. The build skill reads <code>flow.json</code> and begins execution.</li>
-    <li>As each subagent completes a stage, the SubagentStop hook fires, validates checkpoints, and updates <code>flow.json</code> stage status. At any point during build, the developer can run <code>$flow view</code> to open a live browser visualization of the pipeline — which stages are running, which are pending, which are blocked.</li>
-    <li>The PostToolUse hook captures significant decisions into the warm memory layer throughout.</li>
-    <li>The session ends. The Stop and SessionEnd hooks write CocoMeter data, update AGENTS.md, and queue CocoCupper if needed.</li>
-    <li>Next session starts. AGENTS.md is loaded. The developer sees exactly where they left off.</li>
-  </ol>
-  <p>This sequence is not exceptional — it is the ordinary experience of working with CocoPlus. Every session is a conversation between the pillars, mediated by files.</p>
-  <h2>The CocoPod Directory</h2>
-  <p>The <code>.cocoplus/</code> directory is the physical manifestation of a CocoPlus project. It contains everything the system needs to be stateful:</p>
-  <pre><code>.cocoplus/
+<p>CocoPlus does not introduce any new runtime infrastructure. No additional processes, no sidecar services, no external APIs. Every capability it provides is expressed through the constructs that Coco already understands: configuration files, subagent definitions, skill scripts, and hooks.</p>
+<p>This is a choice about reliability. When something breaks, you should be able to understand why by reading files, not by debugging a service mesh.</p>
+<hr>
+<h2 id="the-four-pillars">The Four Pillars</h2>
+<p>Four constructs, working together, compose the entire CocoPlus system.</p>
+<h3 id="rules-the-ambient-context">Rules — The Ambient Context</h3>
+<p>Every CocoPlus-initialized project contains a file at <code>.cocoplus/AGENTS.md</code>. Coco loads this file automatically at the start of every session. Every agent, every skill, every hook — they all operate within the constraints this file establishes.</p>
+<p>AGENTS.md contains the current CocoBrew phase, the active feature modes, the most recent key decisions, and the Git state summary. It is capped at 200 lines. Not by convention — by enforcement. When a session ends, the hook that updates AGENTS.md compresses older entries if adding new ones would breach the limit.</p>
+<p>Why the hard limit? Because everything in AGENTS.md is loaded into every session, whether or not it's needed. Space here is shared with everything else the developer is doing. 200 lines is enough to orient any agent at the start of a session. More than that is noise.</p>
+<p>AGENTS.md is never written by hand. Hooks update it automatically. This is important: the ambient context is authoritative and current because the system maintains it, not because developers remember to update it.</p>
+<hr>
+<h3 id="agents-the-domain-specialists">Agents — The Domain Specialists</h3>
+<p>The <code>.cortex/agents/</code> directory holds subagent definition files — one for each specialist persona in CocoPlus, plus CocoCupper.</p>
+<p>Each definition specifies four things:</p>
+<ul>
+  <li><strong>Identity</strong> — who this agent is and what domain it owns</li>
+  <li><strong>Model</strong> — which model it uses (locked, not a suggestion)</li>
+  <li><strong>Tools</strong> — which native Coco tools it can access (also locked)</li>
+  <li><strong>Mode</strong> — whether it operates in auto mode (executes) or plan mode (advises, never executes autonomously)</li>
+</ul>
+<p>These definitions are contracts. The Data Steward's definition says it operates in plan mode, because the Data Steward's job is governance review, not autonomous execution. The CDO's definition says it uses Opus, because strategic architectural decisions warrant the reasoning depth. These choices were made deliberately and documented in the definition files.</p>
+<p>When CocoHarvest decomposes a task, it reads these definitions and assigns workstreams accordingly. When a developer types <code>$de</code>, Coco routes directly to the Data Engineer definition. The routing is deterministic — not probabilistic, not inferred.</p>
+<p>CocoCupper is also a subagent. It runs in the background, triggered by the Stop and SubagentStop hooks. It uses Haiku. It is read-only — it cannot write code or modify files outside its designated output path. Its only job is observation and categorization.</p>
+<p>CocoScout is a third background subagent — also Haiku, also non-invocable. It fires before every Build stage and every persona invocation. Where CocoCupper looks backward (what just happened), CocoScout looks sideways (what context is most relevant right now). It scans warm memory, CocoGrove patterns, CocoContext organizational standards, and Environment Inspector snapshots, ranks them by relevance to the current task, and surfaces the top results to the executing agent. The result is that each persona begins its work with a context window shaped to the task, not the full project history.</p>
+<p>Beyond the agent definitions, there is a behavioral layer that applies to all agents simultaneously: <strong>CocoBehavior</strong>. This is a <code>user-invocable: false</code> SKILL.md file preloaded into every persona at invocation. It establishes four constraints that govern how all CocoPlus agents reason — think before coding (understand before implementing), simplicity first (solve the current problem, not the anticipated one), surgical changes (touch only what the task requires), and evaluation first (validate the approach against available context before executing). CocoBehavior is not a set of reminders — it is a structural definition of what it means for a CocoPlus agent to reason well in a data engineering context.</p>
+<hr>
+<h3 id="skills-the-user-facing-capabilities">Skills — The User-Facing Capabilities</h3>
+<p>Skills are SKILL.md files in <code>.cortex/skills/</code>. Each skill implements one user-facing capability — one slash command, or one group of closely related commands.</p>
+<p>Skills are loaded on demand. They are not in the context window by default. When a developer runs <code>$plan</code>, the plan skill is loaded, executes its workflow, and exits. The context window returns to baseline.</p>
+<p>This is not a technical limitation — it's a design decision. Loading all skills all the time would consume context window space whether the developer needed them or not. On-demand loading means the context window reflects the current task, not the entire CocoPlus surface area.</p>
+<p>Each skill is self-contained. It reads from <code>.cocoplus/</code> (the current state store), executes its workflow, and writes its outputs back to <code>.cocoplus/</code>. Skills don't share state through the session context — they share state through files. This makes skills independently testable and independently auditable.</p>
+<p>The complete skill catalog covers the full lifecycle: <code>$spec</code>, <code>$plan</code>, <code>$build</code>, <code>$test</code>, <code>$review</code>, <code>$ship</code>, plus the feature-specific commands for every CocoPlus capability.</p>
+<hr>
+<h3 id="hooks-the-nervous-system">Hooks — The Nervous System</h3>
+<p>Hooks are shell scripts that fire when Coco lifecycle events occur. They are invisible to the developer during normal operation. They are what keeps CocoPlus coherent across time.</p>
+<p>CocoPlus registers nine hooks:</p>
+<ul>
+  <li><strong>SessionStart</strong> — reads current state, initializes CocoMeter tracking, triggers the Environment Inspector if auto-mode is active, evaluates all CocoSeed trigger conditions and surfaces any newly-triggered seeds in the session startup summary</li>
+  <li><strong>SessionEnd</strong> — writes CocoMeter session data, updates AGENTS.md with session summary, optionally triggers CocoCupper, writes a final CocoHealth checkpoint to <code>lifecycle/checkpoint.md</code></li>
+  <li><strong>PreToolUse</strong> — the Safety Gate, two layers: (1) <strong>phase gate</strong> — unconditionally blocks SnowflakeSqlExecute during the <code>spec</code> and <code>plan</code> lifecycle phases regardless of safety mode; (2) <strong>pattern gate</strong> — intercepts SnowflakeSqlExecute from the build phase onward and blocks or warns on destructive SQL (DROP, TRUNCATE, DELETE without WHERE, ALTER on production schemas) per strict/normal mode setting.</li>
+  <li><strong>PostToolUse</strong> — the Memory Engine capture layer. Records significant tool use events into the warm memory layer. Also runs the CocoHealth utilization sample — checking context window fill level against configured thresholds and surfacing advisory or critical warnings when thresholds are crossed.</li>
+  <li><strong>UserPromptSubmit</strong> — intercepts <code>$&lt;persona&gt;</code> shorthand and routes to the appropriate subagent. Also intercepts <code>$cocoplus on</code> and <code>$cocoplus off</code> for Assist Mode toggling.</li>
+  <li><strong>SubagentStop</strong> — fires when a subagent completes. Validates checkpoints, updates flow.json stage status, triggers the next stage if dependencies are satisfied.</li>
+  <li><strong>Stop</strong> — fires when the main session ends. Final state capture.</li>
+  <li><strong>PreCompact</strong> — fires before Coco compacts the context window. Flushes important state from the context to the warm memory layer before it's lost to compaction.</li>
+  <li><strong>Notification</strong> — fires when the notification system wants to surface something to the developer. Routes to the configured notification channel.</li>
+</ul>
+<p>The hooks are the reason CocoPlus can maintain state across sessions without requiring the developer to do anything. They are the background machinery that keeps the system coherent.</p>
+<hr>
+<h2 id="how-the-pillars-talk-to-each-other">How the Pillars Talk to Each Other</h2>
+<p>The four pillars interact through a shared state store: the <code>.cocoplus/</code> directory.</p>
+<p>Rules (AGENTS.md) are updated by Hooks (SessionEnd, PreCompact, PostToolUse). Skills read from AGENTS.md to understand current phase and modes. Agents write their outputs to <code>.cocoplus/</code> paths specified in their definitions. Hooks validate those outputs against checkpoints before updating flow status.</p>
+<p>The flow looks like this in practice:</p>
+<ol>
+  <li>Optionally, the developer runs <code>$discuss</code> before <code>$plan</code>. The discuss skill captures implementation decisions (model selection, evaluation methodology, accuracy thresholds, scope boundaries) into <code>lifecycle/discuss.md</code>. The CocoSpec quality gate then scores the specification on five dimensions — if the score is below nine, the gate names implicit assumptions and holds until addressed.</li>
+  <li>Developer runs <code>$plan</code>. The plan skill loads.</li>
+  <li>The skill reads <code>spec.md</code> and <code>discuss.md</code> (if it exists) from the warm layer, and the current AGENTS.md from the hot layer. If <code>discuss.md</code> exists, the planning agent uses it as a constraint document; a plan-checker step validates the generated plan against its decisions and flags any contradictions before approval.</li>
+  <li>CocoHarvest decomposes the plan, generates <code>flow.json</code>, and produces prompt files. CocoLens classifies every task as HITL or AFK during this decomposition step — the developer reviews the Type column and can flip any classification before spawning begins.</li>
+  <li>The plan enters Coco's native <code>$plan</code> mode as the human approval gate.</li>
+  <li>Optionally, the developer runs <code>$secondeye</code>. Three subagents fire in parallel — Haiku critiques for efficiency, Sonnet for completeness, Opus for strategic risk. Their findings are classified (Critical / Advisory / Observation) with HITL/AFK and BLOCKING/MINOR tags. Critical findings trigger a soft gate: <code>$secondeye acknowledge</code> is required before Build can proceed.</li>
+  <li>Developer approves. The skill writes <code>plan.md</code>, commits via Git, and updates AGENTS.md to reflect the Build phase.</li>
+  <li>The developer runs <code>$build</code>. The build skill reads <code>flow.json</code> and begins execution.</li>
+  <li>As each subagent completes a stage, the SubagentStop hook fires, validates checkpoints, and updates <code>flow.json</code> stage status. At any point during build, the developer can run <code>$flow view</code> to open a live browser visualization of the pipeline — which stages are running, which are pending, which are blocked.</li>
+  <li>The PostToolUse hook captures significant decisions into the warm memory layer throughout.</li>
+  <li>The session ends. The Stop and SessionEnd hooks write CocoMeter data, update AGENTS.md, and queue CocoCupper if needed.</li>
+  <li>Next session starts. AGENTS.md is loaded. The developer sees exactly where they left off.</li>
+</ol>
+<p>This sequence is not exceptional — it is the ordinary experience of working with CocoPlus. Every session is a conversation between the pillars, mediated by files.</p>
+<hr>
+<h2 id="the-cocopod-directory">The CocoPod Directory</h2>
+<p>The <code>.cocoplus/</code> directory is the physical manifestation of a CocoPlus project. It contains everything the system needs to be stateful:</p>
+<pre><code>.cocoplus/
 ├── AGENTS.md              ← hot memory, auto-loaded every session
 ├── project.md             ← project identity and initialization metadata
 ├── flow.json              ← the current CocoFlow pipeline definition
 ├── lifecycle/             ← phase artifacts: spec, plan, review, deployment
+│   ├── cocoplus-context.md    ← constitutional document — every agent reads this first
+│   ├── bloom.md           ← CocoBloom working backwards commitment (optional, committed)
 │   ├── spec.md            ← current specification
-│   ├── bloom.md           ← CocoBloom working-backwards artifact (optional)
 │   ├── discuss.md         ← CocoDiscuss decision-lock document (optional)
 │   ├── spec-score.md      ← CocoSpec quality gate score and rationale
-│   ├── cocoplus-context.md ← project constitutional context read by agents
 │   ├── plan.md            ← approved execution plan
 │   ├── kb.md              ← project knowledge base (populated by CocoCupper)
 │   ├── checkpoint.md      ← CocoHealth recovery snapshot (overwritten per $pod checkpoint)
-│   └── review.md          ← Review phase findings and must-fix items
+│   ├── review.md          ← Review phase findings and must-fix items
+│   ├── cocowatch-session.md  ← CocoWatch engagement signals (ephemeral — not committed)
+│   └── klatch/            ← CocoKlatch roundtable artifacts (committed)
+│       ├── [timestamp]-[slug]-brief.md       ← topic brief
+│       ├── [timestamp]-[slug]-[role].md      ← participant analysis (one per role)
+│       └── [timestamp]-[slug]-synthesis.md   ← synthesis document
 ├── memory/                ← warm memory: decisions, patterns, errors
 ├── context/               ← CocoContext: six organizational standards files
 ├── prompts/               ← per-stage prompt files generated at Plan phase
@@ -124,34 +134,38 @@
 │   ├── coco-map.json      ← committed knowledge graph (structural + domain views)
 │   └── intermediate/      ← gitignored scratch files from analysis agents
 ├── seeds/                 ← CocoSeed deferred idea files
+├── pull/                  ← CocoPull distillation manifest and pull artifacts
+│   └── manifest.json      ← records all pull files, compression ratios, validation scores
 ├── harvest/               ← CocoHarvest execution state
 │   ├── [run-id]-progress.txt  ← append-only progress log
 │   ├── [run-id]-tasks.json    ← atomic task state file
 │   └── intermediate/      ← CocoFlow parallel evaluation intermediate results
 ├── meter/                 ← CocoMeter: session tracking and history
-├── pull/                  ← CocoPull manifest and distillation registry
-├── scripts/               ← deterministic helpers: rollback, scope classify, spec validate, alignment check
+│   ├── accuracy-history.jsonl ← per-session estimation accuracy records
+│   └── adjustment-factor.json ← rolling calibration factor for pre-flight estimates
 ├── snapshots/             ← Environment Inspector scan results
 ├── modes/                 ← mode flag files (inspector.on, memory.on, etc.)
 ├── safety-config.json     ← protected schema patterns for Safety Gate
 └── notifications.json     ← notification routing configuration</code></pre>
-  <p>This directory goes into version control. The entire project state — decisions, patterns, lifecycle artifacts, pipeline definitions — is versionable, diffable, and recoverable.</p>
-  <p>This is not an accident. File-based persistence was chosen specifically because it aligns with how developers already think about project state. You can read any of these files with a text editor. You can diff them with git. You can restore a previous state with <code>git checkout</code>. The system's intelligence lives in legible files, not in opaque service state.</p>
-  <h2>The Four-Tier Model Hierarchy</h2>
-  <p>One of CocoPlus's more precise decisions is how model selection works across the system. There are four tiers, resolved from lowest to highest precedence:</p>
-  <p><strong>Tier 1 — Persona Default.</strong> Each <code>.agent.md</code> file specifies a default model. This is the baseline. Data Engineer uses Sonnet. CDO uses Opus. CocoCupper uses Haiku, always.</p>
-  <p><strong>Tier 2 — Pipeline Default.</strong> The <code>defaults.model</code> field in <code>flow.json</code> overrides persona defaults for all stages in a pipeline. Useful when you want a consistent model choice across a multi-stage execution.</p>
-  <p><strong>Tier 3 — Stage-Level Override.</strong> Individual stages in <code>flow.json</code> can specify their own model, overriding both the persona default and the pipeline default.</p>
-  <p><strong>Tier 4 — Runtime Flag.</strong> The <code>--model</code> flag on any persona invocation or flow command overrides everything else for that specific call. It does not persist to <code>flow.json</code>.</p>
-  <p>This hierarchy exists because model selection is a meaningful engineering decision. The CDO's model choice was made for a reason. Overriding it at the pipeline level for a specific execution context is a legitimate decision. Overriding it at runtime for a single call is also legitimate. The hierarchy makes these decisions explicit and traceable.</p>
-  <p>CocoCupper's model is not in this hierarchy. It cannot be overridden. This is an intentional exception, not an oversight.</p>
-  <h2>CocoFleet — A Different Kind of Parallelism</h2>
-  <p>CocoHarvest runs parallel subagents within a single Coco session — these are Coco's native subagents, coordinated by the parent session.</p>
-  <p>CocoFleet is different. It spawns independent Coco CLI processes at the operating system level. Separate processes, separate sessions, separate context windows. Coordinated through shared file state, PID tracking, and dependency resolution logic.</p>
-  <p>This distinction matters for very large workstreams. When the work is too large for a single Coco session's context budget, you need multiple sessions, not multiple subagents. CocoFleet manages that orchestration — tracking which processes are running, handling their completion, sequencing dependent processes, surfacing logs.</p>
-  <p>CocoFleet is not for everyday use. It is for the projects where scale genuinely demands it.</p>
-  <blockquote><p><em>A well-designed system is one where the complexity is in the right place — not eliminated, but located where it can be reasoned about.</em></p></blockquote>
-
+<p>This directory goes into version control. The entire project state — decisions, patterns, lifecycle artifacts, pipeline definitions — is versionable, diffable, and recoverable.</p>
+<p>This is not an accident. File-based persistence was chosen specifically because it aligns with how developers already think about project state. You can read any of these files with a text editor. You can diff them with git. You can restore a previous state with <code>git checkout</code>. The system's intelligence lives in legible files, not in opaque service state.</p>
+<hr>
+<h2 id="the-four-tier-model-hierarchy">The Four-Tier Model Hierarchy</h2>
+<p>One of CocoPlus's more precise decisions is how model selection works across the system. There are four tiers, resolved from lowest to highest precedence:</p>
+<p><strong>Tier 1 — Persona Default.</strong> Each <code>.agent.md</code> file specifies a default model. This is the baseline. Data Engineer uses Sonnet. CDO uses Opus. CocoCupper uses Haiku, always.</p>
+<p><strong>Tier 2 — Pipeline Default.</strong> The <code>defaults.model</code> field in <code>flow.json</code> overrides persona defaults for all stages in a pipeline. Useful when you want a consistent model choice across a multi-stage execution.</p>
+<p><strong>Tier 3 — Stage-Level Override.</strong> Individual stages in <code>flow.json</code> can specify their own model, overriding both the persona default and the pipeline default.</p>
+<p><strong>Tier 4 — Runtime Flag.</strong> The <code>--model</code> flag on any persona invocation or flow command overrides everything else for that specific call. It does not persist to <code>flow.json</code>.</p>
+<p>This hierarchy exists because model selection is a meaningful engineering decision. The CDO's model choice was made for a reason. Overriding it at the pipeline level for a specific execution context is a legitimate decision. Overriding it at runtime for a single call is also legitimate. The hierarchy makes these decisions explicit and traceable.</p>
+<p>CocoCupper's model is not in this hierarchy. It cannot be overridden. This is an intentional exception, not an oversight.</p>
+<hr>
+<h2 id="cocofleet-a-different-kind-of-parallelism">CocoFleet — A Different Kind of Parallelism</h2>
+<p>CocoHarvest runs parallel subagents within a single Coco session — these are Coco's native subagents, coordinated by the parent session.</p>
+<p>CocoFleet is different. It spawns independent Coco CLI processes at the operating system level. Separate processes, separate sessions, separate context windows. Coordinated through shared file state, PID tracking, and dependency resolution logic.</p>
+<p>This distinction matters for very large workstreams. When the work is too large for a single Coco session's context budget, you need multiple sessions, not multiple subagents. CocoFleet manages that orchestration — tracking which processes are running, handling their completion, sequencing dependent processes, surfacing logs.</p>
+<p>CocoFleet is not for everyday use. It is for the projects where scale genuinely demands it.</p>
+<hr>
+<blockquote><p><em>A well-designed system is one where the complexity is in the right place — not eliminated, but located where it can be reasoned about.</em></p></blockquote>
 </div>
 
 <footer>
