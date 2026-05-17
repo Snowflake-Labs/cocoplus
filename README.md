@@ -6,6 +6,22 @@ Built using only Coco-native constructs: Skills, Agents, Hooks, and AGENTS.md.
 
 ---
 
+## Source of Truth
+
+`Snow-Cocoplus/` is the reference folder for this plugin. The implementation in `.cortex/`, `templates/`, `recipes/`, and `docs/` is validated against that reference:
+
+- `Snow-Cocoplus/docs/*.md` generates the public HTML pages in `docs/` while preserving the existing site shell and stylesheet.
+- `Snow-Cocoplus/flow-view.html.template` and `Snow-Cocoplus/meter-view.html.template` are mirrored into `templates/`.
+- `scripts/validate-cocoplus.js` checks required agents, hooks, skill paths, templates, recipes, manifest registrations, docs sync, and orchestration routing.
+
+Run validation before shipping plugin changes:
+
+```
+node scripts/validate-cocoplus.js
+```
+
+---
+
 ## What It Does
 
 CocoPlus wraps a structured development lifecycle around every project — from requirements capture through production ship — enforcing phase gates, parallel specialist execution, and checkpoint-validated delivery at each step. It decomposes work across eight specialist personas matched to domain, runs them in isolated git worktrees, and tracks every decision, token, and quality finding across sessions. A multi-layer safety gate protects production Snowflake objects from accidental modification, while a persistent pattern library and project knowledge base compound institutional memory over time. Thirty-five features covering orchestration, evaluation, governance, cost visibility, prompt engineering, pre-spec commitment, multi-agent deliberation, and context distillation — all running on Coco-native constructs with no external services.
