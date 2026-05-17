@@ -11,6 +11,7 @@ const hooksDir = path.join(repoRoot, '.cortex', 'hooks');
 const hookLibDir = path.join(hooksDir, 'lib');
 const templatesDir = path.join(repoRoot, 'templates');
 const recipesDir = path.join(repoRoot, 'recipes');
+const referenceDir = path.join(repoRoot, 'Snow-Cocoplus');
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -38,6 +39,18 @@ function walkFiles(dirPath, predicate) {
     }
   }
   return found;
+}
+
+function normalizeNewlines(value) {
+  return String(value).replace(/\r\n/g, '\n');
+}
+
+function requireFile(filePath, failures, label) {
+  if (!fs.existsSync(filePath)) {
+    failures.push(`${label || 'Required file'} is missing: ${path.relative(repoRoot, filePath)}`);
+    return false;
+  }
+  return true;
 }
 
 function parseFrontmatterTools(agentFile) {
@@ -89,6 +102,12 @@ function main() {
     'meter-view.html.template',
   ];
 
+  const requiredSkillPaths = [
+    path.join(repoRoot, '.cortex', 'skills', 'cocobloom', 'bloom-skip.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocowatch', 'SKILL.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocohealth', 'pod-checkpoint.skill.md'),
+  ];
+
   const requiredRecipes = [
     'cortex-add-classifier.json.template',
     'cortex-add-search.json.template',
@@ -125,15 +144,44 @@ function main() {
 
   for (const fileName of requiredTemplates) {
     const filePath = path.join(templatesDir, fileName);
-    if (!fs.existsSync(filePath)) {
-      failures.push(`Required template is missing: ${path.relative(repoRoot, filePath)}`);
+    if (requireFile(filePath, failures, 'Required template')) {
+      const referencePath = path.join(referenceDir, fileName);
+      if (fs.existsSync(referencePath) && normalizeNewlines(readFile(filePath)) !== normalizeNewlines(readFile(referencePath))) {
+        failures.push(`Template ${path.relative(repoRoot, filePath)} does not match ${path.relative(repoRoot, referencePath)}`);
+      }
     }
+  }
+
+  for (const skillPath of requiredSkillPaths) {
+    requireFile(skillPath, failures, 'Reference-specified skill path');
+  }
+
+  for (const asset of [...requiredTemplates.map((name) => path.join('templates', name)), ...requiredRecipes.map((name) => path.join('recipes', name))]) {
+    const manifestList = asset.startsWith('templates') ? plugin.templates : plugin.recipes;
+    if (!Array.isArray(manifestList) || !manifestList.includes(asset.replace(/\//g, '\\')) && !manifestList.includes(asset.replace(/\\/g, '/'))) {
+      failures.push(`plugin.json does not register asset ${asset}`);
+    }
+  }
+
+  if (!plugin.cocoHarvest || Number(plugin.cocoHarvest.pullThreshold) !== 8000) {
+    failures.push('plugin.json must define cocoHarvest.pullThreshold as 8000');
   }
 
   for (const fileName of requiredRecipes) {
     const filePath = path.join(recipesDir, fileName);
     if (!fs.existsSync(filePath)) {
       failures.push(`Required recipe template is missing: ${path.relative(repoRoot, filePath)}`);
+    } else {
+      const recipe = readJson(filePath);
+      const stages = recipe.flow && Array.isArray(recipe.flow.stages) ? recipe.flow.stages : [];
+      if (stages.length === 0) failures.push(`Recipe ${path.relative(repoRoot, filePath)} has no stages`);
+      for (const stage of stages) {
+        for (const requiredField of ['id', 'name', 'persona', 'prompt', 'checkpoints', 'deliverables', 'validation_commands', 'hitl', 'maxConsecutiveFailures']) {
+          if (!(requiredField in stage)) {
+            failures.push(`Recipe ${path.relative(repoRoot, filePath)} stage ${stage.id || '<unknown>'} missing ${requiredField}`);
+          }
+        }
+      }
     }
   }
 
@@ -144,12 +192,22 @@ function main() {
     }
   }
 
+  const docsSyncScript = path.join(repoRoot, 'scripts', 'sync-docs-html.js');
+  if (requireFile(docsSyncScript, failures, 'Docs sync script')) {
+    const { spawnSync } = require('child_process');
+    const generated = spawnSync(process.execPath, [docsSyncScript, '--check'], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+    });
+    if (generated.status !== 0) {
+      failures.push(`Docs sync script failed: ${generated.stderr || generated.stdout}`);
+    }
+  }
+
   const stalePatterns = [
     /All 32 Features/i,
     /Thirty-two features/i,
     /32 features/i,
-    /three SecondEye Critic/i,
-    /three-model parallel/i,
   ];
   const textFiles = [
     path.join(repoRoot, 'README.md'),
@@ -186,6 +244,23 @@ function main() {
     if (!fs.existsSync(agentFile)) {
       failures.push(`Hook-spawned agent "${agentId}" is missing file ${path.relative(repoRoot, agentFile)}`);
     }
+  }
+
+  const subagentStop = readFile(path.join(hooksDir, 'subagent-stop.js'));
+  for (const prefix of ['klatch-participant-', 'klatch-synthesis-', 'pull-']) {
+    if (!subagentStop.includes(prefix)) {
+      failures.push(`SubagentStop hook missing routing prefix ${prefix}`);
+    }
+  }
+
+  const harvestSkill = readFile(path.join(repoRoot, '.cortex', 'skills', 'cocoharvest.skill.md'));
+  if (!/pullThreshold/.test(harvestSkill) || !/\$pull <input>/.test(harvestSkill)) {
+    failures.push('CocoHarvest skill must document automatic CocoPull use above pullThreshold');
+  }
+
+  const podInitSkill = readFile(path.join(repoRoot, '.cortex', 'skills', 'cocopod', 'pod-init.skill.md'));
+  if (!podInitSkill.includes('lifecycle/cocowatch-session.md')) {
+    failures.push('$pod init gitignore must exclude lifecycle/cocowatch-session.md');
   }
 
   const writeIntentPatterns = [
