@@ -1,0 +1,18 @@
+{
+  "name": "cortex-add-extraction",
+  "description": "Build an AI_EXTRACT workflow with schema validation.",
+  "parameters": ["source_table", "document_column", "output_schema", "target_table"],
+  "flow": {
+    "meta": { "name": "Add Cortex Extraction", "phase": "plan" },
+    "stages": [
+      { "id": "sample-documents", "persona": "data-analyst", "status": "pending" },
+      { "id": "design-output-schema", "persona": "data-engineer", "status": "pending", "depends_on": ["sample-documents"] },
+      { "id": "build-extraction", "persona": "data-engineer", "status": "pending", "depends_on": ["design-output-schema"] },
+      { "id": "create-validation-set", "persona": "data-scientist", "status": "pending", "depends_on": ["build-extraction"] },
+      { "id": "run-validation", "persona": "data-scientist", "status": "pending", "depends_on": ["create-validation-set"] },
+      { "id": "quality-review", "persona": "analytics-engineer", "status": "pending", "depends_on": ["run-validation"] },
+      { "id": "governance-review", "persona": "data-steward", "status": "pending", "depends_on": ["quality-review"] },
+      { "id": "deployment-record", "persona": "data-product-manager", "status": "pending", "depends_on": ["governance-review"] }
+    ]
+  }
+}

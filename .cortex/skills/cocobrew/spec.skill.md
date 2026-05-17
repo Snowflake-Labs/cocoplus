@@ -33,6 +33,17 @@ If no: stop.
 
 ## Requirements Capture Dialogue
 
+Before the dialogue starts:
+
+1. Check `.cocoplus/lifecycle/bloom.md`.
+   - If it exists, read it first and summarize the Core Capability as the anchor for the specification.
+   - If it does not exist and `.cocoplus/lifecycle/meta.json` does not contain `"bloom_waived": true`, output: "No working-backwards document found — consider running `$bloom` before specifying. Run `$bloom --skip` to suppress this message." Then continue normally.
+2. Run `.cocoplus/scripts/scope-classify.js` against the initial task description if one was provided, or against the first goal answer once available.
+   - Script output must be `quick` or `full`.
+   - `--quick` forces Quick Flow. `--full` forces Full Flow.
+   - Record the final `"flow_type": "quick" | "full"` in `.cocoplus/lifecycle/meta.json`.
+   - If Quick Flow is selected, the lifecycle may skip `$plan` after spec capture and proceed to a single structured build artifact at `.cocoplus/lifecycle/quick-build.md`.
+
 Ask each question in sequence. Wait for the developer's response before proceeding to the next question. Do not batch questions.
 
 **Question 1:** What is the primary goal of this project? (Be specific — what problem does it solve and for whom?)
@@ -49,7 +60,7 @@ Ask each question in sequence. Wait for the developer's response before proceedi
 
 ## Vague Language Detection
 
-Before writing the specification document, run vague language detection on the developer's answers.
+Before writing the specification document, use `.cocoplus/scripts/spec-validator.js` for deterministic vague language detection on the draft spec answers. If the script is unavailable, fall back to the inline scan below.
 
 Scan all six answers for these term categories (exact word match, case-insensitive):
 - Performance: "fast", "quick", "slow", "performant", "efficient", "responsive"
@@ -122,6 +133,7 @@ Update `.cocoplus/lifecycle/meta.json`:
 ```json
 {
   "current_phase": "spec",
+  "flow_type": "[quick|full]",
   "phases_completed": ["spec"],
   "created_at": "[original timestamp]",
   "phase_history": [

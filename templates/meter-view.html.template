@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CocoMeter View</title>
+  <style>
+    body { margin: 0; font: 14px system-ui, sans-serif; background: #111318; color: #f4f7fb; }
+    header { padding: 16px 20px; border-bottom: 1px solid #2a3140; }
+    main { padding: 20px; display: grid; gap: 12px; }
+    table { width: 100%; border-collapse: collapse; background: #171c24; }
+    th, td { padding: 10px; border-bottom: 1px solid #2a3140; text-align: left; }
+    .summary { display: flex; gap: 12px; flex-wrap: wrap; }
+    .card { border: 1px solid #2a3140; border-radius: 8px; padding: 12px; min-width: 160px; background: #171c24; }
+    .value { font-size: 22px; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header>
+    <strong>CocoMeter</strong>
+    <div>Token attribution dashboard</div>
+  </header>
+  <main>
+    <section class="summary" id="summary"></section>
+    <table>
+      <thead><tr><th>Request</th><th>Stage</th><th>Model</th><th>Tokens</th><th>Credits</th></tr></thead>
+      <tbody id="requests"></tbody>
+    </table>
+  </main>
+  <script>
+    /* __METER_INJECTION_START__ */
+    const INJECTED_METER_DATA = {
+      requests: [
+        { request_id: 'demo-1', stage_id: 'spec-review', model: 'sonnet', tokens: 1200, credits: 0.03 }
+      ]
+    };
+    /* __METER_INJECTION_END__ */
+
+    const requests = Array.isArray(INJECTED_METER_DATA?.requests) ? INJECTED_METER_DATA.requests : [];
+    const totalTokens = requests.reduce((sum, row) => sum + Number(row.tokens || row.total_tokens || 0), 0);
+    const totalCredits = requests.reduce((sum, row) => sum + Number(row.credits || row.token_credits || 0), 0);
+    document.getElementById('summary').innerHTML = `
+      <div class="card"><div class="value">${requests.length}</div><div>Requests</div></div>
+      <div class="card"><div class="value">${totalTokens.toLocaleString()}</div><div>Tokens</div></div>
+      <div class="card"><div class="value">${totalCredits.toFixed(4)}</div><div>Credits</div></div>
+    `;
+    document.getElementById('requests').innerHTML = requests.map((row) => `
+      <tr>
+        <td>${row.request_id || ''}</td>
+        <td>${row.stage_id || ''}</td>
+        <td>${row.model || ''}</td>
+        <td>${Number(row.tokens || row.total_tokens || 0).toLocaleString()}</td>
+        <td>${Number(row.credits || row.token_credits || 0).toFixed(4)}</td>
+      </tr>
+    `).join('');
+  </script>
+</body>
+</html>

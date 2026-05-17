@@ -1,0 +1,17 @@
+{
+  "name": "cortex-add-classifier",
+  "description": "Build an AI_CLASSIFY function with labeled evaluation.",
+  "parameters": ["target_table", "input_column", "output_column", "labels"],
+  "flow": {
+    "meta": { "name": "Add Cortex Classifier", "phase": "plan" },
+    "stages": [
+      { "id": "profile-data", "persona": "data-analyst", "status": "pending" },
+      { "id": "design-function", "persona": "data-engineer", "status": "pending", "depends_on": ["profile-data"] },
+      { "id": "build-classifier", "persona": "data-engineer", "status": "pending", "depends_on": ["design-function"] },
+      { "id": "create-evaluation", "persona": "data-scientist", "status": "pending", "depends_on": ["build-classifier"] },
+      { "id": "validate-metrics", "persona": "analytics-engineer", "status": "pending", "depends_on": ["create-evaluation"] },
+      { "id": "governance-review", "persona": "data-steward", "status": "pending", "depends_on": ["validate-metrics"] },
+      { "id": "ship-readiness", "persona": "data-product-manager", "status": "pending", "depends_on": ["governance-review"] }
+    ]
+  }
+}

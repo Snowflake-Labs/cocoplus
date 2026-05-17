@@ -8,6 +8,9 @@ const repoRoot = path.resolve(__dirname, '..');
 const pluginPath = path.join(repoRoot, 'plugin.json');
 const agentsDir = path.join(repoRoot, '.cortex', 'agents');
 const hooksDir = path.join(repoRoot, '.cortex', 'hooks');
+const hookLibDir = path.join(hooksDir, 'lib');
+const templatesDir = path.join(repoRoot, 'templates');
+const recipesDir = path.join(repoRoot, 'recipes');
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -21,6 +24,20 @@ function listFiles(dirPath, suffix) {
   return fs.readdirSync(dirPath)
     .filter((name) => name.endsWith(suffix))
     .map((name) => path.join(dirPath, name));
+}
+
+function walkFiles(dirPath, predicate) {
+  if (!fs.existsSync(dirPath)) return [];
+  const found = [];
+  for (const entry of fs.readdirSync(dirPath, { withFileTypes: true })) {
+    const filePath = path.join(dirPath, entry.name);
+    if (entry.isDirectory()) {
+      found.push(...walkFiles(filePath, predicate));
+    } else if (!predicate || predicate(filePath)) {
+      found.push(filePath);
+    }
+  }
+  return found;
 }
 
 function parseFrontmatterTools(agentFile) {
@@ -56,10 +73,97 @@ function main() {
   const failures = [];
   const plugin = readJson(pluginPath);
 
+  const requiredAgents = [
+    'coco-bloom',
+    'coco-klatch',
+    'coco-pull',
+  ];
+
+  const requiredHookLibs = [
+    'agents-update.js',
+    'state-reader.js',
+  ];
+
+  const requiredTemplates = [
+    'flow-view.html.template',
+    'meter-view.html.template',
+  ];
+
+  const requiredRecipes = [
+    'cortex-add-classifier.json.template',
+    'cortex-add-search.json.template',
+    'cortex-semantic-model.json.template',
+    'cortex-add-extraction.json.template',
+  ];
+
+  const requiredProjectScripts = [
+    'rollback.js',
+    'scope-classify.js',
+    'spec-validator.js',
+    'alignment-check.js',
+  ];
+
   for (const agentId of plugin.agents || []) {
     const agentFile = path.join(agentsDir, `${agentId}.agent.md`);
     if (!fs.existsSync(agentFile)) {
       failures.push(`Manifest agent "${agentId}" is missing file ${path.relative(repoRoot, agentFile)}`);
+    }
+  }
+
+  for (const agentId of requiredAgents) {
+    if (!(plugin.agents || []).includes(agentId)) {
+      failures.push(`Required agent "${agentId}" is not registered in plugin.json`);
+    }
+  }
+
+  for (const fileName of requiredHookLibs) {
+    const filePath = path.join(hookLibDir, fileName);
+    if (!fs.existsSync(filePath)) {
+      failures.push(`Required hook library is missing: ${path.relative(repoRoot, filePath)}`);
+    }
+  }
+
+  for (const fileName of requiredTemplates) {
+    const filePath = path.join(templatesDir, fileName);
+    if (!fs.existsSync(filePath)) {
+      failures.push(`Required template is missing: ${path.relative(repoRoot, filePath)}`);
+    }
+  }
+
+  for (const fileName of requiredRecipes) {
+    const filePath = path.join(recipesDir, fileName);
+    if (!fs.existsSync(filePath)) {
+      failures.push(`Required recipe template is missing: ${path.relative(repoRoot, filePath)}`);
+    }
+  }
+
+  for (const fileName of requiredProjectScripts) {
+    const filePath = path.join(templatesDir, 'scripts', fileName);
+    if (!fs.existsSync(filePath)) {
+      failures.push(`Required project script template is missing: ${path.relative(repoRoot, filePath)}`);
+    }
+  }
+
+  const stalePatterns = [
+    /All 32 Features/i,
+    /Thirty-two features/i,
+    /32 features/i,
+    /three SecondEye Critic/i,
+    /three-model parallel/i,
+  ];
+  const textFiles = [
+    path.join(repoRoot, 'README.md'),
+    path.join(repoRoot, 'AGENTS.md'),
+    ...walkFiles(path.join(repoRoot, 'docs'), (filePath) => filePath.endsWith('.html')),
+    ...walkFiles(path.join(repoRoot, '.cortex', 'skills'), (filePath) => filePath.endsWith('.md')),
+  ];
+
+  for (const filePath of textFiles) {
+    const content = readFile(filePath);
+    for (const pattern of stalePatterns) {
+      if (pattern.test(content)) {
+        failures.push(`Stale reference "${pattern.source}" found in ${path.relative(repoRoot, filePath)}`);
+      }
     }
   }
 

@@ -22,7 +22,10 @@
     "coco-cupper",
     "secondeye-critic",
     "coco-scout",
-    "coco-watch"
+    "coco-watch",
+    "coco-bloom",
+    "coco-klatch",
+    "coco-pull"
   ],
   "hooks": [
     "session-start",
