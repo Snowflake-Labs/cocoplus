@@ -132,7 +132,12 @@ status: complete
 
 ### Phase 4 — CocoSpec Scoring Gate
 
-7. **Invoke CocoSpec scorer** (background Haiku subagent, read-only): Score the combined `spec.md` + `discuss.md` on five dimensions (0–2 points each, maximum 10):
+7. **Run deterministic pre-checks before scoring:**
+   - Run `.cocoplus/scripts/spec-validator.js .cocoplus/lifecycle/spec.md .cocoplus/lifecycle/discuss.md`.
+   - Apply vague-language penalties from the JSON output before the final score (maximum 3-point deduction).
+   - If the script is missing, warn and continue with the scorer fallback.
+
+8. **Invoke CocoSpec scorer** (background Haiku subagent, read-only): Score the combined `spec.md` + `discuss.md` on five dimensions (0–2 points each, maximum 10):
 
    | Dimension | What Is Scored | Score 0 | Score 1 | Score 2 |
    |---|---|---|---|---|
@@ -142,11 +147,11 @@ status: complete
    | **Boundaries** | Error handling, performance, security? | None | Partial | All four boundary types addressed |
    | **Risk** | EHRB indicators? Mitigations? | None | Risks identified, no mitigation | Risks identified with mitigation or escalation |
 
-8. **Write score** to `lifecycle/spec-score.md`.
+9. **Write score** to `lifecycle/spec-score.md`.
 
-9. **Gate behavior:**
+10. **Gate behavior:**
 
-   **Score ≥9 — Gate passes:**
+   **Score ≥9 — PASS:**
    ```
    ✓ Specification complete (score: [N]/10)
    
@@ -155,6 +160,8 @@ status: complete
    
    Ready for $plan.
    ```
+
+   After PASS, run `.cocoplus/scripts/alignment-check.js`. If it returns conflicts, block subagent spawning and surface each conflict by field, value, and source file. If clean, proceed.
 
    **Quick Mode check (score ≥9, scope ≤3 files, no EHRB indicators):**
    ```
@@ -171,19 +178,19 @@ status: complete
    - If developer confirms Quick Mode: update `lifecycle/meta.json` with `quick_mode: true`; output: "Quick Mode activated. Run `$build` to proceed directly."
    - If developer declines: output: "Running full lifecycle. Run `$plan` to proceed."
 
-   **Score 8 — Gate holds:**
+   **Score 7–8 — CONCERNS:**
    ```
-   ⚠ Specification score: [N]/10 (required: 9)
+   ⚠ Specification score: [N]/10 (concerns)
    
-   Gap detected in [dimension name]:
-   [Specific gap description]
+   Targeted rescore required for:
+   [dimension names and concrete guidance]
    
-   Address this gap in spec.md or discuss.md, then run $discuss again.
+   Address only these dimensions in spec.md or discuss.md, then run $discuss again.
    ```
 
-   **Score ≤7 — Gate holds with Uncertainty Declaration:**
+   **Score ≤6 — FAIL with Uncertainty Declaration:**
    ```
-   ⚠ Specification score: [N]/10 (required: 9)
+   ⚠ Specification score: [N]/10 (fail)
    
    Gaps detected:
    [List of dimensions scoring below 2]
@@ -201,7 +208,8 @@ status: complete
 
 - **`spec.md` not found:** Output message directing user to run `$spec` first
 - **Developer exits mid-wizard:** Save partial discuss.md with `status: incomplete`; no CocoSpec gate is run on incomplete discuss
-- **CocoSpec scorer fails:** Note failure in output; do not block developer from proceeding (scorer is advisory at this step)
+- **CocoSpec scorer fails:** Note failure in output; do not block developer from proceeding unless deterministic alignment conflicts were found
+- **alignment-check.js reports conflicts:** Block subagent launch until the conflicting shared decision inputs are resolved
 - **Cannot write discuss.md:** Output filesystem error
 
 ## Exit Criteria
@@ -209,7 +217,9 @@ status: complete
 This skill is complete when:
 - `lifecycle/discuss.md` is written with all answered questions
 - CocoSpec scorer has run and produced a score in `lifecycle/spec-score.md`
-- Developer has received the gate outcome (pass, Quick Mode offer, or gap description)
+- `spec-validator.js` output has been considered before scoring
+- `alignment-check.js` has run after PASS and produced either no conflicts or a blocking conflict report
+- Developer has received the gate outcome (PASS, CONCERNS, FAIL, Quick Mode offer, or alignment conflict report)
 
 ## Anti-Rationalization
 

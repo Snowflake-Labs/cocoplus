@@ -1,0 +1,16 @@
+{
+  "name": "cortex-semantic-model",
+  "description": "Create an analytics semantic model for Cortex Analyst.",
+  "parameters": ["database", "schema", "tables", "business_domain"],
+  "flow": {
+    "meta": { "name": "Cortex Semantic Model", "phase": "plan" },
+    "stages": [
+      { "id": "profile-model-sources", "persona": "analytics-engineer", "status": "pending" },
+      { "id": "define-metrics", "persona": "analytics-engineer", "status": "pending", "depends_on": ["profile-model-sources"] },
+      { "id": "define-relationships", "persona": "data-engineer", "status": "pending", "depends_on": ["define-metrics"] },
+      { "id": "validate-questions", "persona": "data-analyst", "status": "pending", "depends_on": ["define-relationships"] },
+      { "id": "bi-review", "persona": "bi-analyst", "status": "pending", "depends_on": ["validate-questions"] },
+      { "id": "governance-check", "persona": "data-steward", "status": "pending", "depends_on": ["bi-review"] }
+    ]
+  }
+}

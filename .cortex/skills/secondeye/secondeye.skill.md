@@ -1,6 +1,6 @@
 ---
 name: "secondeye"
-description: "Multi-model parallel plan critique. Spawns three SecondEye Critic instances in parallel (Haiku: efficiency, Sonnet: completeness, Opus: risk), aggregates findings with HITL/AFK and BLOCKING/MINOR classification, and writes a structured report. Critical findings create a soft gate on $build. Usage: $secondeye [--artifact spec|plan|review] [--model haiku|sonnet|opus]."
+description: "Multi-model parallel plan critique. Spawns five SecondEye Critic instances in parallel (Efficiency, Completeness, Risk, Devil's Advocate, Edge Case Hunter), aggregates findings with HITL/AFK and BLOCKING/MINOR classification, and writes a structured report. Critical findings create a soft gate on $build. Usage: $secondeye [--artifact spec|plan|review] [--model haiku|sonnet|opus]."
 version: "1.0.3"
 author: "CocoPlus"
 tags:
@@ -16,7 +16,7 @@ If not: output "CocoPlus not initialized in this directory. Run `$pod init` to b
 ## Parse Arguments
 
 - `--artifact [spec|plan|review]`: target artifact (default: plan)
-- `--model [haiku|sonnet|opus]`: single-model mode (default: three-model parallel)
+- `--model [haiku|sonnet|opus]`: single-model mode (default: five-lens parallel)
 
 Resolve artifact path:
 - spec → `.cocoplus/lifecycle/spec.md`
@@ -34,7 +34,7 @@ Create: `.cocoplus/lifecycle/.secondeye-staging/[timestamp]/`
 
 If single-model mode (`--model` flag provided): spawn only one critic with that model and the Completeness lens.
 
-Otherwise: spawn three critics IN PARALLEL:
+Otherwise: spawn five critics IN PARALLEL:
 
 **Critic 1 — Efficiency Lens (Haiku)**
 Write task prompt to `.cocoplus/lifecycle/.secondeye-staging/[timestamp]/haiku-task.md`:
@@ -83,12 +83,24 @@ For each finding, include a required "rebuttal_score" field (1–5) when the dev
 - Score 1–3: re-assert the concern and explain why the response is insufficient
 ```
 
-Spawn all four SecondEye Critic subagents in parallel, one per task prompt file.
-Wait for all four to complete.
+**Critic 5 — Edge Case Hunter Lens (Haiku)**
+Write task prompt to `.cocoplus/lifecycle/.secondeye-staging/[timestamp]/edge-task.md`:
+```
+You are a SecondEye Critic. Your lens is: EDGE CASE HUNTER.
+Artifact to review: [artifact path]
+Staging file: .cocoplus/lifecycle/.secondeye-staging/[timestamp]/edge-findings.md
+
+Edge Case Hunter lens: identify evaluation blind spots, rare input shapes, data distribution shifts, failure cases not represented in the plan, and acceptance criteria that would miss bad behavior.
+
+Findings are Advisory by default unless they expose correctness, security, or deployment-blocking risk.
+```
+
+Spawn all five SecondEye Critic subagents in parallel, one per task prompt file.
+Wait for all five to complete.
 
 ## Aggregate Findings
 
-Read all three staging files.
+Read all five staging files.
 Deduplicate: findings from different critics that describe the same issue → merge, mark [Consensus].
 Classify severity: Critical / Advisory / Observation.
 Sort: Critical first, then Advisory, then Observation.
@@ -109,6 +121,7 @@ Compute `action_summary`:
 - `blocking_count`: count of BLOCKING-classified findings
 - `minor_count`: count of MINOR-classified findings
 - `da_finding_count`: count of Devil's Advocate findings
+- `edge_case_count`: count of Edge Case Hunter findings
 
 `critical_open = any Critical finding exists`
 
@@ -121,7 +134,7 @@ Write `.cocoplus/lifecycle/secondeye-[timestamp].md`:
 secondeye_id: "se-[timestamp]"
 artifact: "[artifact path]"
 generated_at: "[ISO 8601 timestamp]"
-models_used: [haiku, sonnet, opus, sonnet-da]
+models_used: [haiku, sonnet, opus, sonnet-da, haiku-edge]
 critical_open: [true/false]
 acknowledged: false
 acknowledged_at: null
@@ -131,16 +144,20 @@ action_summary:
   blocking_count: [N]
   minor_count: [N]
   da_finding_count: [N]
+  edge_case_count: [N]
 ---
 
 # SecondEye Review: [artifact name]
 
 **Date:** [ISO 8601 timestamp]
-**Models:** Haiku (Efficiency) + Sonnet (Completeness) + Opus (Risk) + Sonnet (Devil's Advocate)
-**Action Summary:** [blocking_count] BLOCKING · [minor_count] MINOR · [hitl_count] HITL · [afk_count] AFK · [da_finding_count] DA
+**Models:** Haiku (Efficiency) + Sonnet (Completeness) + Opus (Risk) + Sonnet (Devil's Advocate) + Haiku (Edge Case Hunter)
+**Action Summary:** [blocking_count] BLOCKING · [minor_count] MINOR · [hitl_count] HITL · [afk_count] AFK · [da_finding_count] DA · [edge_case_count] Edge Cases
 
 ## [Devil's Advocate] Findings
 [DA findings — all BLOCKING by default, tagged [BLOCKING] [HITL]]
+
+## [Edge Case Hunter] Findings
+[Evaluation blind spot findings — Advisory by default unless correctness/security/deployment-blocking]
 
 ## Critical Findings
 [Critical findings — each tagged [HITL/AFK] [BLOCKING/MINOR]]

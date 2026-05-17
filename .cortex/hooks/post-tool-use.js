@@ -16,6 +16,7 @@ const fs   = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
 const { isoUtc, appendJsonLine, atomicWrite, logError, readJsonString, readJsonNumber, readStdinJson } = require('./_common.js');
+const { readState } = require('./lib/state-reader.js');
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
@@ -141,20 +142,11 @@ function main() {
   if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'cocometer.on'))) {
     const requestId = result.request_id || result.requestId || null;
     if (requestId) {
-      const stateFile = path.join(COCOPLUS_DIR, 'state.json');
-      let stageId    = null;
-      let persona    = null;
-      let sessionId  = null;
+      const state = readState(COCOPLUS_DIR);
+      let stageId    = state.active_stage_id;
+      let persona    = state.active_persona;
+      let sessionId  = state.session_id;
       let parentRequestId = result.parent_request_id || result.parentRequestId || null;
-
-      if (fs.existsSync(stateFile)) {
-        try {
-          const state = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
-          stageId   = state.active_stage_id  || null;
-          persona   = state.active_persona   || null;
-          sessionId = state.session_id       || null;
-        } catch (_) { /* non-fatal */ }
-      }
 
       const requestMapFile = path.join(COCOPLUS_DIR, 'meter', 'request-map.jsonl');
       const entry = {

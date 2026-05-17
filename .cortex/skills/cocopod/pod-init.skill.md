@@ -35,6 +35,13 @@ Create the following directories (create them even if empty — they are require
 .cocoplus/snapshots/
 .cocoplus/modes/
 .cocoplus/fleet/
+.cocoplus/scripts/
+.cocoplus/pull/
+.cocoplus/harvest/
+.cocoplus/seeds/
+.cocoplus/map/
+.cocoplus/map/intermediate/
+.cocoplus/map/archive/
 ```
 
 ## Copy Template Files
@@ -63,6 +70,10 @@ Copy template files from the plugin templates directory to `.cocoplus/`:
 7. Copy `templates/monitors/cost-tracker.monitor.json` → `.cocoplus/monitors/cost-tracker.monitor.json`
 8. Copy `templates/monitors/quality-advisor.monitor.json` → `.cocoplus/monitors/quality-advisor.monitor.json`
 9. Copy `templates/monitors/memory-capture.monitor.json` → `.cocoplus/monitors/memory-capture.monitor.json`
+10. Copy `templates/scripts/rollback.js` → `.cocoplus/scripts/rollback.js`
+11. Copy `templates/scripts/scope-classify.js` → `.cocoplus/scripts/scope-classify.js`
+12. Copy `templates/scripts/spec-validator.js` → `.cocoplus/scripts/spec-validator.js`
+13. Copy `templates/scripts/alignment-check.js` → `.cocoplus/scripts/alignment-check.js`
 
 ## Initialize Mode Flags
 
@@ -81,8 +92,30 @@ Create `.cocoplus/lifecycle/meta.json`:
   "current_phase": "not_started",
   "phases_completed": [],
   "created_at": "{{TIMESTAMP}}",
+  "flow_type": null,
+  "bloom_waived": false,
   "phase_history": []
 }
+```
+
+## Create Constitutional Context
+
+Create `.cocoplus/lifecycle/cocoplus-context.md` from the project answers:
+
+```markdown
+# CocoPlus Project Context
+
+## Project
+[Project name and one-sentence description]
+
+## Snowflake Stack
+Unknown until captured by `$inspect` or project-specific context.
+
+## Architectural Constraints
+Use CocoPlus lifecycle artifacts as source of truth. Prefer deterministic scripts for classification and validation before agent reasoning.
+
+## Security Requirements
+Safety Gate defaults to normal. Production and PII-adjacent changes require explicit review.
 ```
 
 ## Create Project Gitignore
@@ -91,6 +124,7 @@ Create `.cocoplus/.gitignore` to exclude transient runtime files from version co
 
 ```
 # Transient session data
+state.json
 meter/current-session.json
 hook-errors.log
 hook-log.jsonl
@@ -103,6 +137,26 @@ fleet/*/output.log
 
 # SecondEye staging temp files
 lifecycle/.secondeye-staging/
+
+# Generated visualizations
+flow-view.html
+meter-view.html
+
+# CocoScout session context files
+scout-context-*.json
+
+# Scratch and archive data
+map/intermediate/
+map/archive/
+harvest/intermediate/
+harvest/archive/
+harvest/*-progress.txt
+harvest/*-tasks.json
+harvest/*-tasks.json.tmp
+harvest/*-tasks.json.bak
+
+# Pull artifacts are derived unless explicitly promoted
+*.pull.md
 ```
 
 ## Create Root AGENTS.md Shim
@@ -169,6 +223,9 @@ CocoPlus initialized successfully.
 ├── memory/            ← cross-session decisions and patterns
 ├── grove/             ← CocoGrove pattern library
 ├── meter/             ← CocoMeter token tracking
+├── scripts/           ← deterministic utility scripts
+├── pull/              ← CocoPull manifest and distillation registry
+├── harvest/           ← pipeline recovery scratch state
 ├── snapshots/         ← Environment Inspector results
 └── modes/             ← feature flags (safety.normal active)
 
@@ -190,11 +247,13 @@ Next steps:
 
 ## Exit Criteria
 
-- [ ] `.cocoplus/` directory exists with all 11 required subdirectories (`lifecycle/`, `memory/`, `prompts/`, `monitors/`, `grove/`, `grove/patterns/`, `meter/`, `snapshots/`, `modes/`, `fleet/`)
+- [ ] `.cocoplus/` directory exists with all required subdirectories (`lifecycle/`, `memory/`, `prompts/`, `monitors/`, `grove/`, `grove/patterns/`, `meter/`, `snapshots/`, `modes/`, `fleet/`, `scripts/`, `pull/`, `harvest/`, `seeds/`, `map/`)
 - [ ] `.cocoplus/modes/safety.normal` flag file exists; no other safety flags exist
 - [ ] `.cocoplus/modes/memory.on` flag file exists
 - [ ] `.cocoplus/AGENTS.md`, `.cocoplus/project.md`, `.cocoplus/flow.json`, and all four monitor JSON files exist
 - [ ] `.cocoplus/lifecycle/meta.json` exists with `"current_phase": "not_started"` and empty `phases_completed`
+- [ ] `.cocoplus/lifecycle/cocoplus-context.md` exists
+- [ ] `.cocoplus/scripts/rollback.js`, `scope-classify.js`, `spec-validator.js`, and `alignment-check.js` exist
 - [ ] `.cocoplus/.gitignore` exists excluding transient session files
 - [ ] Root `AGENTS.md` shim exists at project root with `cocoplus-agents-redirect` directive
 - [ ] `.cocoplus/personas.json` exists with 8 default shorthand entries (`$de` through `$cdo`)

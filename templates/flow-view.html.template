@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CocoFlow View</title>
+  <style>
+    body { margin: 0; font: 14px system-ui, sans-serif; background: #101418; color: #eef2f7; }
+    header { padding: 16px 20px; border-bottom: 1px solid #27313c; display: flex; justify-content: space-between; gap: 16px; }
+    main { padding: 20px; display: grid; gap: 12px; }
+    .stage { border: 1px solid #303c49; border-radius: 8px; padding: 12px; background: #151b22; }
+    .meta { color: #9fb0c3; font-size: 12px; }
+    .status { font-weight: 700; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <strong>CocoFlow</strong>
+      <div class="meta" id="flow-name">Pipeline viewer</div>
+    </div>
+    <div class="meta" id="flow-counts"></div>
+  </header>
+  <main id="stages"></main>
+  <script>
+    /* __FLOW_INJECTION_START__ */
+    const INJECTED_FLOW_DATA = {
+      meta: { name: 'Demo Flow', phase: 'plan' },
+      stages: [
+        { id: 'spec-review', name: 'Review specification', persona: 'data-product-manager', status: 'completed' },
+        { id: 'build-model', name: 'Build model', persona: 'analytics-engineer', status: 'pending', depends_on: ['spec-review'] }
+      ]
+    };
+    /* __FLOW_INJECTION_END__ */
+
+    const flow = INJECTED_FLOW_DATA || {};
+    const stages = Array.isArray(flow.stages) ? flow.stages : [];
+    document.getElementById('flow-name').textContent = `${flow.meta?.name || 'Flow'} · ${flow.meta?.phase || 'unknown phase'}`;
+    document.getElementById('flow-counts').textContent = `${stages.length} stage${stages.length === 1 ? '' : 's'}`;
+    document.getElementById('stages').innerHTML = stages.map((stage) => `
+      <section class="stage">
+        <div class="status">${stage.status || 'pending'}</div>
+        <h2>${stage.name || stage.id || 'Unnamed stage'}</h2>
+        <div class="meta">Persona: ${stage.persona || 'unassigned'}</div>
+        <div class="meta">Depends on: ${(stage.depends_on || stage.dependencies || []).join(', ') || 'none'}</div>
+      </section>
+    `).join('');
+  </script>
+</body>
+</html>

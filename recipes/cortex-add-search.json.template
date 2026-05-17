@@ -1,0 +1,15 @@
+{
+  "name": "cortex-add-search",
+  "description": "Configure and validate a Cortex Search service.",
+  "parameters": ["source_table", "search_column", "warehouse", "service_name"],
+  "flow": {
+    "meta": { "name": "Add Cortex Search", "phase": "plan" },
+    "stages": [
+      { "id": "profile-source", "persona": "data-analyst", "status": "pending" },
+      { "id": "design-search", "persona": "data-engineer", "status": "pending", "depends_on": ["profile-source"] },
+      { "id": "create-service", "persona": "data-engineer", "status": "pending", "depends_on": ["design-search"] },
+      { "id": "quality-check", "persona": "analytics-engineer", "status": "pending", "depends_on": ["create-service"] },
+      { "id": "usage-guidance", "persona": "bi-analyst", "status": "pending", "depends_on": ["quality-check"] }
+    ]
+  }
+}
