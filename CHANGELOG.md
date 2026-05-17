@@ -8,6 +8,16 @@ All notable changes to CocoPlus are documented here.
 
 ### Added
 
+#### Reference-Driven Implementation Sync
+- Added `scripts/sync-docs-html.js` to render `docs/*.html` directly from `reference requirements/docs/*.md` while preserving the existing documentation site shell and stylesheet.
+- Added canonical reference skill paths for `cocobloom/bloom-skip.skill.md`, `cocowatch/SKILL.md`, and `cocohealth/pod-checkpoint.skill.md`.
+- Registered dashboard templates and recipe templates in `plugin.json`, and added `cocoHarvest.pullThreshold` plus stall-detection defaults.
+- Expanded recipe templates into executable CocoFlow-style definitions with prompts, checkpoints, deliverables, validation commands, HITL flags, dependencies, and failure thresholds.
+- Replaced simplified dashboard templates with the reference `reference requirements` Flow View and Meter View templates.
+- Strengthened deterministic helper scripts for scope classification, spec scoring, alignment checks, and guarded rollback execution.
+- Extended `SubagentStop` routing for CocoKlatch participant/synthesis prefixes and CocoPull manifest updates.
+- Expanded `scripts/validate-cocoplus.js` to verify docs sync, template fidelity, manifest assets, recipe completeness, required skill paths, hook routing, and CocoPull integration.
+
 #### CocoBehavior — Ambient Behavioral Constraint Layer (Feature 22)
 - `cocobehavior/SKILL.md` — rewritten as full ambient skill with four behavioral constraints (Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven = Evaluation-First); `user-invocable: false`; Exit Criteria and Anti-Rationalization sections added; version 1.0.3
 
