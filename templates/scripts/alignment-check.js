@@ -11,9 +11,13 @@ const DEFAULT_FILES = [
 
 const patterns = {
   accuracy_threshold: /(?:accuracy|quality)\D{0,30}(\d+(?:\.\d+)?%)/ig,
+  cost_threshold: /(?:cost|credit|budget)\D{0,30}(\d+(?:\.\d+)?\s*(?:credit|credits|usd|\$)?)/ig,
   warehouse: /\bwarehouse\D{0,20}([A-Z][A-Z0-9_$]{2,})/g,
   schema: /\bschema\D{0,20}([A-Z][A-Z0-9_$]{2,})/g,
+  table: /\btable\D{0,20}([A-Z][A-Z0-9_$.]{2,})/g,
   model: /\bmodel\D{0,20}([A-Za-z0-9._-]+)/g,
+  evaluation_dataset: /\b(?:evaluation|eval|test)\s+(?:dataset|data|table)\D{0,30}([A-Z][A-Z0-9_$.]{2,})/ig,
+  pii_policy: /\b(PII|PHI|masking|redaction|AI_REDACT|row access policy)\b/ig,
 };
 
 function extract(filePath) {
@@ -25,7 +29,7 @@ function extract(filePath) {
     let match;
     pattern.lastIndex = 0;
     while ((match = pattern.exec(text)) !== null) values.add(match[1]);
-    if (values.size > 0) result[field] = [...values];
+    if (values.size > 0) result[field] = [...values].sort();
   }
   return result;
 }
@@ -48,8 +52,13 @@ for (const field of Object.keys(patterns)) {
     conflicts.push({
       field,
       values: [...seen.entries()].map(([value, sourceFiles]) => ({ value, files: sourceFiles })),
+      recommendation: `Resolve ${field} to one canonical value or document why multiple values are intentional before spawning implementation agents.`,
     });
   }
 }
 
-process.stdout.write(JSON.stringify(conflicts, null, 2) + '\n');
+process.stdout.write(JSON.stringify({
+  outcome: conflicts.length === 0 ? 'PASS' : 'CONFLICTS',
+  extracted,
+  conflicts,
+}, null, 2) + '\n');

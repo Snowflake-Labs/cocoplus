@@ -128,6 +128,7 @@ state.json
 meter/current-session.json
 hook-errors.log
 hook-log.jsonl
+lifecycle/cocowatch-session.md
 
 # Regenerable environment snapshots
 snapshots/

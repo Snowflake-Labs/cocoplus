@@ -20,6 +20,21 @@ const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const SPAWN_QUEUE  = path.join(COCOPLUS_DIR, 'subagent-spawn-requests.jsonl');
 
+function readJson(filePath, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (_) {
+    return fallback;
+  }
+}
+
+function atomicWriteJson(filePath, value) {
+  const tmp = filePath + '.tmp.' + process.pid;
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(tmp, JSON.stringify(value, null, 2));
+  fs.renameSync(tmp, filePath);
+}
+
 function queueAndAttemptBackgroundSpawn(request, ts) {
   appendJsonLine(SPAWN_QUEUE, request);
   appendJsonLine(HOOK_LOG, {
@@ -65,6 +80,9 @@ function main() {
   const isPersona   = subagentId.startsWith('persona-');
   const isInspector = subagentId.startsWith('inspector-');
   const isQuality   = subagentId.startsWith('quality-');
+  const isKlatchParticipant = subagentId.startsWith('klatch-participant-');
+  const isKlatchSynthesis = subagentId.startsWith('klatch-synthesis-');
+  const isPull = subagentId.startsWith('pull-');
 
   // 2. Update subagent registry
   const subagentsPath = path.join(COCOPLUS_DIR, 'subagents.json');
@@ -153,19 +171,93 @@ function main() {
     return;
   }
 
-  // 5. Inspector completion
+  // 5. CocoKlatch participant completion
+  if (isKlatchParticipant) {
+    const klatchDir = path.join(COCOPLUS_DIR, 'lifecycle', 'klatch');
+    const runId = event.klatch_run_id || event.run_id || subagentId.replace(/^klatch-participant-/, '').split('-').slice(0, 2).join('-') || 'unknown';
+    const manifestPath = path.join(klatchDir, `${runId}-manifest.json`);
+    const manifest = readJson(manifestPath, {
+      run_id: runId,
+      participants: {},
+      synthesis_requested: false,
+    });
+    manifest.participants = manifest.participants || {};
+    manifest.participants[subagentId] = {
+      status,
+      completed_at: ts,
+      output: event.output_path || event.artifact || null,
+    };
+    const participants = Object.values(manifest.participants);
+    const expected = Number(manifest.expected_participants || event.expected_participants || participants.length || 0);
+    const completeCount = participants.filter((item) => item.status === 'completed' || item.status === 'failed').length;
+    if (expected > 0 && completeCount >= expected && !manifest.synthesis_requested) {
+      manifest.synthesis_requested = true;
+      manifest.synthesis_requested_at = ts;
+      queueAndAttemptBackgroundSpawn({
+        source: 'hook.subagent-stop',
+        requested_at: ts,
+        completed_subagent: subagentId,
+        agent: 'coco-klatch',
+        subagent_id: `klatch-synthesis-${runId}`,
+        reason: 'klatch-participants-complete',
+        manifest: manifestPath,
+      }, ts);
+    }
+    atomicWriteJson(manifestPath, manifest);
+    appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'klatch-participant', run_id: runId, status, complete: completeCount, expected, ts });
+    return;
+  }
+
+  // 6. CocoKlatch synthesis completion
+  if (isKlatchSynthesis) {
+    appendJsonLine(path.join(COCOPLUS_DIR, 'ui-notifications.jsonl'), {
+      event_type: status === 'completed' ? 'klatch_synthesis_ready' : 'klatch_synthesis_failed',
+      message: status === 'completed'
+        ? 'CocoKlatch synthesis complete. Review lifecycle/klatch synthesis artifacts.'
+        : `CocoKlatch synthesis failed (${subagentId}). Review participant artifacts.`,
+      timestamp: ts,
+      source: 'hook.SubagentStop',
+    });
+    appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'klatch-synthesis', status, subagent_id: subagentId, ts });
+    return;
+  }
+
+  // 7. CocoPull structure/distillation/validation completion
+  if (isPull) {
+    const pullDir = path.join(COCOPLUS_DIR, 'pull');
+    const manifestPath = path.join(pullDir, 'manifest.json');
+    const manifest = readJson(manifestPath, { artifacts: [] });
+    manifest.artifacts = Array.isArray(manifest.artifacts) ? manifest.artifacts : [];
+    const source = event.source || event.source_path || event.target || null;
+    const pull = event.pull || event.pull_path || event.output_path || null;
+    const existing = manifest.artifacts.find((item) => item.source === source && source);
+    const record = existing || {};
+    record.source = source || record.source || subagentId;
+    record.pull = pull || record.pull || null;
+    record.timestamp = ts;
+    record.status = status;
+    record.reliability = event.reliability || record.reliability || (subagentId.includes('validate') && status === 'completed' ? 'high' : 'pending');
+    record.compression_ratio = event.compression_ratio || record.compression_ratio || null;
+    record.distillation_outcome = event.distillation_outcome || record.distillation_outcome || 'pending';
+    if (!existing) manifest.artifacts.push(record);
+    atomicWriteJson(manifestPath, manifest);
+    appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'pull', subagent_id: subagentId, status, source: record.source, pull: record.pull, ts });
+    return;
+  }
+
+  // 8. Inspector completion
   if (isInspector) {
     appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'inspector', status, ts });
     return;
   }
 
-  // 6. Quality advisor completion
+  // 9. Quality advisor completion
   if (isQuality) {
     appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'quality', status, ts });
     return;
   }
 
-  // 7. Unknown — log and ignore
+  // 10. Unknown — log and ignore
   appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'unknown', subagent_id: subagentId, ts });
 }
 

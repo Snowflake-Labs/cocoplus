@@ -1,17 +1,115 @@
 {
   "name": "cortex-add-classifier",
-  "description": "Build an AI_CLASSIFY function with labeled evaluation.",
-  "parameters": ["target_table", "input_column", "output_column", "labels"],
+  "description": "Build an AI_CLASSIFY UDF with labeled evaluation, governance review, and ship readiness.",
+  "parameters": {
+    "target_table": { "required": true, "description": "Fully qualified table containing source text." },
+    "input_column": { "required": true, "description": "Text column to classify." },
+    "output_column": { "required": true, "description": "Destination classification column." },
+    "labels": { "required": true, "description": "Allowed class labels." },
+    "accuracy_threshold": { "required": false, "default": "85%" }
+  },
   "flow": {
-    "meta": { "name": "Add Cortex Classifier", "phase": "plan" },
+    "meta": {
+      "name": "Add Cortex Classifier",
+      "phase": "plan",
+      "generated_by": "cocorecipe",
+      "recipe": "cortex-add-classifier"
+    },
+    "defaults": {
+      "model": "claude-sonnet-4-20250514",
+      "on_failure": "stop"
+    },
     "stages": [
-      { "id": "profile-data", "persona": "data-analyst", "status": "pending" },
-      { "id": "design-function", "persona": "data-engineer", "status": "pending", "depends_on": ["profile-data"] },
-      { "id": "build-classifier", "persona": "data-engineer", "status": "pending", "depends_on": ["design-function"] },
-      { "id": "create-evaluation", "persona": "data-scientist", "status": "pending", "depends_on": ["build-classifier"] },
-      { "id": "validate-metrics", "persona": "analytics-engineer", "status": "pending", "depends_on": ["create-evaluation"] },
-      { "id": "governance-review", "persona": "data-steward", "status": "pending", "depends_on": ["validate-metrics"] },
-      { "id": "ship-readiness", "persona": "data-product-manager", "status": "pending", "depends_on": ["governance-review"] }
+      {
+        "id": "profile-data",
+        "name": "Profile labeled source data",
+        "persona": "$da",
+        "status": "pending",
+        "prompt": ".cocoplus/prompts/profile-data-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/classifier/profile.md"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/classifier/profile.md"] }],
+        "validation_commands": ["test -f .cocoplus/lifecycle/classifier/profile.md"],
+        "hitl": false,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "design-function",
+        "name": "Design AI_CLASSIFY function contract",
+        "persona": "$de",
+        "status": "pending",
+        "dependencies": ["profile-data"],
+        "prompt": ".cocoplus/prompts/design-function-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/classifier/design.sql", ".cocoplus/lifecycle/classifier/design.md"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/classifier/design.sql", ".cocoplus/lifecycle/classifier/design.md"] }],
+        "validation_commands": ["test -f .cocoplus/lifecycle/classifier/design.sql"],
+        "hitl": true,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "build-classifier",
+        "name": "Implement classifier SQL",
+        "persona": "$de",
+        "status": "pending",
+        "dependencies": ["design-function"],
+        "prompt": ".cocoplus/prompts/build-classifier-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/classifier/build.sql"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/classifier/build.sql"] }],
+        "validation_commands": ["grep -i AI_CLASSIFY .cocoplus/lifecycle/classifier/build.sql"],
+        "hitl": false,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "create-evaluation",
+        "name": "Create labeled evaluation query",
+        "persona": "$ds",
+        "status": "pending",
+        "dependencies": ["build-classifier"],
+        "prompt": ".cocoplus/prompts/create-evaluation-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/classifier/evaluation.sql"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/classifier/evaluation.sql"] }],
+        "validation_commands": ["test -f .cocoplus/lifecycle/classifier/evaluation.sql"],
+        "hitl": false,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "validate-metrics",
+        "name": "Validate classifier metrics",
+        "persona": "$ae",
+        "status": "pending",
+        "dependencies": ["create-evaluation"],
+        "prompt": ".cocoplus/prompts/validate-metrics-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/classifier/metrics.md"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/classifier/metrics.md"] }],
+        "validation_commands": ["grep -E \"accuracy|precision|recall|threshold\" .cocoplus/lifecycle/classifier/metrics.md"],
+        "hitl": true,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "governance-review",
+        "name": "Review governance and PII controls",
+        "persona": "$dst",
+        "status": "pending",
+        "dependencies": ["validate-metrics"],
+        "prompt": ".cocoplus/prompts/governance-review-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/classifier/governance.md"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/classifier/governance.md"] }],
+        "validation_commands": ["test -f .cocoplus/lifecycle/classifier/governance.md"],
+        "hitl": true,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "ship-readiness",
+        "name": "Prepare deployment record",
+        "persona": "$dpm",
+        "status": "pending",
+        "dependencies": ["governance-review"],
+        "prompt": ".cocoplus/prompts/ship-readiness-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/classifier/ship-readiness.md"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/classifier/ship-readiness.md"] }],
+        "validation_commands": ["test -f .cocoplus/lifecycle/classifier/ship-readiness.md"],
+        "hitl": false,
+        "maxConsecutiveFailures": 3
+      }
     ]
   }
 }

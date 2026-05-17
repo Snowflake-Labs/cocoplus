@@ -51,6 +51,14 @@ For each workstream, classify its primary domain using this mapping:
 
 ## Step 4: Create Per-Stage Prompt Files
 
+Before writing each prompt, inspect every input file referenced by the workstream. Estimate tokens as `ceil(characters / 4)`. If the estimate exceeds `plugin.json` `cocoHarvest.pullThreshold` (default: 8000), use CocoPull:
+
+- If `<input>.pull.md` exists and its frontmatter says `reliability: high`, reference the pull file in the stage prompt and log the substitution in `.cocoplus/harvest/[run-id]-progress.txt`.
+- If `<input>.pull.md` exists but reliability is `low`, keep the original file and log a warning.
+- If no pull file exists, invoke `$pull <input>` before finalizing the prompt, then reference the generated pull file unless the pull header says `distillation_outcome: no_reduction`.
+
+The stage prompt must always state whether each large input is loaded as source or pull artifact. CocoPull substitution is transparent and auditable, never silent.
+
 For each workstream, create `.cocoplus/prompts/[stage-id]-prompt.md`:
 
 ```markdown

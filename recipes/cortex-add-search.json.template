@@ -1,15 +1,88 @@
 {
   "name": "cortex-add-search",
-  "description": "Configure and validate a Cortex Search service.",
-  "parameters": ["source_table", "search_column", "warehouse", "service_name"],
+  "description": "Configure, validate, and document a Cortex Search service.",
+  "parameters": {
+    "source_table": { "required": true, "description": "Fully qualified source table." },
+    "search_column": { "required": true, "description": "Text column indexed by Cortex Search." },
+    "warehouse": { "required": true, "description": "Warehouse used to maintain the service." },
+    "service_name": { "required": true, "description": "Cortex Search service name." }
+  },
   "flow": {
-    "meta": { "name": "Add Cortex Search", "phase": "plan" },
+    "meta": {
+      "name": "Add Cortex Search",
+      "phase": "plan",
+      "generated_by": "cocorecipe",
+      "recipe": "cortex-add-search"
+    },
+    "defaults": {
+      "model": "claude-sonnet-4-20250514",
+      "on_failure": "stop"
+    },
     "stages": [
-      { "id": "profile-source", "persona": "data-analyst", "status": "pending" },
-      { "id": "design-search", "persona": "data-engineer", "status": "pending", "depends_on": ["profile-source"] },
-      { "id": "create-service", "persona": "data-engineer", "status": "pending", "depends_on": ["design-search"] },
-      { "id": "quality-check", "persona": "analytics-engineer", "status": "pending", "depends_on": ["create-service"] },
-      { "id": "usage-guidance", "persona": "bi-analyst", "status": "pending", "depends_on": ["quality-check"] }
+      {
+        "id": "profile-source",
+        "name": "Profile source corpus",
+        "persona": "$da",
+        "status": "pending",
+        "prompt": ".cocoplus/prompts/profile-source-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/search/source-profile.md"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/search/source-profile.md"] }],
+        "validation_commands": ["test -f .cocoplus/lifecycle/search/source-profile.md"],
+        "hitl": false,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "design-search",
+        "name": "Design service contract",
+        "persona": "$de",
+        "status": "pending",
+        "dependencies": ["profile-source"],
+        "prompt": ".cocoplus/prompts/design-search-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/search/design.md"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/search/design.md"] }],
+        "validation_commands": ["grep -E \"service|warehouse|search column\" .cocoplus/lifecycle/search/design.md"],
+        "hitl": true,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "create-service",
+        "name": "Create Cortex Search SQL",
+        "persona": "$de",
+        "status": "pending",
+        "dependencies": ["design-search"],
+        "prompt": ".cocoplus/prompts/create-service-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/search/create-service.sql"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/search/create-service.sql"] }],
+        "validation_commands": ["grep -i \"CREATE.*CORTEX SEARCH\" .cocoplus/lifecycle/search/create-service.sql"],
+        "hitl": false,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "quality-check",
+        "name": "Validate retrieval quality",
+        "persona": "$ae",
+        "status": "pending",
+        "dependencies": ["create-service"],
+        "prompt": ".cocoplus/prompts/quality-check-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/search/retrieval-quality.md"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/search/retrieval-quality.md"] }],
+        "validation_commands": ["test -f .cocoplus/lifecycle/search/retrieval-quality.md"],
+        "hitl": true,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "usage-guidance",
+        "name": "Document usage guidance",
+        "persona": "$bi",
+        "status": "pending",
+        "dependencies": ["quality-check"],
+        "prompt": ".cocoplus/prompts/usage-guidance-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/search/usage-guidance.md"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/search/usage-guidance.md"] }],
+        "validation_commands": ["test -f .cocoplus/lifecycle/search/usage-guidance.md"],
+        "hitl": false,
+        "maxConsecutiveFailures": 3
+      }
     ]
   }
 }
