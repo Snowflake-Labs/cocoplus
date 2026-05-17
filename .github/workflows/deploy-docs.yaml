@@ -1,0 +1,48 @@
+name: Deploy Docs to Github Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'docs'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
+
+      - name: Purge GitHub Pages cache
+        env:
+          PAGES_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          find docs -name "*.html" | sed 's|^docs/||' | while read -r page; do
+            curl -s -o /dev/null -w "%{http_code} ${PAGES_URL}${page}\n" \
+              -H "Cache-Control: no-cache, no-store, must-revalidate" \
+              -H "Pragma: no-cache" \
+              "${PAGES_URL}${page}" || true
+          done
