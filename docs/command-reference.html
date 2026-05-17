@@ -429,9 +429,10 @@ $spark cost optimization strategies</code></pre>
   <p>Deactivates CocoSpark. Offers option to capture insights into <code>spec.md</code> — developer decides what, if anything, to carry forward.</p>
   <h2>Plan Critique — SecondEye</h2>
   <h3><code>$secondeye</code></h3>
-  <p class="cmd-subtitle">Run three-model parallel plan critique</p>
+  <p class="cmd-subtitle">Run five-lens parallel plan critique</p>
   <pre><code>$secondeye</code></pre>
-  <p>Default target: <code>.cocoplus/lifecycle/plan.md</code>. Spawns three SecondEye Critic subagents in parallel — Haiku (Efficiency Lens), Sonnet (Completeness Lens), Opus (Risk Lens). Each writes to a temporary staging file; results are aggregated into <code>.cocoplus/lifecycle/secondeye-[timestamp].md</code>. Staging files deleted after aggregation.</p>
+  <p>Default target: <code>.cocoplus/lifecycle/plan.md</code>. Spawns five SecondEye Critic subagents in parallel — Haiku (Efficiency Lens), Sonnet (Completeness Lens), Opus (Risk Lens), Sonnet (Devil's Advocate), and Haiku (Edge Case Hunter). Each writes to a temporary staging file; results are aggregated into <code>.cocoplus/lifecycle/secondeye-[timestamp].md</code>. Staging files are deleted after aggregation.</p>
+  <p>The Devil's Advocate finding is BLOCKING by default and clears only when the developer's rebuttal scores at least 4/5. Edge Case Hunter findings are advisory by default and focus on evaluation blind spots.</p>
   <p>If Critical findings exist, a soft gate activates on the Build phase. <strong>This is always on-demand — never automatic.</strong></p>
   <p>Each finding in the aggregated report is tagged on two orthogonal dimensions:</p>
   <ul>
@@ -555,8 +556,33 @@ $seed add "Refactor into shared UDF" --trigger "when CocoMap is committed"</code
   <p>Opens a structured multi-turn wizard tailored to the current <code>spec.md</code>. Asks focused implementation decision questions: model selection, evaluation methodology, accuracy threshold, warehouse assignment, production safety requirements, and explicit scope boundaries. Adapts to spec type — AI function builds get model and accuracy questions; Cortex Search configurations get indexing and latency questions. CocoContext organizational standards that definitively answer a question are applied automatically; those questions are skipped and their source is attributed.</p>
   <p>All answers are written to <code>lifecycle/discuss.md</code>. When <code>$plan</code> subsequently runs, the planning agent reads <code>discuss.md</code> as a constraint document and a plan-checker validation step flags any Pre-Approval Conflicts before plan approval.</p>
   <p>After completing (or immediately after <code>$spec</code> if <code>$discuss</code> was not invoked), the CocoSpec quality gate evaluates specification completeness on five dimensions: Value, Scope, Acceptance, Boundaries, and Risk (0–2 points each, maximum 10, required ≥9). Scores below 9 hold the gate with an Uncertainty Declaration that names implicit assumptions explicitly.</p>
+  <p>Before scoring, <code>spec-validator.js</code> detects vague language and applies a bounded penalty. After a PASS, <code>alignment-check.js</code> compares shared decision inputs across <code>discuss.md</code>, <code>spec.md</code>, and <code>cocoplus-context.md</code>; conflicts block agent spawning until resolved. Gate outcomes are PASS, CONCERNS, or FAIL.</p>
   <p>When all three conditions hold — spec score ≥9, scope ≤3 files, no EHRB indicators — Quick Mode bypass is recommended: skip Plan phase and proceed directly to Build.</p>
   <p><strong>Output:</strong> <code>lifecycle/discuss.md</code> + CocoSpec score in <code>lifecycle/spec-score.md</code>.</p>
+  <h2>Working Backwards — CocoBloom</h2>
+  <h3><code>$bloom</code></h3>
+  <p class="cmd-subtitle">Create a pre-spec commitment artifact</p>
+  <pre><code>$bloom</code></pre>
+  <p>Runs a four-question dialogue: beneficiary, core capability, exactly three constraints, and a developer-written press-release paragraph. Writes <code>.cocoplus/lifecycle/bloom.md</code>, which anchors <code>$spec</code> and gives downstream review a concrete original intent.</p>
+  <p><strong>Output:</strong> <code>lifecycle/bloom.md</code> committed as a lifecycle artifact.</p>
+  <h3><code>$bloom --skip</code></h3>
+  <p class="cmd-subtitle">Waive the bloom advisory</p>
+  <pre><code>$bloom --skip</code></pre>
+  <p>Records <code>"bloom_waived": true</code> in lifecycle metadata so <code>$spec</code> will not display the bloom advisory.</p>
+  <h2>Roundtable — CocoKlatch</h2>
+  <h3><code>$klatch &lt;topic&gt; [--participants=N]</code></h3>
+  <p class="cmd-subtitle">Run an independent multi-perspective roundtable</p>
+  <pre><code>$klatch "Which embedding strategy should this search service use?"
+$klatch "Should this classifier ship now?" --participants=5</code></pre>
+  <p>Creates a topic brief, spawns two to five independent participant perspectives, then synthesizes agreements, divergences, open questions, and a recommended decision path. Artifacts are written under <code>.cocoplus/lifecycle/klatch/</code>.</p>
+  <p><strong>Output:</strong> Brief, participant files, synthesis file, and one-line summary.</p>
+  <h2>Context Distillation — CocoPull</h2>
+  <h3><code>$pull &lt;target&gt; [--validate]</code></h3>
+  <p class="cmd-subtitle">Distill large context without losing decision-bearing facts</p>
+  <pre><code>$pull evaluation/results.json
+$pull schema-dump.sql --validate</code></pre>
+  <p>Produces a <code>.pull.md</code> artifact beside the source file. Decision-bearing content is preserved verbatim while redundant narrative and large tables are compressed. With <code>--validate</code>, CocoPull runs a probe-based round-trip check and marks reliability as high or low.</p>
+  <p><strong>Output:</strong> Pull artifact and <code>.cocoplus/pull/manifest.json</code> update.</p>
   <h2>Hooks (Automatic — Reference Only)</h2>
   <p>These hooks fire on Coco lifecycle events. They are documented here for understanding the system, not for manual invocation.</p>
   <div class="table-wrap">
@@ -588,6 +614,7 @@ $seed add "Refactor into shared UDF" --trigger "when CocoMap is committed"</code
         <tr><td><strong>Assist Mode</strong></td><td><code>$cocoplus on</code> · <code>$cocoplus off</code></td></tr>
         <tr><td><strong>Lifecycle</strong></td><td><code>$spec</code> · <code>$discuss</code> · <code>$plan</code> · <code>$build</code> · <code>$test</code> · <code>$review</code> · <code>$ship</code> · <code>$rewind</code> · <code>$fork</code></td></tr>
         <tr><td><strong>Pipeline</strong></td><td><code>$flow run [--concurrency]</code> · <code>$flow status</code> · <code>$flow pause</code> · <code>$flow resume</code> · <code>$flow view</code></td></tr>
+        <tr><td><strong>Pre-Spec</strong></td><td><code>$bloom</code> · <code>$bloom --skip</code> · <code>$klatch &lt;topic&gt;</code></td></tr>
         <tr><td><strong>Recipes</strong></td><td><code>$recipe list</code> · <code>$recipe use</code> · <code>$recipe new</code></td></tr>
         <tr><td><strong>Personas</strong></td><td><code>$de</code> · <code>$ae</code> · <code>$ds</code> · <code>$da</code> · <code>$bi</code> · <code>$dpm</code> · <code>$dst</code> · <code>$cdo</code> · <code>$personas</code></td></tr>
         <tr><td><strong>Memory</strong></td><td><code>$memory on</code> · <code>$memory off</code></td></tr>
@@ -607,6 +634,7 @@ $seed add "Refactor into shared UDF" --trigger "when CocoMap is committed"</code
         <tr><td><strong>Fleet</strong></td><td><code>$fleet init</code> · <code>$fleet run</code> · <code>$fleet status</code> · <code>$fleet logs</code> · <code>$fleet stop</code></td></tr>
         <tr><td><strong>Map</strong></td><td><code>$map</code> · <code>$map diff</code> · <code>$map explain &lt;target&gt;</code></td></tr>
         <tr><td><strong>Seeds</strong></td><td><code>$seed add "&lt;idea&gt;" --trigger "&lt;condition&gt;"</code> · <code>$seed list</code> · <code>$seed promote &lt;id&gt;</code></td></tr>
+        <tr><td><strong>Distillation</strong></td><td><code>$pull &lt;target&gt;</code> · <code>$pull &lt;target&gt; --validate</code></td></tr>
       </tbody>
     </table>
   </div>
