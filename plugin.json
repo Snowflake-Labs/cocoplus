@@ -7,6 +7,28 @@
   "entry": ".cortex/",
   "minCocoVersion": "1.0.0",
   "runtime": "node",
+  "cocoHarvest": {
+    "pullThreshold": 8000,
+    "stallDetection": {
+      "stallTokenThreshold": 150,
+      "stallMinSteps": 5
+    }
+  },
+  "templates": [
+    "templates/AGENTS.md.template",
+    "templates/project.md.template",
+    "templates/flow.json.template",
+    "templates/notifications.json.template",
+    "templates/safety-config.json.template",
+    "templates/flow-view.html.template",
+    "templates/meter-view.html.template"
+  ],
+  "recipes": [
+    "recipes/cortex-add-classifier.json.template",
+    "recipes/cortex-add-search.json.template",
+    "recipes/cortex-semantic-model.json.template",
+    "recipes/cortex-add-extraction.json.template"
+  ],
   "agents": [
     "cocobrew",
     "data-engineer",

@@ -1,58 +1,853 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CocoMeter View</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CocoMeter — Usage Dashboard</title>
   <style>
-    body { margin: 0; font: 14px system-ui, sans-serif; background: #111318; color: #f4f7fb; }
-    header { padding: 16px 20px; border-bottom: 1px solid #2a3140; }
-    main { padding: 20px; display: grid; gap: 12px; }
-    table { width: 100%; border-collapse: collapse; background: #171c24; }
-    th, td { padding: 10px; border-bottom: 1px solid #2a3140; text-align: left; }
-    .summary { display: flex; gap: 12px; flex-wrap: wrap; }
-    .card { border: 1px solid #2a3140; border-radius: 8px; padding: 12px; min-width: 160px; background: #171c24; }
-    .value { font-size: 22px; font-weight: 700; }
+    :root {
+      --bg:       #0d1117;
+      --surface:  #161b22;
+      --surface2: #1e2530;
+      --surface3: #252d3a;
+      --border:   #2a3245;
+      --text:     #e2e8f0;
+      --muted:    #7d8fa8;
+      --accent:   #7c3aed;
+      --success:  #22c55e;
+      --blue:     #3b82f6;
+      --amber:    #f59e0b;
+      --red:      #ef4444;
+      --cyan:     #06b6d4;
+
+      --haiku-color:  #06b6d4;
+      --sonnet-color: #7c3aed;
+      --opus-color:   #f59e0b;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 13px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Toolbar ─────────────────────────────────────── */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .logo { font-size: 13px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+    .project-name { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; }
+    .sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+    .gen-time { font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+    .btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 11px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      transition: background 0.12s;
+      user-select: none;
+    }
+    .btn:hover { background: var(--surface3); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); }
+    .btn.primary:hover { background: #6d28d9; }
+
+    .filter-row { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+    .filter-label { font-size: 11px; color: var(--muted); }
+    select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* ── Main layout ─────────────────────────────────── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      overflow: auto;
+    }
+
+    .section {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    /* ── Summary Cards ───────────────────────────────── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .card-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .card-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .card-sub { font-size: 11px; color: var(--muted); }
+    .card-accent { border-top: 2px solid; }
+    .card-accent-purple { border-top-color: var(--accent); }
+    .card-accent-blue   { border-top-color: var(--blue); }
+    .card-accent-amber  { border-top-color: var(--amber); }
+    .card-accent-cyan   { border-top-color: var(--cyan); }
+
+    /* ── Two-col layout ──────────────────────────────── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .two-col .pane {
+      padding: 16px 20px;
+    }
+    .two-col .pane:first-child {
+      border-right: 1px solid var(--border);
+    }
+
+    /* ── Tables ──────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    th {
+      text-align: left;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    th:hover { color: var(--text); }
+    th.sorted { color: var(--accent); }
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #1e2530;
+      vertical-align: middle;
+    }
+    tr:hover td { background: var(--surface2); }
+    tr.selected td { background: rgba(124,58,237,0.08); }
+    tr.selected td:first-child { border-left: 2px solid var(--accent); }
+
+    .mono { font-family: 'Courier New', Courier, monospace; font-size: 10.5px; color: var(--muted); }
+    .truncate { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Token bar inside table cell */
+    .tok-bar-wrap { display: flex; align-items: center; gap: 6px; min-width: 120px; }
+    .tok-bar {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .tok-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: var(--accent);
+      transition: width 0.3s;
+    }
+    .tok-val { font-size: 11px; color: var(--text); min-width: 54px; text-align: right; }
+
+    /* Badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .badge-spec     { background: rgba(124,58,237,0.12); color: #c4b5fd; }
+    .badge-plan     { background: rgba(59,130,246,0.12);  color: #93c5fd; }
+    .badge-build    { background: rgba(34,197,94,0.12);   color: #86efac; }
+    .badge-test     { background: rgba(245,158,11,0.12);  color: #fcd34d; }
+    .badge-review   { background: rgba(239,68,68,0.12);   color: #fca5a5; }
+    .badge-ship     { background: rgba(6,182,212,0.12);   color: #67e8f9; }
+    .badge-default  { background: rgba(100,116,139,0.12); color: #94a3b8; }
+
+    /* ── Model distribution ──────────────────────────── */
+    .model-list { display: flex; flex-direction: column; gap: 14px; }
+    .model-item { display: flex; flex-direction: column; gap: 5px; }
+    .model-header { display: flex; align-items: center; justify-content: space-between; }
+    .model-name { font-size: 12px; font-weight: 600; }
+    .model-meta { font-size: 10px; color: var(--muted); }
+    .model-bar-track {
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .model-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.4s;
+    }
+    .model-sub {
+      display: flex;
+      gap: 12px;
+      font-size: 10px;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+    .model-sub span { display: flex; align-items: center; gap: 3px; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+
+    /* Cache efficiency bar */
+    .cache-section { margin-top: 20px; }
+    .cache-bar-wrap { position: relative; height: 18px; border-radius: 4px; overflow: hidden; background: var(--border); display: flex; }
+    .cache-seg { height: 100%; transition: width 0.4s; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; overflow: hidden; }
+
+    /* ── Request detail panel ────────────────────────── */
+    .req-filters {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .req-filter-chip {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.12s;
+      user-select: none;
+    }
+    .req-filter-chip.active {
+      background: var(--accent-dim, rgba(124,58,237,0.2));
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /* ── Parent-child link ───────────────────────────── */
+    .parent-chip {
+      font-size: 9px;
+      background: var(--surface3);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px 5px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* ── Modal ───────────────────────────────────────── */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      width: 660px;
+      max-width: 94vw;
+      max-height: 82vh;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .modal h3 { font-size: 15px; font-weight: 600; }
+    .modal p  { font-size: 11px; color: var(--muted); }
+    .modal textarea {
+      flex: 1;
+      min-height: 260px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 11.5px;
+      padding: 12px;
+      resize: vertical;
+      outline: none;
+    }
+    .modal textarea:focus { border-color: var(--accent); }
+    .modal-foot { display: flex; align-items: center; gap: 8px; }
+    .modal-err { font-size: 11px; color: var(--red); flex: 1; }
+    .modal-actions { display: flex; gap: 8px; }
+
+    /* Snowflake note banner */
+    .sf-banner {
+      background: rgba(6,182,212,0.07);
+      border: 1px solid rgba(6,182,212,0.25);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 11px;
+      color: #67e8f9;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sf-banner .sf-dot { width: 6px; height: 6px; border-radius: 50%; background: #06b6d4; flex-shrink: 0; }
   </style>
 </head>
 <body>
-  <header>
-    <strong>CocoMeter</strong>
-    <div>Token attribution dashboard</div>
-  </header>
-  <main>
-    <section class="summary" id="summary"></section>
-    <table>
-      <thead><tr><th>Request</th><th>Stage</th><th>Model</th><th>Tokens</th><th>Credits</th></tr></thead>
-      <tbody id="requests"></tbody>
-    </table>
-  </main>
-  <script>
-    /* __METER_INJECTION_START__ */
-    const INJECTED_METER_DATA = {
-      requests: [
-        { request_id: 'demo-1', stage_id: 'spec-review', model: 'sonnet', tokens: 1200, credits: 0.03 }
-      ]
-    };
-    /* __METER_INJECTION_END__ */
 
-    const requests = Array.isArray(INJECTED_METER_DATA?.requests) ? INJECTED_METER_DATA.requests : [];
-    const totalTokens = requests.reduce((sum, row) => sum + Number(row.tokens || row.total_tokens || 0), 0);
-    const totalCredits = requests.reduce((sum, row) => sum + Number(row.credits || row.token_credits || 0), 0);
-    document.getElementById('summary').innerHTML = `
-      <div class="card"><div class="value">${requests.length}</div><div>Requests</div></div>
-      <div class="card"><div class="value">${totalTokens.toLocaleString()}</div><div>Tokens</div></div>
-      <div class="card"><div class="value">${totalCredits.toFixed(4)}</div><div>Credits</div></div>
-    `;
-    document.getElementById('requests').innerHTML = requests.map((row) => `
-      <tr>
-        <td>${row.request_id || ''}</td>
-        <td>${row.stage_id || ''}</td>
-        <td>${row.model || ''}</td>
-        <td>${Number(row.tokens || row.total_tokens || 0).toLocaleString()}</td>
-        <td>${Number(row.credits || row.token_credits || 0).toFixed(4)}</td>
-      </tr>
-    `).join('');
-  </script>
+<!-- ── Toolbar ─────────────────────────────────────────── -->
+<div class="toolbar">
+  <span class="logo">◈ CocoMeter</span>
+  <div class="sep"></div>
+  <span class="project-name" id="proj-name">Usage Dashboard</span>
+  <div class="sep"></div>
+  <span class="gen-time" id="gen-time"></span>
+
+  <div class="filter-row">
+    <span class="filter-label">Session:</span>
+    <select id="session-filter"><option value="all">All Sessions</option></select>
+    <span class="filter-label">Phase:</span>
+    <select id="phase-filter">
+      <option value="all">All Phases</option>
+      <option value="spec">Spec</option>
+      <option value="plan">Plan</option>
+      <option value="build">Build</option>
+      <option value="test">Test</option>
+      <option value="review">Review</option>
+      <option value="ship">Ship</option>
+    </select>
+    <button class="btn primary" id="btn-load">⬆ Load JSON</button>
+    <button class="btn" id="btn-reset">↺ Reset</button>
+  </div>
+</div>
+
+<!-- ── Main ───────────────────────────────────────────── -->
+<div class="main" id="main">
+
+  <!-- Summary Cards -->
+  <div class="section" id="section-summary">
+    <div class="section-title">Summary</div>
+    <div class="cards" id="summary-cards"></div>
+  </div>
+
+  <!-- Snowflake source banner -->
+  <div class="section" id="section-banner" style="padding-top:10px;padding-bottom:10px;">
+    <div class="sf-banner">
+      <div class="sf-dot"></div>
+      <span id="sf-banner-text">Data sourced from <strong>SNOWFLAKE.ACCOUNT_USAGE.CORTEX_CODE_CLI_USAGE_HISTORY</strong> — correlated by REQUEST_ID and PARENT_REQUEST_ID.</span>
+    </div>
+  </div>
+
+  <!-- Stage + Model split -->
+  <div class="two-col" id="two-col">
+    <!-- Stage Attribution -->
+    <div class="pane" id="pane-stages">
+      <div class="section-title">Stage Attribution</div>
+      <div class="table-wrap">
+        <table id="stage-table">
+          <thead>
+            <tr>
+              <th data-col="label">Stage</th>
+              <th data-col="phase">Phase</th>
+              <th data-col="tokens_total" class="sorted">Tokens</th>
+              <th data-col="credits">Credits</th>
+              <th data-col="cache_pct">Cache %</th>
+              <th data-col="request_count">Requests</th>
+            </tr>
+          </thead>
+          <tbody id="stage-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Model Distribution -->
+    <div class="pane" id="pane-models">
+      <div class="section-title">Model Distribution</div>
+      <div class="model-list" id="model-list"></div>
+      <div class="cache-section">
+        <div class="section-title" style="margin-top:0;margin-bottom:8px;">Token Composition</div>
+        <div class="cache-bar-wrap" id="cache-bar"></div>
+        <div class="model-sub" style="margin-top:6px;" id="cache-legend"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Request Log -->
+  <div class="section" id="section-requests">
+    <div class="section-title">Request Log
+      <span id="req-count" style="font-weight:400;text-transform:none;font-size:11px;color:var(--muted);margin-left:6px;"></span>
+    </div>
+    <div class="req-filters" id="stage-chips"></div>
+    <div class="table-wrap">
+      <table id="req-table">
+        <thead>
+          <tr>
+            <th>REQUEST_ID</th>
+            <th>PARENT</th>
+            <th>Stage</th>
+            <th>Time</th>
+            <th data-col="tokens_total">Tokens ↓</th>
+            <th>Input</th>
+            <th>Cache Read</th>
+            <th>Cache Write</th>
+            <th>Output</th>
+            <th>Credits</th>
+            <th>Model</th>
+          </tr>
+        </thead>
+        <tbody id="req-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── JSON Modal ─────────────────────────────────────── -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3>Load Meter JSON</h3>
+    <p>Paste CocoMeter usage data (generated by <code>/meter view</code>) and click Apply.</p>
+    <textarea id="json-ta" spellcheck="false"></textarea>
+    <div class="modal-foot">
+      <span class="modal-err" id="json-err"></span>
+      <div class="modal-actions">
+        <button class="btn" id="btn-cancel">Cancel</button>
+        <button class="btn primary" id="btn-apply">Apply</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// INJECTED METER DATA
+// The /meter view skill replaces the null below with the contents
+// of the aggregated meter dataset before writing to meter-view.html.
+// When opened standalone, falls back to SAMPLE demo data.
+/* __METER_INJECTION_START__ */
+const INJECTED_METER_DATA = null;
+/* __METER_INJECTION_END__ */
+
+// ════════════════════════════════════════════════════════════
+// SAMPLE DATA — representative CocoPlus meter dataset
+// ════════════════════════════════════════════════════════════
+const SAMPLE = {
+  project: "Sales Analytics Platform",
+  generated_at: "2025-04-21T14:05:00Z",
+  snowflake_query_at: "2025-04-21T14:04:58Z",
+  date_range: { from: "2025-04-15", to: "2025-04-21" },
+  summary: {
+    total_tokens:   284729,
+    total_credits:  4.73,
+    total_sessions: 12,
+    total_requests: 284,
+    cache_read_tokens:  85418,
+    cache_write_tokens: 11389,
+    input_fresh_tokens: 124831,
+    output_tokens:      63091
+  },
+  stages: [
+    { stage_id:"spec",  label:"Specification",       phase:"spec",   agent:"ChiefDataOfficer",  tokens:{ input:9200, cache_read:4100, cache_write:800, output:2100 }, credits:0.27, request_count:8,  models:{ "claude-3-opus-20240229":{ tokens:16200, credits:0.27 } } },
+    { stage_id:"plan",  label:"Execution Plan",       phase:"plan",   agent:"ChiefDataOfficer",  tokens:{ input:14300, cache_read:6200, cache_write:1100, output:3400 }, credits:0.39, request_count:14, models:{ "claude-3-opus-20240229":{ tokens:25000, credits:0.39 } } },
+    { stage_id:"B001",  label:"Extract Raw Sources",  phase:"build",  agent:"DataEngineer",      tokens:{ input:18400, cache_read:7200, cache_write:900, output:4100 }, credits:0.51, request_count:32, models:{ "claude-3-5-sonnet-20241022":{ tokens:28100, credits:0.46 }, "claude-3-haiku-20240307":{ tokens:2500, credits:0.05 } } },
+    { stage_id:"B002",  label:"Stage Layer Load",     phase:"build",  agent:"DataEngineer",      tokens:{ input:12100, cache_read:5800, cache_write:700, output:2900 }, credits:0.34, request_count:24, models:{ "claude-3-5-sonnet-20241022":{ tokens:21500, credits:0.34 } } },
+    { stage_id:"B003",  label:"Determine Load Type",  phase:"build",  agent:"DataEngineer",      tokens:{ input:8400, cache_read:3900, cache_write:500, output:1800 }, credits:0.22, request_count:18, models:{ "claude-3-5-sonnet-20241022":{ tokens:14600, credits:0.22 } } },
+    { stage_id:"B004",  label:"Transform & Model",    phase:"build",  agent:"AnalyticsEngineer", tokens:{ input:22300, cache_read:9100, cache_write:1400, output:5200 }, credits:0.64, request_count:41, models:{ "claude-3-5-sonnet-20241022":{ tokens:38000, credits:0.59 }, "claude-3-haiku-20240307":{ tokens:3200, credits:0.05 } } },
+    { stage_id:"B005",  label:"Mart Layer",           phase:"build",  agent:"AnalyticsEngineer", tokens:{ input:16800, cache_read:7400, cache_write:900, output:3600 }, credits:0.47, request_count:28, models:{ "claude-3-5-sonnet-20241022":{ tokens:28700, credits:0.47 } } },
+    { stage_id:"B006",  label:"Train Model",          phase:"build",  agent:"DataScientist",     tokens:{ input:19400, cache_read:8200, cache_write:1200, output:4800 }, credits:0.57, request_count:36, models:{ "claude-3-5-sonnet-20241022":{ tokens:33600, credits:0.57 } } },
+    { stage_id:"test",  label:"Quality Gate",         phase:"test",   agent:"DataEngineer",      tokens:{ input:11200, cache_read:5100, cache_write:700, output:2400 }, credits:0.31, request_count:21, models:{ "claude-3-5-sonnet-20241022":{ tokens:19400, credits:0.31 } } },
+    { stage_id:"review",label:"CDO Review",           phase:"review", agent:"ChiefDataOfficer",  tokens:{ input:13800, cache_read:6200, cache_write:900, output:3200 }, credits:0.54, request_count:19, models:{ "claude-3-opus-20240229":{ tokens:24100, credits:0.54 } } },
+    { stage_id:"ship",  label:"Ship to Production",   phase:"ship",   agent:"DataEngineer",      tokens:{ input:5800, cache_read:2800, cache_write:300, output:1200 }, credits:0.13, request_count:10, models:{ "claude-3-5-sonnet-20241022":{ tokens:10100, credits:0.13 } } }
+  ],
+  requests: [
+    { request_id:"req-3f8a2b-0001", parent_request_id:null,              stage_id:"spec",   usage_time:"2025-04-15T09:02:14Z", tokens:{ input:4200, cache_read_input:1800, cache_write_input:400, output:1100 }, credits:0.14, model:"claude-3-opus-20240229" },
+    { request_id:"req-3f8a2b-0002", parent_request_id:"req-3f8a2b-0001", stage_id:"spec",   usage_time:"2025-04-15T09:08:41Z", tokens:{ input:5000, cache_read_input:2300, cache_write_input:400, output:1000 }, credits:0.13, model:"claude-3-opus-20240229" },
+    { request_id:"req-7c1d4e-0001", parent_request_id:null,              stage_id:"plan",   usage_time:"2025-04-15T10:14:22Z", tokens:{ input:7100, cache_read_input:3100, cache_write_input:550, output:1700 }, credits:0.19, model:"claude-3-opus-20240229" },
+    { request_id:"req-7c1d4e-0002", parent_request_id:"req-7c1d4e-0001", stage_id:"plan",   usage_time:"2025-04-15T10:22:05Z", tokens:{ input:7200, cache_read_input:3100, cache_write_input:550, output:1700 }, credits:0.20, model:"claude-3-opus-20240229" },
+    { request_id:"req-a9f3c1-0001", parent_request_id:null,              stage_id:"B001",   usage_time:"2025-04-16T08:11:30Z", tokens:{ input:9200, cache_read_input:3600, cache_write_input:450, output:2050 }, credits:0.26, model:"claude-3-5-sonnet-20241022" },
+    { request_id:"req-a9f3c1-0002", parent_request_id:"req-a9f3c1-0001", stage_id:"B001",   usage_time:"2025-04-16T08:31:44Z", tokens:{ input:9200, cache_read_input:3600, cache_write_input:450, output:2050 }, credits:0.25, model:"claude-3-5-sonnet-20241022" },
+    { request_id:"req-b2e7a4-0001", parent_request_id:null,              stage_id:"B004",   usage_time:"2025-04-17T09:44:12Z", tokens:{ input:11150, cache_read_input:4550, cache_write_input:700, output:2600 }, credits:0.32, model:"claude-3-5-sonnet-20241022" },
+    { request_id:"req-b2e7a4-0002", parent_request_id:"req-b2e7a4-0001", stage_id:"B004",   usage_time:"2025-04-17T10:02:38Z", tokens:{ input:11150, cache_read_input:4550, cache_write_input:700, output:2600 }, credits:0.32, model:"claude-3-5-sonnet-20241022" },
+    { request_id:"req-c4f1d9-0001", parent_request_id:null,              stage_id:"review", usage_time:"2025-04-20T14:18:55Z", tokens:{ input:6900, cache_read_input:3100, cache_write_input:450, output:1600 }, credits:0.27, model:"claude-3-opus-20240229" },
+    { request_id:"req-c4f1d9-0002", parent_request_id:"req-c4f1d9-0001", stage_id:"review", usage_time:"2025-04-20T14:35:20Z", tokens:{ input:6900, cache_read_input:3100, cache_write_input:450, output:1600 }, credits:0.27, model:"claude-3-opus-20240229" }
+  ],
+  model_totals: {
+    "claude-3-opus-20240229":      { tokens:65300,  credits:1.20 },
+    "claude-3-5-sonnet-20241022":  { tokens:213629, credits:3.42 },
+    "claude-3-haiku-20240307":     { tokens:5800,   credits:0.11 }
+  }
+};
+
+// ════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════
+let data = INJECTED_METER_DATA || SAMPLE;
+let activeStageFilter = 'all';
+let activePhaseFilter = 'all';
+let activeSessionFilter = 'all';
+
+// ════════════════════════════════════════════════════════════
+// UTILITIES
+// ════════════════════════════════════════════════════════════
+function fmt(n, digits = 0) {
+  if (n === null || n === undefined) return '—';
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000)    return (n/1000).toFixed(digits === 0 ? 1 : digits) + 'k';
+  return n.toLocaleString();
+}
+function fmtCredits(n) {
+  if (n === null || n === undefined) return '—';
+  return n < 0.01 ? '<0.01' : n.toFixed(3);
+}
+function fmtTime(iso) {
+  if (!iso) return '—';
+  try { return new Date(iso).toLocaleString(undefined, { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }); }
+  catch { return iso; }
+}
+function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function stageTotalTokens(s) {
+  return (s.tokens.input||0) + (s.tokens.cache_read||0) + (s.tokens.cache_write||0) + (s.tokens.output||0);
+}
+function reqTotalTokens(r) {
+  return (r.tokens.input||0) + (r.tokens.cache_read_input||0) + (r.tokens.cache_write_input||0) + (r.tokens.output||0);
+}
+function stageCachePct(s) {
+  const total = stageTotalTokens(s);
+  if (!total) return 0;
+  return Math.round(((s.tokens.cache_read||0) / total) * 100);
+}
+
+function phaseBadge(phase) {
+  const cls = { spec:'badge-spec', plan:'badge-plan', build:'badge-build', test:'badge-test', review:'badge-review', ship:'badge-ship' }[phase] || 'badge-default';
+  return `<span class="badge ${cls}">${esc(phase || '—')}</span>`;
+}
+
+const MODEL_COLORS = {
+  'claude-3-opus-20240229':     '#f59e0b',
+  'claude-3-5-sonnet-20241022': '#7c3aed',
+  'claude-3-haiku-20240307':    '#06b6d4',
+  'claude-3-sonnet-20240229':   '#3b82f6',
+};
+function modelColor(name) {
+  return MODEL_COLORS[name] || '#64748b';
+}
+function modelShort(name) {
+  if (!name) return '—';
+  if (name.includes('haiku'))  return 'Haiku';
+  if (name.includes('sonnet')) return 'Sonnet';
+  if (name.includes('opus'))   return 'Opus';
+  return name.split('-').pop();
+}
+
+// ════════════════════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════════════════════
+function render(d) {
+  data = d;
+  document.getElementById('proj-name').textContent = d.project || 'CocoMeter';
+  if (d.generated_at) {
+    document.getElementById('gen-time').textContent =
+      'Generated ' + fmtTime(d.generated_at) +
+      (d.snowflake_query_at ? ' · Snowflake synced ' + fmtTime(d.snowflake_query_at) : '');
+  }
+
+  renderSummary(d);
+  renderStages(d);
+  renderModels(d);
+  renderRequests(d);
+  buildSessionFilter(d);
+  buildStageChips(d);
+}
+
+// ── Summary cards
+function renderSummary(d) {
+  const s = d.summary || {};
+  const cacheTotal = (s.cache_read_tokens||0);
+  const inputTotal = (s.input_fresh_tokens||0) + (s.cache_read_tokens||0) + (s.cache_write_tokens||0);
+  const cacheRate  = inputTotal ? Math.round((cacheTotal / inputTotal) * 100) : 0;
+
+  const cards = [
+    { label:'Total Tokens', value: fmt(s.total_tokens), sub: `${d.date_range?.from || ''} → ${d.date_range?.to || ''}`, accent:'card-accent-purple' },
+    { label:'Total Credits', value: fmtCredits(s.total_credits), sub: `${s.total_requests||0} requests · ${s.total_sessions||0} sessions`, accent:'card-accent-blue' },
+    { label:'Cache Efficiency', value: cacheRate + '%', sub: `${fmt(s.cache_read_tokens)} tokens served from cache`, accent:'card-accent-cyan' },
+    { label:'Output Tokens', value: fmt(s.output_tokens), sub: `of ${fmt(s.total_tokens)} total`, accent:'card-accent-amber' },
+  ];
+
+  document.getElementById('summary-cards').innerHTML = cards.map(c => `
+    <div class="card card-accent ${c.accent}">
+      <div class="card-label">${c.label}</div>
+      <div class="card-value">${c.value}</div>
+      <div class="card-sub">${c.sub}</div>
+    </div>
+  `).join('');
+}
+
+// ── Stage attribution table
+function renderStages(d) {
+  const stages = filterStages(d);
+  const maxTok = Math.max(...stages.map(stageTotalTokens), 1);
+
+  document.getElementById('stage-tbody').innerHTML = stages.length ? stages.map(s => {
+    const total = stageTotalTokens(s);
+    const barPct = Math.round((total / maxTok) * 100);
+    const cachePct = stageCachePct(s);
+    const modelNames = Object.keys(s.models || {});
+    const modelDots = modelNames.map(m =>
+      `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${modelColor(m)};margin-right:2px;" title="${m}"></span>`
+    ).join('');
+
+    return `<tr data-sid="${esc(s.stage_id)}" class="stage-row" style="cursor:pointer" onclick="filterToStage('${esc(s.stage_id)}')">
+      <td>
+        <div style="font-weight:600;margin-bottom:2px;">${esc(s.label)}</div>
+        <div style="font-size:10px;color:var(--muted);">${esc(s.agent||'')}</div>
+      </td>
+      <td>${phaseBadge(s.phase)}</td>
+      <td>
+        <div class="tok-bar-wrap">
+          <div class="tok-bar"><div class="tok-bar-fill" style="width:${barPct}%"></div></div>
+          <div class="tok-val">${fmt(total)}</div>
+        </div>
+      </td>
+      <td>${fmtCredits(s.credits)}</td>
+      <td><span style="color:${cachePct>30?'var(--cyan)':'var(--muted)'}">${cachePct}%</span></td>
+      <td style="color:var(--muted)">${s.request_count}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="6" class="empty-state">No stages match current filters.</td></tr>';
+}
+
+// ── Model distribution
+function renderModels(d) {
+  const totals = d.model_totals || {};
+  const allTokens = Object.values(totals).reduce((s, m) => s + (m.tokens||0), 0) || 1;
+  const sorted = Object.entries(totals).sort((a,b) => b[1].tokens - a[1].tokens);
+
+  document.getElementById('model-list').innerHTML = sorted.map(([name, m]) => {
+    const pct = Math.round(((m.tokens||0) / allTokens) * 100);
+    const color = modelColor(name);
+    return `<div class="model-item">
+      <div class="model-header">
+        <div class="model-name" style="color:${color}">${modelShort(name)}</div>
+        <div class="model-meta">${fmt(m.tokens)} tokens · ${fmtCredits(m.credits)} credits</div>
+      </div>
+      <div class="model-bar-track">
+        <div class="model-bar-fill" style="width:${pct}%;background:${color}"></div>
+      </div>
+      <div class="model-sub"><span>${pct}% of total</span></div>
+    </div>`;
+  }).join('');
+
+  // Token composition bar
+  const s = d.summary || {};
+  const total = (s.input_fresh_tokens||0) + (s.cache_read_tokens||0) + (s.cache_write_tokens||0) + (s.output_tokens||0) || 1;
+  const segs = [
+    { key:'cache_read_tokens',  label:'Cache Read',  color:'#06b6d4' },
+    { key:'cache_write_tokens', label:'Cache Write', color:'#0891b2' },
+    { key:'input_fresh_tokens', label:'Fresh Input', color:'#7c3aed' },
+    { key:'output_tokens',      label:'Output',      color:'#22c55e' },
+  ];
+  document.getElementById('cache-bar').innerHTML = segs.map(sg => {
+    const v = s[sg.key] || 0;
+    const pct = Math.max(Math.round((v/total)*100), 0);
+    return `<div class="cache-seg" style="width:${pct}%;background:${sg.color}" title="${sg.label}: ${fmt(v)}"></div>`;
+  }).join('');
+  document.getElementById('cache-legend').innerHTML = segs.map(sg =>
+    `<span><span class="dot" style="background:${sg.color}"></span>${sg.label}</span>`
+  ).join('');
+}
+
+// ── Request log
+function renderRequests(d) {
+  const reqs = filterRequests(d);
+  document.getElementById('req-count').textContent = `(${reqs.length} of ${(d.requests||[]).length})`;
+
+  document.getElementById('req-tbody').innerHTML = reqs.length ? reqs.map(r => {
+    const stageLabel = (d.stages||[]).find(s=>s.stage_id===r.stage_id)?.label || r.stage_id || '—';
+    const stagePhase = (d.stages||[]).find(s=>s.stage_id===r.stage_id)?.phase || '';
+    const total = reqTotalTokens(r);
+    const shortId = r.request_id?.slice(-12) || '—';
+    const shortParent = r.parent_request_id ? r.parent_request_id.slice(-12) : null;
+
+    return `<tr>
+      <td class="mono truncate" title="${esc(r.request_id)}">${esc(shortId)}</td>
+      <td>${shortParent ? `<span class="parent-chip" title="${esc(r.parent_request_id)}">↑ ${esc(shortParent)}</span>` : '<span style="color:var(--muted);font-size:10px;">root</span>'}</td>
+      <td>
+        <div style="font-size:11px;font-weight:500;">${esc(stageLabel)}</div>
+        ${stagePhase ? phaseBadge(stagePhase) : ''}
+      </td>
+      <td style="color:var(--muted);font-size:11px;white-space:nowrap">${fmtTime(r.usage_time)}</td>
+      <td style="font-weight:600">${fmt(total)}</td>
+      <td style="color:var(--muted)">${fmt(r.tokens?.input||0)}</td>
+      <td style="color:var(--cyan)">${fmt(r.tokens?.cache_read_input||0)}</td>
+      <td style="color:#0891b2">${fmt(r.tokens?.cache_write_input||0)}</td>
+      <td style="color:var(--success)">${fmt(r.tokens?.output||0)}</td>
+      <td>${fmtCredits(r.credits)}</td>
+      <td><span class="badge" style="background:${modelColor(r.model)}22;color:${modelColor(r.model)}">${esc(modelShort(r.model))}</span></td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="11" class="empty-state">No requests match current filters.</td></tr>';
+}
+
+// ── Filtering helpers
+function filterStages(d) {
+  return (d.stages||[]).filter(s => {
+    if (activePhaseFilter !== 'all' && s.phase !== activePhaseFilter) return false;
+    return true;
+  });
+}
+
+function filterRequests(d) {
+  return (d.requests||[]).filter(r => {
+    if (activeStageFilter !== 'all' && r.stage_id !== activeStageFilter) return false;
+    if (activePhaseFilter !== 'all') {
+      const stage = (d.stages||[]).find(s => s.stage_id === r.stage_id);
+      if (stage && stage.phase !== activePhaseFilter) return false;
+    }
+    return true;
+  });
+}
+
+function buildSessionFilter(d) {
+  // Infer sessions if available
+  const sel = document.getElementById('session-filter');
+  sel.innerHTML = '<option value="all">All Sessions</option>';
+}
+
+function buildStageChips(d) {
+  const container = document.getElementById('stage-chips');
+  const stages = d.stages || [];
+  container.innerHTML = [
+    `<span class="req-filter-chip active" data-sid="all" onclick="filterToStage('all')">All Stages</span>`,
+    ...stages.map(s =>
+      `<span class="req-filter-chip" data-sid="${esc(s.stage_id)}" onclick="filterToStage('${esc(s.stage_id)}')">${esc(s.label)}</span>`
+    )
+  ].join('');
+}
+
+function filterToStage(sid) {
+  activeStageFilter = sid;
+  document.querySelectorAll('.req-filter-chip').forEach(el => {
+    el.classList.toggle('active', el.dataset.sid === sid);
+  });
+  document.querySelectorAll('.stage-row').forEach(el => {
+    el.classList.toggle('selected', sid !== 'all' && el.dataset.sid === sid);
+  });
+  renderRequests(data);
+}
+
+// ── Toolbar events
+document.getElementById('phase-filter').addEventListener('change', e => {
+  activePhaseFilter = e.target.value;
+  renderStages(data);
+  renderRequests(data);
+});
+
+document.getElementById('session-filter').addEventListener('change', e => {
+  activeSessionFilter = e.target.value;
+  renderRequests(data);
+});
+
+// ── JSON Modal
+document.getElementById('btn-load').addEventListener('click', () => {
+  document.getElementById('json-ta').value = JSON.stringify(data, null, 2);
+  document.getElementById('json-err').textContent = '';
+  document.getElementById('overlay').classList.add('open');
+});
+document.getElementById('btn-cancel').addEventListener('click', () =>
+  document.getElementById('overlay').classList.remove('open')
+);
+document.getElementById('btn-apply').addEventListener('click', () => {
+  try {
+    const parsed = JSON.parse(document.getElementById('json-ta').value);
+    if (!parsed.summary) throw new Error('Missing "summary" object');
+    activeStageFilter = 'all'; activePhaseFilter = 'all';
+    render(parsed);
+    document.getElementById('overlay').classList.remove('open');
+  } catch(e) {
+    document.getElementById('json-err').textContent = '⚠ ' + e.message;
+  }
+});
+document.getElementById('overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) document.getElementById('overlay').classList.remove('open');
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  activeStageFilter = 'all'; activePhaseFilter = 'all'; activeSessionFilter = 'all';
+  document.getElementById('phase-filter').value = 'all';
+  render(INJECTED_METER_DATA || SAMPLE);
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('overlay').classList.remove('open');
+});
+
+// ════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════
+render(INJECTED_METER_DATA || SAMPLE);
+</script>
 </body>
 </html>

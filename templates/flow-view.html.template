@@ -1,50 +1,912 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CocoFlow View</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CocoPlus — Flow Visualizer</title>
   <style>
-    body { margin: 0; font: 14px system-ui, sans-serif; background: #101418; color: #eef2f7; }
-    header { padding: 16px 20px; border-bottom: 1px solid #27313c; display: flex; justify-content: space-between; gap: 16px; }
-    main { padding: 20px; display: grid; gap: 12px; }
-    .stage { border: 1px solid #303c49; border-radius: 8px; padding: 12px; background: #151b22; }
-    .meta { color: #9fb0c3; font-size: 12px; }
-    .status { font-weight: 700; text-transform: uppercase; }
+    :root {
+      --bg:         #0d1117;
+      --surface:    #161b22;
+      --surface2:   #1e2530;
+      --surface3:   #252d3a;
+      --border:     #2a3245;
+      --text:       #e2e8f0;
+      --muted:      #7d8fa8;
+      --success:    #22c55e;
+      --running:    #3b82f6;
+      --pending:    #64748b;
+      --failed:     #ef4444;
+      --skipped:    #f59e0b;
+      --accent:     #7c3aed;
+      --accent-dim: rgba(124,58,237,0.18);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Toolbar ─────────────────────────────────────── */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      z-index: 100;
+      flex-wrap: wrap;
+    }
+
+    .logo {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+
+    .project-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+
+    .btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 11px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      transition: background 0.12s, border-color 0.12s;
+      user-select: none;
+    }
+    .btn:hover { background: var(--surface3); border-color: #3e4f6e; }
+    .btn.primary { background: var(--accent); border-color: var(--accent); }
+    .btn.primary:hover { background: #6d28d9; }
+
+    .zoom-row { display: flex; align-items: center; gap: 5px; }
+    .zoom-val { font-size: 11px; color: var(--muted); min-width: 38px; text-align: center; }
+
+    /* Stats chips */
+    .stat-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      border-radius: 12px;
+    }
+    .stat-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+    .legend {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto;
+    }
+    .legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); }
+    .legend-dot  { width: 7px; height: 7px; border-radius: 50%; }
+
+    /* ── Canvas ──────────────────────────────────────── */
+    .canvas-wrapper {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      cursor: grab;
+    }
+    .canvas-wrapper.dragging { cursor: grabbing; }
+
+    .canvas {
+      position: absolute;
+      transform-origin: 0 0;
+    }
+
+    /* ── Group Boxes ─────────────────────────────────── */
+    .group-box {
+      position: absolute;
+      border-radius: 10px;
+      border: 1.5px dashed;
+      pointer-events: none;
+    }
+    .group-label {
+      position: absolute;
+      top: -11px;
+      left: 12px;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 8px;
+      border-radius: 4px;
+      border: 1px solid;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    /* ── Nodes ───────────────────────────────────────── */
+    .node {
+      position: absolute;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      cursor: pointer;
+      user-select: none;
+      transition: border-color 0.13s, box-shadow 0.13s, opacity 0.13s;
+    }
+    .node:hover {
+      border-color: #4a5f8a;
+      box-shadow: 0 0 0 3px rgba(74,95,138,0.2);
+    }
+    .node.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+    .node.dimmed { opacity: 0.28; }
+
+    .node-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+    .node-agent {
+      font-size: 10px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 7px;
+    }
+    .node-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .node-type-tag {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--surface2);
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    .badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .badge::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .badge-success { background: rgba(34,197,94,0.12); color: var(--success); }
+    .badge-success::before { background: var(--success); }
+    .badge-running  { background: rgba(59,130,246,0.12); color: var(--running); }
+    .badge-running::before  { background: var(--running); animation: blink 1.4s infinite; }
+    .badge-pending  { background: rgba(100,116,139,0.12); color: var(--pending); }
+    .badge-pending::before  { background: var(--pending); }
+    .badge-failed   { background: rgba(239,68,68,0.12);  color: var(--failed);  }
+    .badge-failed::before   { background: var(--failed); }
+    .badge-skipped  { background: rgba(245,158,11,0.12); color: var(--skipped); }
+    .badge-skipped::before  { background: var(--skipped); }
+
+    /* Control nodes (start / end) */
+    .ctrl-node {
+      position: absolute;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: default;
+      user-select: none;
+    }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* ── Detail Panel ────────────────────────────────── */
+    .detail-panel {
+      position: absolute;
+      right: 0; top: 0; bottom: 0;
+      width: 270px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      padding: 0;
+      transform: translateX(100%);
+      transition: transform 0.2s ease;
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+    }
+    .detail-panel.open { transform: translateX(0); }
+
+    .dp-header {
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .dp-header h3 {
+      font-size: 13px;
+      font-weight: 600;
+      flex: 1;
+      line-height: 1.4;
+    }
+    .dp-close {
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .dp-close:hover { color: var(--text); }
+    .dp-body { flex: 1; overflow-y: auto; padding: 14px 16px; }
+
+    .dp-row { margin-bottom: 14px; }
+    .dp-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+    .dp-value { font-size: 12px; color: var(--text); word-break: break-word; }
+    .dp-hr { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+
+    .dep-chip {
+      display: inline-flex;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 10px;
+      padding: 2px 7px;
+      margin: 2px 3px 2px 0;
+      color: var(--muted);
+    }
+
+    /* ── JSON Modal ──────────────────────────────────── */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      width: 660px;
+      max-width: 94vw;
+      max-height: 82vh;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .modal h3 { font-size: 15px; font-weight: 600; }
+    .modal p  { font-size: 11px; color: var(--muted); }
+    .modal textarea {
+      flex: 1;
+      min-height: 280px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 11.5px;
+      padding: 12px;
+      resize: vertical;
+      outline: none;
+    }
+    .modal textarea:focus { border-color: var(--accent); }
+    .modal-foot { display: flex; align-items: center; gap: 8px; }
+    .modal-foot .err { font-size: 11px; color: var(--failed); flex: 1; }
+    .modal-foot .actions { display: flex; gap: 8px; }
   </style>
 </head>
 <body>
-  <header>
-    <div>
-      <strong>CocoFlow</strong>
-      <div class="meta" id="flow-name">Pipeline viewer</div>
-    </div>
-    <div class="meta" id="flow-counts"></div>
-  </header>
-  <main id="stages"></main>
-  <script>
-    /* __FLOW_INJECTION_START__ */
-    const INJECTED_FLOW_DATA = {
-      meta: { name: 'Demo Flow', phase: 'plan' },
-      stages: [
-        { id: 'spec-review', name: 'Review specification', persona: 'data-product-manager', status: 'completed' },
-        { id: 'build-model', name: 'Build model', persona: 'analytics-engineer', status: 'pending', depends_on: ['spec-review'] }
-      ]
-    };
-    /* __FLOW_INJECTION_END__ */
 
-    const flow = INJECTED_FLOW_DATA || {};
-    const stages = Array.isArray(flow.stages) ? flow.stages : [];
-    document.getElementById('flow-name').textContent = `${flow.meta?.name || 'Flow'} · ${flow.meta?.phase || 'unknown phase'}`;
-    document.getElementById('flow-counts').textContent = `${stages.length} stage${stages.length === 1 ? '' : 's'}`;
-    document.getElementById('stages').innerHTML = stages.map((stage) => `
-      <section class="stage">
-        <div class="status">${stage.status || 'pending'}</div>
-        <h2>${stage.name || stage.id || 'Unnamed stage'}</h2>
-        <div class="meta">Persona: ${stage.persona || 'unassigned'}</div>
-        <div class="meta">Depends on: ${(stage.depends_on || stage.dependencies || []).join(', ') || 'none'}</div>
-      </section>
-    `).join('');
-  </script>
+<!-- ── Toolbar ───────────────────────────────────────────── -->
+<div class="toolbar">
+  <span class="logo">◈ CocoPlus</span>
+  <div class="sep"></div>
+  <span class="project-name" id="proj-name">Flow Visualizer</span>
+  <div class="sep"></div>
+
+  <!-- Zoom -->
+  <div class="zoom-row">
+    <button class="btn" id="btn-zoom-out" title="Zoom out">−</button>
+    <span class="zoom-val" id="zoom-val">100%</span>
+    <button class="btn" id="btn-zoom-in"  title="Zoom in">+</button>
+    <button class="btn" id="btn-fit"      title="Fit to screen">⊡ Fit</button>
+  </div>
+  <div class="sep"></div>
+
+  <!-- Actions -->
+  <button class="btn primary" id="btn-load">⬆ Load JSON</button>
+  <button class="btn" id="btn-reset">↺ Reset</button>
+
+  <!-- Stats (populated on render) -->
+  <div id="stats-row" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--success)"></div>Success</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--running)"></div>Running</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--pending)"></div>Pending</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--failed)"></div>Failed</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--skipped)"></div>Skipped</div>
+  </div>
+</div>
+
+<!-- ── Canvas ─────────────────────────────────────────────── -->
+<div class="canvas-wrapper" id="cwrap">
+  <div class="canvas" id="canvas"></div>
+</div>
+
+<!-- ── Detail Panel ───────────────────────────────────────── -->
+<div class="detail-panel" id="dp">
+  <div class="dp-header">
+    <h3 id="dp-title">Node</h3>
+    <span class="dp-close" id="dp-close">×</span>
+  </div>
+  <div class="dp-body" id="dp-body"></div>
+</div>
+
+<!-- ── JSON Modal ─────────────────────────────────────────── -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3>Load Flow JSON</h3>
+    <p>Paste a CocoPlus <code>flow.json</code> below and click Apply. Must have a <code>nodes</code> array.</p>
+    <textarea id="json-ta" spellcheck="false"></textarea>
+    <div class="modal-foot">
+      <span class="err" id="json-err"></span>
+      <div class="actions">
+        <button class="btn" id="btn-cancel">Cancel</button>
+        <button class="btn primary" id="btn-apply">Apply</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// SAMPLE DATA — representative CocoPlus flow.json
+// ════════════════════════════════════════════════════════════
+// INJECTED FLOW DATA
+// The /flow view skill replaces the null below with the contents of
+// .cocoplus/flow.json before writing this file to .cocoplus/flow-view.html.
+// When running standalone (e.g. double-clicked from disk), INJECTED_FLOW_DATA
+// remains null and the visualizer falls back to SAMPLE demo data instead.
+/* __FLOW_INJECTION_START__ */
+const INJECTED_FLOW_DATA = null;
+/* __FLOW_INJECTION_END__ */
+
+// ════════════════════════════════════════════════════════════
+const SAMPLE = {
+  id: "flow-20250421",
+  project: "Sales Analytics Platform",
+  version: "1.0",
+  created_at: "2025-04-21T09:00:00Z",
+  nodes: [
+    { id:"start",  label:"start",                type:"control", status:"success",  depends_on:[] },
+
+    // Lifecycle phases
+    { id:"spec",   label:"Specification",        type:"spec",    agent:"ChiefDataOfficer",   status:"success", depends_on:["start"] },
+    { id:"plan",   label:"Execution Plan",        type:"plan",    agent:"ChiefDataOfficer",   status:"success", depends_on:["spec"]  },
+
+    // Ingestion group
+    { id:"b01",  label:"Extract Sales Data",    type:"build",   agent:"DataEngineer",       status:"success", depends_on:["plan"], group:"ingestion" },
+    { id:"b02",  label:"Extract API Sources",   type:"build",   agent:"DataEngineer",       status:"success", depends_on:["plan"], group:"ingestion" },
+    { id:"b03",  label:"Determine Load Type",   type:"build",   agent:"DataEngineer",       status:"success", depends_on:["b02"],  group:"ingestion" },
+    { id:"b04",  label:"Full Refresh Load",     type:"build",   agent:"DataEngineer",       status:"skipped", depends_on:["b03"],  group:"ingestion",
+      edge_labels:{ "b03":"changed existing data" } },
+    { id:"b05",  label:"Incremental Load",      type:"build",   agent:"DataEngineer",       status:"success", depends_on:["b03"],  group:"ingestion",
+      edge_labels:{ "b03":"additional data" } },
+    { id:"b06",  label:"Stage Layer Load",      type:"build",   agent:"DataEngineer",       status:"success", depends_on:["b01"],  group:"ingestion" },
+
+    // Transformation group
+    { id:"b07",  label:"Transform & Model",     type:"build",   agent:"AnalyticsEngineer",  status:"success", depends_on:["b05","b06"], group:"transformation" },
+    { id:"b08",  label:"Mart Layer",            type:"build",   agent:"AnalyticsEngineer",  status:"success", depends_on:["b07"],  group:"transformation" },
+
+    // Reporting group
+    { id:"b09",  label:"Prepare Report",        type:"build",   agent:"AnalyticsEngineer",  status:"success", depends_on:["b08"],  group:"reporting" },
+    { id:"b10",  label:"Publish Report",        type:"build",   agent:"AnalyticsEngineer",  status:"success", depends_on:["b09"],  group:"reporting" },
+
+    // ML group
+    { id:"b11",  label:"Set Up Cluster",        type:"build",   agent:"DataScientist",      status:"success", depends_on:["b07"],  group:"ml" },
+    { id:"b12",  label:"Train Model",           type:"build",   agent:"DataScientist",      status:"running", depends_on:["b11"],  group:"ml" },
+    { id:"b13",  label:"Tear Down Cluster",     type:"build",   agent:"DataScientist",      status:"pending", depends_on:["b12"],  group:"ml" },
+
+    // Quality gate & close
+    { id:"test",   label:"Quality Gate",        type:"test",    agent:"DataEngineer",       status:"pending", depends_on:["b10","b13"] },
+    { id:"review", label:"CDO Review",          type:"review",  agent:"ChiefDataOfficer",   status:"pending", depends_on:["test"]  },
+    { id:"ship",   label:"Ship to Production",  type:"ship",    agent:"DataEngineer",       status:"pending", depends_on:["review"] },
+
+    { id:"end",    label:"end",                 type:"control", status:"pending",  depends_on:["ship"] }
+  ],
+  groups: [
+    { id:"ingestion",      label:"Ingestion Layer",   color:"#1a3254", borderColor:"#2a5190", labelColor:"#93c5fd" },
+    { id:"transformation", label:"Transformation",    color:"#132a1e", borderColor:"#1f6b42", labelColor:"#6ee7b7" },
+    { id:"reporting",      label:"Reporting",          color:"#25183a", borderColor:"#5e35a0", labelColor:"#c4b5fd" },
+    { id:"ml",             label:"ML Pipeline",        color:"#2a1810", borderColor:"#8b3a1a", labelColor:"#fdba74" }
+  ]
+};
+
+// ════════════════════════════════════════════════════════════
+// LAYOUT ENGINE
+// ════════════════════════════════════════════════════════════
+const NODE_W = 180, NODE_H = 70;
+const CTRL_W = 76,  CTRL_H = 36;
+const H_GAP = 72,   V_GAP = 20;
+const PAD   = 56,   GROUP_PAD = 14;
+
+function topoLevels(nodes) {
+  const level = {}, inDeg = {}, children = {};
+  nodes.forEach(n => { level[n.id] = 0; inDeg[n.id] = 0; children[n.id] = []; });
+  nodes.forEach(n => {
+    (n.depends_on || []).forEach(dep => {
+      if (children[dep]) { children[dep].push(n.id); inDeg[n.id]++; }
+    });
+  });
+  const q = nodes.filter(n => inDeg[n.id] === 0).map(n => n.id);
+  while (q.length) {
+    const id = q.shift();
+    (children[id] || []).forEach(cid => {
+      level[cid] = Math.max(level[cid], level[id] + 1);
+      if (--inDeg[cid] === 0) q.push(cid);
+    });
+  }
+  return level;
+}
+
+function layout(nodes, groups) {
+  const level = topoLevels(nodes);
+  const maxLvl = Math.max(...Object.values(level));
+
+  // Bucket by level
+  const cols = {};
+  for (let i = 0; i <= maxLvl; i++) cols[i] = [];
+  nodes.forEach(n => cols[level[n.id]].push(n));
+
+  // Sort within column: group members together, control nodes last
+  for (let l = 0; l <= maxLvl; l++) {
+    cols[l].sort((a, b) => {
+      if (a.type === 'control') return 1;
+      if (b.type === 'control') return -1;
+      return (a.group || '~').localeCompare(b.group || '~');
+    });
+  }
+
+  // Column heights for vertical centering of control nodes
+  const colH = l => cols[l].reduce((s, n) =>
+    s + (n.type === 'control' ? CTRL_H : NODE_H) + V_GAP, 0) - V_GAP;
+
+  const pos = {};
+  for (let l = 0; l <= maxLvl; l++) {
+    const x = PAD + l * (NODE_W + H_GAP);
+    let y = PAD;
+    cols[l].forEach(n => {
+      const isCtrl = n.type === 'control';
+      pos[n.id] = { x, y, w: isCtrl ? CTRL_W : NODE_W, h: isCtrl ? CTRL_H : NODE_H };
+      y += (isCtrl ? CTRL_H : NODE_H) + V_GAP;
+    });
+  }
+
+  // Vertically center control nodes relative to tallest column
+  const maxColH = Math.max(...Object.keys(cols).map(l => colH(Number(l))));
+  nodes.filter(n => n.type === 'control').forEach(n => {
+    pos[n.id].y = PAD + (maxColH - CTRL_H) / 2;
+  });
+
+  // Group bounding boxes
+  const groupBoxes = {};
+  (groups || []).forEach(g => {
+    const members = nodes.filter(n => n.group === g.id).map(n => pos[n.id]);
+    if (!members.length) return;
+    const x1 = Math.min(...members.map(p => p.x))       - GROUP_PAD;
+    const y1 = Math.min(...members.map(p => p.y))       - GROUP_PAD - 10;
+    const x2 = Math.max(...members.map(p => p.x + p.w)) + GROUP_PAD;
+    const y2 = Math.max(...members.map(p => p.y + p.h)) + GROUP_PAD;
+    groupBoxes[g.id] = { x1, y1, x2, y2, ...g };
+  });
+
+  return { pos, groupBoxes };
+}
+
+// ════════════════════════════════════════════════════════════
+// RENDERER
+// ════════════════════════════════════════════════════════════
+const AGENT_SHORT = {
+  ChiefDataOfficer: 'Chief Data Officer',
+  DataEngineer:     'Data Engineer',
+  AnalyticsEngineer:'Analytics Engineer',
+  DataScientist:    'Data Scientist'
+};
+const TYPE_LABEL = {
+  spec:'Spec', plan:'Plan', build:'Build', test:'Test',
+  review:'Review', ship:'Ship', control:'Control'
+};
+const STATUS_COLOR = {
+  success: 'var(--success)', running: 'var(--running)',
+  pending: 'var(--pending)', failed: 'var(--failed)', skipped: 'var(--skipped)'
+};
+
+let currentFlow = SAMPLE;
+let posCache = null;
+let zoom = 1, panX = 0, panY = 0;
+let selectedId = null;
+
+function render(flow) {
+  currentFlow = flow;
+  const canvas = document.getElementById('canvas');
+  canvas.innerHTML = '';
+
+  const { pos, groupBoxes } = layout(flow.nodes, flow.groups);
+  posCache = { pos, groupBoxes };
+
+  // Canvas dimensions
+  const maxX = Math.max(...flow.nodes.map(n => pos[n.id].x + pos[n.id].w));
+  const maxY = Math.max(...flow.nodes.map(n => pos[n.id].y + pos[n.id].h));
+  const cw = maxX + PAD, ch = maxY + PAD;
+  canvas.style.width = cw + 'px';
+  canvas.style.height = ch + 'px';
+
+  // ── SVG layer for edges
+  const svg = createSVG(cw, ch);
+
+  // ── Group boxes (behind nodes)
+  Object.values(groupBoxes).forEach(gb => {
+    const d = document.createElement('div');
+    d.className = 'group-box';
+    d.style.cssText = `
+      left:${gb.x1}px; top:${gb.y1}px;
+      width:${gb.x2 - gb.x1}px; height:${gb.y2 - gb.y1}px;
+      background:${gb.color}1a;
+      border-color:${gb.borderColor || '#2a3a60'};
+    `;
+    const lbl = document.createElement('div');
+    lbl.className = 'group-label';
+    lbl.textContent = gb.label;
+    lbl.style.cssText = `
+      background:${gb.color};
+      border-color:${gb.borderColor || '#2a3a60'};
+      color:${gb.labelColor || '#93c5fd'};
+    `;
+    d.appendChild(lbl);
+    canvas.appendChild(d);
+  });
+
+  // ── Edges
+  flow.nodes.forEach(node => {
+    (node.depends_on || []).forEach(depId => {
+      const f = pos[depId], t = pos[node.id];
+      if (!f || !t) return;
+      const x1 = f.x + f.w, y1 = f.y + f.h / 2;
+      const x2 = t.x,       y2 = t.y + t.h / 2;
+      const mx = (x1 + x2) / 2;
+
+      // Path
+      const path = mkSVG('path');
+      path.setAttribute('d', `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`);
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', '#2a3655');
+      path.setAttribute('stroke-width', '1.5');
+      path.dataset.from = depId; path.dataset.to = node.id;
+      svg.appendChild(path);
+
+      // Arrowhead
+      const arr = mkSVG('polygon');
+      arr.setAttribute('points', `${x2},${y2} ${x2-8},${y2-4} ${x2-8},${y2+4}`);
+      arr.setAttribute('fill', '#2a3655');
+      arr.dataset.from = depId; arr.dataset.to = node.id;
+      svg.appendChild(arr);
+
+      // Edge label
+      const el = node.edge_labels?.[depId];
+      if (el) {
+        const txt = mkSVG('text');
+        txt.setAttribute('x', mx);
+        txt.setAttribute('y', (y1 + y2) / 2 - 5);
+        txt.setAttribute('text-anchor', 'middle');
+        txt.setAttribute('font-size', '9.5');
+        txt.setAttribute('fill', '#4a5880');
+        txt.setAttribute('font-family', '-apple-system, sans-serif');
+        txt.textContent = el;
+        svg.appendChild(txt);
+      }
+    });
+  });
+
+  canvas.appendChild(svg);
+
+  // ── Nodes
+  flow.nodes.forEach(node => {
+    const p = pos[node.id];
+    const el = document.createElement('div');
+
+    if (node.type === 'control') {
+      el.className = 'ctrl-node';
+      el.style.cssText = `left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${p.h}px;`;
+      el.textContent = node.label;
+    } else {
+      el.className = 'node';
+      el.style.cssText = `left:${p.x}px;top:${p.y}px;width:${p.w}px;`;
+      const s = node.status || 'pending';
+      el.innerHTML = `
+        <div class="node-name" title="${esc(node.label)}">${esc(node.label)}</div>
+        ${node.agent ? `<div class="node-agent">${esc(AGENT_SHORT[node.agent] || node.agent)}</div>` : ''}
+        <div class="node-footer">
+          <span class="node-type-tag">${esc(TYPE_LABEL[node.type] || node.type)}</span>
+          <span class="badge badge-${s}">${s}</span>
+        </div>`;
+      el.addEventListener('click', e => { e.stopPropagation(); selectNode(node.id); });
+    }
+
+    el.dataset.nid = node.id;
+    canvas.appendChild(el);
+  });
+
+  updateStats(flow.nodes);
+  document.getElementById('proj-name').textContent = flow.project || 'CocoPlus Flow';
+  fitToScreen();
+}
+
+function createSVG(w, h) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', w); svg.setAttribute('height', h);
+  svg.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;';
+  return svg;
+}
+function mkSVG(tag) { return document.createElementNS('http://www.w3.org/2000/svg', tag); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ════════════════════════════════════════════════════════════
+// SELECTION
+// ════════════════════════════════════════════════════════════
+function selectNode(id) {
+  selectedId = id;
+  const node = currentFlow.nodes.find(n => n.id === id);
+  if (!node) return;
+
+  const connected = new Set([id,
+    ...currentFlow.nodes.filter(n => (n.depends_on||[]).includes(id)).map(n => n.id),
+    ...(node.depends_on || [])
+  ]);
+
+  document.querySelectorAll('.node').forEach(el => {
+    el.classList.remove('selected','dimmed');
+    el.classList.add(el.dataset.nid === id ? 'selected' : !connected.has(el.dataset.nid) ? 'dimmed' : '');
+  });
+
+  // Edge highlight
+  document.querySelectorAll('#canvas path').forEach(p => {
+    const active = p.dataset.from === id || p.dataset.to === id;
+    p.setAttribute('stroke', active ? 'var(--accent)' : '#2a3655');
+    p.setAttribute('stroke-width', active ? '2' : '1.5');
+  });
+  document.querySelectorAll('#canvas polygon').forEach(p => {
+    p.setAttribute('fill', (p.dataset.from === id || p.dataset.to === id) ? 'var(--accent)' : '#2a3655');
+  });
+
+  showDetail(node);
+}
+
+function clearSelection() {
+  selectedId = null;
+  document.querySelectorAll('.node').forEach(el => el.classList.remove('selected','dimmed'));
+  document.querySelectorAll('#canvas path').forEach(p => {
+    p.setAttribute('stroke','#2a3655'); p.setAttribute('stroke-width','1.5');
+  });
+  document.querySelectorAll('#canvas polygon').forEach(p => p.setAttribute('fill','#2a3655'));
+  document.getElementById('dp').classList.remove('open');
+}
+
+function showDetail(node) {
+  document.getElementById('dp-title').textContent = node.label;
+  const s = node.status || 'pending';
+  const rows = [
+    ['ID',         node.id],
+    ['Type',       TYPE_LABEL[node.type] || node.type],
+    ['Status',     `<span class="badge badge-${s}" style="font-size:11px">${s}</span>`],
+    node.agent        ? ['Agent',      esc(AGENT_SHORT[node.agent] || node.agent)] : null,
+    node.group        ? ['Group',      esc(node.group)] : null,
+    node.depends_on?.length ? ['Depends On',
+      node.depends_on.map(d => `<span class="dep-chip">${esc(d)}</span>`).join('')
+    ] : null,
+    node.started_at   ? ['Started',    esc(node.started_at)]   : null,
+    node.completed_at ? ['Completed',  esc(node.completed_at)] : null,
+    node.notes        ? ['Notes',      esc(node.notes)]        : null,
+  ].filter(Boolean);
+
+  document.getElementById('dp-body').innerHTML =
+    rows.map(([lbl, val]) =>
+      `<div class="dp-row">
+        <div class="dp-label">${lbl}</div>
+        <div class="dp-value">${val}</div>
+      </div><hr class="dp-hr">`
+    ).join('');
+
+  document.getElementById('dp').classList.add('open');
+}
+
+// ════════════════════════════════════════════════════════════
+// STATS
+// ════════════════════════════════════════════════════════════
+function updateStats(nodes) {
+  const counts = { success:0, running:0, pending:0, failed:0, skipped:0 };
+  nodes.filter(n => n.type !== 'control').forEach(n => { counts[n.status || 'pending']++; });
+  const row = document.getElementById('stats-row');
+  row.innerHTML = Object.entries(counts)
+    .filter(([,v]) => v > 0)
+    .map(([k,v]) =>
+      `<div class="stat-chip">
+        <div class="stat-dot" style="background:${STATUS_COLOR[k]}"></div>
+        ${v} ${k}
+      </div>`
+    ).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+// PAN & ZOOM
+// ════════════════════════════════════════════════════════════
+function applyTransform() {
+  document.getElementById('canvas').style.transform =
+    `translate(${panX}px,${panY}px) scale(${zoom})`;
+  document.getElementById('zoom-val').textContent = Math.round(zoom * 100) + '%';
+}
+
+function fitToScreen() {
+  requestAnimationFrame(() => {
+    const wrap = document.getElementById('cwrap');
+    const canvas = document.getElementById('canvas');
+    const ww = wrap.clientWidth, wh = wrap.clientHeight;
+    const cw = parseFloat(canvas.style.width)  || 1;
+    const ch = parseFloat(canvas.style.height) || 1;
+    zoom = Math.min((ww - 40) / cw, (wh - 40) / ch, 1.4);
+    zoom = Math.max(0.2, zoom);
+    panX = (ww - cw * zoom) / 2;
+    panY = (wh - ch * zoom) / 2;
+    applyTransform();
+  });
+}
+
+let dragging = false, lastMX = 0, lastMY = 0;
+
+document.getElementById('cwrap').addEventListener('mousedown', e => {
+  if (e.target.closest('.node')) return;
+  dragging = true; lastMX = e.clientX; lastMY = e.clientY;
+  e.currentTarget.classList.add('dragging');
+});
+document.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  panX += e.clientX - lastMX;
+  panY += e.clientY - lastMY;
+  lastMX = e.clientX; lastMY = e.clientY;
+  applyTransform();
+});
+document.addEventListener('mouseup', () => {
+  dragging = false;
+  document.getElementById('cwrap').classList.remove('dragging');
+});
+
+document.getElementById('cwrap').addEventListener('wheel', e => {
+  e.preventDefault();
+  const factor = e.deltaY < 0 ? 1.1 : 0.91;
+  const wrap = document.getElementById('cwrap').getBoundingClientRect();
+  const mx = e.clientX - wrap.left, my = e.clientY - wrap.top;
+  panX = mx - (mx - panX) * factor;
+  panY = my - (my - panY) * factor;
+  zoom = Math.max(0.15, Math.min(3, zoom * factor));
+  applyTransform();
+}, { passive: false });
+
+document.getElementById('btn-zoom-in').addEventListener('click',  () => { zoom = Math.min(3, zoom*1.2);    applyTransform(); });
+document.getElementById('btn-zoom-out').addEventListener('click', () => { zoom = Math.max(0.15, zoom/1.2); applyTransform(); });
+document.getElementById('btn-fit').addEventListener('click', fitToScreen);
+
+// Deselect on canvas click
+document.getElementById('cwrap').addEventListener('click', e => {
+  if (!e.target.closest('.node') && selectedId) clearSelection();
+});
+document.getElementById('dp-close').addEventListener('click', clearSelection);
+
+// ════════════════════════════════════════════════════════════
+// JSON MODAL
+// ════════════════════════════════════════════════════════════
+document.getElementById('btn-load').addEventListener('click', () => {
+  document.getElementById('json-ta').value = JSON.stringify(currentFlow, null, 2);
+  document.getElementById('json-err').textContent = '';
+  document.getElementById('overlay').classList.add('open');
+});
+document.getElementById('btn-cancel').addEventListener('click', () =>
+  document.getElementById('overlay').classList.remove('open')
+);
+document.getElementById('btn-apply').addEventListener('click', () => {
+  try {
+    const parsed = JSON.parse(document.getElementById('json-ta').value);
+    if (!Array.isArray(parsed.nodes)) throw new Error('"nodes" must be an array');
+    clearSelection();
+    render(parsed);
+    document.getElementById('overlay').classList.remove('open');
+  } catch(e) {
+    document.getElementById('json-err').textContent = '⚠ ' + e.message;
+  }
+});
+document.getElementById('overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) document.getElementById('overlay').classList.remove('open');
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  clearSelection();
+  render(INJECTED_FLOW_DATA || SAMPLE);
+});
+
+// ════════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ════════════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    clearSelection();
+    document.getElementById('overlay').classList.remove('open');
+  }
+  if ((e.metaKey || e.ctrlKey) && e.key === '0') { e.preventDefault(); fitToScreen(); }
+  if ((e.metaKey || e.ctrlKey) && e.key === '+') { e.preventDefault(); zoom = Math.min(3, zoom*1.2); applyTransform(); }
+  if ((e.metaKey || e.ctrlKey) && e.key === '-') { e.preventDefault(); zoom = Math.max(0.15, zoom/1.2); applyTransform(); }
+});
+
+// ════════════════════════════════════════════════════════════
+// INIT — use injected project flow data if available, else demo data
+// ════════════════════════════════════════════════════════════
+render(INJECTED_FLOW_DATA || SAMPLE);
+</script>
 </body>
 </html>
