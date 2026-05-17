@@ -1,16 +1,101 @@
 {
   "name": "cortex-semantic-model",
-  "description": "Create an analytics semantic model for Cortex Analyst.",
-  "parameters": ["database", "schema", "tables", "business_domain"],
+  "description": "Create a Cortex Analyst semantic model with metric definitions, relationships, validation questions, and governance review.",
+  "parameters": {
+    "database": { "required": true, "description": "Database containing source tables." },
+    "schema": { "required": true, "description": "Schema containing source tables." },
+    "tables": { "required": true, "description": "Comma-separated source table list." },
+    "business_domain": { "required": true, "description": "Business domain for the semantic model." }
+  },
   "flow": {
-    "meta": { "name": "Cortex Semantic Model", "phase": "plan" },
+    "meta": {
+      "name": "Cortex Semantic Model",
+      "phase": "plan",
+      "generated_by": "cocorecipe",
+      "recipe": "cortex-semantic-model"
+    },
+    "defaults": {
+      "model": "claude-sonnet-4-20250514",
+      "on_failure": "stop"
+    },
     "stages": [
-      { "id": "profile-model-sources", "persona": "analytics-engineer", "status": "pending" },
-      { "id": "define-metrics", "persona": "analytics-engineer", "status": "pending", "depends_on": ["profile-model-sources"] },
-      { "id": "define-relationships", "persona": "data-engineer", "status": "pending", "depends_on": ["define-metrics"] },
-      { "id": "validate-questions", "persona": "data-analyst", "status": "pending", "depends_on": ["define-relationships"] },
-      { "id": "bi-review", "persona": "bi-analyst", "status": "pending", "depends_on": ["validate-questions"] },
-      { "id": "governance-check", "persona": "data-steward", "status": "pending", "depends_on": ["bi-review"] }
+      {
+        "id": "profile-model-sources",
+        "name": "Profile model source tables",
+        "persona": "$ae",
+        "status": "pending",
+        "prompt": ".cocoplus/prompts/profile-model-sources-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/semantic-model/source-profile.md"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/semantic-model/source-profile.md"] }],
+        "validation_commands": ["test -f .cocoplus/lifecycle/semantic-model/source-profile.md"],
+        "hitl": false,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "define-metrics",
+        "name": "Define measures and dimensions",
+        "persona": "$ae",
+        "status": "pending",
+        "dependencies": ["profile-model-sources"],
+        "prompt": ".cocoplus/prompts/define-metrics-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/semantic-model/metrics.yaml"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/semantic-model/metrics.yaml"] }],
+        "validation_commands": ["grep -E \"measures|dimensions|metrics\" .cocoplus/lifecycle/semantic-model/metrics.yaml"],
+        "hitl": true,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "define-relationships",
+        "name": "Define joins and relationships",
+        "persona": "$de",
+        "status": "pending",
+        "dependencies": ["define-metrics"],
+        "prompt": ".cocoplus/prompts/define-relationships-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/semantic-model/relationships.yaml"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/semantic-model/relationships.yaml"] }],
+        "validation_commands": ["grep -E \"relationships|join|primary_key\" .cocoplus/lifecycle/semantic-model/relationships.yaml"],
+        "hitl": true,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "validate-questions",
+        "name": "Validate business questions",
+        "persona": "$da",
+        "status": "pending",
+        "dependencies": ["define-relationships"],
+        "prompt": ".cocoplus/prompts/validate-questions-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/semantic-model/validation-questions.md"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/semantic-model/validation-questions.md"] }],
+        "validation_commands": ["test -f .cocoplus/lifecycle/semantic-model/validation-questions.md"],
+        "hitl": false,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "bi-review",
+        "name": "Review BI usability",
+        "persona": "$bi",
+        "status": "pending",
+        "dependencies": ["validate-questions"],
+        "prompt": ".cocoplus/prompts/bi-review-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/semantic-model/bi-review.md"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/semantic-model/bi-review.md"] }],
+        "validation_commands": ["test -f .cocoplus/lifecycle/semantic-model/bi-review.md"],
+        "hitl": true,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "governance-check",
+        "name": "Review governance and naming",
+        "persona": "$dst",
+        "status": "pending",
+        "dependencies": ["bi-review"],
+        "prompt": ".cocoplus/prompts/governance-check-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/semantic-model/governance.md"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/semantic-model/governance.md"] }],
+        "validation_commands": ["test -f .cocoplus/lifecycle/semantic-model/governance.md"],
+        "hitl": true,
+        "maxConsecutiveFailures": 3
+      }
     ]
   }
 }

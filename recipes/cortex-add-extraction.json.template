@@ -1,18 +1,128 @@
 {
   "name": "cortex-add-extraction",
-  "description": "Build an AI_EXTRACT workflow with schema validation.",
-  "parameters": ["source_table", "document_column", "output_schema", "target_table"],
+  "description": "Build an AI_EXTRACT workflow with output schema design, validation data, quality review, governance review, and deployment record.",
+  "parameters": {
+    "source_table": { "required": true, "description": "Fully qualified source table containing documents." },
+    "document_column": { "required": true, "description": "Document or text column to extract from." },
+    "output_schema": { "required": true, "description": "Expected JSON schema or structured output fields." },
+    "target_table": { "required": true, "description": "Destination table for extracted fields." },
+    "quality_threshold": { "required": false, "default": "90%" }
+  },
   "flow": {
-    "meta": { "name": "Add Cortex Extraction", "phase": "plan" },
+    "meta": {
+      "name": "Add Cortex Extraction",
+      "phase": "plan",
+      "generated_by": "cocorecipe",
+      "recipe": "cortex-add-extraction"
+    },
+    "defaults": {
+      "model": "claude-sonnet-4-20250514",
+      "on_failure": "stop"
+    },
     "stages": [
-      { "id": "sample-documents", "persona": "data-analyst", "status": "pending" },
-      { "id": "design-output-schema", "persona": "data-engineer", "status": "pending", "depends_on": ["sample-documents"] },
-      { "id": "build-extraction", "persona": "data-engineer", "status": "pending", "depends_on": ["design-output-schema"] },
-      { "id": "create-validation-set", "persona": "data-scientist", "status": "pending", "depends_on": ["build-extraction"] },
-      { "id": "run-validation", "persona": "data-scientist", "status": "pending", "depends_on": ["create-validation-set"] },
-      { "id": "quality-review", "persona": "analytics-engineer", "status": "pending", "depends_on": ["run-validation"] },
-      { "id": "governance-review", "persona": "data-steward", "status": "pending", "depends_on": ["quality-review"] },
-      { "id": "deployment-record", "persona": "data-product-manager", "status": "pending", "depends_on": ["governance-review"] }
+      {
+        "id": "sample-documents",
+        "name": "Profile representative documents",
+        "persona": "$da",
+        "status": "pending",
+        "prompt": ".cocoplus/prompts/sample-documents-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/extraction/document-sample.md"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/extraction/document-sample.md"] }],
+        "validation_commands": ["test -f .cocoplus/lifecycle/extraction/document-sample.md"],
+        "hitl": false,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "design-output-schema",
+        "name": "Design extraction output schema",
+        "persona": "$de",
+        "status": "pending",
+        "dependencies": ["sample-documents"],
+        "prompt": ".cocoplus/prompts/design-output-schema-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/extraction/output-schema.json"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/extraction/output-schema.json"] }],
+        "validation_commands": ["test -f .cocoplus/lifecycle/extraction/output-schema.json"],
+        "hitl": true,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "build-extraction",
+        "name": "Implement AI_EXTRACT SQL",
+        "persona": "$de",
+        "status": "pending",
+        "dependencies": ["design-output-schema"],
+        "prompt": ".cocoplus/prompts/build-extraction-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/extraction/build.sql"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/extraction/build.sql"] }],
+        "validation_commands": ["grep -i AI_EXTRACT .cocoplus/lifecycle/extraction/build.sql"],
+        "hitl": false,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "create-validation-set",
+        "name": "Create validation data set",
+        "persona": "$ds",
+        "status": "pending",
+        "dependencies": ["build-extraction"],
+        "prompt": ".cocoplus/prompts/create-validation-set-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/extraction/validation-set.md"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/extraction/validation-set.md"] }],
+        "validation_commands": ["test -f .cocoplus/lifecycle/extraction/validation-set.md"],
+        "hitl": false,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "run-validation",
+        "name": "Run extraction validation",
+        "persona": "$ds",
+        "status": "pending",
+        "dependencies": ["create-validation-set"],
+        "prompt": ".cocoplus/prompts/run-validation-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/extraction/validation-results.md"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/extraction/validation-results.md"] }],
+        "validation_commands": ["grep -E \"quality|threshold|match|field\" .cocoplus/lifecycle/extraction/validation-results.md"],
+        "hitl": true,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "quality-review",
+        "name": "Review downstream data quality",
+        "persona": "$ae",
+        "status": "pending",
+        "dependencies": ["run-validation"],
+        "prompt": ".cocoplus/prompts/quality-review-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/extraction/quality-review.md"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/extraction/quality-review.md"] }],
+        "validation_commands": ["test -f .cocoplus/lifecycle/extraction/quality-review.md"],
+        "hitl": true,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "governance-review",
+        "name": "Review sensitive-data controls",
+        "persona": "$dst",
+        "status": "pending",
+        "dependencies": ["quality-review"],
+        "prompt": ".cocoplus/prompts/governance-review-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/extraction/governance.md"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/extraction/governance.md"] }],
+        "validation_commands": ["test -f .cocoplus/lifecycle/extraction/governance.md"],
+        "hitl": true,
+        "maxConsecutiveFailures": 3
+      },
+      {
+        "id": "deployment-record",
+        "name": "Prepare deployment record",
+        "persona": "$dpm",
+        "status": "pending",
+        "dependencies": ["governance-review"],
+        "prompt": ".cocoplus/prompts/deployment-record-prompt.md",
+        "checkpoints": [".cocoplus/lifecycle/extraction/deployment-record.md"],
+        "deliverables": [{ "files": [".cocoplus/lifecycle/extraction/deployment-record.md"] }],
+        "validation_commands": ["test -f .cocoplus/lifecycle/extraction/deployment-record.md"],
+        "hitl": false,
+        "maxConsecutiveFailures": 3
+      }
     ]
   }
 }
