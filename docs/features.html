@@ -25,8 +25,8 @@
 
 <div class="page-header">
   <div class="label">What It Does</div>
-  <h1>All 32 Features</h1>
-  <p class="subtitle">Thirty-two expressions of one idea — that structure and intelligence, applied together, produce better outcomes than either alone.</p>
+  <h1>All 35 Features</h1>
+  <p class="subtitle">Thirty-five expressions of one idea — that structure and intelligence, applied together, produce better outcomes than either alone.</p>
 </div>
 
 <div class="content">
@@ -268,7 +268,7 @@
     <li><strong>Sonnet — Completeness Lens:</strong> What assumptions does this plan make that are not validated? Which edge cases are unaddressed? Are the success criteria in the spec fully covered by the plan's stages? Are there implicit dependencies that are not modeled?</li>
     <li><strong>Opus — Risk Lens:</strong> What are the highest-consequence failure modes of this plan? Are there architectural decisions that will constrain future flexibility? What alternatives were not considered? What would have to be true for this plan to fail despite being executed correctly?</li>
   </ul>
-  <p class="feature-note"><strong>How it works:</strong> Three SecondEye Critic subagents spawn simultaneously — one at each model tier. All three read the same target artifact. Each writes findings to a temporary staging directory. When all three complete, the main SecondEye skill aggregates the findings, deduplicates those agreed upon by two or more critics (marked <code>[Consensus]</code>), classifies everything as Critical, Advisory, or Observation, and produces a single report. If any Critical findings exist, a soft gate activates on the Build phase — the developer must either revise the plan or run <code>$secondeye acknowledge</code> to accept the risk and proceed.</p>
+  <p class="feature-note"><strong>How it works:</strong> Five SecondEye Critic subagents spawn simultaneously: Efficiency, Completeness, Risk, Devil's Advocate, and Edge Case Hunter. All five read the same target artifact. Each writes findings to a temporary staging directory. When all five complete, the main SecondEye skill aggregates the findings, deduplicates consensus concerns, classifies everything as Critical, Advisory, or Observation, and records <code>da_finding_count</code> plus <code>edge_case_count</code>. If any Critical findings exist, a soft gate activates on the Build phase — the developer must either revise the plan or run <code>$secondeye acknowledge</code> to accept the risk and proceed.</p>
   <p>SecondEye is always on-demand. It never activates automatically and is not a required CocoBrew lifecycle gate. Critic agents are read-only: they cannot write to any lifecycle artifact, cannot modify the plan, and cannot take action beyond their staging directory output.</p>
   <p class="feature-note"><strong>HITL/AFK action classification:</strong> Each finding in the SecondEye aggregated report is tagged as HITL (Human In The Loop) or AFK (Away From Keyboard). HITL findings require the developer to actively decide something before resolution — they default to Critical findings, findings about evaluation methodology, architectural decisions, scope changes, and anything where the resolution is genuinely a choice between options with different trade-offs. AFK findings can be resolved autonomously in the next <code>$build</code> pass — they default to Warning and Info findings that map to known fix patterns. The <code>$secondeye acknowledge</code> command is classification-aware: <code>--hitl-only</code> acknowledges only HITL findings (required before <code>$build</code> can proceed) and separately queues AFK findings for automatic resolution. The aggregated report's header YAML gains an <code>action_summary</code> field with <code>hitl_count</code> and <code>afk_count</code> alongside the existing severity counts, letting the developer understand the required decision burden before reading the full report.</p>
   <p class="feature-note"><strong>BLOCKING vs. MINOR classification:</strong> SecondEye findings carry two orthogonal dimensions: HITL/AFK (does this stage require human approval?) and BLOCKING/MINOR (does this specific finding require human resolution?). A BLOCKING finding must be addressed by the developer — it touches correctness, security, architectural conflict, or genuine ambiguity about intent. A MINOR finding can be auto-resolved without developer input — it involves style, naming, missing documentation, or a non-critical coverage gap that maps to a known fix pattern. The four combinations define the intervention gradient: BLOCKING+HITL requires maximum developer involvement; MINOR+AFK is fully autonomous. The <code>action_summary</code> field extends to include <code>blocking_count</code> and <code>minor_count</code>. A developer sees at a glance: "3 BLOCKING, 2 HITL, 1 requiring direct attention." <code>$secondeye acknowledge --blocking-only</code> acknowledges BLOCKING-classified findings while leaving MINOR findings queued for autonomous resolution.</p>
@@ -440,7 +440,31 @@
   <p>CocoWatch <strong>never blocks</strong>. Its frontmatter enforces <code>blocking: false</code> as a structural guarantee — the orchestrator is explicitly required to refuse to dispatch CocoWatch in blocking mode regardless of any other instruction. Non-blocking is an architectural property, not a behavioral convention.</p>
   <p>CocoWatch stores its session observations in <code>.cocoplus/lifecycle/cocowatch-session.md</code>. This file is not committed to git — it is a session artifact, ephemeral between sessions.</p>
   <p class="feature-use"><strong>When to use:</strong> You don't invoke it — it observes automatically. Its value is in the summary it surfaces at ship time: an honest signal about how the session's collaboration actually went. If you're consistently landing in Zone 1, that's information worth acting on — not because the system demands it, but because the outputs you're shipping deserve a second look. If you're in Zone 2, it's confirmation that the collaboration is working as designed.</p>
-  <blockquote><p><em>Thirty-two features, one idea: give structure a lower cost than chaos.</em></p></blockquote>
+  </div>
+
+  <div class="feature new-gen">
+    <div class="feature-name">33 — CocoBloom <span class="tag">Working Backwards Pre-Commitment Gate</span></div>
+    <div class="feature-meta"><span><span class="cmd">$bloom</span>, <span class="cmd">$bloom --skip</span></span></div>
+  <p>CocoBloom is an optional pre-spec commitment ritual. Before the system expands requirements, the developer names the beneficiary, states the core capability, fixes exactly three constraints, and writes the press-release paragraph in their own words.</p>
+  <p>The bloom document lives at <code>.cocoplus/lifecycle/bloom.md</code>. <code>$spec</code> reads it as an anchor, <code>$discuss</code> checks later decisions against it, and <code>$ship</code> can surface whether the delivered work still matches the original commitment. <code>$bloom --skip</code> records an explicit waiver in lifecycle metadata.</p>
+  <p class="feature-use"><strong>When to use:</strong> Before ambiguous or stakeholder-visible work where value could drift while details are being filled in. Bloom is advisory, not a blocker.</p>
+  </div>
+
+  <div class="feature new-gen">
+    <div class="feature-name">34 — CocoKlatch <span class="tag">Genuine Multi-Agent Roundtable</span></div>
+    <div class="feature-meta"><span><span class="cmd">$klatch &lt;topic&gt; [--participants=N]</span></span></div>
+  <p>CocoKlatch creates genuine deliberation by spawning independent participants with separate role mandates: Skeptic, Optimist, Pragmatist, Domain Expert, and Contrarian. Each participant receives only the topic brief, not the other participants' identities or outputs.</p>
+  <p>A synthesis step reads the completed participant files and writes agreements, divergences, open questions, and a recommended decision path under <code>.cocoplus/lifecycle/klatch/</code>.</p>
+  <p class="feature-use"><strong>When to use:</strong> For architectural trade-offs, risk reviews, ambiguous framing decisions, and pre-spec questions where one viewpoint is not enough.</p>
+  </div>
+
+  <div class="feature new-gen">
+    <div class="feature-name">35 — CocoPull <span class="tag">Lossless Context Distillation</span></div>
+    <div class="feature-meta"><span><span class="cmd">$pull &lt;target&gt; [--validate]</span></span></div>
+  <p>CocoPull reduces large context files to dense <code>.pull.md</code> artifacts while preserving decision-bearing facts verbatim. Thresholds, field names, warehouse assignments, model names, schema references, and evaluation criteria are copied without paraphrase.</p>
+  <p>The optional <code>--validate</code> path runs a round-trip probe test. High-reliability pull files can be used by CocoHarvest automatically when stage inputs exceed the configured token threshold; low-reliability files fall back to the original source.</p>
+  <p class="feature-use"><strong>When to use:</strong> When a schema dump, query result, evaluation artifact, or analysis output is too large to load repeatedly but still contains facts agents must not lose.</p>
+  <blockquote><p><em>Thirty-five features, one idea: give structure a lower cost than chaos.</em></p></blockquote>
   </div>
 
 </div>
