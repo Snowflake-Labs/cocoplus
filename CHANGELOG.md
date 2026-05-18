@@ -9,11 +9,11 @@ All notable changes to CocoPlus are documented here.
 ### Added
 
 #### Reference-Driven Implementation Sync
-- Added `scripts/sync-docs-html.js` to render `docs/*.html` directly from `Snow-Cocoplus/docs/*.md` while preserving the existing documentation site shell and stylesheet.
+- Added `scripts/sync-docs-html.js` to render `docs/*.html` directly from the reference Markdown docs while preserving the existing documentation site shell and stylesheet.
 - Added canonical reference skill paths for `cocobloom/bloom-skip.skill.md`, `cocowatch/SKILL.md`, and `cocohealth/pod-checkpoint.skill.md`.
 - Registered dashboard templates and recipe templates in `plugin.json`, and added `cocoHarvest.pullThreshold` plus stall-detection defaults.
 - Expanded recipe templates into executable CocoFlow-style definitions with prompts, checkpoints, deliverables, validation commands, HITL flags, dependencies, and failure thresholds.
-- Replaced simplified dashboard templates with the reference `Snow-Cocoplus` Flow View and Meter View templates.
+- Replaced simplified dashboard templates with the reference Flow View and Meter View templates.
 - Strengthened deterministic helper scripts for scope classification, spec scoring, alignment checks, and guarded rollback execution.
 - Extended `SubagentStop` routing for CocoKlatch participant/synthesis prefixes and CocoPull manifest updates.
 - Expanded `scripts/validate-cocoplus.js` to verify docs sync, template fidelity, manifest assets, recipe completeness, required skill paths, hook routing, and CocoPull integration.
@@ -53,7 +53,7 @@ All notable changes to CocoPlus are documented here.
 - Registered and defined the CocoScout and CocoWatch background agents so the manifest matches runtime agent files.
 - Completed skill metadata and required Exit Criteria / Anti-Rationalization sections across all new and updated skills for validation compliance.
 - Normalized all CocoPlus command references to the `$` prefix across docs, skills, hooks, and templates — removed all remaining `/cmd` slash-command references.
-- Updated public feature-count references to 32 features in `docs/index.html`, `docs/features.html`, and `Snow-Cocoplus/docs/features.md`.
+- Updated public feature-count references to 32 features across the documentation.
 
 ### Documentation
 
@@ -61,7 +61,7 @@ All notable changes to CocoPlus are documented here.
 - `docs/features.html` — added Feature 32 CocoWatch block; updated header count 31→32
 - `docs/index.html` — added Feature 32 row to feature table; updated card count 31→32
 - `docs/command-reference.html`, `docs/getting-started.html`, `README.md` — normalized all command prefixes to `$`
-- `CLAUDE.md` (repo root) — added agent development instructions: source-of-truth pointer to `Snow-Cocoplus/instructions/`, skill/hook standards, pre-commit validation checklist, sequential commit requirements, full validation protocol
+- `CLAUDE.md` (repo root) — added agent development instructions: source-of-truth pointer to the reference instructions, skill/hook standards, pre-commit validation checklist, sequential commit requirements, full validation protocol
 
 ---
 
