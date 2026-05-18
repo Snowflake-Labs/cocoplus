@@ -61,7 +61,6 @@ All notable changes to CocoPlus are documented here.
 - `docs/features.html` — added Feature 32 CocoWatch block; updated header count 31→32
 - `docs/index.html` — added Feature 32 row to feature table; updated card count 31→32
 - `docs/command-reference.html`, `docs/getting-started.html`, `README.md` — normalized all command prefixes to `$`
-- `CLAUDE.md` (repo root) — added agent development instructions: source-of-truth pointer to the reference instructions, skill/hook standards, pre-commit validation checklist, sequential commit requirements, full validation protocol
 
 ---
 
