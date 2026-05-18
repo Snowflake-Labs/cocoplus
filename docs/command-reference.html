@@ -32,6 +32,35 @@
 <div class="content">
 <p>Every CocoPlus command, organized by the feature that owns it. Each command includes its flags, what it does, and what output to expect.</p>
 <p>Commands marked <strong>[auto]</strong> do not require explicit invocation — they are triggered by hooks. They are documented here for awareness, not for manual use.</p>
+<h2 id="quick-reference-card">Quick Reference Card</h2>
+<div class="table-wrap quick-reference"><table><thead><tr><th>Group</th><th>Commands</th></tr></thead><tbody>
+<tr><td><strong>Setup</strong></td><td><code>$pod init</code> · <code>$pod init --refresh-context</code> · <code>$pod status</code> · <code>$pod resume</code> · <code>$pod kb</code> · <code>$pod checkpoint</code></td></tr>
+<tr><td><strong>Assist Mode</strong></td><td><code>$cocoplus on</code> · <code>$cocoplus off</code></td></tr>
+<tr><td><strong>Lifecycle</strong></td><td><code>$bloom</code> · <code>$bloom --skip</code> · <code>$spec [--quick|--full]</code> · <code>$discuss</code> · <code>$plan</code> · <code>$build</code> · <code>$test</code> · <code>$review</code> · <code>$ship</code> · <code>$rewind [--tag]</code> · <code>$fork</code></td></tr>
+<tr><td><strong>Pipeline</strong></td><td><code>$flow run [--concurrency]</code> · <code>$flow status</code> · <code>$flow pause</code> · <code>$flow resume</code> · <code>$flow view</code></td></tr>
+<tr><td><strong>Recipes</strong></td><td><code>$recipe list</code> · <code>$recipe use</code> · <code>$recipe new</code></td></tr>
+<tr><td><strong>Personas</strong></td><td><code>$de</code> · <code>$ae</code> · <code>$ds</code> · <code>$da</code> · <code>$bi</code> · <code>$dpm</code> · <code>$dst</code> · <code>$cdo</code> · <code>$personas</code></td></tr>
+<tr><td><strong>Memory</strong></td><td><code>$memory on</code> · <code>$memory off</code></td></tr>
+<tr><td><strong>Org Standards</strong></td><td><code>$context add</code> · <code>$context view</code> · <code>$context list</code></td></tr>
+<tr><td><strong>Inspector</strong></td><td><code>$inspect</code> · <code>$inspector on</code> · <code>$inspector off</code></td></tr>
+<tr><td><strong>Safety</strong></td><td><code>$safety strict</code> · <code>$safety normal</code> · <code>$safety off</code></td></tr>
+<tr><td><strong>Quality</strong></td><td><code>$quality on</code> · <code>$quality off</code> · <code>$quality run</code></td></tr>
+<tr><td><strong>Meter</strong></td><td><code>$meter on</code> · <code>$meter off</code> · <code>$meter</code> · <code>$meter estimate</code> · <code>$meter history</code> · <code>$meter accuracy</code> · <code>$meter view</code> · <code>$meter sync</code></td></tr>
+<tr><td><strong>Cupper</strong></td><td><code>$cup</code> · <code>$cup history</code></td></tr>
+<tr><td><strong>Grove</strong></td><td><code>$patterns view</code> · <code>$patterns promote</code> · <code>$grove glossary</code> · <code>$grove glossary view</code></td></tr>
+<tr><td><strong>Dream</strong></td><td><code>$dream</code> · <code>$dream history</code></td></tr>
+<tr><td><strong>Context Mode</strong></td><td><code>$context on</code> · <code>$context off</code></td></tr>
+<tr><td><strong>Spark</strong></td><td><code>$spark</code> · <code>$spark-off</code></td></tr>
+<tr><td><strong>SecondEye</strong></td><td><code>$secondeye</code> · <code>$secondeye --artifact</code> · <code>$secondeye --model</code> · <code>$secondeye acknowledge [--hitl-only] [--blocking-only]</code> · <code>$secondeye history</code></td></tr>
+<tr><td><strong>Klatch</strong></td><td><code>$klatch &lt;topic&gt;</code> · <code>$klatch --participants=N</code></td></tr>
+<tr><td><strong>Pull</strong></td><td><code>$pull &lt;target&gt;</code> · <code>$pull --validate</code></td></tr>
+<tr><td><strong>Docs</strong></td><td><code>$doc run</code></td></tr>
+<tr><td><strong>Prompts</strong></td><td><code>$prompt new</code> · <code>$prompt compare</code></td></tr>
+<tr><td><strong>Fleet</strong></td><td><code>$fleet init</code> · <code>$fleet run</code> · <code>$fleet status</code> · <code>$fleet logs</code> · <code>$fleet stop</code></td></tr>
+<tr><td><strong>Map</strong></td><td><code>$map</code> · <code>$map diff</code> · <code>$map explain &lt;target&gt;</code></td></tr>
+<tr><td><strong>Seeds</strong></td><td><code>$seed add &quot;&lt;idea&gt;&quot; --trigger &quot;&lt;condition&gt;&quot;</code> · <code>$seed list</code> · <code>$seed promote &lt;id&gt;</code></td></tr>
+<tr><td><strong>CocoWatch</strong></td><td><em>(automatic — summary at <code>$ship</code> and FULL checkpoints)</em></td></tr>
+</tbody></table></div>
 <hr>
 <h2 id="setup-and-state-cocopod">Setup and State — CocoPod</h2>
 <p>CocoPod is the prerequisite. No other CocoPlus command functions in a directory without an initialized CocoPod.</p>
@@ -649,36 +678,7 @@ $pull lifecycle/stage-005-output.md</code></pre>
 <tr><td><strong>Notification</strong></td><td>CocoPlus raises an event</td><td>Routes notification to Coco UI or log file per <code>notifications.json</code> configuration</td></tr>
 </tbody></table></div>
 <hr>
-<h2 id="quick-reference-card">Quick Reference Card</h2>
-<div class="table-wrap"><table><thead><tr><th>Group</th><th>Commands</th></tr></thead><tbody>
-<tr><td><strong>Setup</strong></td><td><code>$pod init</code> · <code>$pod init --refresh-context</code> · <code>$pod status</code> · <code>$pod resume</code> · <code>$pod kb</code> · <code>$pod checkpoint</code></td></tr>
-<tr><td><strong>Assist Mode</strong></td><td><code>$cocoplus on</code> · <code>$cocoplus off</code></td></tr>
-<tr><td><strong>Lifecycle</strong></td><td><code>$bloom</code> · <code>$bloom --skip</code> · `$spec [--quick\</td><td>--full]<code> · </code>$discuss<code> · </code>$plan<code> · </code>$build<code> · </code>$test<code> · </code>$review<code> · </code>$ship<code> · </code>$rewind [--tag]<code> · </code>$fork`</td></tr>
-<tr><td><strong>Pipeline</strong></td><td><code>$flow run [--concurrency]</code> · <code>$flow status</code> · <code>$flow pause</code> · <code>$flow resume</code> · <code>$flow view</code></td></tr>
-<tr><td><strong>Recipes</strong></td><td><code>$recipe list</code> · <code>$recipe use</code> · <code>$recipe new</code></td></tr>
-<tr><td><strong>Personas</strong></td><td><code>$de</code> · <code>$ae</code> · <code>$ds</code> · <code>$da</code> · <code>$bi</code> · <code>$dpm</code> · <code>$dst</code> · <code>$cdo</code> · <code>$personas</code></td></tr>
-<tr><td><strong>Memory</strong></td><td><code>$memory on</code> · <code>$memory off</code></td></tr>
-<tr><td><strong>Org Standards</strong></td><td><code>$context add</code> · <code>$context view</code> · <code>$context list</code></td></tr>
-<tr><td><strong>Inspector</strong></td><td><code>$inspect</code> · <code>$inspector on</code> · <code>$inspector off</code></td></tr>
-<tr><td><strong>Safety</strong></td><td><code>$safety strict</code> · <code>$safety normal</code> · <code>$safety off</code></td></tr>
-<tr><td><strong>Quality</strong></td><td><code>$quality on</code> · <code>$quality off</code> · <code>$quality run</code></td></tr>
-<tr><td><strong>Meter</strong></td><td><code>$meter on</code> · <code>$meter off</code> · <code>$meter</code> · <code>$meter estimate</code> · <code>$meter history</code> · <code>$meter accuracy</code> · <code>$meter view</code> · <code>$meter sync</code></td></tr>
-<tr><td><strong>Cupper</strong></td><td><code>$cup</code> · <code>$cup history</code></td></tr>
-<tr><td><strong>Grove</strong></td><td><code>$patterns view</code> · <code>$patterns promote</code> · <code>$grove glossary</code> · <code>$grove glossary view</code></td></tr>
-<tr><td><strong>Dream</strong></td><td><code>$dream</code> · <code>$dream history</code></td></tr>
-<tr><td><strong>Context Mode</strong></td><td><code>$context on</code> · <code>$context off</code></td></tr>
-<tr><td><strong>Spark</strong></td><td><code>$spark</code> · <code>$spark-off</code></td></tr>
-<tr><td><strong>SecondEye</strong></td><td><code>$secondeye</code> · <code>$secondeye --artifact</code> · <code>$secondeye --model</code> · <code>$secondeye acknowledge [--hitl-only] [--blocking-only]</code> · <code>$secondeye history</code></td></tr>
-<tr><td><strong>Klatch</strong></td><td><code>$klatch &lt;topic&gt;</code> · <code>$klatch --participants=N</code></td></tr>
-<tr><td><strong>Pull</strong></td><td><code>$pull &lt;target&gt;</code> · <code>$pull --validate</code></td></tr>
-<tr><td><strong>Docs</strong></td><td><code>$doc run</code></td></tr>
-<tr><td><strong>Prompts</strong></td><td><code>$prompt new</code> · <code>$prompt compare</code></td></tr>
-<tr><td><strong>Fleet</strong></td><td><code>$fleet init</code> · <code>$fleet run</code> · <code>$fleet status</code> · <code>$fleet logs</code> · <code>$fleet stop</code></td></tr>
-<tr><td><strong>Map</strong></td><td><code>$map</code> · <code>$map diff</code> · <code>$map explain &lt;target&gt;</code></td></tr>
-<tr><td><strong>Seeds</strong></td><td><code>$seed add &quot;&lt;idea&gt;&quot; --trigger &quot;&lt;condition&gt;&quot;</code> · <code>$seed list</code> · <code>$seed promote &lt;id&gt;</code></td></tr>
-<tr><td><strong>CocoWatch</strong></td><td><em>(automatic — summary at <code>$ship</code> and FULL checkpoints)</em></td></tr>
-</tbody></table></div>
-<hr>
+
 <blockquote><p><em>A reference document is a map, not a destination. Use it to find the right path, then put it down and walk.</em></p></blockquote>
 </div>
 

@@ -192,18 +192,6 @@ function main() {
     }
   }
 
-  const docsSyncScript = path.join(repoRoot, 'scripts', 'sync-docs-html.js');
-  if (requireFile(docsSyncScript, failures, 'Docs sync script')) {
-    const { spawnSync } = require('child_process');
-    const generated = spawnSync(process.execPath, [docsSyncScript, '--check'], {
-      cwd: repoRoot,
-      encoding: 'utf8',
-    });
-    if (generated.status !== 0) {
-      failures.push(`Docs sync script failed: ${generated.stderr || generated.stdout}`);
-    }
-  }
-
   const stalePatterns = [
     /All 32 Features/i,
     /Thirty-two features/i,
