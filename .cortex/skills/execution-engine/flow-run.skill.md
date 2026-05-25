@@ -1,7 +1,7 @@
 ---
 name: "flow-run"
-description: "Execute a CocoFlow pipeline from flow.json. Supports adaptive parallelism (--concurrency flag), dual-file state recovery, intermediate result persistence for parallel evaluation runs, and HITL stage pausing. If a stage-id is provided, execute only that stage."
-version: "1.0.3"
+description: "Execute a CocoFlow pipeline from flow.json. Supports adaptive parallelism (--concurrency flag), dual-file state recovery, intermediate result persistence for parallel evaluation runs, HITL stage pausing, and dual synthesis path with deterministic rule-based fallback. If a stage-id is provided, execute only that stage."
+version: "1.1.0"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -69,7 +69,18 @@ For each stage to execute:
 10. **Handle result:**
     - If all checkpoints pass: update flow.json stage to `"completed"`, add `completed_at`. Append `STAGE_COMPLETED` to progress.txt. Reset `consecutive_failure_count` to 0 in tasks.json.
     - If any checkpoint fails: increment `consecutive_failure_count` in tasks.json. Append `STAGE_FAILED` to progress.txt. Apply `on_failure` action. If `consecutive_failure_count` reaches `maxConsecutiveFailures`, append `ESCALATED` and halt with full escalation message.
-11. **HITL pause** (if `hitl: true`): after successful completion, output the stage results and ask developer to confirm before spawning downstream stages
+11. **Dual synthesis path** (if stage has `synthesis.primary: "llm"` and `synthesis.fallback: "rule-based"`):
+    - Attempt primary LLM synthesis normally.
+    - If the LLM synthesis call fails (access error, timeout, rate limit, credential constraint):
+      - Do NOT halt the pipeline.
+      - Run the `synthesis.fallback_script` from the stage definition: `node .cortex/<fallback_script> '<input_json>'`
+      - The fallback script receives the stage's input data as a JSON argument and produces the same schema as the primary output, plus `"synthesis_path": "rule-based"`.
+      - Write a notification to `.cocoplus/ui-notifications.jsonl`: `{"type": "synthesis_fallback", "stage_id": "<id>", "reason": "<error>", "fallback_script": "<script>"}`
+      - Surface to developer: `CocoFlow: LLM unavailable for stage [id] synthesis — rule-based fallback ran. Review fallback output before proceeding.`
+      - Continue the pipeline with the fallback output.
+    - Stages with `synthesis` absent or `synthesis.primary != "llm"` are unaffected.
+    - Execution stages (SQL execution, test runs, file writes) do NOT have a fallback — they fail hard by design.
+12. **HITL pause** (if `hitl: true`): after successful completion, output the stage results and ask developer to confirm before spawning downstream stages
 
 ## Adaptive Checkpoint Typing
 
@@ -143,6 +154,9 @@ Time: [duration]
 
 | Temptation | Why Not |
 |------------|---------|
+| Halt pipeline on LLM synthesis failure | Synthesis stages degrade gracefully — run the fallback script and continue |
+| Skip the synthesis_path field in fallback output | Downstream consumers need to know which path ran — omitting it hides degraded output |
+| Apply fallback to execution stages | Execution stages (SQL, file writes) fail hard by design — fallback applies to synthesis only |
 | Skip checkpoint validation | Checkpoints are the quality gate — never skip |
 | Proceed past a stop failure | stop means STOP — require manual intervention |
 | Mix stage outputs in same git commit | One commit per stage for traceability |
@@ -160,3 +174,4 @@ Time: [duration]
 - [ ] HITL stages paused for developer review before downstream stages were spawned
 - [ ] If consecutive failures reached `maxConsecutiveFailures`, pipeline halted with escalation message
 - [ ] If any stage had `on_failure: stop` and failed, the pipeline halted immediately with an actionable error message
+- [ ] If any synthesis stage used the rule-based fallback, a `synthesis_fallback` notification was written to `ui-notifications.jsonl` and the developer was notified
