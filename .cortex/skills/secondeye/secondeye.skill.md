@@ -1,7 +1,7 @@
 ---
 name: "secondeye"
-description: "Multi-model parallel plan critique. Spawns five SecondEye Critic instances in parallel (Efficiency, Completeness, Risk, Devil's Advocate, Edge Case Hunter), aggregates findings with HITL/AFK and BLOCKING/MINOR classification, and writes a structured report. Critical findings create a soft gate on $build. Usage: $secondeye [--artifact spec|plan|review] [--model haiku|sonnet|opus]."
-version: "1.0.3"
+description: "Multi-model parallel plan critique. Spawns five SecondEye Critic instances in parallel (Efficiency, Completeness, Risk, Devil's Advocate, Edge Case Hunter), aggregates findings with HITL/AFK, BLOCKING/MINOR, and six-severity labels, and writes a structured report. Critical findings create a soft gate on $build. Usage: $secondeye [--artifact spec|plan|review] [--model haiku|sonnet|opus]."
+version: "1.1.0"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -44,6 +44,9 @@ Artifact to review: [artifact path]
 Staging file: .cocoplus/lifecycle/.secondeye-staging/[timestamp]/haiku-findings.md
 
 Efficiency lens: redundant steps, over-engineered solutions, token-expensive approaches, too many passes.
+
+Assign each finding a `severity` label: blocking | important | nit | suggestion | learning | praise
+At least one `praise` finding is required if any well-constructed pattern is present.
 ```
 
 **Critic 2 — Completeness Lens (Sonnet)**
@@ -54,6 +57,9 @@ Artifact to review: [artifact path]
 Staging file: .cocoplus/lifecycle/.secondeye-staging/[timestamp]/sonnet-findings.md
 
 Completeness lens: missing requirements, unresolved dependencies, gaps between spec and plan, unhandled edge cases.
+
+Assign each finding a `severity` label: blocking | important | nit | suggestion | learning | praise
+At least one `praise` finding is required if any well-constructed pattern is present.
 ```
 
 **Critic 3 — Risk Lens (Opus)**
@@ -64,6 +70,9 @@ Artifact to review: [artifact path]
 Staging file: .cocoplus/lifecycle/.secondeye-staging/[timestamp]/opus-findings.md
 
 Risk lens: hard-to-reverse decisions, external dependencies that could fail, data loss scenarios, security gaps, unvalidated assumptions.
+
+Assign each finding a `severity` label: blocking | important | nit | suggestion | learning | praise
+At least one `praise` finding is required if any well-constructed pattern is present.
 ```
 
 **Critic 4 — Devil's Advocate Lens (Sonnet)**
@@ -78,6 +87,7 @@ Identify ONE of: the single most damaging assumption, the most likely architectu
 Do not seek balance. Your mandate is adversarial rigor — construct the most compelling case for why this plan will fail.
 
 All your findings are classified BLOCKING by default.
+Assign severity `blocking` to all DA findings by default.
 For each finding, include a required "rebuttal_score" field (1–5) when the developer responds:
 - Score 4–5: concede (response is sufficient)
 - Score 1–3: re-assert the concern and explain why the response is insufficient
@@ -92,7 +102,8 @@ Staging file: .cocoplus/lifecycle/.secondeye-staging/[timestamp]/edge-findings.m
 
 Edge Case Hunter lens: identify evaluation blind spots, rare input shapes, data distribution shifts, failure cases not represented in the plan, and acceptance criteria that would miss bad behavior.
 
-Findings are Advisory by default unless they expose correctness, security, or deployment-blocking risk.
+Assign severity `important` by default; use `blocking` only for correctness, security, or deployment-blocking risk.
+At least one `praise` finding is required if any well-constructed pattern is present.
 ```
 
 Spawn all five SecondEye Critic subagents in parallel, one per task prompt file.
@@ -109,9 +120,21 @@ Sort: Critical first, then Advisory, then Observation.
 - **HITL:** Requires human judgment before resolution. Default for: Critical severity findings, findings about evaluation methodology, architectural decisions, scope changes, findings where resolution involves a choice between options with different trade-offs.
 - **AFK:** Can be resolved autonomously in the next `$build` pass. Default for: Warning and Info findings that map to known fix patterns (add a NULL check, refactor a subquery, apply an existing CocoGrove pattern).
 
+**Six-Severity label aggregation** — for each finding, record the `severity` field from the critic output:
+- `blocking` — always maps to BLOCKING verdict contribution
+- `important` — maps to CONCERNS if no `blocking` findings; BLOCKING only if it touches correctness, security, or architectural scope
+- `nit`, `suggestion`, `learning`, `praise` — non-escalating; present in report but never change the top-level verdict
+
+**Verdict derivation from severity labels:**
+- BLOCKING verdict: any finding carries `blocking` label AND passes existing BLOCKING threshold
+- CONCERNS verdict: any finding carries `important` label and no `blocking` label findings exist
+- APPROVE verdict: only `nit`, `suggestion`, `learning`, and `praise` labels present
+
+**Praise enforcement:** After reading all five staging files, verify each critic emitted at least one `praise` finding. If any critic produced zero praise findings, add a note in the report: "No praise findings from [critic lens] — critic did not surface any well-constructed patterns."
+
 **BLOCKING/MINOR classification** — for each finding (orthogonal to HITL/AFK):
-- **BLOCKING:** Must be resolved by the developer — involves correctness, security, architectural conflict, or genuine ambiguity about intent. Critical severity findings are always BLOCKING. Advisory/Observation findings are BLOCKING only if they touch correctness, security, or architectural scope.
-- **MINOR:** Can be auto-resolved without developer input — involves style, naming, missing documentation, or a non-critical coverage gap mapping to a known fix pattern.
+- **BLOCKING:** Must be resolved by the developer — involves correctness, security, architectural conflict, or genuine ambiguity about intent. Findings with `severity: blocking` are always BLOCKING. Findings with `severity: important` are BLOCKING only if they touch correctness, security, or architectural scope.
+- **MINOR:** Can be auto-resolved without developer input — involves style, naming, missing documentation, or a non-critical coverage gap mapping to a known fix pattern. Findings with `nit`, `suggestion`, or `learning` severity are MINOR by default.
 
 Read `da-findings.md`. All DA findings are BLOCKING by default. The developer may downgrade a DA finding to Advisory with explicit override and rationale, but the default is mandatory-review.
 
@@ -122,8 +145,9 @@ Compute `action_summary`:
 - `minor_count`: count of MINOR-classified findings
 - `da_finding_count`: count of Devil's Advocate findings
 - `edge_case_count`: count of Edge Case Hunter findings
+- `severity_counts`: `{ blocking: N, important: N, nit: N, suggestion: N, learning: N, praise: N }`
 
-`critical_open = any Critical finding exists`
+`critical_open = any finding with severity: "blocking" exists`
 
 ## Write Report
 
@@ -145,6 +169,13 @@ action_summary:
   minor_count: [N]
   da_finding_count: [N]
   edge_case_count: [N]
+  severity_counts:
+    blocking: [N]
+    important: [N]
+    nit: [N]
+    suggestion: [N]
+    learning: [N]
+    praise: [N]
 ---
 
 # SecondEye Review: [artifact name]
@@ -152,24 +183,28 @@ action_summary:
 **Date:** [ISO 8601 timestamp]
 **Models:** Haiku (Efficiency) + Sonnet (Completeness) + Opus (Risk) + Sonnet (Devil's Advocate) + Haiku (Edge Case Hunter)
 **Action Summary:** [blocking_count] BLOCKING · [minor_count] MINOR · [hitl_count] HITL · [afk_count] AFK · [da_finding_count] DA · [edge_case_count] Edge Cases
+**Severity:** [blocking] blocking · [important] important · [nit] nit · [suggestion] suggestion · [learning] learning · [praise] praise
 
 ## [Devil's Advocate] Findings
-[DA findings — all BLOCKING by default, tagged [BLOCKING] [HITL]]
+[DA findings — all BLOCKING by default, tagged [BLOCKING] [HITL] [severity:blocking]]
 
 ## [Edge Case Hunter] Findings
-[Evaluation blind spot findings — Advisory by default unless correctness/security/deployment-blocking]
+[Evaluation blind spot findings — tagged [HITL/AFK] [BLOCKING/MINOR] [severity:important|blocking]]
 
-## Critical Findings
-[Critical findings — each tagged [HITL/AFK] [BLOCKING/MINOR]]
+## Blocking Findings
+[Findings with severity:blocking — each tagged [HITL/AFK] [BLOCKING]]
 
-## Advisory Findings
-[Advisory findings — each tagged [HITL/AFK] [BLOCKING/MINOR]]
+## Important Findings
+[Findings with severity:important — each tagged [HITL/AFK] [BLOCKING/MINOR]]
 
-## Observations
-[Observations — each tagged [HITL/AFK] [BLOCKING/MINOR]]
+## Nits, Suggestions & Learning
+[Findings with severity:nit|suggestion|learning — each tagged [AFK] [MINOR]]
+
+## Praise
+[Findings with severity:praise — well-constructed patterns surfaced by critics]
 
 ## Consensus Findings
-[Findings identified by multiple critics]
+[Findings identified by multiple critics — include severity label from highest-severity critic]
 ```
 
 ## Cleanup
@@ -204,12 +239,16 @@ Report: .cocoplus/lifecycle/secondeye-[timestamp].md
 | Run only one critic by default | Loses adversarial diversity and weakens coverage |
 | Skip deduplication when aggregating findings | Inflated issue counts reduce signal quality |
 | Keep staging files after report generation | Leaks temporary artifacts and confuses future runs |
+| Skip praise enforcement | Praise is a structural invariant — a system that only identifies defects produces defensiveness |
+| Use old Critical/Advisory/Observation labels in report | Six-severity labels replaced the three-level system — old labels create aggregation inconsistency |
 
 ## Exit Criteria
 
 - [ ] Artifact path is resolved and validated before critic execution
 - [ ] `.cocoplus/lifecycle/.secondeye-staging/[timestamp]/` is created for critic task files and removed during cleanup
-- [ ] Every finding is tagged with both HITL/AFK and BLOCKING/MINOR labels
-- [ ] Report frontmatter includes `action_summary` with `hitl_count`, `afk_count`, `blocking_count`, `minor_count`
+- [ ] Every finding is tagged with `severity` label (blocking/important/nit/suggestion/learning/praise), HITL/AFK, and BLOCKING/MINOR
+- [ ] Each critic produced at least one `praise` finding, or the report notes its absence explicitly
+- [ ] Report frontmatter includes `action_summary` with `hitl_count`, `afk_count`, `blocking_count`, `minor_count`, and `severity_counts`
+- [ ] Verdict derived from severity labels: BLOCKING if any `blocking` finding; CONCERNS if any `important`; APPROVE if only non-escalating labels
 - [ ] Critic outputs are aggregated into `.cocoplus/lifecycle/secondeye-[timestamp].md` with `critical_open` and acknowledgment metadata
 - [ ] Output clearly indicates whether `$build` is soft-gated and shows the `--hitl-only` and `--blocking-only` acknowledge options
