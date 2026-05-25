@@ -22,7 +22,9 @@ function main() {
 
   appendJsonLine(HOOK_LOG, { hook: 'session-end', session: sessionId, ts });
 
-  // 1. Finalize CocoMeter
+  // 1. Finalize CocoMeter — capture data before deletion for use in step 3
+  let meterStartedAt = null;
+  let meterToolsCalled = 0;
   if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'cocometer.on'))) {
     const meterFile   = path.join(COCOPLUS_DIR, 'meter', 'current-session.json');
     const historyFile = path.join(COCOPLUS_DIR, 'meter', 'history.jsonl');
@@ -34,6 +36,10 @@ function main() {
       const tokens    = readJsonNumber(meterFile, 'tokens_consumed');
       const sql       = readJsonNumber(meterFile, 'sql_statements');
       const writes    = readJsonNumber(meterFile, 'writes_performed');
+
+      // Capture for step 3 before file is deleted
+      meterStartedAt   = startedAt;
+      meterToolsCalled = tools;
 
       // Calculate duration in seconds
       let durationSeconds = 0;
@@ -77,7 +83,28 @@ function main() {
     }
   }
 
-  // 3. Update .cocoplus/AGENTS.md hot layer (with 200-line enforcement)
+  // 3. CocoPull session indexer — use meter data captured in step 1 (file may be deleted by now)
+  try {
+    const startedAtMs = meterStartedAt ? new Date(meterStartedAt).getTime() : Date.now();
+    const durationMinutes = Math.max(0, Math.round((Date.now() - startedAtMs) / 60000));
+    const sessionRecord = JSON.stringify({
+      session_id: sessionId,
+      timestamp: ts,
+      duration_minutes: durationMinutes,
+      turn_count: meterToolsCalled,
+      archetype: 'exploration',
+      summary: '',
+      features_used: [],
+    });
+    const { execFileSync } = require('child_process');
+    try {
+      execFileSync(process.execPath, ['.cortex/scripts/session-indexer.js', '--append', sessionRecord], {
+        timeout: 5000, windowsHide: true,
+      });
+    } catch (_) { /* non-fatal if indexer fails */ }
+  } catch (_) { /* non-fatal */ }
+
+  // 4. Update .cocoplus/AGENTS.md hot layer (with 200-line enforcement)
   const phase = readJsonString(path.join(COCOPLUS_DIR, 'lifecycle', 'meta.json'), 'current_phase') || 'unknown';
   try {
     updateAgentsMd(COCOPLUS_DIR, {

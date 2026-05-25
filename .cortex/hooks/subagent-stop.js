@@ -257,7 +257,108 @@ function main() {
     return;
   }
 
-  // 10. Unknown — log and ignore
+  // 10. CocoSentinel dimension completion — safety-net stale lock cleanup
+  // Primary lock deletion is performed by sentinel.skill.md Step 8 directly.
+  // This hook only cleans up a stale lock if sentinel crashed mid-evaluation.
+  const isSentinelDimension = subagentId.startsWith('sentinel-');
+  if (isSentinelDimension) {
+    const lockPath = path.join(COCOPLUS_DIR, 'sentinel', 'active-evaluation.lock');
+    if (fs.existsSync(lockPath)) {
+      try {
+        const lockAge = Date.now() - fs.statSync(lockPath).mtimeMs;
+        // Stale if lock is older than 10 minutes — skill must have crashed
+        if (lockAge > 10 * 60 * 1000) {
+          fs.unlinkSync(lockPath);
+          appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'sentinel-stale-lock-cleanup', age_ms: lockAge, ts });
+        }
+      } catch (_) { }
+    }
+    appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'sentinel-dimension', subagent_id: subagentId, status, ts });
+    return;
+  }
+
+  // 11. SecondEye / Devil's Advocate BLOCKING — write to CocoWisdom
+  const isSecondEye = subagentId.startsWith('secondeye-') || subagentId.startsWith('da-critic-');
+  if (isSecondEye && status === 'completed') {
+    const verdict = event.verdict || event.outcome || '';
+    const dimension = event.dimension || event.scoring_dimension || null;
+    const evidence = event.evidence || event.rejection_reason || '';
+    const daRebuttalScore = event.da_rebuttal_score || null;
+
+    const isBlocked = verdict === 'BLOCKING' || verdict === 'FAIL' ||
+      (daRebuttalScore !== null && Number(daRebuttalScore) < 4);
+
+    if (isBlocked && dimension) {
+      try {
+        const { execFileSync } = require('child_process');
+        const record = JSON.stringify({
+          gate: subagentId.startsWith('da-critic-') ? 'da_critic' : 'secondeye',
+          phase: event.phase || null,
+          dimension,
+          severity: 'BLOCKING',
+          rejection_reason: evidence,
+          artifact_reference: event.artifact_path || event.artifact_reference || null,
+          da_rebuttal_score: daRebuttalScore,
+        });
+        execFileSync(process.execPath, ['.cortex/scripts/wisdom-writer.js', '--record', record], {
+          timeout: 3000, windowsHide: true,
+        });
+        appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'wisdom_written', gate: 'secondeye', dimension, ts });
+      } catch (err) {
+        logError('subagent-stop', `wisdom-writer failed: ${err.message}`);
+      }
+    }
+    appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'secondeye', subagent_id: subagentId, verdict, ts });
+    return;
+  }
+
+  // 12. CocoFlow synthesis fallback — trigger rule-based fallback when LLM synthesis fails
+  const isSynthesisStage = subagentId.startsWith('synthesis-') || event.stage_type === 'synthesis';
+  if (isSynthesisStage && status === 'failed') {
+    const flowPath = path.join(COCOPLUS_DIR, 'flow.json');
+    if (fs.existsSync(flowPath)) {
+      try {
+        const flow = JSON.parse(fs.readFileSync(flowPath, 'utf8'));
+        const stageId = event.stage_id || subagentId.replace(/^synthesis-/, '');
+        const stage = (flow.stages || []).find(s => s.stage_id === stageId || s.id === stageId);
+        const fallbackScript = stage && stage.synthesis && stage.synthesis.fallback_script;
+        if (fallbackScript && stage.synthesis.fallback === 'rule-based') {
+          const inputData = JSON.stringify(event.input_data || event.stage_input || {});
+          try {
+            const { execFileSync } = require('child_process');
+            const fallbackOutput = execFileSync(
+              process.execPath,
+              [`.cortex/${fallbackScript}`, '--input', inputData],
+              { timeout: 10000, windowsHide: true, encoding: 'utf8' }
+            );
+            const result = JSON.parse(fallbackOutput);
+            // Write fallback result to stage output path
+            const outputPath = path.join(COCOPLUS_DIR, 'harvest', `${stageId}-fallback-output.json`);
+            fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+            const tmp = outputPath + '.tmp.' + process.pid;
+            fs.writeFileSync(tmp, JSON.stringify(result, null, 2));
+            fs.renameSync(tmp, outputPath);
+            appendJsonLine(path.join(COCOPLUS_DIR, 'ui-notifications.jsonl'), {
+              type: 'synthesis_fallback',
+              stage_id: stageId,
+              reason: event.error || 'LLM unavailable',
+              fallback_script: fallbackScript,
+              output_path: outputPath,
+              timestamp: ts,
+              source: 'hook.SubagentStop',
+            });
+            appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'synthesis_fallback', stage_id: stageId, fallback_script: fallbackScript, ts });
+          } catch (fbErr) {
+            logError('subagent-stop', `synthesis fallback failed for ${stageId}: ${fbErr.message}`);
+          }
+        }
+      } catch (_) { /* flow.json may be invalid */ }
+    }
+    appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'synthesis-failed', subagent_id: subagentId, ts });
+    return;
+  }
+
+  // 13. Unknown — log and ignore
   appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'unknown', subagent_id: subagentId, ts });
 }
 

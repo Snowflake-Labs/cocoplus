@@ -138,7 +138,41 @@ function main() {
     });
   }
 
-  // 5. CocoMeter Enhanced (Feature 21) — request_id capture for flow stage attribution
+  // 5. CocoSentinel SHA-void — if a file is written and it has an approval record, void it
+  if ((toolName === 'Write' || toolName === 'Edit') && filePath && succeeded) {
+    const approvalsPath = path.join(COCOPLUS_DIR, 'sentinel', 'approvals.jsonl');
+    if (fs.existsSync(approvalsPath)) {
+      try {
+        const lines = fs.readFileSync(approvalsPath, 'utf8').trim().split('\n').filter(Boolean);
+        const hasApproval = lines.some(l => {
+          try { return JSON.parse(l).artifact_path === filePath; } catch (_) { return false; }
+        });
+        if (hasApproval) {
+          // Read new file content to compute new SHA
+          const { createHash } = require('crypto');
+          const newContent = fs.existsSync(filePath) ? fs.readFileSync(filePath) : null;
+          if (newContent) {
+            const newSha = createHash('sha256').update(newContent).digest('hex');
+            // Check if any approval matches the new SHA
+            const stillValid = lines.some(l => {
+              try { const r = JSON.parse(l); return r.artifact_path === filePath && r.artifact_sha === newSha; } catch (_) { return false; }
+            });
+            if (!stillValid) {
+              appendJsonLine(path.join(COCOPLUS_DIR, 'ui-notifications.jsonl'), {
+                event_type: 'sentinel_approval_voided',
+                message:    `CocoSentinel: approval for ${filePath} voided — file modified since approval. Re-run $sentinel to re-evaluate.`,
+                timestamp:  ts,
+                source:     'hook.PostToolUse',
+              });
+              appendJsonLine(HOOK_LOG, { hook: 'post-tool-use', action: 'sentinel_approval_voided', file: filePath, ts });
+            }
+          }
+        }
+      } catch (_) { /* non-fatal */ }
+    }
+  }
+
+  // 6. CocoMeter Enhanced (Feature 21) — request_id capture for flow stage attribution
   if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'cocometer.on'))) {
     const requestId = result.request_id || result.requestId || null;
     if (requestId) {
