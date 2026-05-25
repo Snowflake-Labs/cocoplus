@@ -26,11 +26,11 @@
 <div class="page-header">
   <div class="label">Feature Catalog</div>
   <h1>The Features</h1>
-  <p class="subtitle">CocoPlus has thirty-five features. They are not thirty-five independent capabilities you can pick from a menu. They are thirty-five expressions of the same underlying design — a system where each piece reinforces the others.</p>
+  <p class="subtitle">CocoPlus has thirty-nine features. They are not thirty-nine independent capabilities you can pick from a menu. They are thirty-nine expressions of the same underlying design — a system where each piece reinforces the others.</p>
 </div>
 
 <div class="content">
-<p>CocoPlus has thirty-five features. They are not thirty-five independent capabilities you can pick from a menu. They are thirty-five expressions of the same underlying design — a system where each piece reinforces the others.</p>
+<p>CocoPlus has thirty-nine features. They are not thirty-nine independent capabilities you can pick from a menu. They are thirty-nine expressions of the same underlying design — a system where each piece reinforces the others.</p>
 <p>Some features are always active. Some are toggled on by choice. Some run invisibly in the background. Some you will use every day. Some you will reach for only when the work demands it.</p>
 <p>Here they are, in the order they matter.</p>
 <hr>
@@ -397,7 +397,35 @@
 <p><strong>CocoHarvest integration:</strong> When CocoHarvest prepares stage inputs, it checks each input file's size. If a file exceeds the configured threshold (default: 8,000 tokens estimated), it looks for a <code>.pull.md</code> counterpart. If found and reliable, it uses the pull file. If not found, it runs <code>$pull</code> automatically. If validation fails, it uses the original with a warning. Pull files are gitignored by default — they are derived artifacts, regenerable on demand. Developers who want them in version history can enable it via <code>$pod config set pull.commit=true</code>.</p>
 <p><strong>When to use:</strong> When stage inputs are large enough that loading them in full would strain the context budget, or when you want to verify that a large document can be faithfully represented in fewer tokens before relying on it as an agent input. The <code>--validate</code> flag is worth using the first time you pull a given document type — if the validation score is high, you can trust the pull pattern for documents of that type going forward.</p>
 <hr>
-<p><em>Thirty-five features, one idea: give the developer a system that works as hard to be right as it works to be fast.</em></p>
+<hr>
+<h2 id="feature-36-cocosentinel-artifact-quality-gate">Feature 36: CocoSentinel — Eight-Dimension Artifact Quality Gate</h2>
+<p><strong>Commands:</strong> <code>$sentinel &lt;file&gt;</code>, <code>$sentinel approve</code>, <code>$sentinel --report</code></p>
+<p>CocoSentinel evaluates any artifact across eight dimensions before it moves forward in the lifecycle. Seven dimensions run as parallel LLM sub-agents — Security Attack Surface (A1), Defensive Posture (A2), Correctness (B), Performance (C), Maintainability (D), Test Coverage (E), and Compliance (F). Dimension G, Reward Hacking Resistance, runs deterministically first: a Node.js pre-gate that checks for evidence the artifact was genuinely completed (consistent estimates, tool calls, test signals, completion markers) and rejects reward hacking patterns (fabricated thresholds, inflated coverage, self-congratulation) in under 50ms with no LLM call. If G fails, the evaluation stops.</p>
+<p>Outcomes are APPROVED, CONDITIONAL, or BLOCKED. CONDITIONAL artifacts can proceed with a developer-recorded rationale via <code>$sentinel approve</code>; approval is SHA-256-bound and invalidated if the artifact changes. <code>$sentinel --report</code> shows the full evaluation history with approval status per artifact. An <code>active-evaluation.lock</code> prevents concurrent runs from corrupting results.</p>
+<p><strong>When to use:</strong> Before any artifact moves from Build to Review, and before any HITL checkpoint where a human is being asked to approve work they did not watch step-by-step. The deterministic Dimension G pre-gate is the fastest way to catch the class of failure where an agent reports completion without having done the work.</p>
+
+<hr>
+<h2 id="feature-37-cocowisdom-institutional-memory">Feature 37: CocoWisdom — Institutional Memory for Rejections</h2>
+<p><strong>Commands:</strong> <code>$wisdom &lt;file&gt;</code>, <code>$wisdom list</code>, <code>$wisdom search "&lt;pattern&gt;"</code>, <code>$wisdom insights</code></p>
+<p>Every time an artifact is rejected — by CocoSentinel, SecondEye, or a developer — the rejection reason is appended to an append-only <code>rejections.jsonl</code> log. CocoWisdom makes this log useful: before a critic evaluates anything, it reads the relevant prior rejections and primes itself with what has failed before. A critic that does not know what was wrong last time will find different things wrong this time. CocoWisdom makes the system's prior failures legible to its future evaluations.</p>
+<p><code>$wisdom search</code> does case-insensitive full-text search across rejection reason, dimension, and gate fields. <code>$wisdom insights</code> produces a Haiku-synthesized pattern report that clusters rejections into recurring themes. <code>$wisdom list</code> supports <code>--gate</code>, <code>--since</code>, and <code>--dimension</code> filters for targeted browsing.</p>
+<p><strong>When to use:</strong> When the same class of problem keeps appearing in reviews. When onboarding a new project phase and wanting to brief reviewers on what has historically failed. When the rejection rate feels higher than expected — <code>$wisdom insights</code> will cluster the reasons and identify whether a systemic pattern is responsible.</p>
+
+<hr>
+<h2 id="feature-38-cocoreview-structured-code-review">Feature 38: CocoReview — Structured Code Review</h2>
+<p><strong>Commands:</strong> <code>$review &lt;file&gt;</code>, <code>$review --security</code>, <code>$review --architecture</code>, <code>$review --complexity</code>, <code>$review --language &lt;lang&gt;</code></p>
+<p>CocoReview is a four-phase structured review with a mandatory six-severity vocabulary. Every finding is labeled: <code>blocking</code> (must fix before merge), <code>important</code> (should fix), <code>nit</code> (minor style), <code>suggestion</code> (optional improvement), <code>learning</code> (educational context), or <code>praise</code> (well-constructed pattern). Praise is not optional — if no exemplary pattern is found, a scoped praise finding is still required. The verdict follows mechanically from the highest severity: any blocking finding produces REQUEST_CHANGES; important without blocking produces COMMENT; otherwise APPROVE.</p>
+<p>A PR complexity analyzer runs before any LLM work, computing a size bucket (XS through XL) and complexity score. Artifacts in the XL bucket (≥800 lines changed) receive a split recommendation before the full review proceeds. The review output is committed to <code>.cocoplus/review/cocoreview-&lt;timestamp&gt;.md</code>.</p>
+<p><strong>When to use:</strong> Before merging any non-trivial change. The <code>--complexity</code> flag alone is useful for a quick size check before starting review. <code>--security</code> adds a five-tier security severity scan relevant for any change touching credentials, access control, PII columns, or Snowflake grants.</p>
+
+<hr>
+<h2 id="feature-39-cocoops-delivery-intelligence-dashboard">Feature 39: CocoOps — Delivery Intelligence Dashboard</h2>
+<p><strong>Commands:</strong> <code>$ops dora</code>, <code>$ops sprint</code>, <code>$ops suggest</code>, <code>$ops demo</code></p>
+<p>CocoOps computes four DORA-adapted delivery metrics from Snowflake task history and git log: Pipeline Run Frequency, Data Availability Lead Time, Failure Recovery Time, and Data Quality Failure Rate. Each metric is tier-classified (Elite/High/Medium/Low). Metrics are computed deterministically by a Node.js script — the LLM is used only for narrative synthesis, and the narrative is required to cite specific pipeline names, dates, and quantities from the data. Vague generalities are structurally prohibited.</p>
+<p><code>$ops sprint</code> computes velocity from git commits within a configurable sprint window, calculates daily burn rate, and projects final velocity. Both DORA and sprint snapshots are committed idempotently — <code>git diff --quiet</code> skips the commit if the snapshot is unchanged. <code>$ops suggest</code> produces time-aware operational suggestions citing the actual metric data. <code>$ops demo</code> activates a synthetic four-pipeline dataset for evaluation environments without production Snowflake access.</p>
+<p><strong>When to use:</strong> At sprint boundaries to track delivery velocity. When a pipeline is underperforming and you want a structured diagnosis before escalating. In evaluation environments where production data access is not yet available — <code>$ops demo</code> produces a realistic dataset that exercises the full reporting path.</p>
+
+<p><em>Thirty-nine features, one idea: give the developer a system that works as hard to be right as it works to be fast.</em></p>
 </div>
 
 <footer>

@@ -4,6 +4,84 @@ All notable changes to CocoPlus are documented here.
 
 ---
 
+## [1.1.0] — May 2026
+
+### Added
+
+#### CocoSentinel — Eight-Dimension Artifact Quality Gate (Feature 36)
+- `sentinel.skill.md` — `$sentinel <file>` evaluates any artifact across eight dimensions: Security Attack Surface (A1), Defensive Posture (A2), Correctness (B), Performance (C), Maintainability (D), Test Coverage (E), Compliance (F), and Reward Hacking Resistance (G); Dimension G evidence pre-gate runs deterministically before any LLM work
+- `sentinel-approve.skill.md` — `$sentinel approve` records SHA-256-bound approval for a CONDITIONAL artifact; approval is invalidated if the artifact changes
+- `sentinel-report.skill.md` — `$sentinel --report` displays full evaluation history with outcomes and approval status per artifact
+- `scripts/sentinel-pregate.js` — Dimension G binary PASS/FAIL in <50ms; evaluates 4 evidence criteria (consistent estimate, tool calls, test coverage signal, completion marker) and 3 reward hacking signals (threshold fabrication, coverage inflation, self-congratulation patterns); no LLM
+- Seven parallel dimension agents: `sentinel-a1.agent.md` (Security Attack Surface), `sentinel-a2.agent.md` (Defensive Posture), `sentinel-b.agent.md` (Correctness), `sentinel-c.agent.md` (Performance), `sentinel-d.agent.md` (Maintainability), `sentinel-e.agent.md` (Test Coverage), `sentinel-f.agent.md` (Compliance)
+- Lock file discipline: `active-evaluation.lock` prevents concurrent sentinel runs; stale lock cleanup (>10 min) in `subagent-stop.js`
+
+#### CocoWisdom — Institutional Memory for Rejections (Feature 37)
+- `wisdom.skill.md` — `$wisdom <file>` primes critics with prior rejection context before evaluation; reads `rejections.jsonl` to surface relevant past failures
+- `wisdom-list.skill.md` — `$wisdom list` browses rejection records with optional `--gate`, `--since`, `--dimension` filters
+- `wisdom-search.skill.md` — `$wisdom search "<pattern>"` full-text case-insensitive search across rejection reason, dimension, and gate fields
+- `wisdom-insights.skill.md` — `$wisdom insights` produces a Haiku-synthesized pattern report from the rejection history
+- `scripts/wisdom-writer.js` — append-only `rejections.jsonl` writer; auto-increments record IDs; lock file inside try block ensuring cleanup on any error path
+
+#### CocoReview — Structured Code Review (Feature 38)
+- `cocoreview.skill.md` — `$review <file>` progressive-disclosure code review; four phases: context gathering, high-level architecture, line-by-line, verdict; six-severity vocabulary: `blocking`, `important`, `nit`, `suggestion`, `learning`, `praise`; `praise` finding structurally mandatory in every review
+- `scripts/pr-complexity.js` — deterministic PR complexity analyzer; computes `size_bucket` (XS/S/M/L/XL) and complexity score; XL artifacts (≥800 lines changed) trigger split recommendation; `fileCount` uses only `diff --git` lines; `nonTestChanges` uses subtraction without erroneous factor of 2
+- `skills/cocoreview/universal-quality.md` — nine universal anti-pattern baseline applied before any language guide
+- `skills/cocoreview/language-sql.md` — SQL-specific review guide
+- `skills/cocoreview/security-review.md` — security review guide with five-tier severity scale
+- `skills/cocoreview/architecture-review.md` — architecture review guide
+- Review output committed to `.cocoplus/review/cocoreview-<timestamp>.md` with `docs(review):` commit type
+
+#### CocoOps — Delivery Intelligence Dashboard (Feature 39)
+- `cocoops.skill.md` — `$ops` dispatcher routing to DORA, sprint, suggest, and demo sub-commands
+- `ops-dora.skill.md` — `$ops dora` computes four DORA-adapted metrics (Pipeline Run Frequency, Data Availability Lead, Failure Recovery Time, Data Quality Failure Rate); idempotent commit via `git diff --quiet`
+- `ops-sprint.skill.md` — `$ops sprint` computes velocity, burndown, and completion prediction from git log within sprint window; daily burn rate and projected final velocity; idempotent commit
+- `ops-demo.skill.md` — `$ops demo` activates demo mode with 4-pipeline synthetic dataset for evaluation; `--off` deactivates; `--reset` clears demo data
+- `scripts/dora-metrics.js` — deterministic DORA computation; reads Snowflake task history and git log; uses `path.resolve(process.cwd(), 'cocoplus.toml')` for config; exits 0 with message when `.cocoplus/` absent
+- `scripts/ops-suggest.js` — time-aware operational suggestion classifier; reads `dora-snapshot.json` for data-cited suggestions
+
+#### CocoPlus Config — SSOT Sync (Phase 26 Extension)
+- `cocoplus-config.skill.md` — `$cocoplus sync` propagates `cocoplus.toml` into `security-rules.json` and other derived config files; `$cocoplus migrate-config` converts legacy `safety-config.json` to `cocoplus.toml` format
+- `templates/cocoplus.toml.template` — canonical single-source config with `[project]`, `[security]`, `[warehouses]`, `[cost]`, `[sprint]`, `[review.rules]`, and `[demo]` sections
+
+### Updated
+
+#### CocoFlow — Dual Synthesis Fallback (Phase 26 Extension)
+- `flow-run.skill.md` — synthesis stages fall back to rule-based script on LLM failure via `--input` flag convention; execution stages still fail hard; prevents silent data loss on LLM synthesis timeout
+
+#### SecondEye — Six-Severity Vocabulary (Phase 26 Extension)
+- `secondeye.skill.md` — all five critic prompts extended with six-severity labels (`blocking`, `important`, `nit`, `suggestion`, `learning`, `praise`); `severity_counts` added to `action_summary`; report sections reorganized to Blocking/Important/Nits/Praise; praise structurally enforced — missing praise terminates with error
+- `secondeye-critic.agent.md` — added `version`, `author`, `tags` frontmatter; `Severity` field added to output format
+
+#### Safety Gate — Four-Tier Boundary Framework (Phase 26 Extension)
+- `pre-tool-use.js` — Four-Tier Boundary Framework added (Absolute, Configurable, Advisory, Transparent); comment corrected from "EHRB still runs regardless" to "all checks including EHRB are bypassed" to match actual code behavior
+
+#### Session Lifecycle — Archetypes and Index (Phase 26 Extension)
+- `scripts/archetype-classifier.js` — classifies sessions into 5 archetypes (Explorer, Builder, Reviewer, Debugger, Planner) from turn count, duration, and tool use patterns
+- `scripts/session-indexer.js` — rebuild/append modes; exits 0 (not 1) when `.cocoplus/` absent; used by `session-end.js` for cross-session FTS5 index
+
+#### CocoBloom — Crystallized Skill Output Path (Phase 26 Extension)
+- `bloom-crystallize.skill.md` — output path corrected from `.cocoplus/skills/` (runtime state) to `.cortex/skills/crystallized/` (cortex artifacts)
+
+#### CocoPull — Full-Text Search (Phase 26 Extension)
+- `pull-search.skill.md` — `$pull search "<query>"` searches distilled pull files via FTS5 index built by `session-indexer.js`
+
+### Fixed
+
+- `wisdom-writer.js` — lock file creation moved inside `try` block; previously a throw from `nextRecordId()` would strand the lock file permanently
+- `session-end.js` — meter data captured into local variables before `fs.unlinkSync(meterFile)` call; previously the deleted file was re-read in step 3, producing zero-duration and zero-turn index entries
+- `subagent-stop.js` — stale lock cleanup replaces dead-code sentinel-synthesis ID check; lock older than 10 minutes is removed as safety net
+- `pr-complexity.js` — `fileCount` now counts only `diff --git` header lines (not `+++` lines which caused ~2× overcount); `nonTestChanges` removes erroneous `* 2` multiplier that could produce negative values; `Math.max(0, ...)` guard added
+- `dora-metrics.js` — `.cocoplus/` existence check added at start of `main()`; `cocoplus.toml` read via `path.resolve(process.cwd(), ...)` to work from any working directory
+- `session-indexer.js` — exits with code 0 (not 1) when `.cocoplus/` is absent; absence is not an error condition
+- `sentinel.skill.md` — step number in "wait before proceeding" corrected from Step 7 to Step 8
+- `ops-dora.skill.md`, `ops-sprint.skill.md` — idempotency check added; `git diff --quiet` skips commit when snapshot unchanged
+- `cocoreview.skill.md` — commit type corrected from `feat(review):` to `docs(review):`
+- All seven sentinel dimension agents and `secondeye-critic.agent.md` — added missing `version`, `author`, `tags` frontmatter fields
+- `wisdom.skill.md`, `wisdom-list.skill.md`, `wisdom-search.skill.md`, `sentinel-report.skill.md` — Anti-Rationalization tables added
+
+---
+
 ## [1.0.3] — May 2026
 
 ### Added
@@ -350,3 +428,4 @@ All notable changes to CocoPlus are documented here.
 [1.0.1]: https://github.com/Snowflake-Labs/cocoplus/releases/tag/v1.0.1
 [1.0.2]: https://github.com/Snowflake-Labs/cocoplus/releases/tag/v1.0.2
 [1.0.3]: https://github.com/Snowflake-Labs/cocoplus/releases/tag/v1.0.3
+[1.1.0]: https://github.com/Snowflake-Labs/cocoplus/releases/tag/v1.1.0
