@@ -166,7 +166,7 @@ function main() {
   else if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'safety.strict'))) safetyMode = 'strict';
   else if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'safety.normal'))) safetyMode = 'normal';
 
-  // Safety off: pass through immediately (EHRB still runs regardless)
+  // Safety off: pass through immediately — all checks including EHRB are bypassed
   if (safetyMode === 'off') { allow(); return; }
 
   // Phase-aware gate: block SQL execution during Spec and Plan phases
@@ -180,6 +180,47 @@ function main() {
         return;
       }
     } catch (_) { /* malformed meta.json — fail open */ }
+  }
+
+  // --- Step 1b: Four-Tier Boundary Framework (Step 25.6 / Step 26.6) ---
+  // Reads boundary_tiers from safety-config.json (or cocoplus.toml when migrated)
+  let boundaryTiers = null;
+  try {
+    const cfg = JSON.parse(fs.readFileSync(path.join(COCOPLUS_DIR, 'safety-config.json'), 'utf8'));
+    boundaryTiers = cfg.boundary_tiers || null;
+  } catch (_) { /* not yet configured — skip tier classification */ }
+
+  if (boundaryTiers && toolName === 'SnowflakeSqlExecute') {
+    const neverPatterns   = boundaryTiers.never_patterns   || [];
+    const humanPatterns   = boundaryTiers.human_required_patterns || [];
+    const askFirstPatterns = boundaryTiers.ask_first_patterns || [];
+
+    // Tier 4: NEVER — unconditional block, cannot be overridden
+    for (const pattern of neverPatterns) {
+      if (new RegExp(pattern, 'i').test(sql)) {
+        block(`[TIER 4 — NEVER] This operation matches a pattern that CocoPlus is configured to never execute: "${pattern}". This cannot be overridden. Edit boundary_tiers.never_patterns in safety-config.json to change this policy.`);
+        appendJsonLine(SAFETY_AUDIT, { ts, tool: toolName, tier: 4, pattern, mode: 'never' });
+        return;
+      }
+    }
+
+    // Tier 3: HUMAN REQUIRED — hard stop requiring typed rationale
+    for (const pattern of humanPatterns) {
+      if (new RegExp(pattern, 'i').test(sql)) {
+        block(`[TIER 3 — HUMAN REQUIRED] This operation requires explicit human authorization: "${pattern}" matched. Provide written rationale and re-submit: "AUTHORIZED: <your reason>"`);
+        appendJsonLine(SAFETY_AUDIT, { ts, tool: toolName, tier: 3, pattern, mode: 'human_required' });
+        return;
+      }
+    }
+
+    // Tier 2: ASK FIRST — confirmation prompt before execution
+    for (const pattern of askFirstPatterns) {
+      if (new RegExp(pattern, 'i').test(sql)) {
+        allow(`[TIER 2 — ASK FIRST] This operation matches a pattern requiring confirmation: "${pattern}". Confirm to proceed? Type YES to allow this operation.`);
+        appendJsonLine(SAFETY_AUDIT, { ts, tool: toolName, tier: 2, pattern, mode: 'ask_first' });
+        return;
+      }
+    }
   }
 
   // --- Step 2: EHRB classification ---

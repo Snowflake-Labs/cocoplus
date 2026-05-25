@@ -24,6 +24,46 @@ function main() {
 
   appendJsonLine(HOOK_LOG, { hook: 'pre-compact', ts });
 
+  // Step 26.4: Evaluation block — check for active locks before compaction
+  const sentinelLock   = path.join(COCOPLUS_DIR, 'sentinel', 'active-evaluation.lock');
+  const wisdomLock     = path.join(COCOPLUS_DIR, 'wisdom', 'pending-write.lock');
+  const flowStatePath  = path.join(COCOPLUS_DIR, 'flow-state.json');
+
+  let blockReason = null;
+  let releaseCondition = null;
+
+  if (fs.existsSync(sentinelLock)) {
+    blockReason      = 'CocoSentinel evaluation in progress';
+    releaseCondition = 'Wait for $sentinel evaluation to complete (active-evaluation.lock removed)';
+  } else if (fs.existsSync(wisdomLock)) {
+    blockReason      = 'CocoWisdom write in progress';
+    releaseCondition = 'wisdom-writer.js will remove the lock on completion';
+  } else {
+    try {
+      const flowState = JSON.parse(fs.readFileSync(flowStatePath, 'utf8'));
+      if (flowState.pipeline_active === true) {
+        blockReason      = 'CocoFlow pipeline active';
+        releaseCondition = 'Wait for current pipeline stage to complete or run $flow pause';
+      }
+    } catch (_) { /* flow-state.json may not exist */ }
+  }
+
+  if (blockReason) {
+    process.stdout.write(JSON.stringify({
+      action:            'BLOCK',
+      reason:            blockReason,
+      release_condition: releaseCondition,
+    }) + '\n');
+    appendJsonLine(path.join(COCOPLUS_DIR, 'ui-notifications.jsonl'), {
+      event_type: 'compaction_blocked',
+      message:    `Context compaction blocked: ${blockReason}. ${releaseCondition}.`,
+      timestamp:  ts,
+      source:     'hook.PreCompact',
+    });
+    appendJsonLine(HOOK_LOG, { hook: 'pre-compact', action: 'blocked', reason: blockReason, ts });
+    process.exit(1);
+  }
+
   // 1. Flush memory decision buffer before context is compacted
   if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'memory.on'))) {
     const bufferFile    = path.join(COCOPLUS_DIR, '.decision-buffer');
