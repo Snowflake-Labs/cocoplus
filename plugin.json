@@ -1,6 +1,6 @@
 {
   "name": "cocoplus",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "CocoPlus — AI-powered development lifecycle plugin for Snowflake Cortex Code CLI",
   "author": "sgsshankar, viveksrinivasanss",
   "license": "MIT",
@@ -21,7 +21,8 @@
     "templates/notifications.json.template",
     "templates/safety-config.json.template",
     "templates/flow-view.html.template",
-    "templates/meter-view.html.template"
+    "templates/meter-view.html.template",
+    "templates/cocoplus.toml.template"
   ],
   "recipes": [
     "recipes/cortex-add-classifier.json.template",
@@ -47,7 +48,41 @@
     "coco-watch",
     "coco-bloom",
     "coco-klatch",
-    "coco-pull"
+    "coco-pull",
+    "sentinel/sentinel-a1",
+    "sentinel/sentinel-a2",
+    "sentinel/sentinel-b",
+    "sentinel/sentinel-c",
+    "sentinel/sentinel-d",
+    "sentinel/sentinel-e",
+    "sentinel/sentinel-f"
+  ],
+  "skills": [
+    "cocosentinel/sentinel",
+    "cocosentinel/sentinel-approve",
+    "cocosentinel/sentinel-report",
+    "cocowisdom/wisdom",
+    "cocowisdom/wisdom-list",
+    "cocowisdom/wisdom-search",
+    "cocowisdom/wisdom-insights",
+    "cocoreview/cocoreview",
+    "cocoops/cocoops",
+    "cocoops/ops-dora",
+    "cocoops/ops-sprint",
+    "cocoops/ops-demo",
+    "cocoops/ops-suggest",
+    "cocobloom/bloom-crystallize",
+    "cocopull/pull-search",
+    "cocoplus-config/cocoplus-config"
+  ],
+  "scripts": [
+    "scripts/wisdom-writer.js",
+    "scripts/archetype-classifier.js",
+    "scripts/session-indexer.js",
+    "scripts/pr-complexity.js",
+    "scripts/dora-metrics.js",
+    "scripts/ops-suggest.js",
+    "scripts/sentinel-pregate.js"
   ],
   "hooks": [
     "session-start",
