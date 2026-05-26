@@ -32,77 +32,78 @@
 <div class="content">
 <p>Every CocoPlus command, organized by the feature that owns it. Each command includes its flags, what it does, and what output to expect.</p>
 <p>Commands marked <strong>[auto]</strong> do not require explicit invocation — they are triggered by hooks. They are documented here for awareness, not for manual use.</p>
-<h2 id="quick-reference-card">Quick Reference Card</h2>
-<div class="table-wrap quick-reference"><table><thead><tr><th>Group</th><th>Commands</th></tr></thead><tbody>
-<tr><td><strong>Setup</strong></td><td><code>$pod init</code> · <code>$pod init --refresh-context</code> · <code>$pod status</code> · <code>$pod resume</code> · <code>$pod kb</code> · <code>$pod checkpoint</code></td></tr>
-<tr><td><strong>Assist Mode</strong></td><td><code>$cocoplus on</code> · <code>$cocoplus off</code></td></tr>
-<tr><td><strong>Lifecycle</strong></td><td><code>$bloom</code> · <code>$bloom --skip</code> · <code>$spec [--quick|--full]</code> · <code>$discuss</code> · <code>$plan</code> · <code>$build</code> · <code>$test</code> · <code>$review</code> · <code>$ship</code> · <code>$rewind [--tag]</code> · <code>$fork</code></td></tr>
-<tr><td><strong>Pipeline</strong></td><td><code>$flow run [--concurrency]</code> · <code>$flow status</code> · <code>$flow pause</code> · <code>$flow resume</code> · <code>$flow view</code></td></tr>
-<tr><td><strong>Recipes</strong></td><td><code>$recipe list</code> · <code>$recipe use</code> · <code>$recipe new</code></td></tr>
-<tr><td><strong>Personas</strong></td><td><code>$de</code> · <code>$ae</code> · <code>$ds</code> · <code>$da</code> · <code>$bi</code> · <code>$dpm</code> · <code>$dst</code> · <code>$cdo</code> · <code>$personas</code></td></tr>
-<tr><td><strong>Memory</strong></td><td><code>$memory on</code> · <code>$memory off</code></td></tr>
-<tr><td><strong>Org Standards</strong></td><td><code>$context add</code> · <code>$context view</code> · <code>$context list</code></td></tr>
-<tr><td><strong>Inspector</strong></td><td><code>$inspect</code> · <code>$inspector on</code> · <code>$inspector off</code></td></tr>
-<tr><td><strong>Safety</strong></td><td><code>$safety strict</code> · <code>$safety normal</code> · <code>$safety off</code></td></tr>
-<tr><td><strong>Quality</strong></td><td><code>$quality on</code> · <code>$quality off</code> · <code>$quality run</code></td></tr>
-<tr><td><strong>Meter</strong></td><td><code>$meter on</code> · <code>$meter off</code> · <code>$meter</code> · <code>$meter estimate</code> · <code>$meter history</code> · <code>$meter accuracy</code> · <code>$meter view</code> · <code>$meter sync</code></td></tr>
-<tr><td><strong>Cupper</strong></td><td><code>$cup</code> · <code>$cup history</code></td></tr>
-<tr><td><strong>Grove</strong></td><td><code>$patterns view</code> · <code>$patterns promote</code> · <code>$grove glossary</code> · <code>$grove glossary view</code></td></tr>
-<tr><td><strong>Dream</strong></td><td><code>$dream</code> · <code>$dream history</code></td></tr>
-<tr><td><strong>Context Mode</strong></td><td><code>$context on</code> · <code>$context off</code></td></tr>
-<tr><td><strong>Spark</strong></td><td><code>$spark</code> · <code>$spark-off</code></td></tr>
-<tr><td><strong>SecondEye</strong></td><td><code>$secondeye</code> · <code>$secondeye --artifact</code> · <code>$secondeye --model</code> · <code>$secondeye acknowledge [--hitl-only] [--blocking-only]</code> · <code>$secondeye history</code></td></tr>
-<tr><td><strong>Klatch</strong></td><td><code>$klatch &lt;topic&gt;</code> · <code>$klatch --participants=N</code></td></tr>
-<tr><td><strong>Pull</strong></td><td><code>$pull &lt;target&gt;</code> · <code>$pull --validate</code></td></tr>
-<tr><td><strong>Docs</strong></td><td><code>$doc run</code></td></tr>
-<tr><td><strong>Prompts</strong></td><td><code>$prompt new</code> · <code>$prompt compare</code></td></tr>
-<tr><td><strong>Fleet</strong></td><td><code>$fleet init</code> · <code>$fleet run</code> · <code>$fleet status</code> · <code>$fleet logs</code> · <code>$fleet stop</code></td></tr>
-<tr><td><strong>Map</strong></td><td><code>$map</code> · <code>$map diff</code> · <code>$map explain &lt;target&gt;</code></td></tr>
-<tr><td><strong>Seeds</strong></td><td><code>$seed add &quot;&lt;idea&gt;&quot; --trigger &quot;&lt;condition&gt;&quot;</code> · <code>$seed list</code> · <code>$seed promote &lt;id&gt;</code></td></tr>
-<tr><td><strong>CocoWatch</strong></td><td><em>(automatic — summary at <code>$ship</code> and FULL checkpoints)</em></td></tr>
-</tbody></table></div>
 <hr>
 <h2 id="setup-and-state-cocopod">Setup and State — CocoPod</h2>
 <p>CocoPod is the prerequisite. No other CocoPlus command functions in a directory without an initialized CocoPod.</p>
 <hr>
 <p><strong><code>$pod init</code></strong> — Initialize a new CocoPlus project</p>
-<pre><code>$pod init
-$pod init --name &quot;Data Platform v2&quot;</code></pre>
-<p>Prompts for project name and description if not provided. Creates <code>.cocoplus/</code> directory structure, writes initial <code>AGENTS.md</code>, <code>project.md</code>, <code>flow.json</code>, <code>safety-config.json</code>, and <code>notifications.json</code>. Creates the initial git commit. Also generates <code>lifecycle/cocoplus-context.md</code> — the constitutional document that every CocoPlus agent reads first to understand the project's durable context, organizational standards, and active decision record. Fails if <code>.cocoplus/</code> already exists.</p>
+<pre><code>
+$pod init
+$pod init --name "Data Platform v2"
+</code></pre>
+<p>Prompts for project name and description if not provided. Creates <code>.cocoplus/</code> directory structure, writes initial <code>AGENTS.md</code>, <code>project.md</code>, <code>flow.json</code>, <code>cocoplus.toml</code>, and <code>notifications.json</code>. Creates the initial git commit. Also generates <code>lifecycle/cocoplus-context.md</code> — the constitutional document that every CocoPlus agent reads first to understand the project's durable context, organizational standards, and active decision record. Fails if <code>.cocoplus/</code> already exists.</p>
+<p><code>cocoplus.toml</code> is the single source of truth for all operator-configurable plugin settings: security rules, cost thresholds, warehouse access, model tier defaults, demo mode flags, and sprint configuration. All downstream artifacts (agent frontmatter, hook rule tables) are generated from it and must not be edited directly.</p>
 <p><code>--refresh-context</code> — Regenerates <code>lifecycle/cocoplus-context.md</code> through a guided dialogue without reinitializing the full pod. Archives the prior version to <code>lifecycle/cocoplus-context-[timestamp].md</code> before regeneration. Use when project scope, organizational standards, or key decisions have shifted significantly since the last initialization.</p>
 <p><strong>Output:</strong> Directory structure confirmation and next-steps guidance.</p>
 <hr>
 <p><strong><code>$pod status</code></strong> — Project state dashboard</p>
-<pre><code>$pod status</code></pre>
+<pre><code>
+$pod status
+</code></pre>
 <p>Reads all state from <code>.cocoplus/</code> and reports: current CocoBrew phase, active feature modes, CocoFlow pipeline status, recent CocoMeter session summary, latest CocoCupper findings (last 3), and Environment Inspector snapshot age. Also performs a self-heal check: compares flag files in <code>.cocoplus/modes/</code> against the <code>## Active Modes</code> section in <code>AGENTS.md</code>. If diverged, shows a warning and offers a one-step sync.</p>
 <p><strong>Output:</strong> Structured report. No state changes unless sync is accepted.</p>
 <hr>
 <p><strong><code>$pod resume</code></strong> — Context reconstruction for returning developers</p>
-<pre><code>$pod resume</code></pre>
+<pre><code>
+$pod resume
+</code></pre>
 <p>Produces a focused narrative of where you left off: last phase completed, what blocking items remain, the three most recent key decisions, and the recommended immediate next action. Updates <code>AGENTS.md</code> with the resume timestamp.</p>
 <p><strong>Output:</strong> Narrative summary. Use at the start of any session after time away.</p>
 <hr>
 <p><strong><code>$pod kb</code></strong> — View the project knowledge base</p>
-<pre><code>$pod kb</code></pre>
+<pre><code>
+$pod kb
+</code></pre>
 <p>Displays <code>lifecycle/kb.md</code> — the session-spanning project knowledge base populated by CocoCupper. Contains durable insights that have survived the curation gate: patterns observed repeatedly, key decisions and their rationale, anomalies with confirmed root causes, evaluation baselines established across prior sessions.</p>
 <p><strong>Output:</strong> Knowledge base contents. No state changes.</p>
 <hr>
 <p><strong><code>$pod checkpoint</code></strong> — Write a structured recovery snapshot</p>
-<pre><code>$pod checkpoint</code></pre>
+<pre><code>
+$pod checkpoint
+</code></pre>
 <p>Writes <code>lifecycle/checkpoint.md</code> with: current CocoBrew phase and phase ID, in-progress CocoFlow stage (if any), last five decisions from <code>memory/decisions.md</code>, pending must-fix items from <code>review.md</code>, active CocoHarvest harvest status, and context utilization at checkpoint time. Also invoked automatically by CocoHealth when context utilization crosses the 70% critical threshold.</p>
-<p>Confirms: &quot;Checkpoint saved. Run <code>$clear</code> to reset context, then <code>$pod resume</code> to continue from this point.&quot;</p>
+<p>Confirms: "Checkpoint saved. Run <code>$clear</code> to reset context, then <code>$pod resume</code> to continue from this point."</p>
 <p><strong>Output:</strong> Committed <code>lifecycle/checkpoint.md</code>. Run before <code>$clear</code> to enable clean recovery.</p>
+<hr>
+<p><strong><code>$cocoplus sync</code></strong> — Propagate <code>cocoplus.toml</code> changes to all generated artifacts</p>
+<pre><code>
+$cocoplus sync
+</code></pre>
+<p>Reads <code>cocoplus.toml</code> and propagates its values into all downstream plugin artifacts: agent frontmatter files, hook rule tables, environment settings, and generated configuration. Commits all generated files as a single change with message <code>chore(config): $cocoplus sync — cocoplus.toml applied</code>. If a generated file was manually edited since the last sync, the manual edit is overwritten and a warning is shown — <code>cocoplus.toml</code> is the source of truth, not its outputs.</p>
+<p>Run after any change to <code>cocoplus.toml</code> to ensure all plugin components reflect the current configuration intent.</p>
+<p><strong>Output:</strong> Generated file changes + git commit.</p>
+<hr>
+<p><strong><code>$cocoplus migrate-config</code></strong> — Convert a legacy <code>safety-config.json</code> to <code>cocoplus.toml</code></p>
+<pre><code>
+$cocoplus migrate-config
+</code></pre>
+<p>Detects an existing <code>safety-config.json</code> in the project, reads its security rules, populates the <code>[security]</code> section of a new <code>cocoplus.toml</code>, and runs <code>$cocoplus sync</code> to regenerate downstream artifacts. The original <code>safety-config.json</code> is archived (not deleted) after migration. For projects upgrading from an earlier plugin version.</p>
+<p><strong>Output:</strong> <code>cocoplus.toml</code> creation + sync commit + archive of <code>safety-config.json</code>.</p>
 <hr>
 <h2 id="master-toggle-assist-mode">Master Toggle — Assist Mode</h2>
 <hr>
 <p><strong><code>$cocoplus on</code></strong> — Activate all features simultaneously</p>
-<pre><code>$cocoplus on</code></pre>
-<p>Creates mode flag files for Memory Engine, Environment Inspector (auto), Safety Gate (normal), Code Quality Advisor, Context Mode, and CocoMeter. Immediately triggers an Environment Inspector background scan. Updates <code>AGENTS.md</code> to show &quot;FULL ASSIST MODE: ACTIVE&quot;. Creates git commit. Idempotent — running when already active confirms state only.</p>
+<pre><code>
+$cocoplus on
+</code></pre>
+<p>Creates mode flag files for Memory Engine, Environment Inspector (auto), Safety Gate (normal), Code Quality Advisor, Context Mode, and CocoMeter. Immediately triggers an Environment Inspector background scan. Updates <code>AGENTS.md</code> to show "FULL ASSIST MODE: ACTIVE". Creates git commit. Idempotent — running when already active confirms state only.</p>
 <p><strong>Does not activate:</strong> CocoBrew lifecycle phases, CocoSpark, CocoFleet.</p>
 <p><strong>Output:</strong> Confirmation listing every feature and its activation state.</p>
 <hr>
 <p><strong><code>$cocoplus off</code></strong> — Deactivate all features</p>
-<pre><code>$cocoplus off</code></pre>
+<pre><code>
+$cocoplus off
+</code></pre>
 <p>Removes all mode flag files. Does not delete any data files — memory content, meter history, grove patterns, and lifecycle artifacts are preserved. Creates git commit. Shows what was deactivated and what state was preserved.</p>
 <p><strong>Output:</strong> Deactivation summary with preserved-state list.</p>
 <hr>
@@ -110,90 +111,116 @@ $pod init --name &quot;Data Platform v2&quot;</code></pre>
 <p>The six phases run sequentially. Each phase requires the previous phase to be committed before it can begin.</p>
 <hr>
 <p><strong><code>$spec</code></strong> — Enter the Spec phase</p>
-<pre><code>$spec
+<pre><code>
+$spec
 $spec --force
 $spec --full
-$spec --quick</code></pre>
+$spec --quick
+</code></pre>
 <p>Before opening the requirements dialogue, a deterministic classifier (<code>scope-classify.sh</code>) analyzes the initial description and routes to one of two tracks: <strong>Quick Flow</strong> (single-function, clear requirements — produces <code>lifecycle/quick-build.md</code> via a Clarify → Implement → Verify sequence, no <code>plan.md</code> or <code>flow.json</code>) or <strong>Full Flow</strong> (everything else — the complete six-phase CocoBrew lifecycle). <code>--full</code> forces Full Flow regardless of classification. <code>--quick</code> forces Quick Flow with a warning if the classifier disagrees. If no bloom document exists, a one-line advisory recommends running <code>$bloom</code> first.</p>
 <p>In Full Flow, opens a structured requirements dialogue: goal, success criteria, explicit out-of-scope, involved Snowflake objects, constraints. Output written to <code>.cocoplus/lifecycle/spec.md</code>. Git commit: <code>feat(spec): initial project specification captured</code>.</p>
 <p>Re-running during the <code>plan</code> phase prompts for confirmation. Re-running during <code>build</code>, <code>test</code>, <code>review</code>, or <code>shipped</code> phases requires <code>--force</code> — the skill warns that active CocoHarvest worktrees (<code>agent/stage-*</code>) will become stale and must be pruned manually before accepting the flag.</p>
 <p><strong>Output:</strong> Completed <code>spec.md</code> (Full Flow) or <code>quick-build.md</code> (Quick Flow) + commit confirmation.</p>
 <hr>
 <p><strong><code>$plan</code></strong> — Enter the Plan phase</p>
-<pre><code>$plan</code></pre>
-<p>Reads <code>spec.md</code>, invokes CocoHarvest to decompose work, generates <code>flow.json</code>, and enters Coco's native plan mode as a hard approval gate. No Build phase begins without plan approval. Output: <code>.cocoplus/lifecycle/plan.md</code>, <code>.cocoplus/flow.json</code>, prompt stubs in <code>.cocoplus/prompts/</code>. Git commit: <code>feat(plan): approved execution plan v&lt;version&gt;</code>.</p>
+<pre><code>
+$plan
+</code></pre>
+<p>Reads <code>spec.md</code>, invokes CocoHarvest to decompose work, generates <code>flow.json</code>, and enters Coco's native plan mode as a hard approval gate. No Build phase begins without plan approval. Output: <code>.cocoplus/lifecycle/plan.md</code>, <code>.cocoplus/flow.json</code>, prompt stubs in <code>.cocoplus/prompts/</code>. Git commit: <code>feat(plan): approved execution plan v<version></code>.</p>
 <p><strong>Output:</strong> Approved plan document + <code>flow.json</code> + commit confirmation.</p>
 <hr>
 <p><strong><code>$build</code></strong> — Enter the Build phase</p>
-<pre><code>$build
-$build --model &lt;haiku|sonnet|opus&gt;</code></pre>
+<pre><code>
+$build
+$build --model &lt;haiku|sonnet|opus&gt;
+</code></pre>
 <p>Reads <code>plan.md</code> and <code>flow.json</code>. For complex multi-workstream plans, invokes CocoHarvest to spawn parallel persona subagents in isolated git worktrees. For simple single-workstream plans, delegates directly to the appropriate persona. <code>--model</code> sets the pipeline-level default model (Tier 2) applied to any stage without a stage-level model assignment. Checks for open unacknowledged SecondEye Critical findings before proceeding.</p>
 <p><strong>Output:</strong> Per-stage build commits + updated <code>flow.json</code>.</p>
 <hr>
 <p><strong><code>$test</code></strong> — Enter the Test phase</p>
-<pre><code>$test</code></pre>
+<pre><code>
+$test
+</code></pre>
 <p>Runs validation against spec success criteria using SQL execution, notebook execution, or file-existence checks depending on what was built. Results recorded in <code>.cocoplus/lifecycle/test.md</code>. Can be re-run without rebuilding. Git commit: <code>test: test execution and validation</code>.</p>
 <p><strong>Output:</strong> Test results document with pass/fail per spec criterion.</p>
 <hr>
 <p><strong><code>$review</code></strong> — Enter the Review phase</p>
-<pre><code>$review</code></pre>
+<pre><code>
+$review
+</code></pre>
 <p>Aggregates Code Quality Advisor findings, CocoCupper session intelligence, and spec compliance check into <code>.cocoplus/lifecycle/review.md</code>. Findings classified as: must-fix (blocks Ship), should-fix (recommended), consider (informational). Git commit: <code>docs(review): code review and quality analysis complete</code>.</p>
 <p><strong>Output:</strong> Review document with classified findings.</p>
 <hr>
 <p><strong><code>$ship</code></strong> — Enter the Ship phase</p>
-<pre><code>$ship</code></pre>
-<p>Gated on review completion with no open must-fix items. Cross-checks that <code>spec.md</code>, <code>plan.md</code>, and <code>review.md</code> physically exist on disk before proceeding — meta.json alone is not sufficient. Creates final structured commit with full lifecycle summary in the commit message. Applies a semantic version tag (validated as <code>v&lt;major&gt;.&lt;minor&gt;.&lt;patch&gt;</code>; the highest existing tag is found programmatically, filtering only well-formed version tags). Prunes stale CocoHarvest worktrees (<code>agent/stage-*</code>) after the release commit. Writes <code>.cocoplus/lifecycle/deployment.md</code> with version, SHA, and timestamp. Optionally creates a pull request via <code>gh pr create</code> if <code>gh</code> CLI is configured.</p>
+<pre><code>
+$ship
+</code></pre>
+<p>Gated on review completion with no open must-fix items. Cross-checks that <code>spec.md</code>, <code>plan.md</code>, and <code>review.md</code> physically exist on disk before proceeding — meta.json alone is not sufficient. Creates final structured commit with full lifecycle summary in the commit message. Applies a semantic version tag (validated as <code>v<major>.<minor>.<patch></code>; the highest existing tag is found programmatically, filtering only well-formed version tags). Prunes stale CocoHarvest worktrees (<code>agent/stage-*</code>) after the release commit. Writes <code>.cocoplus/lifecycle/deployment.md</code> with version, SHA, and timestamp. Optionally creates a pull request via <code>gh pr create</code> if <code>gh</code> CLI is configured.</p>
 <p><strong>Output:</strong> Deployment summary document + tagged commit.</p>
 <hr>
 <p><strong><code>$rewind [step-id]</code></strong> — Roll back to a previous lifecycle state</p>
-<pre><code>$rewind plan-v1
+<pre><code>
+$rewind plan-v1
 $rewind build-stage-003
 $rewind --tag cocoplus/harvest/hr-20260511-4a2f/task-007
-$rewind --tag task-007</code></pre>
+$rewind --tag task-007
+</code></pre>
 <p>Identifies CocoBrew phase commits in git log, shows the target state and what would be discarded, then resets to the target after confirmation. Uses soft reset — history is preserved. After reset, automatically prunes stale CocoHarvest worktrees (<code>agent/stage-*</code>) to prevent naming collisions on future builds. Updates <code>AGENTS.md</code> and <code>flow.json</code> to reflect rolled-back state.</p>
-<p><code>--tag &lt;tag-name&gt;</code> — Rolls back to a specific git tag created by CocoHarvest at task completion. Two tag series exist: harvest task tags (<code>cocoplus/harvest/[run-id]/task-[N]</code> — e.g. <code>cocoplus/harvest/hr-20260511-4a2f/task-007</code>) created at every CocoHarvest task completion; and function version tags (<code>cocoplus/fn/[function-name]/v[N]</code> — e.g. <code>cocoplus/fn/sentiment_classifier/v3</code>) created when a Cortex function reaches a named deployment stage. Harvest tags can be abbreviated to their last segment (<code>task-007</code>). This gives sub-phase granularity: recovery to any task completion boundary in any prior harvest run is a single command rather than git log archaeology.</p>
+<p><code>--tag <tag-name></code> — Rolls back to a specific git tag created by CocoHarvest at task completion. Two tag series exist: harvest task tags (<code>cocoplus/harvest/[run-id]/task-[N]</code> — e.g. <code>cocoplus/harvest/hr-20260511-4a2f/task-007</code>) created at every CocoHarvest task completion; and function version tags (<code>cocoplus/fn/[function-name]/v[N]</code> — e.g. <code>cocoplus/fn/sentiment_classifier/v3</code>) created when a Cortex function reaches a named deployment stage. Harvest tags can be abbreviated to their last segment (<code>task-007</code>). This gives sub-phase granularity: recovery to any task completion boundary in any prior harvest run is a single command rather than git log archaeology.</p>
 <p><strong>Output:</strong> Rollback confirmation with state summary.</p>
 <hr>
 <p><strong><code>$fork [branch-name]</code></strong> — Create an exploration worktree</p>
-<pre><code>$fork alternative-schema</code></pre>
-<p>Creates a git worktree on a <code>fork/&lt;branch-name&gt;</code> branch at the current phase. Experiment freely. If the fork produces something useful, bring it back. If not, discard it. Main branch is untouched.</p>
+<pre><code>
+$fork alternative-schema
+</code></pre>
+<p>Creates a git worktree on a <code>fork/<branch-name></code> branch at the current phase. Experiment freely. If the fork produces something useful, bring it back. If not, discard it. Main branch is untouched.</p>
 <p><strong>Output:</strong> New worktree path and branch confirmation.</p>
 <hr>
 <h2 id="pipeline-execution-cocoflow">Pipeline Execution — CocoFlow</h2>
 <p>CocoFlow commands manage the execution of the pipeline defined in <code>flow.json</code>. Most developers interact with these during and after the Build phase.</p>
 <hr>
 <p><strong><code>$flow run [stage-id]</code></strong> — Execute the pipeline or a specific stage</p>
-<pre><code>$flow run
+<pre><code>
+$flow run
 $flow run stage-003
 $flow run --model &lt;haiku|sonnet|opus&gt;
 $flow run --model &lt;value&gt; --stage &lt;stage-id&gt;
-$flow run --concurrency &lt;normal|caution|single-track&gt;</code></pre>
+$flow run --concurrency &lt;normal|caution|single-track&gt;
+</code></pre>
 <p>Reads <code>flow.json</code>, spawns stage subagents, monitors completion via SubagentStop hook integration. Stage status written back to <code>flow.json</code> in real time. <code>--model</code> without <code>--stage</code> applies a Tier 2 pipeline default. <code>--model</code> with <code>--stage</code> applies a Tier 3 stage-level override. Neither form modifies <code>flow.json</code> on disk.</p>
 <p><code>--concurrency</code> controls CocoHarvest's adaptive parallelism mode. In normal operation, the mode is managed automatically: the pipeline starts in <strong>Normal</strong> mode (full parallelism), steps down to <strong>Caution</strong> (reduced parallelism) on any stage failure, and drops to <strong>Single-track</strong> (serial execution) if more than 50% of stages have failed. Pass <code>--concurrency normal</code> to override back to full parallelism when you have investigated failures and want to retry at full speed. The current concurrency mode is visible in <code>$flow status</code>.</p>
-<p>Stages with <code>&quot;isolated&quot;: true</code> in their <code>flow.json</code> definition receive only checkpoint-validated deliverables from prior stages — not the full execution context. Use this field for deployment stages, post-evaluation steps, or any stage that should operate on declared outputs rather than ambient session state.</p>
+<p>Stages with <code>"isolated": true</code> in their <code>flow.json</code> definition receive only checkpoint-validated deliverables from prior stages — not the full execution context. Use this field for deployment stages, post-evaluation steps, or any stage that should operate on declared outputs rather than ambient session state.</p>
 <p><strong>Output:</strong> Stage execution progress. Final status in <code>flow.json</code>.</p>
 <hr>
 <p><strong><code>$flow status</code></strong> — Live pipeline status</p>
-<pre><code>$flow status</code></pre>
+<pre><code>
+$flow status
+</code></pre>
 <p>Renders the pipeline state as a structured report: each stage with status indicator, runtime duration, checkpoint validation results, failure reason (if applicable).</p>
 <p><strong>Output:</strong> Formatted pipeline report. No state changes.</p>
 <hr>
 <p><strong><code>$flow pause</code></strong> — Pause after current stage completes</p>
-<pre><code>$flow pause</code></pre>
-<p>Halts execution after the currently-running stage completes. Running stages are never killed mid-execution. Pipeline enters &quot;paused&quot; state.</p>
+<pre><code>
+$flow pause
+</code></pre>
+<p>Halts execution after the currently-running stage completes. Running stages are never killed mid-execution. Pipeline enters "paused" state.</p>
 <p><strong>Output:</strong> Pause confirmation with current stage status.</p>
 <hr>
 <p><strong><code>$flow resume [stage-id]</code></strong> — Resume a paused or failed pipeline</p>
-<pre><code>$flow resume
-$flow resume stage-003</code></pre>
+<pre><code>
+$flow resume
+$flow resume stage-003
+</code></pre>
 <p>Validates that all prior stages' checkpoints are satisfied before resuming. If checkpoints are missing, resume is blocked with a clear explanation of what's missing and why.</p>
 <p><strong>Output:</strong> Resume confirmation or checkpoint failure report.</p>
 <hr>
 <p><strong><code>$flow view</code></strong> — Render the pipeline as an interactive visual graph</p>
-<pre><code>$flow view
-$flow view --output &lt;path&gt;</code></pre>
+<pre><code>
+$flow view
+$flow view --output &lt;path&gt;
+</code></pre>
 <p>Reads <code>.cocoplus/flow.json</code>, injects the data into a self-contained HTML template, writes the result to <code>.cocoplus/flow-view.html</code>, and opens it in the OS default browser. The rendered view shows task cards arranged left-to-right by topological level, group bounding boxes, dependency edges as bezier curves, and colour-coded status badges (running, pending, success, failed). Click any node to highlight its connections and open a metadata panel. Pan, zoom, and load a different <code>flow.json</code> for comparison — all in-browser.</p>
-<p><code>--output &lt;path&gt;</code> writes to a custom path without opening the browser. Useful for sharing a pipeline snapshot or attaching to documentation.</p>
+<p><code>--output <path></code> writes to a custom path without opening the browser. Useful for sharing a pipeline snapshot or attaching to documentation.</p>
 <p>The output file is ephemeral — excluded from git, overwritten on every invocation, and never committed. CocoView makes no state changes.</p>
 <p><strong>Requires:</strong> A valid <code>flow.json</code>. If none exists, run <code>$plan</code> first.</p>
 <p><strong>Output:</strong> <code>.cocoplus/flow-view.html</code> opened in browser + status summary (<code>[N] nodes, [M] groups</code>).</p>
@@ -202,7 +229,9 @@ $flow view --output &lt;path&gt;</code></pre>
 <p>CocoRecipe provides pre-built parameterized CocoFlow pipeline templates. Templates live in the CocoPlus profile folder (<code>~/.coco/plugins/cocoplus/recipes/</code>) — they are not project-specific. They are tools you carry with you and apply across projects.</p>
 <hr>
 <p><strong><code>$recipe list</code></strong> — Browse available templates</p>
-<pre><code>$recipe list</code></pre>
+<pre><code>
+$recipe list
+</code></pre>
 <p>Lists the standard recipe library alongside any custom recipes you have created. Shows recipe name, description, parameter count, and last-used date (if applicable).</p>
 <p>Standard library:</p>
 <ul>
@@ -213,14 +242,18 @@ $flow view --output &lt;path&gt;</code></pre>
 </ul>
 <p><strong>Output:</strong> Recipe list. No state changes.</p>
 <hr>
-<p><strong><code>$recipe use &lt;name&gt;</code></strong> — Instantiate a recipe as a flow.json</p>
-<pre><code>$recipe use data-product-build
-$recipe use schema-migration --param target_schema=ANALYTICS</code></pre>
+<p><strong><code>$recipe use <name></code></strong> — Instantiate a recipe as a flow.json</p>
+<pre><code>
+$recipe use data-product-build
+$recipe use schema-migration --param target_schema=ANALYTICS
+</code></pre>
 <p>Prompts for any required parameters not supplied via <code>--param</code>. Generates a populated <code>flow.json</code> from the template in the current project's <code>.cocoplus/</code> directory. Offers to open in CocoView (<code>$flow view</code>) before Build begins so you can inspect the resulting pipeline graph. Fails if a <code>flow.json</code> already exists unless you pass <code>--overwrite</code>.</p>
 <p><strong>Output:</strong> Populated <code>flow.json</code> + optional CocoView render.</p>
 <hr>
 <p><strong><code>$recipe new</code></strong> — Create a custom recipe from the current flow.json</p>
-<pre><code>$recipe new</code></pre>
+<pre><code>
+$recipe new
+</code></pre>
 <p>Reads the current <code>flow.json</code> and parameterizes it by identifying environment-specific values — schema names, table names, model assignments, warehouse targets — and replacing them with named parameter placeholders. Prompts for recipe name and description. Saves the resulting template to <code>~/.coco/plugins/cocoplus/recipes/</code> for reuse across all future projects.</p>
 <p><strong>Output:</strong> New recipe template file in profile folder.</p>
 <hr>
@@ -228,165 +261,223 @@ $recipe use schema-migration --param target_schema=ANALYTICS</code></pre>
 <p>Personas are invoked with the <code>$</code> prefix. All persona invocations route through the UserPromptSubmit hook.</p>
 <hr>
 <p><strong><code>$personas</code></strong> — List all available personas</p>
-<pre><code>$personas</code></pre>
+<pre><code>
+$personas
+</code></pre>
 <p>Lists all eight personas with their trigger, default model, invocation mode, and core tools.</p>
 <p><strong>Output:</strong> Formatted persona table. No state changes.</p>
 <hr>
 <p><strong><code>$de</code></strong> — Data Engineer</p>
-<pre><code>$de Review this stored procedure for performance issues
+<pre><code>
+$de Review this stored procedure for performance issues
 $de --continue Fix the issues you identified
-$de --model haiku Generate a quick schema summary</code></pre>
+$de --model haiku Generate a quick schema summary
+</code></pre>
 <p>Domain: schema design, SQL optimization, stored procedures, pipelines. Model: Sonnet. Mode: auto (executes).</p>
 <hr>
 <p><strong><code>$ae</code></strong> — Analytics Engineer</p>
-<pre><code>$ae Design a semantic model for this fact table
-$ae --continue Add the revenue metric definition</code></pre>
+<pre><code>
+$ae Design a semantic model for this fact table
+$ae --continue Add the revenue metric definition
+</code></pre>
 <p>Domain: semantic models, dbt-style transformations, metric definitions. Model: Sonnet. Mode: auto (executes).</p>
 <hr>
 <p><strong><code>$ds</code></strong> — Data Scientist</p>
-<pre><code>$ds Build a feature engineering pipeline for this dataset
-$ds --model opus Design an ML architecture strategy</code></pre>
+<pre><code>
+$ds Build a feature engineering pipeline for this dataset
+$ds --model opus Design an ML architecture strategy
+</code></pre>
 <p>Domain: notebooks, ML pipelines, feature engineering, Cortex ML functions. Model: Sonnet. Mode: auto (executes).</p>
 <hr>
 <p><strong><code>$da</code></strong> — Data Analyst</p>
-<pre><code>$da Write a query for daily active users by region
-$da --model sonnet Write a multi-CTE attribution analysis</code></pre>
+<pre><code>
+$da Write a query for daily active users by region
+$da --model sonnet Write a multi-CTE attribution analysis
+</code></pre>
 <p>Domain: query writing, exploration, Cortex Analyst integration. Default model: Haiku (escalates to Sonnet for complex queries). Mode: auto (executes).</p>
 <hr>
 <p><strong><code>$bi</code></strong> — BI Analyst</p>
-<pre><code>$bi Refine the semantic layer for the sales dashboard</code></pre>
+<pre><code>
+$bi Refine the semantic layer for the sales dashboard
+</code></pre>
 <p>Domain: dashboards, semantic layer refinement, presentation-ready outputs. Default model: Haiku (escalates to Sonnet). Mode: auto (executes).</p>
 <hr>
 <p><strong><code>$dpm</code></strong> — Data Product Manager</p>
-<pre><code>$dpm Document the requirements for the churn model output table
-$dpm Write a stakeholder summary of this pipeline's capabilities</code></pre>
+<pre><code>
+$dpm Document the requirements for the churn model output table
+$dpm Write a stakeholder summary of this pipeline's capabilities
+</code></pre>
 <p>Domain: requirements, documentation, stakeholder communication. Model: Sonnet. Mode: <strong>plan only</strong> — never executes tools autonomously.</p>
 <hr>
 <p><strong><code>$dst</code></strong> — Data Steward</p>
-<pre><code>$dst Review this schema design for PII tagging compliance
-$dst Validate row access policy coverage for this table</code></pre>
+<pre><code>
+$dst Review this schema design for PII tagging compliance
+$dst Validate row access policy coverage for this table
+</code></pre>
 <p>Domain: governance, data quality, access policy review. Model: Sonnet. Mode: <strong>plan only</strong> — validates and recommends but does not execute production changes.</p>
 <hr>
 <p><strong><code>$cdo</code></strong> — Chief Data Officer</p>
-<pre><code>$cdo What are the long-term architectural implications of this data model?
-$cdo --model sonnet Quick trade-off summary between these two approaches</code></pre>
+<pre><code>
+$cdo What are the long-term architectural implications of this data model?
+$cdo --model sonnet Quick trade-off summary between these two approaches
+</code></pre>
 <p>Domain: strategic architecture, system-level decisions, trade-off analysis. Model: <strong>Opus</strong> (the only persona defaulting to Opus). Mode: <strong>plan only</strong>. Downgrading CDO's model triggers a logged advisory.</p>
 <hr>
 <p><strong>Flags common to all persona invocations:</strong></p>
 <p><code>--continue</code> — Pass the full current conversation context to the persona for seamless continuation without re-explaining the problem.</p>
-<p><code>--model &lt;haiku|sonnet|opus&gt;</code> — Override the persona's default model for this invocation only. Does not affect the persona definition or future invocations. Cannot override CocoCupper (which is always Haiku and not user-invokable).</p>
+<p><code>--model <haiku|sonnet|opus></code> — Override the persona's default model for this invocation only. Does not affect the persona definition or future invocations. Cannot override CocoCupper (which is always Haiku and not user-invokable).</p>
 <hr>
 <h2 id="memory-engine">Memory Engine</h2>
 <hr>
 <p><strong><code>$memory on</code></strong> — Enable memory capture</p>
-<pre><code>$memory on</code></pre>
+<pre><code>
+$memory on
+</code></pre>
 <p>Creates <code>modes/memory.on</code> flag file. PostToolUse hook begins capturing significant tool use events — schema changes, plan updates, explicit decisions — to the warm memory layer.</p>
 <hr>
 <p><strong><code>$memory off</code></strong> — Disable memory capture</p>
-<pre><code>$memory off</code></pre>
+<pre><code>
+$memory off
+</code></pre>
 <p>Removes <code>modes/memory.on</code> flag. Existing memory content is preserved. Capture stops until re-enabled.</p>
 <hr>
 <h2 id="organizational-standards-cococontext">Organizational Standards — CocoContext</h2>
 <p>CocoContext stores durable organizational standards that every persona and subagent reads before generating output. These files are committed to git — they travel with the project and evolve with the team. There are six standard types, each capped at 200 lines by the same discipline that governs AGENTS.md.</p>
 <hr>
-<p><strong><code>$context add &lt;type&gt;</code></strong> — Capture or update an organizational standard</p>
-<pre><code>$context add approved-models
+<p><strong><code>$context add <type></code></strong> — Capture or update an organizational standard</p>
+<pre><code>
+$context add approved-models
 $context add quality-thresholds
 $context add pii-policy
 $context add warehouse-policy
 $context add naming-conventions
-$context add governance-gates</code></pre>
-<p>Opens a guided capture workflow for the specified standard type. If the target file already exists, its current contents are shown first — you're adding to a living document, not replacing it. Output written to <code>.cocoplus/context/&lt;type&gt;.md</code>. Creates a git commit on completion.</p>
+$context add governance-gates
+</code></pre>
+<p>Opens a guided capture workflow for the specified standard type. If the target file already exists, its current contents are shown first — you're adding to a living document, not replacing it. Output written to <code>.cocoplus/context/<type>.md</code>. Creates a git commit on completion.</p>
 <p><strong>Output:</strong> Updated context file + commit confirmation.</p>
 <hr>
-<p><strong><code>$context view &lt;type&gt;</code></strong> — Display a stored standard</p>
-<pre><code>$context view pii-policy
-$context view naming-conventions</code></pre>
+<p><strong><code>$context view <type></code></strong> — Display a stored standard</p>
+<pre><code>
+$context view pii-policy
+$context view naming-conventions
+</code></pre>
 <p>Shows the current contents of the specified context file in readable form.</p>
 <p><strong>Output:</strong> File contents. No state changes.</p>
 <hr>
 <p><strong><code>$context list</code></strong> — List all configured standards</p>
-<pre><code>$context list</code></pre>
-<p>Shows which of the six standard types have been populated and their approximate word counts. Types not yet configured are listed as &quot;not configured.&quot;</p>
+<pre><code>
+$context list
+</code></pre>
+<p>Shows which of the six standard types have been populated and their approximate word counts. Types not yet configured are listed as "not configured."</p>
 <p><strong>Output:</strong> Status table. No state changes.</p>
 <hr>
 <h2 id="environment-inspector">Environment Inspector</h2>
 <hr>
 <p><strong><code>$inspect</code></strong> — Run an environment scan</p>
-<pre><code>$inspect
+<pre><code>
+$inspect
 $inspect --schema ANALYTICS
-$inspect --full</code></pre>
+$inspect --full
+</code></pre>
 <p>Scans connected Snowflake environment: schemas, tables, views, stored procedures, functions, Cortex Search endpoints, Cortex Analyst semantic models, access grants, resource monitors. <code>--schema</code> limits scan to one schema. <code>--full</code> includes column-level statistics and access policy details. Output written to <code>.cocoplus/snapshots/[timestamp]-env.md</code>. Session context receives a summary of key findings.</p>
 <p><strong>Output:</strong> Snapshot file + session summary.</p>
 <hr>
 <p><strong><code>$inspector on</code></strong> — Enable auto-scan on session start</p>
-<pre><code>$inspector on</code></pre>
+<pre><code>
+$inspector on
+</code></pre>
 <p>Creates <code>modes/inspector.on</code> flag. SessionStart hook triggers inspector as a non-blocking background subagent at the start of every session.</p>
 <hr>
 <p><strong><code>$inspector off</code></strong> — Disable auto-scan</p>
-<pre><code>$inspector off</code></pre>
+<pre><code>
+$inspector off
+</code></pre>
 <p>Removes <code>modes/inspector.on</code> flag. Manual <code>$inspect</code> invocation still works.</p>
 <hr>
 <h2 id="safety-gate">Safety Gate</h2>
 <hr>
 <p><strong><code>$safety strict</code></strong> — Maximum protection mode</p>
-<pre><code>$safety strict</code></pre>
+<pre><code>
+$safety strict
+</code></pre>
 <p>Creates <code>modes/safety.strict</code> flag. Hard blocks any SQL containing DROP TABLE, DROP SCHEMA, DROP DATABASE, DROP PROCEDURE, DROP FUNCTION, DROP VIEW, TRUNCATE TABLE, DELETE without WHERE, or ALTER TABLE on production-pattern schemas. Use in environments where even warnings are too close to the edge.</p>
 <hr>
 <p><strong><code>$safety normal</code></strong> — Standard protection mode (default)</p>
-<pre><code>$safety normal</code></pre>
+<pre><code>
+$safety normal
+</code></pre>
 <p>Creates <code>modes/safety.normal</code> flag. Same pattern set as strict, but triggers warnings instead of hard blocks. The soft gate for batch operations is active in both strict and normal modes.</p>
 <hr>
 <p><strong><code>$safety off</code></strong> — Disable Safety Gate</p>
-<pre><code>$safety off</code></pre>
+<pre><code>
+$safety off
+</code></pre>
 <p>Removes safety mode flags. No hard blocks, no warnings from the pattern gate. Only use in development environments with no production data. Using this in a production-adjacent environment is a manual override of a deliberate safety system — the decision and its consequences are yours.</p>
 <p><strong>Note:</strong> <code>$safety off</code> does not disable the phase gate. <code>SnowflakeSqlExecute</code> remains unconditionally blocked during the <code>spec</code> and <code>plan</code> lifecycle phases regardless of this setting.</p>
 <hr>
 <h2 id="code-quality-advisor">Code Quality Advisor</h2>
 <hr>
 <p><strong><code>$quality on</code></strong> — Enable background quality review</p>
-<pre><code>$quality on</code></pre>
+<pre><code>
+$quality on
+</code></pre>
 <p>Creates <code>modes/quality.on</code> flag. PostToolUse hook triggers a lightweight background review after every <code>.sql</code> file write. Findings surfaced via the Notification system when complete (non-blocking).</p>
 <hr>
 <p><strong><code>$quality off</code></strong> — Disable background quality review</p>
-<pre><code>$quality off</code></pre>
+<pre><code>
+$quality off
+</code></pre>
 <p>Removes <code>modes/quality.on</code> flag.</p>
 <hr>
 <p><strong><code>$quality run [file-path]</code></strong> — Immediate full quality review</p>
-<pre><code>$quality run
-$quality run path/to/procedure.sql</code></pre>
+<pre><code>
+$quality run
+$quality run path/to/procedure.sql
+</code></pre>
 <p>Runs a complete review immediately and blocks until complete. Without a file path, reviews all SQL files modified in the current session. Produces a comprehensive findings report covering performance, correctness, governance, and cost.</p>
 <p><strong>Output:</strong> Full findings report in session context.</p>
 <hr>
 <h2 id="cocometer-token-and-cost-tracking">CocoMeter — Token and Cost Tracking</h2>
 <hr>
 <p><strong><code>$meter on</code></strong> — Enable token tracking</p>
-<pre><code>$meter on</code></pre>
+<pre><code>
+$meter on
+</code></pre>
 <p>Creates <code>modes/cocometer.on</code> flag. PostToolUse hook begins recording token consumption keyed by tool, feature, and timestamp to <code>meter/current-session.json</code>.</p>
 <hr>
 <p><strong><code>$meter off</code></strong> — Disable token tracking</p>
-<pre><code>$meter off</code></pre>
+<pre><code>
+$meter off
+</code></pre>
 <p>Removes <code>modes/cocometer.on</code> flag.</p>
 <hr>
 <p><strong><code>$meter</code></strong> — Current session summary</p>
-<pre><code>$meter</code></pre>
+<pre><code>
+$meter
+</code></pre>
 <p>Shows token consumption and estimated Snowflake credit cost for the current session, broken down by feature and operation.</p>
 <p><strong>Output:</strong> Session cost summary. No state changes.</p>
 <hr>
 <p><strong><code>$meter estimate [description]</code></strong> — Pre-flight cost estimation</p>
-<pre><code>$meter estimate &quot;Run a CocoHarvest build with four parallel stages&quot;
-$meter estimate &quot;SecondEye critique on a 200-line plan&quot;</code></pre>
+<pre><code>
+$meter estimate "Run a CocoHarvest build with four parallel stages"
+$meter estimate "SecondEye critique on a 200-line plan"
+</code></pre>
 <p>Uses Haiku to analyze the described operation against known cost profiles and returns an estimated token consumption and credit cost before you run it. Useful before expensive multi-agent operations.</p>
 <p><strong>Output:</strong> Estimated cost breakdown. No state changes.</p>
 <hr>
 <p><strong><code>$meter history [n]</code></strong> — Historical session summaries</p>
-<pre><code>$meter history
-$meter history 5</code></pre>
+<pre><code>
+$meter history
+$meter history 5
+</code></pre>
 <p>Shows per-session cost summaries for the last N sessions (default 10) from <code>meter/history.jsonl</code>. Includes trends and identification of most expensive features and operations.</p>
 <p><strong>Output:</strong> Historical cost report. No state changes.</p>
 <hr>
 <p><strong><code>$meter view</code></strong> — Generate the token attribution dashboard <em>(CocoMeter Enhanced)</em></p>
-<pre><code>$meter view</code></pre>
+<pre><code>
+$meter view
+</code></pre>
 <p>Reads all captured <code>request_id</code> values from <code>.cocoplus/meter/request-map.jsonl</code>, queries <code>SNOWFLAKE.ACCOUNT_USAGE.CORTEX_CODE_CLI_USAGE_HISTORY</code> through Coco's existing Snowflake connection, joins the result with stage attribution data, and generates an interactive HTML dashboard at <code>.cocoplus/meter-view.html</code>. Opens in the OS default browser.</p>
 <p>Dashboard sections: Summary cards (total tokens, total credits, cache efficiency, output tokens), Stage Attribution table (per-stage token bars, cache hit %, model indicator, click-to-filter), Model Distribution (token consumption by Haiku/Sonnet/Opus), Token Composition (cache-read / cache-write / fresh-input / output proportions), and a full Request Log with <code>REQUEST_ID</code>, parent relationship, stage, time, token breakdown, credits, and model badge.</p>
 <p>The dashboard is a self-contained local HTML file — no network requests, no external dependencies, excluded from git. Data is authoritative: sourced from Snowflake's billing record, attributed per-request, per-stage.</p>
@@ -394,51 +485,67 @@ $meter history 5</code></pre>
 <p><strong>Output:</strong> <code>.cocoplus/meter-view.html</code> opened in browser.</p>
 <hr>
 <p><strong><code>$meter sync</code></strong> — Refresh usage data without regenerating the full dashboard <em>(CocoMeter Enhanced)</em></p>
-<pre><code>$meter sync</code></pre>
+<pre><code>
+$meter sync
+</code></pre>
 <p>Re-queries Snowflake for the most recent usage data for all <code>request_id</code> values in <code>request-map.jsonl</code> and updates the injected HTML without a full <code>$meter view</code> regeneration. Useful for refreshing the dashboard after a long pipeline run completes.</p>
 <p><strong>Output:</strong> Updated <code>meter-view.html</code> + sync summary (records updated, new tokens found).</p>
 <hr>
 <p><strong><code>$meter accuracy</code></strong> — Estimation accuracy learning dashboard <em>(CocoMeter Enhanced)</em></p>
-<pre><code>$meter accuracy</code></pre>
+<pre><code>
+$meter accuracy
+</code></pre>
 <p>Displays the estimation accuracy history accumulated via the Accuracy Learning Feedback Loop. CocoMeter compares pre-flight estimates against actual session consumption (drawn from <code>request-map.jsonl</code>) and stores session ratios in <code>meter/accuracy-history.jsonl</code>. The current calibration adjustment factor — the rolling median of the last 10 session ratios — is stored in <code>meter/adjustment-factor.json</code> and automatically applied to future pre-flight estimates.</p>
-<p><code>$meter accuracy</code> shows: the current adjustment factor and its sample size, the trend over the last five sessions (stable / rising / falling), and the raw per-session history (estimated tokens, actual tokens, ratio). When the adjustment factor is active, <code>$meter estimate</code> output includes a calibration note: &quot;Estimated 45,000 tokens (baseline: 30,000, calibration factor: 1.5x from 8 prior sessions).&quot;</p>
+<p><code>$meter accuracy</code> shows: the current adjustment factor and its sample size, the trend over the last five sessions (stable / rising / falling), and the raw per-session history (estimated tokens, actual tokens, ratio). When the adjustment factor is active, <code>$meter estimate</code> output includes a calibration note: "Estimated 45,000 tokens (baseline: 30,000, calibration factor: 1.5x from 8 prior sessions)."</p>
 <p><strong>Output:</strong> Accuracy history table + current calibration factor + trend indicator.</p>
 <hr>
 <h2 id="cococupper-post-execution-intelligence">CocoCupper — Post-Execution Intelligence</h2>
 <p>CocoCupper runs automatically via hooks. The manual commands below are for on-demand analysis and review.</p>
 <hr>
 <p><strong><code>$cup</code></strong> — Manually trigger CocoCupper analysis</p>
-<pre><code>$cup</code></pre>
+<pre><code>
+$cup
+</code></pre>
 <p>Triggers CocoCupper (Haiku, read-only) to analyze the current session's completed output. Findings written to <code>.cocoplus/grove/cupper-findings.md</code>. CocoCupper cannot modify any code, SQL, or configuration file.</p>
 <p><strong>Output:</strong> Findings written to grove. Session notification when complete.</p>
 <hr>
 <p><strong><code>$cup history [n]</code></strong> — Review past findings</p>
-<pre><code>$cup history
-$cup history 3</code></pre>
+<pre><code>
+$cup history
+$cup history 3
+</code></pre>
 <p>Shows findings from the last N sessions (default all available). Useful before starting a new session to see what patterns have been accumulating.</p>
 <p><strong>Output:</strong> Historical findings report. No state changes.</p>
 <hr>
 <h2 id="cocogrove-pattern-library">CocoGrove — Pattern Library</h2>
 <hr>
 <p><strong><code>$patterns view [tag]</code></strong> — Browse promoted patterns</p>
-<pre><code>$patterns view
+<pre><code>
+$patterns view
 $patterns view pagination
-$patterns view snowflake-optimization</code></pre>
+$patterns view snowflake-optimization
+</code></pre>
 <p>Lists patterns in the grove, optionally filtered by tag. Shows pattern name, description, and context.</p>
 <p><strong>Output:</strong> Pattern list. No state changes.</p>
 <hr>
 <p><strong><code>$patterns promote [finding-id]</code></strong> — Promote a CocoCupper finding to a permanent pattern</p>
-<pre><code>$patterns promote FINDING-047</code></pre>
+<pre><code>
+$patterns promote FINDING-047
+</code></pre>
 <p>Elevates a CocoCupper finding to a permanent pattern in <code>.cocoplus/grove/patterns/</code>. Prompts for name, description, context (when to apply), anti-context (when not to apply), and tags. Promoted patterns are markdown files in git — editable and versionable.</p>
 <p><strong>Output:</strong> New pattern file + confirmation.</p>
 <hr>
 <p><strong><code>$grove glossary</code></strong> — Propose domain terms from recent artifacts</p>
-<pre><code>$grove glossary</code></pre>
+<pre><code>
+$grove glossary
+</code></pre>
 <p>Scans recent lifecycle artifacts (spec.md, plan.md, review.md, cupper findings) for candidate domain terms and proposes additions to <code>grove/language/glossary.md</code>. Each candidate is presented with its source context and proposed definition. Developer reviews and approves or rejects each proposal. Approved terms are written to the glossary and become available for CocoScout's domain vocabulary.</p>
 <p><strong>Output:</strong> Candidate term proposals awaiting developer review.</p>
 <hr>
 <p><strong><code>$grove glossary view</code></strong> — View the current glossary</p>
-<pre><code>$grove glossary view</code></pre>
+<pre><code>
+$grove glossary view
+</code></pre>
 <p>Displays the project's ubiquitous language glossary from <code>grove/language/glossary.md</code>. Lists all approved domain terms, their definitions, and the artifacts they appear in.</p>
 <p><strong>Output:</strong> Current glossary. No state changes.</p>
 <hr>
@@ -446,42 +553,56 @@ $patterns view snowflake-optimization</code></pre>
 <p>CocoDream surfaces prompt patterns that have proven reliable across sessions and refines them into tested, reusable prompts through a supervised iteration process. The developer reviews and approves every candidate. Nothing is promoted automatically — the intelligence is CocoPlus's, but the judgment is yours.</p>
 <hr>
 <p><strong><code>$dream</code></strong> — Initiate a pattern distillation session</p>
-<pre><code>$dream</code></pre>
+<pre><code>
+$dream
+</code></pre>
 <p>Triggers CocoCupper (Haiku) to scan CocoGrove cupper-findings and session history for prompt patterns that have produced consistently good results across multiple invocations. Candidate patterns are written to <code>.cocoplus/grove/dream-[timestamp].md</code> with a draft optimized prompt, the evidence that surfaced it, and the rationale for why it is worth formalizing. The developer reviews each candidate, edits freely, then either promotes to CocoGrove as a permanent pattern or discards. The session file records the decision for each candidate.</p>
 <p><strong>Output:</strong> Dream candidates file in grove. Awaits developer review.</p>
 <hr>
 <p><strong><code>$dream history</code></strong> — Review past distillation sessions</p>
-<pre><code>$dream history</code></pre>
+<pre><code>
+$dream history
+</code></pre>
 <p>Lists all dream session files with creation date, candidate count, and how many were promoted versus discarded. Use to understand how the pattern library has grown over time.</p>
 <p><strong>Output:</strong> Distillation session history. No state changes.</p>
 <hr>
 <h2 id="context-mode">Context Mode</h2>
 <hr>
 <p><strong><code>$context on</code></strong> — Enable narration overlay</p>
-<pre><code>$context on</code></pre>
+<pre><code>
+$context on
+</code></pre>
 <p>Creates <code>modes/context-mode.on</code> flag. Every significant CocoPlus action includes a brief context header: what is happening, why, what to expect next. Adds token cost but no computation overhead. Recommended during learning phases.</p>
 <hr>
 <p><strong><code>$context off</code></strong> — Disable narration overlay</p>
-<pre><code>$context off</code></pre>
+<pre><code>
+$context off
+</code></pre>
 <p>Removes <code>modes/context-mode.on</code> flag. Turn off when you're comfortable with the workflow.</p>
 <hr>
 <h2 id="brainstorm-mode-cocospark">Brainstorm Mode — CocoSpark</h2>
 <hr>
 <p><strong><code>$spark [topic]</code></strong> — Activate divergent thinking mode</p>
-<pre><code>$spark
+<pre><code>
+$spark
 $spark schema design approaches
-$spark cost optimization strategies</code></pre>
+$spark cost optimization strategies
+</code></pre>
 <p>Activates brainstorm mode for a topic. Generates three to five distinct approaches, articulates trade-offs, identifies hidden assumptions, raises questions. All output marked explicitly as exploration. Written to <code>.cocoplus/spark-[timestamp].md</code>. Does not modify any lifecycle artifact.</p>
 <p><strong>Output:</strong> Exploration document. Never flows automatically into spec or plan.</p>
 <hr>
 <p><strong><code>$spark-off</code></strong> — Exit brainstorm mode</p>
-<pre><code>$spark-off</code></pre>
+<pre><code>
+$spark-off
+</code></pre>
 <p>Deactivates CocoSpark. Offers option to capture insights into <code>spec.md</code> — developer decides what, if anything, to carry forward.</p>
 <hr>
 <h2 id="plan-critique-secondeye">Plan Critique — SecondEye</h2>
 <hr>
 <p><strong><code>$secondeye</code></strong> — Run three-model parallel plan critique</p>
-<pre><code>$secondeye</code></pre>
+<pre><code>
+$secondeye
+</code></pre>
 <p>Default target: <code>.cocoplus/lifecycle/plan.md</code>. Spawns five SecondEye Critic subagents in parallel — Haiku (Efficiency Lens), Sonnet (Completeness Lens), Opus (Risk Lens), Sonnet (Devil's Advocate), Haiku (Edge Case Hunter). Each writes to a temporary staging file; results are aggregated into <code>.cocoplus/lifecycle/secondeye-[timestamp].md</code>. Staging files deleted after aggregation.</p>
 <p>If Critical findings exist, a soft gate activates on the Build phase. <strong>This is always on-demand — never automatic.</strong></p>
 <p>Each finding in the aggregated report is tagged on two orthogonal dimensions:</p>
@@ -492,50 +613,65 @@ $spark cost optimization strategies</code></pre>
 <p>The report header includes an <code>action_summary</code> YAML field with <code>hitl_count</code>, <code>afk_count</code>, <code>blocking_count</code>, <code>minor_count</code>, <code>da_finding_count</code>, and <code>edge_case_count</code> — giving the developer a complete decision burden assessment before reading the full findings.</p>
 <p><strong>Devil's Advocate section <code>[Devil's Advocate]</code>:</strong> The fourth critic's findings appear separately, sorted to the top of the report. All DA findings are BLOCKING by default. Concession from the DA requires the developer's rebuttal to score ≥4 on a 1–5 scale; a score of 3 or below means the DA re-asserts the concern and explains the insufficiency.</p>
 <p><strong>Edge Case Hunter section <code>[Edge Case Hunter]</code>:</strong> The fifth critic's findings appear in a separate section. It does not assess plan validity — it assesses evaluation coverage: what the evaluation plan would miss if implemented exactly as written. Findings are Advisory by default, escalated to BLOCKING only when the blind spot is fundamental to evaluation validity.</p>
-<p><strong>Output:</strong> Aggregated critique report with findings classified as Critical, Advisory, or Observation, plus HITL/AFK and BLOCKING/MINOR tags, plus <code>[Devil's Advocate]</code> and <code>[Edge Case Hunter]</code> sections.</p>
+<p>Individual findings within each section carry a <strong>six-severity label</strong> shared with CocoReview: <code>blocking</code> (must resolve before proceeding), <code>important</code> (should resolve; context-dependent), <code>nit</code> (minor style or preference), <code>suggestion</code> (optional improvement), <code>learning</code> (educational context without improvement intent), <code>praise</code> (explicitly highlight a well-constructed pattern — at least one required per review). These labels describe the nature of the finding; HITL/AFK and BLOCKING/MINOR describe the intervention required. A <code>[Devil's Advocate]</code> finding can carry a <code>blocking</code> severity label and be BLOCKING+HITL simultaneously — the labels operate on different axes.</p>
+<p><strong>Output:</strong> Aggregated critique report with findings classified as Critical, Advisory, or Observation, plus HITL/AFK and BLOCKING/MINOR tags, plus six-severity finding labels, plus <code>[Devil's Advocate]</code> and <code>[Edge Case Hunter]</code> sections.</p>
 <hr>
-<p><strong><code>$secondeye --artifact &lt;target&gt;</code></strong> — Critique a specific artifact</p>
-<pre><code>$secondeye --artifact spec
+<p><strong><code>$secondeye --artifact <target></code></strong> — Critique a specific artifact</p>
+<pre><code>
+$secondeye --artifact spec
 $secondeye --artifact review
-$secondeye --artifact path/to/custom-file.md</code></pre>
+$secondeye --artifact path/to/custom-file.md
+</code></pre>
 <p>Valid named targets: <code>spec</code> (→ <code>lifecycle/spec.md</code>), <code>plan</code> (→ <code>lifecycle/plan.md</code>), <code>review</code> (→ <code>lifecycle/review.md</code>). File paths reference arbitrary artifacts.</p>
 <hr>
-<p><strong><code>$secondeye --model &lt;model&gt;</code></strong> — Single-model critique</p>
-<pre><code>$secondeye --model haiku
-$secondeye --model opus</code></pre>
+<p><strong><code>$secondeye --model <model></code></strong> — Single-model critique</p>
+<pre><code>
+$secondeye --model haiku
+$secondeye --model opus
+</code></pre>
 <p>Spawns one critic instead of three. No aggregation step. Report is a single-model critique. Soft gate logic still applies — Critical findings still block Build.</p>
 <hr>
 <p><strong><code>$secondeye acknowledge</code></strong> — Clear the Build soft gate</p>
-<pre><code>$secondeye acknowledge
+<pre><code>
+$secondeye acknowledge
 $secondeye acknowledge --hitl-only
-$secondeye acknowledge --blocking-only</code></pre>
+$secondeye acknowledge --blocking-only
+</code></pre>
 <p>Finds the most recent SecondEye report with <code>critical_open: true</code> and <code>acknowledged: false</code>. Presents Critical findings. On confirmation, updates report metadata with acknowledgment timestamp. Build phase soft gate is cleared.</p>
 <p><code>--hitl-only</code> — Acknowledges only HITL-classified findings (required before <code>$build</code> proceeds); AFK findings are separately queued for autonomous resolution in the next build pass.</p>
 <p><code>--blocking-only</code> — Acknowledges only BLOCKING-classified findings; MINOR findings remain queued for autonomous resolution. Can be combined with <code>--hitl-only</code> to acknowledge the highest-priority finding category only.</p>
 <hr>
 <p><strong><code>$secondeye history</code></strong> — List all SecondEye reports</p>
-<pre><code>$secondeye history</code></pre>
+<pre><code>
+$secondeye history
+</code></pre>
 <p>Lists all reports in <code>.cocoplus/lifecycle/</code> with finding counts by tier and acknowledgment status.</p>
 <p><strong>Output:</strong> Report index. No state changes.</p>
 <hr>
 <h2 id="doc-engine">Doc Engine</h2>
 <hr>
 <p><strong><code>$doc run [target]</code></strong> — Generate documentation from code artifacts</p>
-<pre><code>$doc run
+<pre><code>
+$doc run
 $doc run path/to/procedure.sql
-$doc run ANALYTICS.CUSTOMER_SCHEMA</code></pre>
+$doc run ANALYTICS.CUSTOMER_SCHEMA
+</code></pre>
 <p>Reads source files or Snowflake object definitions and generates: column-level descriptions for tables and views, function and procedure docstrings, schema lineage notes, data dictionary entries. Does not overwrite existing documentation — proposes additions and updates for developer review.</p>
 <p><strong>Output:</strong> Documentation files co-located with source files or in project <code>docs/</code> directory per <code>project.md</code> configuration.</p>
 <hr>
 <h2 id="prompt-studio">Prompt Studio</h2>
 <hr>
 <p><strong><code>$prompt new</code></strong> — Create a new Cortex AI prompt</p>
-<pre><code>$prompt new</code></pre>
+<pre><code>
+$prompt new
+</code></pre>
 <p>Guided workflow: define task goal, select target model, collect optional few-shot examples, draft initial prompt, review for common anti-patterns (excessive hedging, ambiguous output format, missing context injection points). Produces a versioned prompt file with metadata.</p>
 <p><strong>Output:</strong> Versioned prompt file.</p>
 <hr>
 <p><strong><code>$prompt compare [prompt-a] [prompt-b]</code></strong> — Compare two prompt variants</p>
-<pre><code>$prompt compare prompts/v1.md prompts/v2.md</code></pre>
+<pre><code>
+$prompt compare prompts/v1.md prompts/v2.md
+</code></pre>
 <p>Runs both prompts against a provided or auto-generated sample dataset. Compares on: accuracy against expected results, output format compliance, verbosity, and token consumption. Produces a structured comparison report with a recommendation.</p>
 <p><strong>Output:</strong> Comparison report.</p>
 <hr>
@@ -543,28 +679,38 @@ $doc run ANALYTICS.CUSTOMER_SCHEMA</code></pre>
 <p>CocoFleet spawns independent Coco CLI processes at the OS level. Requires <code>coco</code> to be available in PATH.</p>
 <hr>
 <p><strong><code>$fleet init [name]</code></strong> — Create a fleet manifest template</p>
-<pre><code>$fleet init data-platform</code></pre>
+<pre><code>
+$fleet init data-platform
+</code></pre>
 <p>Creates <code>.cocoplus/fleet/[name]-manifest.json</code> as a template. Edit this file to define instances — each with task file path, persona, output directory, dependency IDs, and checkpoint file paths.</p>
 <p><strong>Output:</strong> Manifest template file.</p>
 <hr>
 <p><strong><code>$fleet run [manifest-path]</code></strong> — Execute a fleet</p>
-<pre><code>$fleet run .cocoplus/fleet/data-platform-manifest.json</code></pre>
+<pre><code>
+$fleet run .cocoplus/fleet/data-platform-manifest.json
+</code></pre>
 <p>Resolves dependency graph, creates instance directories, writes task files, spawns Coco processes in dependency order. Process IDs recorded in state file. Polls for completion by checking checkpoint file existence and process exit codes. When an instance completes, dependent instances are spawned.</p>
 <p><strong>Output:</strong> Fleet state file at <code>.cocoplus/fleet/[fleet-id]-state.json</code>.</p>
 <hr>
 <p><strong><code>$fleet status [fleet-id]</code></strong> — Live fleet execution status</p>
-<pre><code>$fleet status fleet-001</code></pre>
+<pre><code>
+$fleet status fleet-001
+</code></pre>
 <p>Reads state file and renders: all instances, their status, runtime duration, checkpoint states. Failed instances show their last log lines.</p>
 <p><strong>Output:</strong> Formatted status table. No state changes.</p>
 <hr>
 <p><strong><code>$fleet logs [instance-id]</code></strong> — Stream instance logs</p>
-<pre><code>$fleet logs instance-003</code></pre>
+<pre><code>
+$fleet logs instance-003
+</code></pre>
 <p>Reads <code>.cocoplus/fleet/[instance-id]/output.log</code>. If the instance is still running, tails the log.</p>
 <p><strong>Output:</strong> Log stream. No state changes.</p>
 <hr>
 <p><strong><code>$fleet stop [fleet-id]</code></strong> — Gracefully stop a running fleet</p>
-<pre><code>$fleet stop fleet-001</code></pre>
-<p>Sends SIGTERM to all running processes. Waits up to 10 seconds for graceful shutdown. Sends SIGKILL to any still-running processes. Updates state file to &quot;stopped&quot;. Records which instances were stopped and their last checkpoint states.</p>
+<pre><code>
+$fleet stop fleet-001
+</code></pre>
+<p>Sends SIGTERM to all running processes. Waits up to 10 seconds for graceful shutdown. Sends SIGKILL to any still-running processes. Updates state file to "stopped". Records which instances were stopped and their last checkpoint states.</p>
 <p><strong>Output:</strong> Stop confirmation with instance state summary.</p>
 <hr>
 <h2 id="context-health-cocohealth">Context Health — CocoHealth</h2>
@@ -574,44 +720,58 @@ $doc run ANALYTICS.CUSTOMER_SCHEMA</code></pre>
 <h2 id="function-knowledge-graph-cocomap">Function Knowledge Graph — CocoMap</h2>
 <hr>
 <p><strong><code>$map</code></strong> — Build the Cortex function knowledge graph</p>
-<pre><code>$map</code></pre>
+<pre><code>
+$map
+</code></pre>
 <p>Triggers a parallel five-agent analysis: Function Scanner (discovers all Cortex AI functions), Dependency Mapper (traces call chains and shared infrastructure), Domain Analyzer (maps functions to business capabilities), Evaluation Mapper (discovers evaluation configurations and accuracy baselines), and Gap Detector (surfaces isolation risks and undocumented functions). Agents write to <code>.cocoplus/map/intermediate/</code> without returning to orchestrator context. Results merge into <code>.cocoplus/map/coco-map.json</code> — committed as a team artifact.</p>
 <p>Requires at least 2 Cortex AI functions in the project to generate a map.</p>
 <p><strong>Output:</strong> <code>coco-map.json</code> + summary: function count, dependency edges, identified gaps, capabilities detected.</p>
 <hr>
 <p><strong><code>$map diff</code></strong> — Impact analysis for staged changes</p>
-<pre><code>$map diff</code></pre>
+<pre><code>
+$map diff
+</code></pre>
 <p>Reads <code>coco-map.json</code> and staged git changes (via <code>git diff --staged</code>). For each modified function, traces all downstream dependents through the dependency graph. Reports: which downstream functions are affected, whether shared evaluation sets are touched, and whether any capability definitions change.</p>
 <p><strong>Output:</strong> Impact report. No state changes. Run before committing changes that touch shared functions.</p>
 <hr>
-<p><strong><code>$map explain &lt;target&gt;</code></strong> — Natural language explanation of a function or capability</p>
-<pre><code>$map explain customer_sentiment_classifier
-$map explain ANALYTICS.CUSTOMER_EVENTS</code></pre>
+<p><strong><code>$map explain <target></code></strong> — Natural language explanation of a function or capability</p>
+<pre><code>
+$map explain customer_sentiment_classifier
+$map explain ANALYTICS.CUSTOMER_EVENTS
+</code></pre>
 <p>Reads <code>coco-map.json</code> and produces a natural language explanation of the target: what it does in domain terms, direct and transitive dependents, what it depends on, nearest business capability, and analysis recency.</p>
 <p><strong>Output:</strong> Explanation narrative. No state changes.</p>
 <hr>
 <h2 id="deferred-ideas-cocoseed">Deferred Ideas — CocoSeed</h2>
 <hr>
-<p><strong><code>$seed add &quot;&lt;idea&gt;&quot; --trigger &quot;&lt;condition&gt;&quot;</code></strong> — Capture a deferred idea with a trigger</p>
-<pre><code>$seed add &quot;Add batch evaluation mode&quot; --trigger &quot;when evaluation accuracy baseline exceeds 90%&quot;
-$seed add &quot;Refactor into shared UDF&quot; --trigger &quot;when CocoMap is committed&quot;</code></pre>
+<p><strong><code>$seed add "<idea>" --trigger "<condition>"</code></strong> — Capture a deferred idea with a trigger</p>
+<pre><code>
+$seed add "Add batch evaluation mode" --trigger "when evaluation accuracy baseline exceeds 90%"
+$seed add "Refactor into shared UDF" --trigger "when CocoMap is committed"
+</code></pre>
 <p>Stores the idea in <code>.cocoplus/seeds/</code> with a trigger condition, the active CocoBrew phase, and creation timestamp. The trigger is plain language: filesystem presence checks, phase completion checks, and mode flag checks are evaluated automatically; manual conditions are shown as pending manual confirmation.</p>
 <p><strong>Output:</strong> Confirmation with the stored trigger condition.</p>
 <hr>
 <p><strong><code>$seed list</code></strong> — Review all seeds and their trigger status</p>
-<pre><code>$seed list</code></pre>
-<p>Evaluates all trigger conditions against current project state. Output in two sections: &quot;Ready to Promote&quot; (triggered seeds, with the trigger that fired) and &quot;Waiting&quot; (pending seeds with current trigger evaluation).</p>
+<pre><code>
+$seed list
+</code></pre>
+<p>Evaluates all trigger conditions against current project state. Output in two sections: "Ready to Promote" (triggered seeds, with the trigger that fired) and "Waiting" (pending seeds with current trigger evaluation).</p>
 <p><strong>Output:</strong> Two-section seed status report. No state changes.</p>
 <hr>
-<p><strong><code>$seed promote &lt;id&gt;</code></strong> — Move a triggered seed into the planning cycle</p>
-<pre><code>$seed promote seed-20260112-001</code></pre>
-<p>Writes the seed idea as a new item in <code>lifecycle/spec.md</code> under a &quot;Backlog Items&quot; section. Marks the seed file as <code>status: promoted</code>. Confirms: &quot;Seed promoted to spec backlog. Run <code>$spec</code> to incorporate it into the next spec cycle.&quot;</p>
+<p><strong><code>$seed promote <id></code></strong> — Move a triggered seed into the planning cycle</p>
+<pre><code>
+$seed promote seed-20260112-001
+</code></pre>
+<p>Writes the seed idea as a new item in <code>lifecycle/spec.md</code> under a "Backlog Items" section. Marks the seed file as <code>status: promoted</code>. Confirms: "Seed promoted to spec backlog. Run <code>$spec</code> to incorporate it into the next spec cycle."</p>
 <p><strong>Output:</strong> Updated spec.md + seed status update.</p>
 <hr>
 <h2 id="decision-locking-cocodiscuss">Decision Locking — CocoDiscuss</h2>
 <hr>
 <p><strong><code>$discuss</code></strong> — Launch the pre-plan decision-capture dialogue</p>
-<pre><code>$discuss</code></pre>
+<pre><code>
+$discuss
+</code></pre>
 <p>Opens a structured multi-turn wizard tailored to the current <code>spec.md</code>. Asks focused implementation decision questions: model selection, evaluation methodology, accuracy threshold, warehouse assignment, production safety requirements, and explicit scope boundaries. Adapts to spec type — AI function builds get model and accuracy questions; Cortex Search configurations get indexing and latency questions. CocoContext organizational standards that definitively answer a question are applied automatically; those questions are skipped and their source is attributed.</p>
 <p>All answers are written to <code>lifecycle/discuss.md</code>. When <code>$plan</code> subsequently runs, the planning agent reads <code>discuss.md</code> as a constraint document and a plan-checker validation step flags any Pre-Approval Conflicts before plan approval.</p>
 <p>After completing (or immediately after <code>$spec</code> if <code>$discuss</code> was not invoked), the CocoSpec quality gate evaluates specification completeness on five dimensions: Value, Scope, Acceptance, Boundaries, and Risk (0–2 points each, maximum 10, required ≥9). Scores below 9 hold the gate with an Uncertainty Declaration that names implicit assumptions explicitly.</p>
@@ -626,59 +786,433 @@ $seed add &quot;Refactor into shared UDF&quot; --trigger &quot;when CocoMap is c
 <h2 id="working-backwards-gate-cocobloom">Working Backwards Gate — CocoBloom</h2>
 <hr>
 <p><strong><code>$bloom</code></strong> — Open the pre-commitment working backwards dialogue</p>
-<pre><code>$bloom</code></pre>
+<pre><code>
+$bloom
+</code></pre>
 <p>Runs a structured four-question dialogue before <code>$spec</code> begins. The four questions: who benefits and what changes for them? What is the core capability in one sentence? What are the three constraints that bound the solution? Write the press release paragraph — a one-paragraph announcement written as if the feature is already shipped. The developer writes the press release; the agent provides examples. Output is committed to <code>lifecycle/bloom.md</code>.</p>
 <p>When <code>$spec</code> subsequently runs, it reads <code>bloom.md</code> as its first context. CocoDiscuss, when active, includes bloom.md in its pre-plan validation and surfaces a Concern (not a block) if the plan diverges from the original beneficiary or constraint set. At <code>$ship</code>, CocoWatch notes whether the bloom commitment was met.</p>
 <p><strong>Output:</strong> <code>lifecycle/bloom.md</code> + git commit <code>feat(bloom): pre-commitment working backwards document</code>.</p>
 <hr>
 <p><strong><code>$bloom --skip</code></strong> — Waive the bloom requirement for this session</p>
-<pre><code>$bloom --skip</code></pre>
-<p>Writes <code>&quot;bloom_waived&quot;: true</code> to <code>lifecycle/meta.json</code>. Suppresses the <code>$spec</code> advisory permanently for this session. Use when the scope is too small to warrant the dialogue or when the outcome is already clearly defined and documented elsewhere.</p>
+<pre><code>
+$bloom --skip
+</code></pre>
+<p>Writes <code>"bloom_waived": true</code> to <code>lifecycle/meta.json</code>. Suppresses the <code>$spec</code> advisory permanently for this session. Use when the scope is too small to warrant the dialogue or when the outcome is already clearly defined and documented elsewhere.</p>
 <p><strong>Output:</strong> Meta.json update + suppression confirmation.</p>
+<hr>
+<p><strong><code>$bloom crystallize</code></strong> — Preserve a completed build pattern as a reusable skill</p>
+<pre><code>
+$bloom crystallize
+</code></pre>
+<p>Available immediately after a successful CocoPod pipeline completion — specifically, when the last <code>$ship</code> completed without any BLOCKED CocoSentinel or FAIL SecondEye verdict. Extracts the bloom commitment from <code>lifecycle/bloom.md</code>, the CocoDiscuss decision record from <code>lifecycle/discuss.md</code> (if present), and the execution pattern from <code>flow.json</code>, and writes a structured skill entry to the CocoGrove catalog. The skill carries the original intent from the bloom document alongside the implementation pattern — not just what was done, but why.</p>
+<p>If invoked outside the post-ship window, the command explains that crystallization requires a recently completed and approved execution.</p>
+<p>Crystallized skills may be promoted to parameterized CocoRecipe templates via <code>$recipe from-skill <skill-slug></code> — converting hard-coded values to template variables.</p>
+<p><strong>Output:</strong> New skill file in <code>.cocoplus/grove/patterns/</code> + grove catalog update.</p>
 <hr>
 <h2 id="multi-agent-roundtable-cocoklatch">Multi-Agent Roundtable — CocoKlatch</h2>
 <hr>
-<p><strong><code>$klatch &lt;topic&gt;</code></strong> — Spawn a genuine multi-perspective subagent roundtable</p>
-<pre><code>$klatch &quot;Should we use Cortex LLM Complete or fine-tuning for this classifier?&quot;
-$klatch &quot;Architecture decision: single function vs. pipeline of functions&quot;
-$klatch --participants=5 &quot;Evaluation methodology for this RAG system&quot;</code></pre>
+<p><strong><code>$klatch <topic></code></strong> — Spawn a genuine multi-perspective subagent roundtable</p>
+<pre><code>
+$klatch "Should we use Cortex LLM Complete or fine-tuning for this classifier?"
+$klatch "Architecture decision: single function vs. pipeline of functions"
+$klatch --participants=5 "Evaluation methodology for this RAG system"
+</code></pre>
 <p>Prepares a structured topic brief from the free-text topic, then spawns N participant subagents simultaneously — each receives only the brief. Default is 3 participants (Skeptic, Optimist, Pragmatist). With 4: adds Domain Expert (always included at ≥ 3). With 5: adds Contrarian.</p>
 <p>Each participant produces an independent analysis. When all complete, a synthesis subagent reads all outputs and produces a synthesis document covering: points of agreement (across ≥ 2 participants), points of divergence (each position stated), open questions (unresolved across all participants), and a recommended decision path with the primary remaining uncertainty named.</p>
 <p>All artifacts are committed to git under <code>lifecycle/klatch/</code>: the brief, each participant's analysis, and the synthesis document.</p>
 <p><code>--participants=N</code> — Sets participant count (2–5). Minimum: Skeptic + Optimist. Maximum: all five roles.</p>
-<p><strong>Output:</strong> <code>lifecycle/klatch/&lt;timestamp&gt;-&lt;topic-slug&gt;-synthesis.md</code> surfaced in session + all participant files committed.</p>
+<p><strong>Output:</strong> <code>lifecycle/klatch/<timestamp>-<topic-slug>-synthesis.md</code> surfaced in session + all participant files committed.</p>
 <hr>
 <h2 id="context-distillation-cocopull">Context Distillation — CocoPull</h2>
 <hr>
-<p><strong><code>$pull &lt;target&gt;</code></strong> — Distill a large artifact into a token-efficient form</p>
-<pre><code>$pull lifecycle/evaluation-results.md
+<p><strong><code>$pull <target></code></strong> — Distill a large artifact into a token-efficient form</p>
+<pre><code>
+$pull lifecycle/evaluation-results.md
 $pull lifecycle/schema-analysis/
-$pull lifecycle/stage-005-output.md</code></pre>
+$pull lifecycle/stage-005-output.md
+</code></pre>
 <p>Runs a two-stage distillation. A structure analysis agent (Haiku) identifies the information architecture of the target: what sections exist, what type of content each contains, and which sections carry decision-relevant facts versus background context. A distillation agent (Sonnet) produces the pull file, preserving verbatim any decision-relevant values (thresholds, schema names, constraint values), compressing narrative explanations to their conclusions, deduplicating repeated content, and representing large tabular data as a representative sample with a statistical summary.</p>
-<p>The pull file is written alongside the source as <code>&lt;source-name&gt;.pull.md</code>. Its header records the source path, distillation timestamp, original and distilled token count estimates, and compression ratio. Pull files are gitignored by default.</p>
+<p>The pull file is written alongside the source as <code><source-name>.pull.md</code>. Its header records the source path, distillation timestamp, original and distilled token count estimates, and compression ratio. Pull files are gitignored by default.</p>
 <p>For a directory target, each eligible file is distilled independently and a manifest is produced.</p>
-<p><strong>Output:</strong> <code>&lt;source&gt;.pull.md</code> + compression ratio summary.</p>
+<p><strong>Output:</strong> <code><source>.pull.md</code> + compression ratio summary.</p>
 <hr>
 <p><strong><code>$pull --validate</code></strong> — Run a round-trip reconstruction test after distillation</p>
-<pre><code>$pull lifecycle/evaluation-results.md --validate</code></pre>
+<pre><code>
+$pull lifecycle/evaluation-results.md --validate
+</code></pre>
 <p>After producing the pull file, spawns a verification subagent that reads only the pull file and answers a set of probe questions generated from the source. Answers are compared against ground-truth answers drawn from the original by a separate agent. A pull file scoring below 85% match rate is flagged <code>reliability: low</code> in its header — CocoHarvest will not automatically use it as a stage input. Use <code>--validate</code> the first time you pull a new document type to assess whether the compression pattern is reliable for that type.</p>
 <p><strong>Output:</strong> Pull file + validation summary appended to pull file header with reliability classification.</p>
 <hr>
+<p><strong><code>$pull search "<query>"</code></strong> — Full-text search across session archives</p>
+<pre><code>
+$pull search "accuracy threshold evaluation"
+$pull search "PII masking" --archetype build-intensive
+$pull search "schema migration decision" --since 2026-01-01
+</code></pre>
+<p>Searches across all committed session artifacts — spec files, discuss records, review summaries, bloom documents, klatch syntheses — using the SQLite index maintained by the background wisdom-writer script. Results are ranked by relevance and display the artifact path, session date, session archetype, and a matched excerpt. Optional filters: <code>--archetype <type></code> (spec-heavy, build-intensive, review-dominated, exploratory, maintenance), <code>--since <date></code>, <code>--gate <secondeye|sentinel|da_critic></code> (to filter for gate-related records only).</p>
+<p>Use when you need to retrieve a prior decision, constraint, or evaluation methodology without knowing which session it lives in. Searching by decision is faster and more reliable than reading committed files sequentially.</p>
+<p><strong>Output:</strong> Ranked match list with excerpts and artifact paths.</p>
+<hr>
+<h2 id="artifact-quality-gate-cocosentinel">Artifact Quality Gate — CocoSentinel</h2>
+<hr>
+<p><strong><code>$sentinel [file]</code></strong> — Run a seven-dimension parallel quality evaluation on an artifact</p>
+<pre><code>
+$sentinel
+$sentinel lifecycle/spec.md
+$sentinel queries/sentiment_classifier.sql
+</code></pre>
+<p>Without a file argument, evaluates the most recently modified committed artifact. With a file argument, evaluates the specified file. Before spawning dimension sub-agents, runs <code>sentinel-pregate.js</code> (Dimension G — deterministic, <50ms): validates that the submission includes concrete execution evidence, non-trivial test coverage, no success claims without attached output, and no single-agent self-evaluation. If Dimension G fails, returns BLOCKED immediately — the seven dimension agents do not run.</p>
+<p>If Dimension G passes, spawns seven dimension sub-agents simultaneously, each in an independent context window:</p>
+<ul>
+  <li><strong>A1 — Security Attack Surface (Haiku):</strong> Input validation gaps, injection pathways, IDENTIFIER() binding, EXECUTE IMMEDIATE construction</li>
+  <li><strong>A2 — Security Defensive Posture (Haiku):</strong> Privilege minimality, data exposure risk, error message schema leakage</li>
+  <li><strong>B — Correctness and Logic (Sonnet):</strong> Nullability handling, boundary conditions, type correctness, logical completeness</li>
+  <li><strong>C — Performance (Sonnet):</strong> Clustering key alignment, join order, aggregation caching eligibility, Cortex function batching</li>
+  <li><strong>D — Resilience (Haiku):</strong> Failure path completeness, RETRY_AFTER patterns, VARIANT extraction guards</li>
+  <li><strong>E — Maintainability (Haiku):</strong> Naming convention consistency with <code>cocoplus-context.md</code>, clarity for a reader unfamiliar with the session</li>
+  <li><strong>F — Compliance (Haiku):</strong> PII handling requirements, schema write permissions, credit thresholds in constitutional document</li>
+</ul>
+<p>Each dimension produces a verdict (PASS / CONCERN (ADVISORY) / CONCERN (BLOCKING) / FAIL) with evidence citing the specific line or pattern, and a recommendation. The synthesis agent produces the overall outcome: APPROVED, CONDITIONAL, or BLOCKED.</p>
+<p>Full report written to <code>.cocoplus/sentinel/<artifact-sha>.json</code>.</p>
+<p><strong>Output:</strong> Console summary with dimension verdicts + overall outcome + report path.</p>
+<hr>
+<p><strong><code>$sentinel --report</code></strong> — Display the most recent evaluation report</p>
+<pre><code>
+$sentinel --report
+$sentinel --report queries/sentiment_classifier.sql
+</code></pre>
+<p>Reads the most recent sentinel report for the current directory or the specified file and renders it as a formatted summary with dimension verdicts, evidence lines, and recommendations.</p>
+<p><strong>Output:</strong> Formatted report. No state changes.</p>
+<hr>
+<p><strong><code>$sentinel --approve</code></strong> — Record a SHA-bound approval after resolving findings</p>
+<pre><code>
+$sentinel --approve
+$sentinel --approve --rationale "CONCERN A2 accepted: internal function only"
+</code></pre>
+<p>After the developer resolves all BLOCKING concerns (or provides written rationale for accepting CONDITIONAL terms), writes an approval record to <code>.cocoplus/sentinel/approvals.jsonl</code> binding the approval to the artifact's SHA-256 hash. If the artifact is subsequently modified, the PostToolUse hook recomputes the SHA and voids the approval automatically — a warning is surfaced before the next lifecycle gate.</p>
+<p><strong>Output:</strong> Approval record committed to <code>approvals.jsonl</code>.</p>
+<hr>
+<h2 id="institutional-rejection-memory-cocowisdom">Institutional Rejection Memory — CocoWisdom</h2>
+<hr>
+<p><strong><code>$wisdom</code></strong> — Show a summary of the project's quality rejection history</p>
+<pre><code>
+$wisdom
+</code></pre>
+<p>Displays a brief status: total rejection records, most frequent gate (<code>secondeye</code> / <code>sentinel</code> / <code>da_critic</code>), most blocked dimension, last rejection date, and a quality trend indicator (improving if recent sessions had fewer rejections than the project average).</p>
+<p><strong>Output:</strong> Status summary. No state changes.</p>
+<hr>
+<p><strong><code>$wisdom list</code></strong> — List rejection records with optional filters</p>
+<pre><code>
+$wisdom list
+$wisdom list --gate secondeye
+$wisdom list --since 2026-04-01
+$wisdom list --dimension acceptance_criteria
+</code></pre>
+<p>Lists records with record ID, date, gate, dimension, and the first 80 characters of the rejection reason. Filters may be combined.</p>
+<p><strong>Output:</strong> Filtered record list.</p>
+<hr>
+<p><strong><code>$wisdom search "<pattern>"</code></strong> — Full-text search across rejection reasons</p>
+<pre><code>
+$wisdom search "acceptance criteria"
+$wisdom search "PII masking"
+</code></pre>
+<p>Searches <code>rejections.jsonl</code> using the SQLite index maintained by the wisdom-writer script. Returns matching records with excerpts and record IDs.</p>
+<p><strong>Output:</strong> Ranked match list with excerpts.</p>
+<hr>
+<p><strong><code>$wisdom insights</code></strong> — Generate a structured quality pattern synthesis report</p>
+<pre><code>
+$wisdom insights
+</code></pre>
+<p>Invokes a Haiku sub-agent to read <code>rejections.jsonl</code> and produce a structured synthesis: most frequently blocked dimension, quality trend over time (improving/stable/degrading), dimension health table (total blocks, last 30 days, trend direction). Written to <code>.cocoplus/wisdom/insights-<date>.md</code> — committed to git as a project artifact.</p>
+<p><strong>Output:</strong> <code>insights-<date>.md</code> + git commit.</p>
+<hr>
+<p><strong><code>$wisdom export</code></strong> — Export all rejection records as a formatted Markdown report</p>
+<pre><code>
+$wisdom export
+</code></pre>
+<p>Generates a complete formatted Markdown report of all rejection records for retrospective review or external sharing. Does not modify the store.</p>
+<p><strong>Output:</strong> Formatted report. No state changes.</p>
+<hr>
+<h2 id="structured-code-review-cocoreview">Structured Code Review — CocoReview</h2>
+<hr>
+<p><strong><code>$review</code></strong> — Run a structured holistic code review on the current change</p>
+<pre><code>
+$review
+$review path/to/artifact.sql
+</code></pre>
+<p>Without a target, reviews the current staged git diff. With a target, reviews the specified file. Runs <code>pr-complexity.js</code> (deterministic) to compute a complexity score, size bucket, non-test ratio, schema layer diversity, estimated review time, and risk flags. If size bucket is XL (≥800 lines of change), surfaces a split recommendation before proceeding with the review.</p>
+<p>Proceeds through four phases: Context Gathering (PR description, linked issue, CI status), High-Level Review (architecture and strategy — structural problems are surfaced here before line-by-line work), Line-by-Line Review (logic, security, performance, maintainability, reuse — with explicit reuse check before accepting new code), Summary and Verdict.</p>
+<p>Applies nine universal anti-patterns before any language-specific guide: Parameter Sprawl, Leaky Abstractions, Stringly-Typed Code, Nested Conditionals, Copy-Paste Variants, No-Op Updates, TOCTOU Race Conditions (specifically flagging Snowflake <code>IF EXISTS THEN INSERT</code> patterns), Over-Broad Reads, Redundant State.</p>
+<p>Finding labels: <code>blocking</code> · <code>important</code> · <code>nit</code> · <code>suggestion</code> · <code>learning</code> · <code>praise</code> (mandatory — at least one per review). Verdict: APPROVE / COMMENT / REQUEST_CHANGES.</p>
+<p>Review output written to <code>.cocoplus/review/cocoreview-<timestamp>.md</code> — committed to git.</p>
+<p><strong>Output:</strong> Structured review report with findings and verdict.</p>
+<hr>
+<p><strong><code>$review --complexity</code></strong> — Run only the PR complexity analysis</p>
+<pre><code>
+$review --complexity
+$review --complexity path/to/diff.patch
+</code></pre>
+<p>Runs <code>pr-complexity.js</code> and returns the complexity score, size bucket, file count, non-test ratio, schema layer diversity, estimated review minutes, and risk flags. No LLM invoked.</p>
+<p><strong>Output:</strong> Complexity JSON + summary. Written to <code>.cocoplus/review/complexity-cache.json</code> (gitignored).</p>
+<hr>
+<p><strong><code>$review --security</code></strong> — Run a security-focused review</p>
+<pre><code>
+$review --security
+$review --security path/to/artifact.sql
+</code></pre>
+<p>Loads both the project's language guide and the security review guide before proceeding. Applies a five-tier security severity scale: Critical (blocks merge — immediate exploitation possible), High (blocks merge — significant vulnerability requiring specific conditions), Medium (should fix, can merge with tracking), Low (best-practice violation, non-blocking), Info (optional enhancement). In Snowflake deployments handling PII or regulated data, Critical triggers for hardcoded credentials, missing data masking policies on PII-classified columns, or unprotected references to regulated column sets.</p>
+<p><strong>Output:</strong> Review report with security-tier findings.</p>
+<hr>
+<p><strong><code>$review --architecture</code></strong> — Run an architecture-focused review</p>
+<pre><code>
+$review --architecture
+</code></pre>
+<p>Loads the architecture review guide and the universal quality guide. Evaluates SOLID principles, Clean Architecture layer separation, and dependency direction. Architectural problems found in Phase 2 (high-level review) are surfaced before line-by-line work begins.</p>
+<p><strong>Output:</strong> Review report with architecture-focused findings.</p>
+<hr>
+<p><strong><code>$review --language <lang></code></strong> — Override automatic language detection</p>
+<pre><code>
+$review --language sql
+$review --language python
+$review --language javascript
+</code></pre>
+<p>Explicit language guide selection. Use when file extensions are ambiguous or when a non-standard extension is used.</p>
+<p><strong>Output:</strong> Review report with specified language guide applied.</p>
+<hr>
+<h2 id="delivery-intelligence-cocoops">Delivery Intelligence — CocoOps</h2>
+<hr>
+<p><strong><code>$ops</code></strong> — Show a brief CocoOps status summary</p>
+<pre><code>
+$ops
+</code></pre>
+<p>Displays the most recently computed DORA metric values (from <code>dora-snapshot.json</code> if available), current sprint health summary (from <code>sprint-health.json</code> if available), and a time-aware suggestion for the current hour of day. If no snapshot exists, prompts to run <code>$ops dora</code>.</p>
+<p><strong>Output:</strong> Status summary. No state changes.</p>
+<hr>
+<p><strong><code>$ops dora</code></strong> — Compute and display full DORA metrics report</p>
+<pre><code>
+$ops dora
+</code></pre>
+<p>Runs <code>dora-metrics.js</code> (deterministic — no LLM) to compute four DORA-adapted metrics from Snowflake task execution history and <code>git log</code>: Pipeline Run Frequency, Data Availability Lead Time, Failure Recovery Time, and Data Quality Failure Rate. Each metric is classified against standard DORA tier thresholds (Elite / High / Medium / Low). A Haiku sub-agent then generates a narrative synthesis citing specific pipeline names, dates, and quantities — no vague generalities.</p>
+<p>Report written to <code>.cocoplus/ops/dora-snapshot.json</code> and committed to git after each run.</p>
+<p><strong>Output:</strong> DORA report with tier classifications + notable signals + git commit.</p>
+<hr>
+<p><strong><code>$ops sprint</code></strong> — Compute current sprint health</p>
+<pre><code>
+$ops sprint
+</code></pre>
+<p>Reads git commits from the current sprint window (start date from <code>cocoplus.toml [sprint] start_date</code>) and computes story velocity (pipeline features completed), burndown (completed vs. remaining pipeline tasks), and a velocity-based completion projection. Written to <code>.cocoplus/ops/sprint-health.json</code> — committed to git.</p>
+<p><strong>Output:</strong> Sprint health summary + git commit.</p>
+<hr>
+<p><strong><code>$ops suggest</code></strong> — Show time-aware operational guidance</p>
+<pre><code>
+$ops suggest
+</code></pre>
+<p>Returns contextually appropriate actions based on the current time of day — morning pipeline status, mid-morning PR health, afternoon stale PR alerts, end-of-day velocity, Friday weekly summary. Time classification is determined by <code>ops-suggest.js</code> (deterministic, no LLM inference).</p>
+<p><strong>Output:</strong> Time-appropriate action list. No state changes.</p>
+<hr>
+<p><strong><code>$ops demo</code></strong> — Activate demo mode with realistic mock data</p>
+<pre><code>
+$ops demo
+</code></pre>
+<p>Populates <code>.cocoplus/ops/demo/</code> with realistic mock Snowflake task history and git log data, enabling full CocoOps functionality without production access. Activates <code>[demo] enabled = true</code> in <code>cocoplus.toml</code>. Demo dataset includes representative failure patterns, a 30-day DORA metric improvement progression, and sprint timing data. Demo data is gitignored.</p>
+<p><strong>Output:</strong> Demo dataset written + <code>cocoplus.toml</code> updated.</p>
+<hr>
+<p><strong><code>$ops refresh</code></strong> — Re-query Snowflake for latest operational data</p>
+<pre><code>
+$ops refresh
+</code></pre>
+<p>Re-runs <code>dora-metrics.js</code> against current Snowflake task history and updates <code>dora-snapshot.json</code>. Useful for refreshing the metrics view after a long pipeline run completes without regenerating the full narrative report.</p>
+<p><strong>Output:</strong> Updated <code>dora-snapshot.json</code> + git commit.</p>
+<hr>
 <h2 id="hooks-automatic-reference-only">Hooks (Automatic — Reference Only)</h2>
 <p>These hooks fire on Coco lifecycle events. They are documented here for understanding the system, not for manual invocation.</p>
-<div class="table-wrap"><table><thead><tr><th>Hook</th><th>Fires When</th><th>What It Does</th></tr></thead><tbody>
-<tr><td><strong>SessionStart</strong></td><td>Coco session begins</td><td>Reads state, initializes CocoMeter, triggers inspector background scan if auto-mode active, evaluates CocoSeed trigger conditions and surfaces newly-ready seeds</td></tr>
-<tr><td><strong>SessionEnd</strong></td><td>Coco session ends</td><td>Writes CocoMeter data, updates AGENTS.md with session summary, queues CocoCupper if needed, writes final CocoHealth checkpoint</td></tr>
-<tr><td><strong>PreToolUse</strong></td><td>Before any tool call</td><td>Safety Gate — two layers: (1) unconditionally blocks SnowflakeSqlExecute during spec/plan phases regardless of safety mode; (2) blocks or warns on destructive SQL patterns from build phase onward per strict/normal setting</td></tr>
-<tr><td><strong>PostToolUse</strong></td><td>After any tool call</td><td>Memory Engine capture layer — records significant tool use events to warm memory layer; CocoHealth samples context utilization and fires threshold warnings when applicable</td></tr>
-<tr><td><strong>UserPromptSubmit</strong></td><td>Developer submits a prompt</td><td>Intercepts <code>$&lt;persona&gt;</code> shorthand for persona routing; intercepts `$cocoplus on</td><td>off`</td></tr>
-<tr><td><strong>SubagentStop</strong></td><td>A subagent completes</td><td>Validates checkpoints, updates <code>flow.json</code> stage status, triggers next stage if dependencies met</td></tr>
-<tr><td><strong>Stop</strong></td><td>Main session ends</td><td>Final state capture</td></tr>
-<tr><td><strong>PreCompact</strong></td><td>Before context window compaction</td><td>Flushes important state from context to warm memory layer before it's lost</td></tr>
-<tr><td><strong>Notification</strong></td><td>CocoPlus raises an event</td><td>Routes notification to Coco UI or log file per <code>notifications.json</code> configuration</td></tr>
-</tbody></table></div>
+<table>
+<thead><tr>
+  <th style="text-align:left">Hook</th>
+  <th style="text-align:left">Fires When</th>
+  <th style="text-align:left">What It Does</th>
+</tr></thead>
+<tbody>
+<tr>
+  <td style="text-align:left"><strong>SessionStart</strong></td>
+  <td style="text-align:left">Coco session begins</td>
+  <td style="text-align:left">Reads state, initializes CocoMeter, triggers inspector background scan if auto-mode active, evaluates CocoSeed trigger conditions and surfaces newly-ready seeds</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>SessionEnd</strong></td>
+  <td style="text-align:left">Coco session ends</td>
+  <td style="text-align:left">Writes CocoMeter data, updates AGENTS.md with session summary, queues CocoCupper if needed, writes final CocoHealth checkpoint</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>PreToolUse</strong></td>
+  <td style="text-align:left">Before any tool call</td>
+  <td style="text-align:left">Safety Gate — two layers: (1) unconditionally blocks SnowflakeSqlExecute during spec/plan phases regardless of safety mode; (2) blocks or warns on destructive SQL patterns from build phase onward per strict/normal setting</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>PostToolUse</strong></td>
+  <td style="text-align:left">After any tool call</td>
+  <td style="text-align:left">Memory Engine capture layer — records significant tool use events to warm memory layer; CocoHealth samples context utilization and fires threshold warnings when applicable</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>UserPromptSubmit</strong></td>
+  <td style="text-align:left">Developer submits a prompt</td>
+  <td style="text-align:left">Intercepts <code>$<persona></code> shorthand for persona routing; intercepts `$cocoplus on</td>
+  <td style="text-align:left">off`</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>SubagentStop</strong></td>
+  <td style="text-align:left">A subagent completes</td>
+  <td style="text-align:left">Validates checkpoints, updates <code>flow.json</code> stage status, triggers next stage if dependencies met</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Stop</strong></td>
+  <td style="text-align:left">Main session ends</td>
+  <td style="text-align:left">Final state capture</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>PreCompact</strong></td>
+  <td style="text-align:left">Before context window compaction</td>
+  <td style="text-align:left">Flushes important state from context to warm memory layer before it's lost</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Notification</strong></td>
+  <td style="text-align:left">CocoPlus raises an event</td>
+  <td style="text-align:left">Routes notification to Coco UI or log file per <code>notifications.json</code> configuration</td>
+</tr>
+</tbody>
+</table>
 <hr>
-
+<h2 id="quick-reference-card">Quick Reference Card</h2>
+<table>
+<thead><tr>
+  <th style="text-align:left">Group</th>
+  <th style="text-align:left">Commands</th>
+</tr></thead>
+<tbody>
+<tr>
+  <td style="text-align:left"><strong>Setup</strong></td>
+  <td style="text-align:left"><code>$pod init</code> · <code>$pod init --refresh-context</code> · <code>$pod status</code> · <code>$pod resume</code> · <code>$pod kb</code> · <code>$pod checkpoint</code> · <code>$cocoplus sync</code> · <code>$cocoplus migrate-config</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Assist Mode</strong></td>
+  <td style="text-align:left"><code>$cocoplus on</code> · <code>$cocoplus off</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Lifecycle</strong></td>
+  <td style="text-align:left"><code>$bloom</code> · <code>$bloom --skip</code> · <code>$bloom crystallize</code> · `$spec [--quick\</td>
+  <td style="text-align:left">--full]<code> · </code>$discuss<code> · </code>$plan<code> · </code>$build<code> · </code>$test<code> · </code>$review<code> · </code>$ship<code> · </code>$rewind [--tag]<code> · </code>$fork`</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Pipeline</strong></td>
+  <td style="text-align:left"><code>$flow run [--concurrency]</code> · <code>$flow status</code> · <code>$flow pause</code> · <code>$flow resume</code> · <code>$flow view</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Recipes</strong></td>
+  <td style="text-align:left"><code>$recipe list</code> · <code>$recipe use</code> · <code>$recipe new</code> · <code>$recipe from-skill <slug></code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Personas</strong></td>
+  <td style="text-align:left"><code>$de</code> · <code>$ae</code> · <code>$ds</code> · <code>$da</code> · <code>$bi</code> · <code>$dpm</code> · <code>$dst</code> · <code>$cdo</code> · <code>$personas</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Memory</strong></td>
+  <td style="text-align:left"><code>$memory on</code> · <code>$memory off</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Org Standards</strong></td>
+  <td style="text-align:left"><code>$context add</code> · <code>$context view</code> · <code>$context list</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Inspector</strong></td>
+  <td style="text-align:left"><code>$inspect</code> · <code>$inspector on</code> · <code>$inspector off</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Safety</strong></td>
+  <td style="text-align:left"><code>$safety strict</code> · <code>$safety normal</code> · <code>$safety off</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Quality</strong></td>
+  <td style="text-align:left"><code>$quality on</code> · <code>$quality off</code> · <code>$quality run</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Meter</strong></td>
+  <td style="text-align:left"><code>$meter on</code> · <code>$meter off</code> · <code>$meter</code> · <code>$meter estimate</code> · <code>$meter history</code> · <code>$meter accuracy</code> · <code>$meter view</code> · <code>$meter sync</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Cupper</strong></td>
+  <td style="text-align:left"><code>$cup</code> · <code>$cup history</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Grove</strong></td>
+  <td style="text-align:left"><code>$patterns view</code> · <code>$patterns promote</code> · <code>$grove glossary</code> · <code>$grove glossary view</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Dream</strong></td>
+  <td style="text-align:left"><code>$dream</code> · <code>$dream history</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Context Mode</strong></td>
+  <td style="text-align:left"><code>$context on</code> · <code>$context off</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Spark</strong></td>
+  <td style="text-align:left"><code>$spark</code> · <code>$spark-off</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>SecondEye</strong></td>
+  <td style="text-align:left"><code>$secondeye</code> · <code>$secondeye --artifact</code> · <code>$secondeye --model</code> · <code>$secondeye acknowledge [--hitl-only] [--blocking-only]</code> · <code>$secondeye history</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Sentinel</strong></td>
+  <td style="text-align:left"><code>$sentinel [file]</code> · <code>$sentinel --report</code> · <code>$sentinel --approve</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Wisdom</strong></td>
+  <td style="text-align:left"><code>$wisdom</code> · <code>$wisdom list [--gate] [--since] [--dimension]</code> · <code>$wisdom search "<pattern>"</code> · <code>$wisdom insights</code> · <code>$wisdom export</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Code Review</strong></td>
+  <td style="text-align:left"><code>$review</code> · <code>$review --complexity</code> · <code>$review --security</code> · <code>$review --architecture</code> · <code>$review --language <lang></code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Ops</strong></td>
+  <td style="text-align:left"><code>$ops</code> · <code>$ops dora</code> · <code>$ops sprint</code> · <code>$ops suggest</code> · <code>$ops demo</code> · <code>$ops refresh</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Klatch</strong></td>
+  <td style="text-align:left"><code>$klatch <topic></code> · <code>$klatch --participants=N</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Pull</strong></td>
+  <td style="text-align:left"><code>$pull <target></code> · <code>$pull --validate</code> · <code>$pull search "<query>"</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Docs</strong></td>
+  <td style="text-align:left"><code>$doc run</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Prompts</strong></td>
+  <td style="text-align:left"><code>$prompt new</code> · <code>$prompt compare</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Fleet</strong></td>
+  <td style="text-align:left"><code>$fleet init</code> · <code>$fleet run</code> · <code>$fleet status</code> · <code>$fleet logs</code> · <code>$fleet stop</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Map</strong></td>
+  <td style="text-align:left"><code>$map</code> · <code>$map diff</code> · <code>$map explain <target></code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Seeds</strong></td>
+  <td style="text-align:left"><code>$seed add "<idea>" --trigger "<condition>"</code> · <code>$seed list</code> · <code>$seed promote <id></code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>CocoWatch</strong></td>
+  <td style="text-align:left"><em>(automatic — summary at <code>$ship</code> and FULL checkpoints)</em></td>
+</tr>
+</tbody>
+</table>
+<hr>
 <blockquote><p><em>A reference document is a map, not a destination. Use it to find the right path, then put it down and walk.</em></p></blockquote>
 </div>
 

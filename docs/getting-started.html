@@ -36,19 +36,27 @@
 <h2 id="prerequisites">Prerequisites</h2>
 <p>Before you begin:</p>
 <p><strong>Coco CLI</strong> — Snowflake Cortex Code CLI installed and connected to a Snowflake account. Run <code>cortex --version</code> to verify. If Coco isn't installed, start with the <a href="https://docs.snowflake.com/en/user-guide/cortex-code">Snowflake Cortex Code documentation</a> before coming back here.</p>
-<p><strong>Git</strong> — Your project directory must be a git repository. CocoPlus is tightly coupled to git — lifecycle phase commits, worktree isolation for parallel builds, rollback by commit hash. If your project isn't in git, run <code>git init &amp;&amp; git commit --allow-empty -m &quot;init&quot;</code> before proceeding.</p>
+<p><strong>Git</strong> — Your project directory must be a git repository. CocoPlus is tightly coupled to git — lifecycle phase commits, worktree isolation for parallel builds, rollback by commit hash. If your project isn't in git, run <code>git init && git commit --allow-empty -m "init"</code> before proceeding.</p>
 <p><strong>CocoPlus plugin installed</strong> — Install the CocoPlus plugin from GitHub:</p>
-<pre><code>cortex skill add Snowflake-Labs/cocoplus</code></pre>
-<p><strong>Known Limitation:</strong> The CocoPlus repo uses <code>.skill.md</code> files which may not be auto-discovered by all Cortex Code versions. If the <code>skill add</code> command reports &quot;No valid skills found&quot;, use the <code>--plugin-dir</code> flag when launching Cortex Code instead:</p>
-<pre><code>cortex --plugin-dir Snowflake-Labs/cocoplus</code></pre>
+<pre><code class="language-bash">
+cortex skill add Snowflake-Labs/cocoplus
+</code></pre>
+<p><strong>Known Limitation:</strong> The CocoPlus repo uses <code>.skill.md</code> files which may not be auto-discovered by all Cortex Code versions. If the <code>skill add</code> command reports "No valid skills found", use the <code>--plugin-dir</code> flag when launching Cortex Code instead:</p>
+<pre><code class="language-bash">
+cortex --plugin-dir Snowflake-Labs/cocoplus
+</code></pre>
 <p>Verify the installation:</p>
-<pre><code>cortex plugins list
-# cocoplus should appear in the output with status: active</code></pre>
+<pre><code class="language-bash">
+cortex plugins list
+# cocoplus should appear in the output with status: active
+</code></pre>
 <p>That's the full list. CocoPlus adds no external services, no databases, no background processes. If the plugin is installed and Coco is connected to Snowflake, you have everything.</p>
 <hr>
 <h2 id="initialize-your-project">Initialize Your Project</h2>
 <p>Navigate to the root of your project directory — the same directory where your <code>.git/</code> folder lives. Then run:</p>
-<pre><code>$pod init</code></pre>
+<pre><code>
+$pod init
+</code></pre>
 <p>This creates the <code>.cocoplus/</code> directory and writes the initial state files that every CocoPlus feature reads from and writes to. You'll be prompted for a project name and a brief description. Give it something meaningful — this shows up in every session's context header and in every git commit CocoPlus creates.</p>
 <p>What <code>$pod init</code> does:</p>
 <ul>
@@ -56,7 +64,7 @@
   <li>Writes <code>AGENTS.md</code> — the hot memory layer that Coco loads automatically at the start of every session</li>
   <li>Writes <code>project.md</code> with your project metadata</li>
   <li>Initializes <code>flow.json</code> as an empty pipeline template</li>
-  <li>Sets default safety configuration (normal mode, protecting schemas containing &quot;PROD&quot;, &quot;PRODUCTION&quot;, or &quot;LIVE&quot;)</li>
+  <li>Sets default safety configuration (normal mode, protecting schemas containing "PROD", "PRODUCTION", or "LIVE")</li>
   <li>Creates the initial git commit: <code>feat: initialize CocoPod project structure</code></li>
 </ul>
 <p><strong>If the directory already has a CocoPlus initialization</strong>, <code>$pod init</code> will refuse with a clear message. You can inspect the existing state with <code>$pod status</code> or resume context with <code>$pod resume</code> instead.</p>
@@ -64,10 +72,13 @@
 <hr>
 <h2 id="activate-all-features">Activate All Features</h2>
 <p>With the pod initialized, activate the full feature set:</p>
-<pre><code>$cocoplus on</code></pre>
+<pre><code>
+$cocoplus on
+</code></pre>
 <p>This is the single command that enables everything CocoPlus has to offer. It creates mode flag files in <code>.cocoplus/modes/</code> for each feature, immediately runs an Environment Inspector scan in the background, updates AGENTS.md to show <code>FULL ASSIST MODE: ACTIVE</code>, and creates a git commit marking the activation.</p>
 <p>After running it, you'll see a confirmation listing every activated feature:</p>
-<pre><code>✓ Memory Engine — on
+<pre><code>
+✓ Memory Engine — on
 ✓ Environment Inspector — auto (background scan starting)
 ✓ Safety Gate — normal
 ✓ Code Quality Advisor — on
@@ -76,7 +87,8 @@
 ✓ Full Assist Mode — ACTIVE
 
 Environment Inspector is scanning in the background.
-Run $pod status in a moment to see results.</code></pre>
+Run $pod status in a moment to see results.
+</code></pre>
 <p><strong>What <code>$cocoplus on</code> does not activate:</strong></p>
 <ul>
   <li>The CocoBrew lifecycle phases — you start those yourself with <code>$spec</code> when you're ready to begin a specific workstream</li>
@@ -87,7 +99,9 @@ Run $pod status in a moment to see results.</code></pre>
 <hr>
 <h2 id="verify-your-setup">Verify Your Setup</h2>
 <p>Once the Environment Inspector background scan has had a moment to complete:</p>
-<pre><code>$pod status</code></pre>
+<pre><code>
+$pod status
+</code></pre>
 <p>This is your dashboard. It reads from <code>.cocoplus/</code> and reports everything:</p>
 <ul>
   <li>Current CocoBrew phase (initially: <strong>none</strong> — you haven't started a lifecycle yet)</li>
@@ -101,7 +115,9 @@ Run $pod status in a moment to see results.</code></pre>
 <hr>
 <h2 id="understand-the-personas-available-to-you">Understand the Personas Available to You</h2>
 <p>Before you begin any work, it's worth knowing who you can call:</p>
-<pre><code>$personas</code></pre>
+<pre><code>
+$personas
+</code></pre>
 <p>This lists all eight specialist agents with their domains, default models, and invocation modes. You don't need to memorize them — but understanding who handles what prevents you from asking the wrong expert the right question.</p>
 <p>Quick reference:</p>
 <ul>
@@ -121,21 +137,25 @@ Run $pod status in a moment to see results.</code></pre>
 <p><strong><code>$pod status</code></strong> — Full state report. Run this at the start of any session to orient yourself, or anytime you want to see what CocoPlus has captured.</p>
 <p><strong><code>$pod resume</code></strong> — Designed for returning developers. If you've been away from the project for a day, a week, a month — run this first. It reads the current state and produces a focused narrative: where you left off, what was completed last session, what blocking items remain, and what the immediate next action is.</p>
 <p><strong><code>$meter</code></strong> — Token and cost summary for the current session. Useful to run after expensive operations (a CocoHarvest parallel build, a SecondEye critique run) to understand what you just consumed.</p>
-<p><strong><code>$inspect</code></strong> — Run the Environment Inspector manually for an on-demand Snowflake environment scan. Add <code>--schema &lt;name&gt;</code> to limit the scan to a specific schema, or <code>--full</code> for extended metadata including column-level statistics.</p>
+<p><strong><code>$inspect</code></strong> — Run the Environment Inspector manually for an on-demand Snowflake environment scan. Add <code>--schema <name></code> to limit the scan to a specific schema, or <code>--full</code> for extended metadata including column-level statistics.</p>
 <hr>
 <h2 id="your-first-actual-work">Your First Actual Work</h2>
 <p>CocoPlus is initialized. Features are active. Your Snowflake environment is scanned. You're ready to build something.</p>
 <p>The right next command is:</p>
-<pre><code>$spec</code></pre>
+<pre><code>
+$spec
+</code></pre>
 <p>This opens the Spec phase of CocoBrew — a structured dialogue that helps you articulate what you're actually building before a single line of SQL is written. The spec is not bureaucracy. It is the mirror that shows you your own assumptions.</p>
 <p>If you already have a clear picture of what you're building and want to explore alternatives before committing to a direction, start with:</p>
-<pre><code>$spark [topic]</code></pre>
+<pre><code>
+$spark [topic]
+</code></pre>
 <p>This activates CocoSpark — a divergent thinking mode that generates multiple approaches and raises the questions you may not have thought to ask. CocoSpark output is explicitly marked as exploration and never flows automatically into your spec. What you take from it is your decision.</p>
 <p>When you're ready to commit to a direction, <code>$spec</code> is always the next step.</p>
 <hr>
 <h2 id="if-something-goes-wrong">If Something Goes Wrong</h2>
-<p><strong><code>$pod init</code> fails — &quot;CocoPlus already initialized&quot;</strong> — This is a warning, not an error. Your pod already exists. Run <code>$pod status</code> to see its current state. If you genuinely want to start fresh, remove <code>.cocoplus/</code> manually and re-run, but be aware this discards all existing state.</p>
-<p><strong>Command not recognized</strong> — CocoPlus commands require the plugin to be active in your Coco session. If you see &quot;command not found&quot; on any <code>/</code> command, verify the plugin is installed with <code>coco plugins list</code>.</p>
+<p><strong><code>$pod init</code> fails — "CocoPlus already initialized"</strong> — This is a warning, not an error. Your pod already exists. Run <code>$pod status</code> to see its current state. If you genuinely want to start fresh, remove <code>.cocoplus/</code> manually and re-run, but be aware this discards all existing state.</p>
+<p><strong>Command not recognized</strong> — CocoPlus commands require the plugin to be active in your Coco session. If you see "command not found" on any <code>/</code> command, verify the plugin is installed with <code>coco plugins list</code>.</p>
 <p><strong>Safety Gate blocking a command you intended</strong> — The default safety mode (normal) warns on potentially destructive SQL but doesn't block it. If you're in strict mode and getting hard blocks on operations you need, run <code>$safety normal</code> to reduce protection level. Never use <code>$safety off</code> in an environment with production data.</p>
 <p><strong>Environment Inspector shows unexpected objects or missing grants</strong> — This is the inspector doing its job. Review the findings in <code>$pod status</code>. You may want to share them with your team or address them before beginning build work.</p>
 <hr>

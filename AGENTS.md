@@ -39,6 +39,10 @@ You have the CocoPlus plugin active. CocoPlus enhances Coco with:
 - **CocoBloom** working-backwards pre-commitment gate ($bloom, $bloom --skip)
 - **CocoKlatch** genuine multi-agent roundtable ($klatch, $klatch --participants=N)
 - **CocoPull** lossless context distillation ($pull, $pull --validate)
+- **CocoSentinel** eight-dimension artifact quality gate ($sentinel, $sentinel approve, $sentinel --report)
+- **CocoWisdom** institutional rejection memory ($wisdom, $wisdom list, $wisdom search, $wisdom insights)
+- **CocoReview** structured code review with six-severity vocabulary ($review, $review --security, $review --complexity)
+- **CocoOps** delivery intelligence dashboard ($ops dora, $ops sprint, $ops suggest, $ops demo)
 
 ## Core Behavioral Rules
 
