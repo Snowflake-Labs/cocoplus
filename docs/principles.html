@@ -49,7 +49,7 @@
 <p>Acting on stale context is one of the most reliable ways to produce wrong outputs.</p>
 <p>Before any agent executes SQL, it should understand the schema it's operating on. Before any deployment, it should understand the target environment. Before any migration, it should understand the current state of what it's migrating from.</p>
 <p>The Environment Inspector embodies this as a feature. But the principle applies everywhere in the system. CocoHarvest reads the approved plan before decomposing it. The Safety Gate reads the SQL before allowing it to execute. Skills read the current state from <code>.cocoplus/</code> before taking action.</p>
-<p>Inspection has a cost. A 30-second environment scan uses tokens and time. But the cost of inspection is fixed. The cost of acting on wrong assumptions is variable — and the upper end of that variable is &quot;you dropped the wrong table.&quot;</p>
+<p>Inspection has a cost. A 30-second environment scan uses tokens and time. But the cost of inspection is fixed. The cost of acting on wrong assumptions is variable — and the upper end of that variable is "you dropped the wrong table."</p>
 <p>The inspection habit is cheap discipline that prevents expensive mistakes.</p>
 <hr>
 <h2 id="4-evidence-over-assertion">4. Evidence Over Assertion</h2>
@@ -68,7 +68,7 @@
 <h2 id="6-progressive-disclosure">6. Progressive Disclosure</h2>
 <p>Load the minimum context needed for the current task. Not slightly less. Not roughly the right amount. Exactly the minimum.</p>
 <p>AGENTS.md is capped at 200 lines because every character in it is loaded into every session. Skills are loaded on demand because they contain detailed implementation logic that most sessions don't need. Monitors run per-stage because global monitors create context overhead that accumulates across every stage.</p>
-<p>The temptation is always to add more &quot;just in case.&quot; Just-in-case context becomes noise. Noise makes it harder for the agent to reason about the signal. A skill that loads 600 lines of context to execute a 30-line workflow is a skill whose design should be questioned.</p>
+<p>The temptation is always to add more "just in case." Just-in-case context becomes noise. Noise makes it harder for the agent to reason about the signal. A skill that loads 600 lines of context to execute a 30-line workflow is a skill whose design should be questioned.</p>
 <p>The hard limit is a forcing function for clear boundaries. If AGENTS.md can only hold 200 lines, you have to decide what belongs there and what belongs in the warm layer. That decision-making process is valuable in itself — it forces you to articulate what the ambient context of a session actually needs to contain.</p>
 <p>Progressive disclosure is how the system scales. At session 10, it works. At session 200, it still works, because the context budget is managed rather than exhausted.</p>
 <hr>
@@ -77,7 +77,7 @@
 <p>Blind retry is not a strategy — it is an absence of strategy dressed up as action. Running the same failing stage again without understanding why it failed produces the same failure, or a different failure, unpredictably. Either way, you learn nothing.</p>
 <p>Failure classification is the first step. Did the checkpoint file not get created? Did it get created with invalid content? Did the SQL error? Did the test fail? Each of these failure types has a different root cause and a different repair.</p>
 <p>The CocoFlow loop construct exists for structured retry after classification. A loop that retries up to three times is appropriate after you've identified that the failure is transient — a timeout, a connection issue. A loop that retries three times on a logic error produces three documented failures instead of one.</p>
-<p>Logging the classification is what makes the Memory Engine valuable. CocoCupper can identify patterns in failure classifications across sessions. &quot;Stages that involve NotebookExecute fail on checkpoint validation 40% of the time due to notebook output formatting&quot; is a pattern worth knowing. Unclassified retries produce no learning.</p>
+<p>Logging the classification is what makes the Memory Engine valuable. CocoCupper can identify patterns in failure classifications across sessions. "Stages that involve NotebookExecute fail on checkpoint validation 40% of the time due to notebook output formatting" is a pattern worth knowing. Unclassified retries produce no learning.</p>
 <hr>
 <h2 id="8-institutional-memory-over-rediscovery">8. Institutional Memory Over Rediscovery</h2>
 <p>Every session should leave the project in a better-documented state than it found it.</p>
@@ -90,7 +90,7 @@
 <p>Token budgets are not constraints to work around. They are parameters that shape the system's design.</p>
 <p>CocoPlus makes explicit model assignments across the system: Haiku for pattern recognition (CocoCupper), Haiku with Sonnet escalation for analytical tasks (Data Analyst, BI Analyst), Sonnet for execution and reasoning (most personas), Opus for strategic decisions (CDO). These are not preferences — they are architectural decisions about where depth is required and where efficiency is sufficient.</p>
 <p>The AGENTS.md limit, the on-demand skill loading, the per-stage monitor activation — all of these are token economics expressed as design constraints. They ensure that the system is as useful at session 200 as it is at session 1, because context budget is managed at every layer.</p>
-<p>When designing a new feature, the first question is not &quot;what should it do&quot; — it is &quot;what does it cost to do that, and is the cost justified at scale?&quot; A feature that works beautifully for the first twenty iterations and breaks the context budget by iteration thirty is not a well-designed feature.</p>
+<p>When designing a new feature, the first question is not "what should it do" — it is "what does it cost to do that, and is the cost justified at scale?" A feature that works beautifully for the first twenty iterations and breaks the context budget by iteration thirty is not a well-designed feature.</p>
 <hr>
 <h2 id="10-isolation-prevents-contamination">10. Isolation Prevents Contamination</h2>
 <p>CocoHarvest agents run in isolated git worktrees. CocoFlow stages marked as isolated start with clean context. Unverified output from one stage does not become assumed truth in the next.</p>
@@ -109,7 +109,7 @@
 <p>Every feature must produce visible, direct value to the developer working in the terminal.</p>
 <p>This sounds obvious. It is often violated.</p>
 <p>Features that add process overhead without developer benefit are not features — they are compliance theater. A feature that ensures the AI's session is auditable but provides the developer nothing concrete is a feature that serves a process, not a person.</p>
-<p>Before any feature is built, the test is: does the developer experience value directly? Does it save them time? Does it prevent an error they would have made? Does it produce an artifact they actually want? If the answer is &quot;it helps governance&quot; or &quot;it satisfies the audit trail,&quot; the next question is: does the developer experience that help, or does it happen invisibly behind them?</p>
+<p>Before any feature is built, the test is: does the developer experience value directly? Does it save them time? Does it prevent an error they would have made? Does it produce an artifact they actually want? If the answer is "it helps governance" or "it satisfies the audit trail," the next question is: does the developer experience that help, or does it happen invisibly behind them?</p>
 <p>CocoPlus is not a governance layer. It is a productivity layer. The difference is where the value lands. Governance lands in reports. Productivity lands in the developer's experience of doing the work.</p>
 <p>If CocoPlus ever starts to feel like something to work around rather than something to work with, this principle has been violated.</p>
 <hr>

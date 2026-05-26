@@ -35,34 +35,125 @@
 <hr>
 <h2 id="what-coco-brings-what-cocoplus-adds">What Coco Brings. What CocoPlus Adds.</h2>
 <p>Cortex Code CLI is not a code editor with AI autocomplete bolted on. It is something more unusual: an agentic shell that operates against a live Snowflake environment. It can introspect your schemas, execute SQL, run notebooks, query your data, and reason about governance — all in a single terminal session.</p>
-<p>That is a significant capability. It bridges the gap between &quot;asking an AI about code&quot; and &quot;having an AI work inside your actual data environment.&quot; For a data engineer, this distinction matters enormously. The AI is not simulating your schema — it is reading it. It is not pretending to execute SQL — it is executing it.</p>
+<p>That is a significant capability. It bridges the gap between "asking an AI about code" and "having an AI work inside your actual data environment." For a data engineer, this distinction matters enormously. The AI is not simulating your schema — it is reading it. It is not pretending to execute SQL — it is executing it.</p>
 <p>But Coco, by default, is stateless across sessions. Each session is a fresh start. The environment knowledge accumulated in Tuesday's session is gone by Thursday. The decisions made during the Plan phase are not automatically available during Build. The patterns discovered during one project do not propagate to the next. The safety behavior depends on the prompts in flight — and prompts can be worked around.</p>
 <p>CocoPlus is the layer that makes Coco stateful, structured, and safe across the full lifecycle of a data project. Not by replacing what Coco does well — but by extending it with exactly what it lacks:</p>
-<div class="table-wrap"><table><thead><tr><th>What Coco provides natively</th><th>What CocoPlus adds</th></tr></thead><tbody>
-<tr><td>Agentic shell with Snowflake tools</td><td>Lifecycle structure across sessions</td></tr>
-<tr><td>Model routing (Haiku/Sonnet/Opus/GPT)</td><td>Specialist personas with locked domain identities</td></tr>
-<tr><td>Native subagent spawning</td><td>Dependency-ordered parallel execution with checkpoint validation</td></tr>
-<tr><td>Hook system for lifecycle events</td><td>Persistent ambient context (AGENTS.md) maintained across sessions</td></tr>
-<tr><td>Session-level context</td><td>Three-layer memory architecture (hot, warm, cold)</td></tr>
-<tr><td>Language model reasoning about SQL</td><td>Hard technical gates that cannot be reasoned around</td></tr>
-<tr><td>In-session tool use</td><td>Cross-session institutional memory (CocoGrove)</td></tr>
-<tr><td>Plan mode for human approval</td><td>CocoBrew as a full six-phase lifecycle with enforced gates</td></tr>
-<tr><td>Single-model evaluation of plans</td><td>SecondEye multi-model parallel critique (Efficiency, Completeness, Risk lenses)</td></tr>
-<tr><td>Native CLI output</td><td>CocoMeter token tracking and pre-flight estimation</td></tr>
-<tr><td>Raw JSON pipeline definition</td><td>CocoView interactive DAG visualizer — pipeline as a navigable graph in the browser</td></tr>
-<tr><td>Estimated token cost</td><td>CocoMeter Enhanced — per-stage actual attribution from Snowflake's usage view, correlated by request ID</td></tr>
-<tr><td>No standing organizational context</td><td>CocoContext — six committed standards files (approved models, quality thresholds, PII policy, warehouse policy, naming conventions, governance gates) consulted by every persona</td></tr>
-<tr><td>Pipeline built from scratch each time</td><td>CocoRecipe — parameterized pipeline templates for common Snowflake build patterns; reusable across projects</td></tr>
-<tr><td>Context window degrades silently</td><td>CocoHealth — utilization monitoring with threshold warnings and a structured five-row recovery decision matrix</td></tr>
-<tr><td>Function ecosystem opaque across scale</td><td>CocoMap — parallel multi-agent knowledge graph of all Cortex AI functions: dependencies, capabilities, evaluation gaps</td></tr>
-<tr><td>Good ideas lost or acted on too early</td><td>CocoSeed — deferred idea management with trigger conditions; surfaces at the right moment, not the first moment</td></tr>
-<tr><td>Planning agent makes silent implementation choices</td><td>CocoDiscuss — pre-plan decision-locking dialogue + CocoSpec quantitative specification quality gate (≥9/10 to proceed)</td></tr>
-<tr><td>Autonomous/supervised task boundary implicit</td><td>CocoLens — HITL/AFK task classification integrated into CocoHarvest decomposition; boundary explicit before any subagent spawns</td></tr>
-<tr><td>Developer approves outputs without genuinely reviewing them</td><td>CocoWatch — non-blocking engagement observer; surfaces engagement quality signals (Delegation Intensity, Review Depth, Zone classification) at $ship and FULL checkpoints; never blocks, only informs</td></tr>
-<tr><td>Spec drifts from original intent during planning</td><td>CocoBloom — working backwards pre-commitment gate; four-question dialogue produces a bloom document before $spec runs; anchors spec to stated beneficiary, constraints, and outcome</td></tr>
-<tr><td>Decisions lack independent multi-perspective scrutiny</td><td>CocoKlatch — genuine multi-agent roundtable spawning N=2–5 independent subagents simultaneously; produces synthesis of agreements, divergences, open questions, and recommended decision path</td></tr>
-<tr><td>Large artifacts consume context budget without compression</td><td>CocoPull — two-stage lossless distillation (Haiku structure analysis → Sonnet distillation); preserves decision-relevant values verbatim; auto-used by CocoHarvest when inputs exceed 8,000 tokens</td></tr>
-</tbody></table></div>
+<table>
+<thead><tr>
+  <th style="text-align:left">What Coco provides natively</th>
+  <th style="text-align:left">What CocoPlus adds</th>
+</tr></thead>
+<tbody>
+<tr>
+  <td style="text-align:left">Agentic shell with Snowflake tools</td>
+  <td style="text-align:left">Lifecycle structure across sessions</td>
+</tr>
+<tr>
+  <td style="text-align:left">Model routing (Haiku/Sonnet/Opus/GPT)</td>
+  <td style="text-align:left">Specialist personas with locked domain identities</td>
+</tr>
+<tr>
+  <td style="text-align:left">Native subagent spawning</td>
+  <td style="text-align:left">Dependency-ordered parallel execution with checkpoint validation</td>
+</tr>
+<tr>
+  <td style="text-align:left">Hook system for lifecycle events</td>
+  <td style="text-align:left">Persistent ambient context (AGENTS.md) maintained across sessions</td>
+</tr>
+<tr>
+  <td style="text-align:left">Session-level context</td>
+  <td style="text-align:left">Three-layer memory architecture (hot, warm, cold)</td>
+</tr>
+<tr>
+  <td style="text-align:left">Language model reasoning about SQL</td>
+  <td style="text-align:left">Hard technical gates that cannot be reasoned around</td>
+</tr>
+<tr>
+  <td style="text-align:left">In-session tool use</td>
+  <td style="text-align:left">Cross-session institutional memory (CocoGrove)</td>
+</tr>
+<tr>
+  <td style="text-align:left">Plan mode for human approval</td>
+  <td style="text-align:left">CocoBrew as a full six-phase lifecycle with enforced gates</td>
+</tr>
+<tr>
+  <td style="text-align:left">Single-model evaluation of plans</td>
+  <td style="text-align:left">SecondEye multi-model parallel critique (Efficiency, Completeness, Risk lenses)</td>
+</tr>
+<tr>
+  <td style="text-align:left">Native CLI output</td>
+  <td style="text-align:left">CocoMeter token tracking and pre-flight estimation</td>
+</tr>
+<tr>
+  <td style="text-align:left">Raw JSON pipeline definition</td>
+  <td style="text-align:left">CocoView interactive DAG visualizer — pipeline as a navigable graph in the browser</td>
+</tr>
+<tr>
+  <td style="text-align:left">Estimated token cost</td>
+  <td style="text-align:left">CocoMeter Enhanced — per-stage actual attribution from Snowflake's usage view, correlated by request ID</td>
+</tr>
+<tr>
+  <td style="text-align:left">No standing organizational context</td>
+  <td style="text-align:left">CocoContext — six committed standards files (approved models, quality thresholds, PII policy, warehouse policy, naming conventions, governance gates) consulted by every persona</td>
+</tr>
+<tr>
+  <td style="text-align:left">Pipeline built from scratch each time</td>
+  <td style="text-align:left">CocoRecipe — parameterized pipeline templates for common Snowflake build patterns; reusable across projects</td>
+</tr>
+<tr>
+  <td style="text-align:left">Context window degrades silently</td>
+  <td style="text-align:left">CocoHealth — utilization monitoring with threshold warnings and a structured five-row recovery decision matrix</td>
+</tr>
+<tr>
+  <td style="text-align:left">Function ecosystem opaque across scale</td>
+  <td style="text-align:left">CocoMap — parallel multi-agent knowledge graph of all Cortex AI functions: dependencies, capabilities, evaluation gaps</td>
+</tr>
+<tr>
+  <td style="text-align:left">Good ideas lost or acted on too early</td>
+  <td style="text-align:left">CocoSeed — deferred idea management with trigger conditions; surfaces at the right moment, not the first moment</td>
+</tr>
+<tr>
+  <td style="text-align:left">Planning agent makes silent implementation choices</td>
+  <td style="text-align:left">CocoDiscuss — pre-plan decision-locking dialogue + CocoSpec quantitative specification quality gate (≥9/10 to proceed)</td>
+</tr>
+<tr>
+  <td style="text-align:left">Autonomous/supervised task boundary implicit</td>
+  <td style="text-align:left">CocoLens — HITL/AFK task classification integrated into CocoHarvest decomposition; boundary explicit before any subagent spawns</td>
+</tr>
+<tr>
+  <td style="text-align:left">Developer approves outputs without genuinely reviewing them</td>
+  <td style="text-align:left">CocoWatch — non-blocking engagement observer; surfaces engagement quality signals (Delegation Intensity, Review Depth, Zone classification) at $ship and FULL checkpoints; never blocks, only informs</td>
+</tr>
+<tr>
+  <td style="text-align:left">Spec drifts from original intent during planning</td>
+  <td style="text-align:left">CocoBloom — working backwards pre-commitment gate; four-question dialogue produces a bloom document before $spec runs; anchors spec to stated beneficiary, constraints, and outcome</td>
+</tr>
+<tr>
+  <td style="text-align:left">Decisions lack independent multi-perspective scrutiny</td>
+  <td style="text-align:left">CocoKlatch — genuine multi-agent roundtable spawning N=2–5 independent subagents simultaneously; produces synthesis of agreements, divergences, open questions, and recommended decision path</td>
+</tr>
+<tr>
+  <td style="text-align:left">Large artifacts consume context budget without compression</td>
+  <td style="text-align:left">CocoPull — two-stage lossless distillation (Haiku structure analysis → Sonnet distillation); preserves decision-relevant values verbatim; auto-used by CocoHarvest when inputs exceed 8,000 tokens</td>
+</tr>
+<tr>
+  <td style="text-align:left">Generated artifact quality relies on developer spot-checking</td>
+  <td style="text-align:left">CocoSentinel — seven-dimension parallel artifact quality gate (security, correctness, performance, resilience, maintainability, compliance, evidence integrity); SHA-bound approvals voided automatically on modification</td>
+</tr>
+<tr>
+  <td style="text-align:left">Quality gate failures repeat without institutional learning</td>
+  <td style="text-align:left">CocoWisdom — append-only rejection-pattern store; every gate failure recorded; SecondEye and CocoSentinel primed with project's prior rejection history before each run; <code>$wisdom insights</code> surfaces patterns</td>
+</tr>
+<tr>
+  <td style="text-align:left">Code review is a bottleneck or left to convention</td>
+  <td style="text-align:left">CocoReview — structured progressive-disclosure code review with six-severity finding vocabulary; PR complexity analyzer; nine universal anti-patterns; <code>praise</code> finding mandatory; OWASP-aligned security review on demand</td>
+</tr>
+<tr>
+  <td style="text-align:left">Delivery health is measured by recollection, not data</td>
+  <td style="text-align:left">CocoOps — DORA-adapted delivery metrics from Snowflake task history and git signals; evidence-first: every recommendation names specific pipelines, dates, and quantities; time-aware suggestions; demo mode</td>
+</tr>
+</tbody>
+</table>
 <p>CocoPlus is not a workaround for Coco's limitations. It is an amplification of Coco's strengths, built using Coco's own native extension mechanisms — the same hooks, skills, and subagents that Coco exposes for exactly this purpose.</p>
 <hr>
 <h2 id="the-data-project-is-not-a-software-project">The Data Project Is Not a Software Project</h2>
@@ -70,24 +161,24 @@
 <p>In a software project, the artifact is code. Code is deterministic: given the same inputs, it produces the same outputs. You can test it in isolation. You can version it completely. You can roll it back cleanly. The environment it runs in is typically something you provision — it can be spun up fresh, torn down, and rebuilt. Parallelism is about dividing feature work; conflicts are in files that git can merge.</p>
 <p>In a data project, the environment is not separate from the artifact — <strong>the environment is the artifact</strong>. You are building schemas that hold live data. You are creating semantic models that define how business concepts are measured. You are deploying AI functions that will be called by production processes. You are modifying access policies that control who can see what. The work product and the production environment are the same thing.</p>
 <p>This changes everything about how you must approach development:</p>
-<p><strong>Testing is not binary.</strong> A unit test passes or fails. A data pipeline produces outputs with a quality distribution. An AI function's accuracy ranges from 60% to 95% depending on data characteristics. &quot;Does it work?&quot; is the wrong question. The right question is: &quot;Does it perform within acceptable bounds for this data distribution?&quot; That requires evaluation infrastructure, not test cases.</p>
+<p><strong>Testing is not binary.</strong> A unit test passes or fails. A data pipeline produces outputs with a quality distribution. An AI function's accuracy ranges from 60% to 95% depending on data characteristics. "Does it work?" is the wrong question. The right question is: "Does it perform within acceptable bounds for this data distribution?" That requires evaluation infrastructure, not test cases.</p>
 <p><strong>Rollback is not clean.</strong> Reverting a code commit restores the code. It does not restore data that was transformed and loaded. It does not un-drop a schema. It does not reverse the effects of a migration that ran on 50 million rows. Some operations are irreversible in ways that no git reset can address. This is why CocoPlus treats the distinction between reversible and irreversible operations as an architectural concern, not a developer preference.</p>
 <p><strong>Parallelism is dangerous in ways it isn't in software.</strong> If two engineers work on separate software features and merge them together, git handles the conflicts. If two data engineering agents modify the same schema in parallel — one adding a column, one redefining a view that depends on that column's type — the conflict is not in files. It is in the live database state. And it may produce silent failures: the view still exists, but it now returns incorrect results for a reason that isn't visible without deep inspection.</p>
 <p><strong>The environment is not yours to provision.</strong> Software developers typically have clean development environments — fresh databases, isolated instances, controlled test fixtures. Data engineers often work against environments that already contain production data, real business processes, and shared infrastructure. The target of your work is also the system other people are depending on. Mistakes have immediate, real consequences.</p>
-<p><strong>Governance is intrinsic, not added.</strong> In software, security review is something that happens to code before it ships. In data engineering, governance is embedded in the work itself: column-level masking policies, row access policies, PII handling in AI function prompts, data classification tags, cross-region data transfer constraints. A Snowflake AI function that sends masked columns to an LLM is not just a security issue — it is a violation of the data contract that protects that column. You cannot separate &quot;building the function&quot; from &quot;knowing what the function is allowed to do.&quot;</p>
+<p><strong>Governance is intrinsic, not added.</strong> In software, security review is something that happens to code before it ships. In data engineering, governance is embedded in the work itself: column-level masking policies, row access policies, PII handling in AI function prompts, data classification tags, cross-region data transfer constraints. A Snowflake AI function that sends masked columns to an LLM is not just a security issue — it is a violation of the data contract that protects that column. You cannot separate "building the function" from "knowing what the function is allowed to do."</p>
 <p>CocoPlus is designed with all of this in mind. The Environment Inspector exists because you must understand the live state before modifying it. The Safety Gate exists because some operations cannot be permitted to run even once. The Data Steward persona exists because governance review is a discipline, not an afterthought. The spec forces you to define what Snowflake objects are involved before any code is written.</p>
 <hr>
 <h2 id="the-determinism-problem-in-data-development">The Determinism Problem in Data Development</h2>
 <p>Software engineers reason about code because code is the deterministic part. Data engineers must reason about something harder: a system where the code is only one of many variables.</p>
 <p>Consider an AI function built on <code>AI_COMPLETE</code>. The same SQL function called with the same prompt today and the same prompt in three months may produce measurably different outputs — because the underlying model was updated. The same function called against training data and production data may produce different accuracy profiles — because data distributions diverge. The same function at low volume and high volume may behave differently — because token budgets interact with query patterns in non-obvious ways.</p>
-<p>None of this is a bug. It is the nature of probabilistic systems. But it means that &quot;the function works&quot; is not a stable truth. It is a snapshot. A snapshot that must be re-verified when data distributions shift, when models update, when call volumes change.</p>
+<p>None of this is a bug. It is the nature of probabilistic systems. But it means that "the function works" is not a stable truth. It is a snapshot. A snapshot that must be re-verified when data distributions shift, when models update, when call volumes change.</p>
 <p>This probabilistic core creates a temptation: give up on rigor. Accept that AI outputs are approximate. Ship something that seems to work and monitor it in production.</p>
 <p>CocoPlus takes the opposite position.</p>
 <p><strong>You cannot make AI outputs deterministic. But you can make everything around them deterministic.</strong></p>
 <p>The process of building an AI data product — the sequence in which environments are inspected, plans are approved, stages are executed, checkpoints are validated — can be fully deterministic. It can be specified precisely, executed consistently, and audited completely. This process determinism does not guarantee output quality, but it creates the conditions under which output quality can be reliably evaluated and improved.</p>
 <p>CocoPlus implements process determinism through three mechanisms:</p>
 <p><strong>Checkpoint-gated stage transitions.</strong> A CocoFlow stage does not proceed to the next stage because an agent reports that it is done. It proceeds because specific checkpoint files exist with valid content. The transition condition is a file check, not a language model assertion. This is not a trust issue — it is an architecture issue. Checkpoints make completion verifiable by inspection, not by belief.</p>
-<p><strong>Hard technical gates for irreversible operations.</strong> The Safety Gate's PreToolUse interceptor does not ask the language model whether a DROP TABLE is appropriate. It reads the SQL, recognizes the pattern, and blocks the call. This happens before any reasoning. It cannot be prompted around. The behavior is unconditional — the same input always produces the same output. This is what &quot;hard gate&quot; means: not &quot;strongly discouraged&quot; but &quot;technically prevented.&quot;</p>
+<p><strong>Hard technical gates for irreversible operations.</strong> The Safety Gate's PreToolUse interceptor does not ask the language model whether a DROP TABLE is appropriate. It reads the SQL, recognizes the pattern, and blocks the call. This happens before any reasoning. It cannot be prompted around. The behavior is unconditional — the same input always produces the same output. This is what "hard gate" means: not "strongly discouraged" but "technically prevented."</p>
 <p><strong>File-based state as the source of truth.</strong> All CocoPlus state lives in files. AGENTS.md reflects the current phase because a hook wrote to it, not because an agent remembers. The pipeline status in <code>flow.json</code> is accurate because the SubagentStop hook updated it, not because the executing agent reported it. Files are static, inspectable, and diffable. Session memory is dynamic, ephemeral, and context-dependent. CocoPlus treats the former as authoritative and the latter as disposable.</p>
 <p>Together, these mechanisms create a development process that behaves consistently regardless of which model is executing, which agent is running, or what the agent was primed with. The process is deterministic even when the outputs are not.</p>
 <hr>

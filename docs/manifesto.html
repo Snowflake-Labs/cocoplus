@@ -41,7 +41,7 @@
 <p>CocoPlus is an opinion, rendered in software, about what structured AI development looks like for Snowflake engineers.</p>
 <hr>
 <h2 id="an-opinion-not-a-framework">An Opinion, Not a Framework</h2>
-<p>&quot;Framework&quot; implies neutrality. A framework gives you tools and lets you decide what to build. CocoPlus is more opinionated than that.</p>
+<p>"Framework" implies neutrality. A framework gives you tools and lets you decide what to build. CocoPlus is more opinionated than that.</p>
 <p>CocoPlus says: you should spec before you code. It says: parallel workstreams need isolated execution contexts. It says: production environments should be protected by something harder than a language model's judgment. It says: every session should leave behind documentation, not just output.</p>
 <p>These aren't features you can mix and match. They form a coherent worldview. You can disagree with the worldview. But if you work within it, you get a system that compounds rather than accumulates debt.</p>
 <p>The alternative — and every developer has tried it — is to use the AI like a very fast search engine. You throw problems at it, it throws answers back, and you stitch together an output. This works, for a while, until the project is complex enough that the absence of structure becomes the dominant cost.</p>
@@ -49,7 +49,7 @@
 <hr>
 <h2 id="what-cocoplus-actually-is">What CocoPlus Actually Is</h2>
 <p>CocoPlus is a plugin for Snowflake Cortex Code CLI (Coco). It runs entirely inside Coco's native architecture — no external services, no databases, no side-car processes. Everything it does, it does through Coco's own mechanisms: skills, subagents, hooks, and a single configuration file.</p>
-<p>It adds thirty-five capabilities to Coco, organized around a central idea: <strong>your development lifecycle has phases, those phases have natural transitions, and a good tool should make those transitions visible and deliberate</strong>.</p>
+<p>It adds thirty-nine capabilities to Coco, organized around a central idea: <strong>your development lifecycle has phases, those phases have natural transitions, and a good tool should make those transitions visible and deliberate</strong>.</p>
 <p>The phases are: Spec, Plan, Build, Test, Review, Ship. Not novel. Versions of this sequence have been in software engineering for decades. What CocoPlus adds is the discipline to actually follow them inside an AI session — where the temptation to skip ahead is constant and the cost of skipping is invisible until it isn't.</p>
 <p>Around this lifecycle, CocoPlus adds:</p>
 <ul>
