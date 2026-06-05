@@ -36,17 +36,17 @@
 <h2 id="prerequisites">Prerequisites</h2>
 <p>Before you begin:</p>
 <p><strong>Coco CLI</strong> — Snowflake Cortex Code CLI installed and connected to a Snowflake account. Run <code>cortex --version</code> to verify. If Coco isn't installed, start with the <a href="https://docs.snowflake.com/en/user-guide/cortex-code">Snowflake Cortex Code documentation</a> before coming back here.</p>
-<p><strong>Git</strong> — Your project directory must be a git repository. CocoPlus is tightly coupled to git — lifecycle phase commits, worktree isolation for parallel builds, rollback by commit hash. If your project isn't in git, run <code>git init && git commit --allow-empty -m "init"</code> before proceeding.</p>
+<p><strong>Git</strong> — Your project directory must be a git repository. CocoPlus is tightly coupled to git — lifecycle phase commits, worktree isolation for parallel builds, rollback by commit hash. If your project isn't in git, run <code>git init &amp;&amp; git commit --allow-empty -m "init"</code> before proceeding.</p>
 <p><strong>CocoPlus plugin installed</strong> — Install the CocoPlus plugin from GitHub:</p>
-<pre><code class="language-bash">
+<pre><code>
 cortex skill add Snowflake-Labs/cocoplus
 </code></pre>
 <p><strong>Known Limitation:</strong> The CocoPlus repo uses <code>.skill.md</code> files which may not be auto-discovered by all Cortex Code versions. If the <code>skill add</code> command reports "No valid skills found", use the <code>--plugin-dir</code> flag when launching Cortex Code instead:</p>
-<pre><code class="language-bash">
+<pre><code>
 cortex --plugin-dir Snowflake-Labs/cocoplus
 </code></pre>
 <p>Verify the installation:</p>
-<pre><code class="language-bash">
+<pre><code>
 cortex plugins list
 # cocoplus should appear in the output with status: active
 </code></pre>
@@ -137,7 +137,7 @@ $personas
 <p><strong><code>$pod status</code></strong> — Full state report. Run this at the start of any session to orient yourself, or anytime you want to see what CocoPlus has captured.</p>
 <p><strong><code>$pod resume</code></strong> — Designed for returning developers. If you've been away from the project for a day, a week, a month — run this first. It reads the current state and produces a focused narrative: where you left off, what was completed last session, what blocking items remain, and what the immediate next action is.</p>
 <p><strong><code>$meter</code></strong> — Token and cost summary for the current session. Useful to run after expensive operations (a CocoHarvest parallel build, a SecondEye critique run) to understand what you just consumed.</p>
-<p><strong><code>$inspect</code></strong> — Run the Environment Inspector manually for an on-demand Snowflake environment scan. Add <code>--schema <name></code> to limit the scan to a specific schema, or <code>--full</code> for extended metadata including column-level statistics.</p>
+<p><strong><code>$cocoplus inspect</code></strong> — Run the Environment Inspector manually for an on-demand Snowflake environment scan. Add <code>--schema &lt;name&gt;</code> to limit the scan to a specific schema, or <code>--full</code> for extended metadata including column-level statistics.</p>
 <hr>
 <h2 id="your-first-actual-work">Your First Actual Work</h2>
 <p>CocoPlus is initialized. Features are active. Your Snowflake environment is scanned. You're ready to build something.</p>
@@ -148,7 +148,7 @@ $spec
 <p>This opens the Spec phase of CocoBrew — a structured dialogue that helps you articulate what you're actually building before a single line of SQL is written. The spec is not bureaucracy. It is the mirror that shows you your own assumptions.</p>
 <p>If you already have a clear picture of what you're building and want to explore alternatives before committing to a direction, start with:</p>
 <pre><code>
-$spark [topic]
+$cocoplus spark [topic]
 </code></pre>
 <p>This activates CocoSpark — a divergent thinking mode that generates multiple approaches and raises the questions you may not have thought to ask. CocoSpark output is explicitly marked as exploration and never flows automatically into your spec. What you take from it is your decision.</p>
 <p>When you're ready to commit to a direction, <code>$spec</code> is always the next step.</p>

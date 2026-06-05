@@ -55,7 +55,7 @@ $spec
 <hr>
 <h3 id="step-2-plan-the-work">Step 2: Plan the work</h3>
 <pre><code>
-$plan
+$cocoplus plan
 </code></pre>
 <p>The Plan phase reads your <code>spec.md</code>, invokes CocoHarvest to decompose the work into stages, assigns each stage to the appropriate specialist persona, and generates <code>flow.json</code> — your execution pipeline.</p>
 <p>Then it enters Coco's native plan mode. You review the generated plan. You see every proposed stage, every persona assignment, every checkpoint. This is the approval gate — the moment where the developer and the system agree on what's about to happen.</p>
@@ -78,17 +78,17 @@ $secondeye
 <hr>
 <h3 id="step-4-build">Step 4: Build</h3>
 <pre><code>
-$build
+$cocoplus build
 </code></pre>
 <p>The Build phase reads <code>flow.json</code> and begins execution. For a multi-stage parallel plan, CocoHarvest spawns persona subagents in isolated git worktrees — each running independently, each committing its own stage artifacts.</p>
 <p><strong>While it runs:</strong> You can monitor progress with <code>$flow status</code>. Each stage shows its status (pending, running, complete, failed), how long it's been running, and whether its checkpoints are satisfied.</p>
 <p><strong>If a stage fails:</strong> The failure reason is written to <code>flow.json</code>. Dependent stages don't start. You can review the failure, fix the issue, and resume from the failed stage with <code>$flow resume [stage-id]</code> — which first validates that all prior stages' checkpoints are intact.</p>
 <p><strong>Checkpoint validation is not optional.</strong> CocoHarvest will not advance to the next stage until the current stage's output files exist and pass validation. This is what prevents a partially-built pipeline from silently proceeding as if complete.</p>
-<p>Each completed stage creates a git commit: <code>build(<stage-id>): <name> — checkpoints verified</code>. By the time Build completes, you have a granular, auditable history of what was built and in what order.</p>
+<p>Each completed stage creates a git commit: <code>build(&lt;stage-id&gt;): &lt;name&gt; — checkpoints verified</code>. By the time Build completes, you have a granular, auditable history of what was built and in what order.</p>
 <hr>
 <h3 id="step-5-test">Step 5: Test</h3>
 <pre><code>
-$test
+$cocoplus test
 </code></pre>
 <p>The Test phase runs validation against your spec's success criteria — not against a developer's mental model of what success looks like. If your spec said the output table must have non-null churn scores for all active customers, the Test phase checks that. If your spec said the pipeline must complete in under 15 minutes, the Test phase measures that.</p>
 <p>Tests are SQL-based where the artifact is a table or view. Notebook-based where the artifact is a Snowpark notebook. File-existence-based where the artifact is a generated schema or procedure.</p>
@@ -96,7 +96,7 @@ $test
 <hr>
 <h3 id="step-6-review">Step 6: Review</h3>
 <pre><code>
-$review
+$cocoplus review
 </code></pre>
 <p>The Review phase aggregates three sources of findings and produces a structured quality report:</p>
 <p><strong>Code Quality Advisor findings</strong> — every SQL file written during Build has been reviewed for performance anti-patterns, correctness issues, governance gaps, and cost risks. If you had the quality advisor on during Build, these findings have already been accumulating. Review surfaces them in their entirety.</p>
@@ -106,9 +106,9 @@ $review
 <hr>
 <h3 id="step-7-ship">Step 7: Ship</h3>
 <pre><code>
-$ship
+$cocoplus ship
 </code></pre>
-<p>Ship is gated on review completion with no open must-fix items. If must-fix items are open, <code>$ship</code> refuses — not with an error, but with a list of exactly what's blocking it and how to resolve each item.</p>
+<p>Ship is gated on review completion with no open must-fix items. If must-fix items are open, <code>$cocoplus ship</code> refuses — not with an error, but with a list of exactly what's blocking it and how to resolve each item.</p>
 <p>When you ship:</p>
 <ul>
   <li>A final commit is created with a full lifecycle summary in the commit message — what was built, what phase commits preceded it, the version number</li>
@@ -126,7 +126,7 @@ $rewind [step-id]
 <pre><code>
 $fork [branch-name]
 </code></pre>
-<p>If you want to explore a different approach without discarding your current work, <code>$fork</code> creates an isolated git worktree on a <code>fork/<branch-name></code> branch. Experiment freely. If the fork works, you can bring it back. If it doesn't, discard it and your main work is untouched.</p>
+<p>If you want to explore a different approach without discarding your current work, <code>$fork</code> creates an isolated git worktree on a <code>fork/&lt;branch-name&gt;</code> branch. Experiment freely. If the fork works, you can bring it back. If it doesn't, discard it and your main work is untouched.</p>
 <hr>
 <h2 id="scenario-2-quick-expert-consultation-with-a-persona">Scenario 2: Quick Expert Consultation with a Persona</h2>
 <p><strong>The situation:</strong> You're mid-session and you need specific expertise — not a full build, just a review or a pointed question. This is direct persona invocation.</p>
@@ -162,7 +162,7 @@ $da --model haiku Give me the top 10 customers by revenue in the last 30 days
 <h2 id="scenario-3-parallel-build-with-cocoharvest">Scenario 3: Parallel Build with CocoHarvest</h2>
 <p><strong>The situation:</strong> Your plan has multiple independent workstreams — schema layer, semantic model, notebook pipeline, and governance documentation — that don't depend on each other and can run simultaneously.</p>
 <hr>
-<p>After your plan is approved, <code>$build</code> detects that CocoHarvest should handle this. It identifies the independent workstreams and spawns them in isolated git worktrees:</p>
+<p>After your plan is approved, <code>$cocoplus build</code> detects that CocoHarvest should handle this. It identifies the independent workstreams and spawns them in isolated git worktrees:</p>
 <ul>
   <li><code>$de</code> working on the schema layer in <code>agent/stage-001</code></li>
   <li><code>$ae</code> working on the semantic model in <code>agent/stage-002</code></li>
@@ -178,7 +178,7 @@ $flow status
 <hr>
 <p><strong>If you want to override the model for the entire pipeline:</strong></p>
 <pre><code>
-$build --model opus
+$cocoplus build --model opus
 </code></pre>
 <p>This sets a pipeline-level default (Tier 2). Any stage that CocoHarvest didn't assign a specific model gets this one instead. Stages that CocoHarvest explicitly assigned (Tier 3) are unaffected.</p>
 <hr>
@@ -194,7 +194,7 @@ $flow resume stage-003
 <h2 id="scenario-4-secondeye-before-a-high-stakes-plan">Scenario 4: SecondEye Before a High-Stakes Plan</h2>
 <p><strong>The situation:</strong> You've just planned a schema migration that will reorganize three production-adjacent schemas. The plan looks right to you, but it's the kind of thing you don't want to discover halfway through was missing a dependency.</p>
 <hr>
-<p>Plan is approved. Before running <code>$build</code>:</p>
+<p>Plan is approved. Before running <code>$cocoplus build</code>:</p>
 <pre><code>
 $secondeye
 </code></pre>
@@ -202,10 +202,10 @@ $secondeye
 <p><strong>Reading the report:</strong> Start with Critical findings. These are findings where at least the model that raised them believes there is a fundamental issue that materially increases execution risk. If a finding is marked <code>[Consensus]</code>, two or three models flagged the same issue — take that seriously.</p>
 <p>A realistic Critical finding for a schema migration might read:</p>
 <blockquote><p><em>[Consensus] Plan assumes all downstream views can be recreated from DDL in spec.md, but spec.md does not include view definitions. If any views have non-standard column aliases or UNION constructs, recreation will fail silently. Recommend validating view DDL extraction in a pre-build step.</em></p></blockquote>
-<p>This is information you needed before <code>$build</code> started running.</p>
+<p>This is information you needed before <code>$cocoplus build</code> started running.</p>
 <hr>
 <p><strong>If you agree with the Critical findings and want to address them:</strong></p>
-<p>Update <code>plan.md</code> (or run <code>$plan</code> again to re-generate), then re-run <code>$secondeye</code>. The previous report is superseded automatically when you re-run <code>$plan</code>.</p>
+<p>Update <code>plan.md</code> (or run <code>$cocoplus plan</code> again to re-generate), then re-run <code>$secondeye</code>. The previous report is superseded automatically when you re-run <code>$cocoplus plan</code>.</p>
 <p><strong>If you've reviewed the Critical findings and are accepting the risk intentionally:</strong></p>
 <pre><code>
 $secondeye acknowledge
@@ -240,7 +240,7 @@ $pod resume
 <hr>
 <p><strong>To see the full environment state again:</strong></p>
 <pre><code>
-$inspect
+$cocoplus inspect
 </code></pre>
 <p>If it's been more than a few days, the Environment Inspector snapshot may be stale. A fresh scan ensures your context reflects the actual current state of your Snowflake environment — not the state it was in last week.</p>
 <hr>
@@ -274,7 +274,7 @@ This operation was executed. Review if this was intentional.
 <hr>
 <p><strong>Configuring which schemas are protected:</strong></p>
 <p>The default protects schemas containing "PROD", "PRODUCTION", or "LIVE". If your project uses different naming conventions:</p>
-<pre><code class="language-toml">
+<pre><code>
 # In cocoplus.toml — [security] section
 # Add your protected schema patterns to the protected_patterns array
 [security]
@@ -299,23 +299,23 @@ Confirm to proceed (yes/no):
 <p><strong>The situation:</strong> You have a requirements brief but you're not sure of the best architectural approach. You want to think out loud before writing a spec that commits you to a direction.</p>
 <hr>
 <pre><code>
-$spark schema design
+$cocoplus spark schema design
 </code></pre>
 <p>CocoSpark activates for the topic "schema design." In divergent thinking mode, it generates at least three distinct approaches to your problem, articulates the trade-offs of each, identifies hidden assumptions in your framing, and raises questions you may not have thought to ask.</p>
 <p>The output is saved to <code>.cocoplus/spark-[timestamp].md</code> and marked explicitly as exploration — not a plan, not a spec, not a commitment.</p>
 <p>When you've finished exploring:</p>
 <pre><code>
-$spark-off
+$cocoplus spark-off
 </code></pre>
 <p>You'll be asked if you want to carry any insights into <code>spec.md</code>. This is your decision. CocoSpark never modifies your lifecycle artifacts automatically. What goes forward is what you choose to take.</p>
 <hr>
 <p><strong>Running multiple spark sessions on different aspects:</strong></p>
 <pre><code>
-$spark data modeling approach
+$cocoplus spark data modeling approach
 </code></pre>
 <p>Then later:</p>
 <pre><code>
-$spark cost optimization strategies
+$cocoplus spark cost optimization strategies
 </code></pre>
 <p>Each spark session generates its own timestamped file. You can reference them when writing your spec. They don't expire and they're never deleted — they're your exploration history.</p>
 <hr>
@@ -396,7 +396,7 @@ $flow view
 <p>The DAG opens in your browser. You see four stages in sequence, their dependencies, their persona assignments. If the structure looks right, close the browser and proceed. If you want to add a stage — say, a governance review by <code>$dst</code> between the model draft and refinement — you can edit <code>flow.json</code> directly. The recipe is a starting point, not a constraint.</p>
 <p>When you're satisfied:</p>
 <pre><code>
-$build
+$cocoplus build
 </code></pre>
 <p>The pipeline executes. You saved the thirty minutes it would have taken to write <code>flow.json</code> and figure out the right stage sequence from first principles. The recipe embedded the hard-won experience of everyone who's run this pattern before.</p>
 <hr>
@@ -420,12 +420,12 @@ $discuss
 <p>For questions CocoContext doesn't answer, you respond directly. "Evaluation data: production sample, 500 rows from <code>ANALYTICS.CUSTOMER_EVENTS</code>, last 90 days." "Accuracy threshold: ≥88% on labeled evaluation set." Each answer is written to <code>lifecycle/discuss.md</code>.</p>
 <hr>
 <p><strong>The CocoSpec gate:</strong></p>
-<p>Before <code>$plan</code> can run, the CocoSpec gate evaluates the combined <code>spec.md</code> and <code>discuss.md</code>. A Haiku subagent scores five dimensions: Value, Scope, Acceptance, Boundaries, Risk — 0 to 2 on each, maximum 10.</p>
+<p>Before <code>$cocoplus plan</code> can run, the CocoSpec gate evaluates the combined <code>spec.md</code> and <code>discuss.md</code>. A Haiku subagent scores five dimensions: Value, Scope, Acceptance, Boundaries, Risk — 0 to 2 on each, maximum 10.</p>
 <p>Your spec had no explicit error handling specification. Boundaries scored 1. Total: 9 out of 10. Gate passes — but the scoring output shows the named assumption: "UNCERTAIN: behavior when AI_COMPLETE returns null | ASSUMPTION: return default category 'UNKNOWN'." You add the error handling spec to <code>spec.md</code>. Boundaries scores 2. Gate passes cleanly.</p>
 <hr>
 <p><strong>What happens during planning:</strong></p>
 <pre><code>
-$plan
+$cocoplus plan
 </code></pre>
 <p>The planning agent reads <code>discuss.md</code> as a constraint document. It generates an execution plan that specifies exactly the model and evaluation methodology you locked. After generating the plan, the plan-checker validates every discuss decision against the plan. No Pre-Approval Conflicts. The plan proceeds to the approval gate.</p>
 <p>The value: the planning agent made no silent choices. Every implementation decision in the plan can be traced to either the spec or the discuss document. When the build completes and SecondEye reviews it, the Decision Coverage Gate has a complete surface to check against.</p>
@@ -566,7 +566,7 @@ $pull lifecycle/stage-006-schema-analysis.md --validate
 <hr>
 <hr>
 <h2 id="scenario-17-closing-the-quality-loop-on-an-artifact-cocosentinel">Scenario 17: Closing the Quality Loop on an Artifact — CocoSentinel</h2>
-<p><strong>The situation:</strong> You've built a Snowflake SQL classifier function. It passed the SecondEye spec review, CocoHarvest ran cleanly, the tests passed. Before you run <code>$review</code> and <code>$ship</code>, you want to evaluate the artifact itself — not the plan, but the output.</p>
+<p><strong>The situation:</strong> You've built a Snowflake SQL classifier function. It passed the SecondEye spec review, CocoHarvest ran cleanly, the tests passed. Before you run <code>$cocoplus review</code> and <code>$cocoplus ship</code>, you want to evaluate the artifact itself — not the plan, but the output.</p>
 <p><strong>Running the gate:</strong></p>
 <pre><code>
 $sentinel queries/sentiment_classifier.sql
@@ -616,7 +616,7 @@ $wisdom search "PII masking"
 <h2 id="scenario-19-structured-code-review-before-ship-cocoreview">Scenario 19: Structured Code Review Before Ship — CocoReview</h2>
 <p><strong>The situation:</strong> Your CocoSentinel evaluation returned APPROVED. Now you want an integrative review before making the Ship decision — not dimensional analysis, but a holistic look at whether the code does what it should and whether anything important was missed.</p>
 <pre><code>
-$review queries/sentiment_classifier.sql
+$cocoplus review queries/sentiment_classifier.sql
 </code></pre>
 <p>CocoReview runs <code>pr-complexity.js</code> first: complexity score 0.41, size bucket M, estimated 25-minute review. No risk flags. Proceeds to the four-phase review.</p>
 <p>Phase 2 (high-level) surfaces an observation: the function's error handling path returns a generic error code rather than the specific code defined in the project's error taxonomy in <code>cocoplus-context.md</code>. This is a structural concern — better to surface it before line-by-line work.</p>
@@ -629,7 +629,7 @@ Strengths [praise]: Clustering key alignment is correct and explicit.
 Required Changes: Error code must match project taxonomy (blocking).
 Suggestions: Nested conditional could be flattened (nit). Reuse existing sanitization utility (suggestion).
 </code></pre>
-<p><strong><code>$review --security</code> when the context requires it:</strong></p>
+<p><strong><code>$cocoplus review --security</code> when the context requires it:</strong></p>
 <p>If the function handles user-supplied inputs or PII-classified columns, you'd add the security flag. CocoReview loads the security review guide and the OWASP-aligned severity tiers. Critical findings block merge. In this case, the A1 BLOCKING concern that CocoSentinel already caught and fixed would have surfaced here too under security review — the two gates provide overlapping coverage from different angles.</p>
 <hr>
 <h2 id="scenario-20-grounding-a-sprint-retrospective-in-evidence-cocoops">Scenario 20: Grounding a Sprint Retrospective in Evidence — CocoOps</h2>
