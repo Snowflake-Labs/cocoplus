@@ -67,11 +67,13 @@ $cocoplus plan
 $secondeye
 </code></pre>
 <p>This is optional. But if you're building something complex, irreversible, or high-stakes — run it.</p>
-<p>SecondEye spawns three critics in parallel. Each one reads the same plan from a different angle:</p>
+<p>SecondEye spawns five critics in parallel. Each one reads the same plan from a distinct angle:</p>
 <ul>
   <li><strong>Haiku</strong> challenges economy: does every step in this plan earn its cost?</li>
   <li><strong>Sonnet</strong> challenges completeness: what's missing, what's unvalidated, what edge cases aren't addressed?</li>
   <li><strong>Opus</strong> challenges risk: what could go wrong despite correct execution?</li>
+  <li><strong>Sonnet Devil's Advocate</strong> makes the strongest case against proceeding.</li>
+  <li><strong>Haiku Edge Case Hunter</strong> identifies what the evaluation methodology would miss.</li>
 </ul>
 <p>You get a single aggregated report with findings classified as Critical, Advisory, or Observation. Critical findings create a soft gate — you must either revise the plan or run <code>$secondeye acknowledge</code> to confirm you've seen the risks and are proceeding intentionally.</p>
 <p>The time SecondEye saves is the time you won't spend mid-build discovering that a foundational assumption was wrong.</p>
@@ -98,11 +100,13 @@ $cocoplus test
 <pre><code>
 $cocoplus review
 </code></pre>
-<p>The Review phase aggregates three sources of findings and produces a structured quality report:</p>
+<p>The Review phase aggregates implementation evidence and produces a structured quality report:</p>
 <p><strong>Code Quality Advisor findings</strong> — every SQL file written during Build has been reviewed for performance anti-patterns, correctness issues, governance gaps, and cost risks. If you had the quality advisor on during Build, these findings have already been accumulating. Review surfaces them in their entirety.</p>
 <p><strong>CocoCupper findings</strong> — the background analyst read what happened during the Build and Test sessions and identified patterns, anti-patterns, and decisions worth noting. These show up here too.</p>
 <p><strong>Spec compliance</strong> — a systematic check: does the built artifact match what the spec said we were building?</p>
-<p>Each finding is classified: <strong>must-fix</strong> (blocks Ship), <strong>should-fix</strong> (recommended before Ship), or <strong>consider</strong> (worth knowing, not blocking). You review the findings and make decisions. Review does not ship anything — it equips you to decide whether you're ready to.</p>
+<p><strong>Test and deliverable evidence</strong> — test pass/fail totals and verification that promised files, tables, and artifacts exist.</p>
+<p><strong>Decision Coverage</strong> — decisions recorded in <code>plan.md</code> and <code>discuss.md</code> are checked against the implementation. Missing or contradicted decisions become Coverage Gaps and block Ship until resolved or explicitly acknowledged with rationale.</p>
+<p>This lifecycle Review is distinct from <code>$secondeye</code>: the Efficiency, Completeness, Risk, Devil's Advocate, and Edge Case Hunter lenses belong to SecondEye. Review does not ship anything — it equips you to decide whether you're ready to.</p>
 <hr>
 <h3 id="step-7-ship">Step 7: Ship</h3>
 <pre><code>
@@ -123,6 +127,7 @@ $cocoplus ship
 $rewind [step-id]
 </code></pre>
 <p>CocoPlus tracks CocoBrew phase commits in git. <code>$rewind</code> shows you the target state, tells you what would be discarded, and performs the rollback after confirmation — using soft resets that preserve history rather than destructive rewrites.</p>
+<p><code>$rewind</code> restores git and CocoPlus lifecycle state only. It cannot reverse Snowflake or other external side effects, including executed SQL, created or altered objects, Dynamic Tables, ML models, deployments, API calls, or data mutations. Reconcile those systems manually after rewinding.</p>
 <pre><code>
 $fork [branch-name]
 </code></pre>
@@ -198,7 +203,7 @@ $flow resume stage-003
 <pre><code>
 $secondeye
 </code></pre>
-<p>Three critics fire in parallel on your <code>plan.md</code>. After they complete — typically a minute or two — you receive an aggregated report.</p>
+<p>Five critics fire in parallel on your <code>plan.md</code>: Efficiency, Completeness, Risk, Devil's Advocate, and Edge Case Hunter. After they complete, you receive an aggregated report.</p>
 <p><strong>Reading the report:</strong> Start with Critical findings. These are findings where at least the model that raised them believes there is a fundamental issue that materially increases execution risk. If a finding is marked <code>[Consensus]</code>, two or three models flagged the same issue — take that seriously.</p>
 <p>A realistic Critical finding for a schema migration might read:</p>
 <blockquote><p><em>[Consensus] Plan assumes all downstream views can be recreated from DDL in spec.md, but spec.md does not include view definitions. If any views have non-standard column aliases or UNION constructs, recreation will fail silently. Recommend validating view DDL extraction in a pre-build step.</em></p></blockquote>
@@ -299,23 +304,23 @@ Confirm to proceed (yes/no):
 <p><strong>The situation:</strong> You have a requirements brief but you're not sure of the best architectural approach. You want to think out loud before writing a spec that commits you to a direction.</p>
 <hr>
 <pre><code>
-$cocoplus spark schema design
+$spark schema design
 </code></pre>
 <p>CocoSpark activates for the topic "schema design." In divergent thinking mode, it generates at least three distinct approaches to your problem, articulates the trade-offs of each, identifies hidden assumptions in your framing, and raises questions you may not have thought to ask.</p>
 <p>The output is saved to <code>.cocoplus/spark-[timestamp].md</code> and marked explicitly as exploration — not a plan, not a spec, not a commitment.</p>
 <p>When you've finished exploring:</p>
 <pre><code>
-$cocoplus spark-off
+$spark-off
 </code></pre>
 <p>You'll be asked if you want to carry any insights into <code>spec.md</code>. This is your decision. CocoSpark never modifies your lifecycle artifacts automatically. What goes forward is what you choose to take.</p>
 <hr>
 <p><strong>Running multiple spark sessions on different aspects:</strong></p>
 <pre><code>
-$cocoplus spark data modeling approach
+$spark data modeling approach
 </code></pre>
 <p>Then later:</p>
 <pre><code>
-$cocoplus spark cost optimization strategies
+$spark cost optimization strategies
 </code></pre>
 <p>Each spark session generates its own timestamped file. You can reference them when writing your spec. They don't expire and they're never deleted — they're your exploration history.</p>
 <hr>
@@ -353,11 +358,12 @@ $patterns view pagination
 $fleet init data-platform
 </code></pre>
 <p>This creates <code>.cocoplus/fleet/data-platform-manifest.json</code> as a template. You edit this file to define your instances — each with a task file path, persona assignment, output directory, and dependency list.</p>
+<p>Before running, verify that the project has an initialized CocoPod, the manifest contains no more than ten instances, every referenced task file exists, and the <code>coco</code> CLI is available in PATH. CocoFleet does not require a completed CocoBrew lifecycle or a prior CocoHarvest run.</p>
 <p><strong>Run the fleet:</strong></p>
 <pre><code>
 $fleet run .cocoplus/fleet/data-platform-manifest.json
 </code></pre>
-<p>CocoFleet resolves the dependency graph and spawns instances in dependency order. When an instance with no dependencies completes, its dependent instances start.</p>
+<p>CocoFleet resolves the dependency graph, launches the initial dependency-ready instances, records their process IDs, and returns control immediately. Use <code>$fleet status</code> for ongoing monitoring and dependency progression.</p>
 <p><strong>Monitor execution:</strong></p>
 <pre><code>
 $fleet status fleet-001

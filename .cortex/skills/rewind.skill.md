@@ -44,7 +44,14 @@ Display what will be removed:
 git log [target-commit]..HEAD --oneline
 ```
 
-Output: "Rolling back to [step-id] will remove these commits. This cannot be undone without using git reflog. Continue? (yes/no)"
+Output:
+```
+Rolling back to [step-id] will remove these commits from the current lifecycle state.
+
+WARNING: Rewind restores git and CocoPlus lifecycle state only. It cannot reverse Snowflake or other external side effects, including executed SQL, created or altered objects, Dynamic Tables, ML models, deployments, API calls, or data mutations. Reconcile those systems manually if the removed commits performed external operations.
+
+The git reset can be recovered through git reflog, but external side effects are not automatically reverted. Continue? (yes/no)
+```
 If no: stop.
 
 ## Perform Rollback
@@ -97,6 +104,7 @@ Output: "Rolled back to [step-id]. Current phase: [phase]. Subsequent phase arti
 
 - [ ] Available lifecycle commits and CocoPlus tags are shown when no `step-id` or `--tag` is provided
 - [ ] Developer receives an explicit confirmation prompt with the commit range to be removed
+- [ ] Confirmation warns that rewind cannot reverse Snowflake or other external side effects
 - [ ] `git reset --soft [target-commit-sha]` is executed only after confirmation
 - [ ] `.cocoplus/lifecycle/meta.json` and `.cocoplus/AGENTS.md` phase state are updated to the target lifecycle phase
 - [ ] `--tag` abbreviated form resolves to full tag name before rollback

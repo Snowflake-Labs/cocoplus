@@ -117,7 +117,7 @@ $spec --force
 $spec --full
 $spec --quick
 </code></pre>
-<p>Before opening the requirements dialogue, a deterministic classifier (<code>scope-classify.sh</code>) analyzes the initial description and routes to one of two tracks: <strong>Quick Flow</strong> (single-function, clear requirements — produces <code>lifecycle/quick-build.md</code> via a Clarify → Implement → Verify sequence, no <code>plan.md</code> or <code>flow.json</code>) or <strong>Full Flow</strong> (everything else — the complete six-phase CocoBrew lifecycle). <code>--full</code> forces Full Flow regardless of classification. <code>--quick</code> forces Quick Flow with a warning if the classifier disagrees. If no bloom document exists, a one-line advisory recommends running <code>$bloom</code> first.</p>
+<p>Before opening the requirements dialogue, a deterministic classifier (<code>scope-classify.js</code>) analyzes the initial description and routes to one of two tracks: <strong>Quick Flow</strong> (single-function, clear requirements — produces <code>lifecycle/quick-build.md</code> via a Clarify → Implement → Verify sequence, no <code>plan.md</code> or <code>flow.json</code>) or <strong>Full Flow</strong> (everything else — the complete six-phase CocoBrew lifecycle). <code>--full</code> forces Full Flow regardless of classification. <code>--quick</code> forces Quick Flow with a warning if the classifier disagrees. If no bloom document exists, a one-line advisory recommends running <code>$bloom</code> first.</p>
 <p>In Full Flow, opens a structured requirements dialogue: goal, success criteria, explicit out-of-scope, involved Snowflake objects, constraints. Output written to <code>.cocoplus/lifecycle/spec.md</code>. Git commit: <code>feat(spec): initial project specification captured</code>.</p>
 <p>Re-running during the <code>plan</code> phase prompts for confirmation. Re-running during <code>build</code>, <code>test</code>, <code>review</code>, or <code>shipped</code> phases requires <code>--force</code> — the skill warns that active CocoHarvest worktrees (<code>agent/stage-*</code>) will become stale and must be pruned manually before accepting the flag.</p>
 <p><strong>Output:</strong> Completed <code>spec.md</code> (Full Flow) or <code>quick-build.md</code> (Quick Flow) + commit confirmation.</p>
@@ -148,7 +148,7 @@ $cocoplus test
 <pre><code>
 $cocoplus review
 </code></pre>
-<p>Aggregates Code Quality Advisor findings, CocoCupper session intelligence, and spec compliance check into <code>.cocoplus/lifecycle/review.md</code>. Findings classified as: must-fix (blocks Ship), should-fix (recommended), consider (informational). Git commit: <code>docs(review): code review and quality analysis complete</code>.</p>
+<p>Aggregates Code Quality Advisor findings, recent CocoCupper intelligence, spec compliance, test results, deliverable presence, and Decision Coverage into <code>.cocoplus/lifecycle/review.md</code>. Coverage Gaps are must-fix findings that block Ship until resolved or explicitly acknowledged with rationale. The developer must approve the review before the lifecycle advances. The Efficiency, Completeness, and Risk lenses are provided by the separate on-demand <code>$secondeye</code> command, not by lifecycle Review.</p>
 <p><strong>Output:</strong> Review document with classified findings.</p>
 <hr>
 <p><strong><code>$cocoplus ship</code></strong> — Enter the Ship phase</p>
@@ -166,6 +166,7 @@ $rewind --tag cocoplus/harvest/hr-20260511-4a2f/task-007
 $rewind --tag task-007
 </code></pre>
 <p>Identifies CocoBrew phase commits in git log, shows the target state and what would be discarded, then resets to the target after confirmation. Uses soft reset — history is preserved. After reset, automatically prunes stale CocoHarvest worktrees (<code>agent/stage-*</code>) to prevent naming collisions on future builds. Updates <code>AGENTS.md</code> and <code>flow.json</code> to reflect rolled-back state.</p>
+<blockquote><p><strong>External side effects are not rolled back.</strong> <code>$rewind</code> restores git and CocoPlus lifecycle state only. It cannot reverse Snowflake or other external side effects, including executed SQL, created or altered objects, Dynamic Tables, ML models, deployments, API calls, or data mutations. Reconcile those systems manually after rewinding.</p></blockquote>
 <p><code>--tag &lt;tag-name&gt;</code> — Rolls back to a specific git tag created by CocoHarvest at task completion. Two tag series exist: harvest task tags (<code>cocoplus/harvest/[run-id]/task-[N]</code> — e.g. <code>cocoplus/harvest/hr-20260511-4a2f/task-007</code>) created at every CocoHarvest task completion; and function version tags (<code>cocoplus/fn/[function-name]/v[N]</code> — e.g. <code>cocoplus/fn/sentiment_classifier/v3</code>) created when a Cortex function reaches a named deployment stage. Harvest tags can be abbreviated to their last segment (<code>task-007</code>). This gives sub-phase granularity: recovery to any task completion boundary in any prior harvest run is a single command rather than git log archaeology.</p>
 <p><strong>Output:</strong> Rollback confirmation with state summary.</p>
 <hr>
@@ -481,7 +482,7 @@ $meter view
 <p>Reads all captured <code>request_id</code> values from <code>.cocoplus/meter/request-map.jsonl</code>, queries <code>SNOWFLAKE.ACCOUNT_USAGE.CORTEX_CODE_CLI_USAGE_HISTORY</code> through Coco's existing Snowflake connection, joins the result with stage attribution data, and generates an interactive HTML dashboard at <code>.cocoplus/meter-view.html</code>. Opens in the OS default browser.</p>
 <p>Dashboard sections: Summary cards (total tokens, total credits, cache efficiency, output tokens), Stage Attribution table (per-stage token bars, cache hit %, model indicator, click-to-filter), Model Distribution (token consumption by Haiku/Sonnet/Opus), Token Composition (cache-read / cache-write / fresh-input / output proportions), and a full Request Log with <code>REQUEST_ID</code>, parent relationship, stage, time, token breakdown, credits, and model badge.</p>
 <p>The dashboard is a self-contained local HTML file — no network requests, no external dependencies, excluded from git. Data is authoritative: sourced from Snowflake's billing record, attributed per-request, per-stage.</p>
-<p><strong>Requires:</strong> At least one completed session with CocoMeter active (so <code>request-map.jsonl</code> has entries).</p>
+<p><strong>Data availability:</strong> If <code>request-map.jsonl</code> is missing or empty, the dashboard still renders with local-only data and zero Snowflake rows. Snowflake usage data may appear later because the account-usage view can lag.</p>
 <p><strong>Output:</strong> <code>.cocoplus/meter-view.html</code> opened in browser.</p>
 <hr>
 <p><strong><code>$meter sync</code></strong> — Refresh usage data without regenerating the full dashboard <em>(CocoMeter Enhanced)</em></p>
@@ -582,18 +583,18 @@ $context off
 <hr>
 <h2 id="brainstorm-mode-cocospark">Brainstorm Mode — CocoSpark</h2>
 <hr>
-<p><strong><code>$cocoplus spark [topic]</code></strong> — Activate divergent thinking mode</p>
+<p><strong><code>$spark [topic]</code></strong> — Activate divergent thinking mode</p>
 <pre><code>
-$cocoplus spark
-$cocoplus spark schema design approaches
-$cocoplus spark cost optimization strategies
+$spark
+$spark schema design approaches
+$spark cost optimization strategies
 </code></pre>
 <p>Activates brainstorm mode for a topic. Generates three to five distinct approaches, articulates trade-offs, identifies hidden assumptions, raises questions. All output marked explicitly as exploration. Written to <code>.cocoplus/spark-[timestamp].md</code>. Does not modify any lifecycle artifact.</p>
 <p><strong>Output:</strong> Exploration document. Never flows automatically into spec or plan.</p>
 <hr>
-<p><strong><code>$cocoplus spark-off</code></strong> — Exit brainstorm mode</p>
+<p><strong><code>$spark-off</code></strong> — Exit brainstorm mode</p>
 <pre><code>
-$cocoplus spark-off
+$spark-off
 </code></pre>
 <p>Deactivates CocoSpark. Offers option to capture insights into <code>spec.md</code> — developer decides what, if anything, to carry forward.</p>
 <hr>
@@ -689,7 +690,7 @@ $fleet init data-platform
 <pre><code>
 $fleet run .cocoplus/fleet/data-platform-manifest.json
 </code></pre>
-<p>Resolves dependency graph, creates instance directories, writes task files, spawns Coco processes in dependency order. Process IDs recorded in state file. Polls for completion by checking checkpoint file existence and process exit codes. When an instance completes, dependent instances are spawned.</p>
+<p>Requires an initialized CocoPod, a valid manifest path, no more than ten instances, and the <code>coco</code> CLI available in PATH. Resolves the dependency graph, creates instance directories, and launches the initial set of instances whose dependencies are already satisfied. Process IDs are recorded in the state file, then the command returns control immediately. Use <code>$fleet status</code> to monitor completion and launch or diagnose subsequent dependency-ready work.</p>
 <p><strong>Output:</strong> Fleet state file at <code>.cocoplus/fleet/[fleet-id]-state.json</code>.</p>
 <hr>
 <p><strong><code>$fleet status [fleet-id]</code></strong> — Live fleet execution status</p>
@@ -1056,8 +1057,7 @@ $ops refresh
 <tr>
   <td style="text-align:left"><strong>UserPromptSubmit</strong></td>
   <td style="text-align:left">Developer submits a prompt</td>
-  <td style="text-align:left">Intercepts <code>$&lt;persona&gt;</code> shorthand for persona routing; intercepts `$cocoplus on</td>
-  <td style="text-align:left">off`</td>
+  <td style="text-align:left">Intercepts <code>$&lt;persona&gt;</code> shorthand for persona routing; intercepts <code>$cocoplus on</code> and <code>$cocoplus off</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>SubagentStop</strong></td>
@@ -1099,8 +1099,7 @@ $ops refresh
 </tr>
 <tr>
   <td style="text-align:left"><strong>Lifecycle</strong></td>
-  <td style="text-align:left"><code>$bloom</code> · <code>$bloom --skip</code> · <code>$bloom crystallize</code> · `$spec [--quick\</td>
-  <td style="text-align:left">--full]<code> · </code>$discuss<code> · </code>$cocoplus plan<code> · </code>$cocoplus build<code> · </code>$cocoplus test<code> · </code>$cocoplus review<code> · </code>$cocoplus ship<code> · </code>$rewind [--tag]<code> · </code>$fork`</td>
+  <td style="text-align:left"><code>$bloom</code> · <code>$bloom --skip</code> · <code>$bloom crystallize</code> · <code>$spec --quick</code> · <code>$spec --full</code> · <code>$discuss</code> · <code>$cocoplus plan</code> · <code>$cocoplus build</code> · <code>$cocoplus test</code> · <code>$cocoplus review</code> · <code>$cocoplus ship</code> · <code>$rewind [--tag]</code> · <code>$fork</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Pipeline</strong></td>
@@ -1156,7 +1155,7 @@ $ops refresh
 </tr>
 <tr>
   <td style="text-align:left"><strong>Spark</strong></td>
-  <td style="text-align:left"><code>$cocoplus spark</code> · <code>$cocoplus spark-off</code></td>
+  <td style="text-align:left"><code>$spark</code> · <code>$spark-off</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>SecondEye</strong></td>

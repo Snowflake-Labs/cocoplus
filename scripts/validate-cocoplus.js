@@ -53,6 +53,18 @@ function requireFile(filePath, failures, label) {
   return true;
 }
 
+function requireIncludes(content, expected, failures, label) {
+  if (!content.includes(expected)) {
+    failures.push(`${label} must include: ${expected}`);
+  }
+}
+
+function rejectPattern(content, pattern, failures, label) {
+  if (pattern.test(content)) {
+    failures.push(`${label} contains stale or malformed content matching ${pattern}`);
+  }
+}
+
 function parseFrontmatterTools(agentFile) {
   const content = readFile(agentFile);
   const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
@@ -250,6 +262,38 @@ function main() {
   if (!podInitSkill.includes('lifecycle/cocowatch-session.md')) {
     failures.push('$pod init gitignore must exclude lifecycle/cocowatch-session.md');
   }
+
+  const rewindSkill = readFile(path.join(repoRoot, '.cortex', 'skills', 'rewind.skill.md'));
+  requireIncludes(
+    rewindSkill,
+    'cannot reverse Snowflake or other external side effects',
+    failures,
+    'Rewind skill',
+  );
+
+  const documentationFiles = [
+    ...walkFiles(path.join(repoRoot, 'Snow-Cocoplus', 'docs'), (filePath) => filePath.endsWith('.md')),
+    ...walkFiles(path.join(repoRoot, 'docs'), (filePath) => filePath.endsWith('.html')),
+  ];
+  const documentation = documentationFiles
+    .map((filePath) => readFile(filePath))
+    .join('\n');
+
+  rejectPattern(documentation, /\$cocoplus spark(?:-off)?/i, failures, 'Documentation');
+  rejectPattern(documentation, /scope-classify\.sh/i, failures, 'Documentation');
+  rejectPattern(documentation, /SecondEye spawns three critics|Three critics fire in parallel/i, failures, 'Documentation');
+  rejectPattern(documentation, /Polls for completion by checking checkpoint file existence/i, failures, 'Documentation');
+  rejectPattern(documentation, /Requires:\s*At least one completed session with CocoMeter active/i, failures, 'Documentation');
+  requireIncludes(
+    documentation,
+    'cannot reverse Snowflake or other external side effects',
+    failures,
+    'Documentation',
+  );
+
+  const commandReferenceHtml = readFile(path.join(repoRoot, 'docs', 'command-reference.html'));
+  rejectPattern(commandReferenceHtml, /<td[^>]*>--full\]<code>/i, failures, 'Generated command reference');
+  rejectPattern(commandReferenceHtml, /<td[^>]*>off`<\/td>/i, failures, 'Generated command reference');
 
   const writeIntentPatterns = [
     /write findings/i,
