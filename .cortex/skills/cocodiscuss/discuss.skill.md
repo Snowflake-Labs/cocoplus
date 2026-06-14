@@ -1,7 +1,7 @@
 ---
 name: discuss
-description: Run a structured decision-capture dialogue before $plan — locks implementation choices (model, evaluation methodology, accuracy threshold, scope boundaries) into discuss.md to prevent silent decision drift during planning
-version: 1.0.2
+description: Run a structured decision-capture dialogue before $plan — locks implementation choices (model, evaluation methodology, accuracy threshold, scope boundaries) into discuss.md to prevent silent decision drift during planning. Supports --red-team flag for adversarial post-PASS challenge session.
+version: 1.1.0
 user-invocable: true
 command: $discuss
 author: "CocoPlus"
@@ -21,7 +21,12 @@ Run a structured pre-planning dialogue that captures implementation decisions be
 
 ## Arguments
 
-None. The wizard adapts its questions to the content of `spec.md`.
+| Flag | Effect |
+|------|--------|
+| (none) | Standard decision wizard |
+| `--red-team` | Standard wizard + adversarial challenge session after PASS gate |
+
+`--red-team` activates after the standard wizard completes with a PASS score (≥9). It loads `red-team.skill.md` and runs a non-blocking adversarial challenge session against every `discuss.md` decision. Advisory only — does not block `$plan`.
 
 ## Step-by-Step Behavior
 
@@ -162,6 +167,9 @@ status: complete
    ```
 
    After PASS, run `.cocoplus/scripts/alignment-check.js`. If it returns conflicts, block subagent spawning and surface each conflict by field, value, and source file. If clean, proceed.
+
+   **After alignment check passes — Red-Team trigger (if `--red-team` flag present):**
+   Load and execute `red-team.skill.md`. This runs non-blocking after PASS and alignment-check. Output the red-team summary to the developer. Do NOT block `$plan` on red-team findings.
 
    **Quick Mode check (score ≥9, scope ≤3 files, no EHRB indicators):**
    ```
