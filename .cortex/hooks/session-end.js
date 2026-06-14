@@ -104,6 +104,21 @@ function main() {
     } catch (_) { /* non-fatal if indexer fails */ }
   } catch (_) { /* non-fatal */ }
 
+  // 3b. CocoAudit — commit audit.md if enabled (Feature 40)
+  try {
+    const auditOnPath = path.join(COCOPLUS_DIR, 'modes', 'cocoaudit.on');
+    const auditPath   = path.join(COCOPLUS_DIR, 'lifecycle', 'audit.md');
+    if (fs.existsSync(auditOnPath) && fs.existsSync(auditPath)) {
+      const auditTs = ts.replace(/[:.]/g, '-').slice(0, 19) + 'Z';
+      const { execSync } = require('child_process');
+      try {
+        execSync(`git add "${auditPath.replace(/\\/g, '/')}"`, { stdio: 'pipe' });
+        execSync(`git diff --quiet --staged -- "${auditPath.replace(/\\/g, '/')}" || git commit -m "chore(cocoaudit): append session audit record ${auditTs}"`, { stdio: 'pipe' });
+        appendJsonLine(HOOK_LOG, { hook: 'session-end', action: 'audit_committed', ts });
+      } catch (_) { /* non-fatal — git may not be available or no changes */ }
+    }
+  } catch (_) { /* non-fatal */ }
+
   // 4. Update .cocoplus/AGENTS.md hot layer (with 200-line enforcement)
   const phase = readJsonString(path.join(COCOPLUS_DIR, 'lifecycle', 'meta.json'), 'current_phase') || 'unknown';
   try {
