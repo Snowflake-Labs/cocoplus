@@ -198,6 +198,32 @@ Create `.cocoplus/subagents.json` as an empty registry:
 {}
 ```
 
+## CocoAudit Setup (Feature 40)
+
+Ask the developer:
+
+> **Enable session audit trail?** (recommended for regulated environments) [y/N]
+
+**If yes:**
+1. Create `.cocoplus/modes/cocoaudit.on` (empty file)
+2. Create `.cocoplus/lifecycle/audit.md` with the following header:
+
+```markdown
+# CocoAudit — Session Audit Trail
+**Project**: {{PROJECT_NAME}}
+**Initialized**: {{TIMESTAMP}}
+**Team**: {{OWNER}}
+
+> This file is append-only. Records are verbatim developer inputs.
+> Do not edit manually. This is a compliance artifact.
+
+---
+```
+
+3. Add `audit.md` note to success output
+
+**If no:** Skip silently. CocoAudit can be enabled later by creating `modes/cocoaudit.on`.
+
 ## Create Initial Git Commit
 
 Stage all new files and create commit:

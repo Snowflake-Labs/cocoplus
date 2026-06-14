@@ -172,7 +172,50 @@ function main() {
     }
   }
 
-  // 6. CocoMeter Enhanced (Feature 21) — request_id capture for flow stage attribution
+  // 6. CocoAudit — Tier 2 async append-only audit record (Feature 40)
+  // Decision-type events: plan-approved, spec-gate-passed, ship-confirmed, secondeye-acknowledged, sentinel-approved
+  const AUDIT_EVENTS = {
+    'plan-approved':          ['Write', 'Edit'],
+    'spec-gate-passed':       ['Write'],
+    'ship-confirmed':         ['Write'],
+    'secondeye-acknowledged': ['Write'],
+    'sentinel-approved':      ['Write'],
+  };
+  const auditOnPath = path.join(COCOPLUS_DIR, 'modes', 'cocoaudit.on');
+  if (fs.existsSync(auditOnPath) && succeeded) {
+    const auditPath = path.join(COCOPLUS_DIR, 'lifecycle', 'audit.md');
+    if (fs.existsSync(auditPath)) {
+      // Determine event type from file path patterns
+      let auditEventId = null;
+      let auditArtifact = filePath || 'N/A';
+      if (filePath.includes('lifecycle/plan') && (toolName === 'Write' || toolName === 'Edit')) auditEventId = 'plan-approved';
+      else if (filePath.includes('lifecycle/spec') && toolName === 'Write') auditEventId = 'spec-gate-passed';
+      else if (filePath.includes('lifecycle/deployment') && toolName === 'Write') auditEventId = 'ship-confirmed';
+      else if (filePath.includes('.secondeye-') && toolName === 'Write') auditEventId = 'secondeye-acknowledged';
+      else if (filePath.includes('sentinel/approvals') && toolName === 'Write') auditEventId = 'sentinel-approved';
+
+      if (auditEventId) {
+        const block = [
+          `\n## [${auditEventId}]`,
+          `**Timestamp**: ${ts}`,
+          `**Event**: ${auditEventId}`,
+          `**Artifact**: ${auditArtifact}`,
+          `**Developer Input**: "${(params.content || '').slice(0, 200).replace(/"/g, "'")}"`,
+          `**AI Response Summary**: "Tool: ${toolName} on ${path.basename(filePath || 'unknown')}"`,
+          '',
+        ].join('\n');
+        try {
+          // APPEND-ONLY: fs.appendFileSync never rewrites the file
+          fs.appendFileSync(auditPath, block, 'utf8');
+          appendJsonLine(HOOK_LOG, { hook: 'post-tool-use', action: 'audit_appended', event: auditEventId, ts });
+        } catch (err) {
+          logError('post-tool-use', `audit append failed: ${err.message}`);
+        }
+      }
+    }
+  }
+
+  // 7. CocoMeter Enhanced (Feature 21) — request_id capture for flow stage attribution
   if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'cocometer.on'))) {
     const requestId = result.request_id || result.requestId || null;
     if (requestId) {
