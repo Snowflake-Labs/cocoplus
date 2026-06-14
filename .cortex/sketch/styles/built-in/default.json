@@ -1,0 +1,9 @@
+{
+  "name": "default",
+  "nodeStyle": "rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+  "edgeStyle": "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;",
+  "groupStyle": "swimlane;startSize=20;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;",
+  "layout": "LR",
+  "maxWidth": 2000,
+  "description": "Default CocoSketch style — Snowflake blue palette, orthogonal edges, left-to-right layout"
+}

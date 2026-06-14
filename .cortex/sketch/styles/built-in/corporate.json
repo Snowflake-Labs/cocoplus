@@ -1,0 +1,9 @@
+{
+  "name": "corporate",
+  "nodeStyle": "rounded=0;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#343a40;fontStyle=1;",
+  "edgeStyle": "edgeStyle=elbowEdgeStyle;elbow=orthogonal;",
+  "groupStyle": "swimlane;startSize=25;fillColor=#e9ecef;strokeColor=#343a40;fontStyle=1;",
+  "layout": "TB",
+  "maxWidth": 2000,
+  "description": "Corporate style — greyscale, bold labels, top-to-bottom hierarchy"
+}
