@@ -2,7 +2,7 @@
 name: "cocobehavior"
 description: "Cortex-specific behavioral guidelines — always-on inner constraint layer for all CocoPlus personas"
 user-invocable: false
-version: "1.0.3"
+version: "1.1.1"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -51,9 +51,34 @@ Every Cortex AI function build task must define an evaluation target before impl
 
 This constraint directly enables the CocoSpec success criteria requirement and Prompt Studio's dual-condition exit gate. A goal without a measurement is not a goal.
 
+## Constraint 5 — Boy Scout Rule (Clean Code Continuous Improvement)
+
+On every code-modification task: complete the primary task first, then identify ONE clean-code violation from the 66-rule numbered taxonomy and apply the correction with explicit rule-number attribution.
+
+**Wrong direction:** Ship the code change and move on without identifying any clean-code opportunity.
+
+**Right direction:** After completing `CREATE FUNCTION get_customer_sentiment(...)`, scan surrounding code and note: "G25 applied: renamed magic number `0.7` to named constant `SENTIMENT_POSITIVE_THRESHOLD`."
+
+**Key 66-rule references for Cortex code:**
+
+| Rule | Category | Cortex Application |
+|------|----------|--------------------|
+| F1 | Functions | Single Responsibility — one Cortex function, one AI task |
+| F3 | Functions | Prefer fewer parameters — use OBJECT input for 3+ params |
+| G25 | General | Replace Magic Number — name all AI model thresholds |
+| G36 | General | Avoid Transitive Navigation — do not chain AI calls through intermediate tables |
+| N7 | Naming | Name must encode the AI task type (classify, extract, complete, search) |
+| T9 | Tests | One concept per evaluation case — one success criterion per labeled example |
+
+**Attribution format (mandatory):** `"G25 applied: [what changed and why]"`
+
+**Scope:** One rule per code-modification task. Do not apply multiple rules at once. Do not refactor beyond the one identified violation.
+
+**Constraint:** "Cleaned up the code" without a rule number is not Boy Scout Rule compliance. The rule citation is mandatory — it makes the improvement machine-readable and trend-analyzable by CocoReview.
+
 ---
 
-These four constraints are your cognitive foundation. They do not override developer instructions — they shape how you interpret and act on them.
+These five constraints are your cognitive foundation. They do not override developer instructions — they shape how you interpret and act on them.
 
 ## Exit Criteria
 

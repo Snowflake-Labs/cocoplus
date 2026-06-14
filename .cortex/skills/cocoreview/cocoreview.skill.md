@@ -111,6 +111,34 @@ Determine verdict based on highest finding severity:
 - Any `important` without `blocking` → `COMMENT`
 - Only `nit`/`suggestion`/`learning`/`praise` → `APPROVE`
 
+## Step 7b — Phase 5: Clean Code Enforcement (66-Rule Taxonomy)
+
+Load on demand: `skills/cocoreview/clean-code.md`
+
+For each SQL/Snowpark file in scope:
+1. Scan Category C (Comments), F (Functions), G (General), N (Naming), T (Tests)
+2. Record violations with mandatory rule-number citation
+
+Finding format:
+```yaml
+- phase: 5
+  rule: G25
+  severity: nit
+  finding: "Magic Number: threshold 0.7 should be SENTIMENT_POSITIVE_THRESHOLD"
+  file: classify_sentiment.sql
+  line: 42
+```
+
+**Mandatory praise invariant (Phase 5):** At least one `praise` finding must cite a correctly-applied clean-code rule:
+```yaml
+- phase: 5
+  rule: G30
+  severity: praise
+  finding: "Single Responsibility honored — classify_sentiment() does exactly one thing"
+```
+
+If no clean-code violations are found, emit praise for the most clearly applied rule observed. Never omit the Phase 5 praise finding.
+
 ## Step 8 — Write and Commit Review Output
 
 Write the structured review to `.cocoplus/review/cocoreview-<YYYY-MM-DD-HHMMSS>.md`:
@@ -140,6 +168,9 @@ Write the structured review to `.cocoplus/review/cocoreview-<YYYY-MM-DD-HHMMSS>.
 ### Tests
 - [test coverage assessment]
 
+### Clean Code (Phase 5)
+- [[rule-id]] [finding] (severity: nit/praise)
+
 ### Verdict
 [APPROVE / COMMENT / REQUEST_CHANGES] — [one-line rationale]
 ```
@@ -166,6 +197,7 @@ Show the Summary and Verdict sections.
 
 - `pr-complexity.js` run before any LLM work
 - XL artifacts get split recommendation surfaced
-- At least one `praise` finding in every review
+- At least one `praise` finding in every review (Phases 1-4)
+- Phase 5 clean-code section present with at least one rule-cited `praise` finding
 - Structured review template output committed to git
 - `complexity-cache.json` is NOT committed (gitignored)
