@@ -1,7 +1,7 @@
 ---
 name: map
-description: Build and commit a Cortex function knowledge graph — maps structural dependencies and domain intent relationships across all AI functions in the project
-version: 1.0.2
+description: Build and commit a Cortex function knowledge graph — maps structural dependencies and domain intent relationships across all AI functions in the project. Supports --reduce (default on) for transitive reduction of the dependency graph.
+version: 1.1.0
 user-invocable: true
 command: $map
 author: "CocoPlus"
@@ -13,6 +13,14 @@ feature: CocoMap (Feature 28)
 # $map
 
 Build and commit a knowledge graph of all Cortex AI functions in the project. Produces `coco-map.json` with structural dependency data and a domain intent map.
+
+## Flags
+
+| Flag | Effect |
+|------|--------|
+| (none) | Build full map with transitive reduction applied (default) |
+| `--reduce` | Explicit: apply transitive reduction (same as default) |
+| `--reduce off` | Skip transitive reduction — store full transitive closure in `coco-map.json` |
 
 ## Preconditions
 
@@ -65,18 +73,38 @@ Build and commit a knowledge graph of all Cortex AI functions in the project. Pr
 
 6. **Wait for all 5 agents to complete.** If an agent times out, proceed with partial results and note the missing analysis in the map metadata.
 
-7. **Merge intermediate results** into `coco-map.json`:
+7. **Transitive Reduction (unless `--reduce off`):**
+
+   Build a simple graph JSON from Dependency Mapper results:
+   ```json
+   { "nodes": ["F1","F2",...], "edges": [{"from":"F1","to":"F2"},...] }
+   ```
+   Write to `.cocoplus/map/intermediate/dependency-graph.json`.
+
+   Run:
+   ```
+   node scripts/map-reduce.js .cocoplus/map/intermediate/dependency-graph.json .cocoplus/map/intermediate/dependency-reduced.json
+   ```
+
+   On success: use `dependency-reduced.json` edges as the canonical `structural.dependencies` in the merged map. Store `removed_edges` and `reduction_stats` under `structural.reduction`.
+
+   On failure (non-zero exit, missing script): log warning, fall back to full transitive closure, set `structural.reduction.skipped: true`.
+
+   **If `--reduce off`:** skip this step entirely. Set `structural.reduction.skipped: true, reason: "flag"`.
+
+9. **Merge intermediate results** into `coco-map.json`:
    ```json
    {
      "meta": {
        "generated_at": "[ISO8601]",
-       "cocoplus_version": "1.0.2",
+       "cocoplus_version": "1.1.0",
        "function_count": [N],
        "analysis_agents_completed": [M of 5]
      },
      "structural": {
        "functions": [...],
        "dependencies": [{"caller": "F1", "callee": "F2", "via": "shared_eval_set"}],
+       "reduction": { "removed_edges": [...], "reduction_pct": 0, "skipped": false },
        "warehouses": {...},
        "evaluation_sets": {...}
      },
@@ -92,15 +120,15 @@ Build and commit a knowledge graph of all Cortex AI functions in the project. Pr
    }
    ```
 
-8. **Write merged result** to `.cocoplus/map/coco-map.json` (atomic write: write to `.tmp` then rename).
+10. **Write merged result** to `.cocoplus/map/coco-map.json` (atomic write: write to `.tmp` then rename).
 
-9. **Clean intermediate directory:** Move files from `.cocoplus/map/intermediate/` to `.cocoplus/map/archive/[timestamp]/` and remove the intermediate directory contents.
+11. **Clean intermediate directory:** Move files from `.cocoplus/map/intermediate/` to `.cocoplus/map/archive/[timestamp]/` and remove the intermediate directory contents.
 
-10. **Update AGENTS.md** with: map timestamp, function count, dependency count, identified gaps count.
+12. **Update AGENTS.md** with: map timestamp, function count, dependency count, identified gaps count.
 
-11. **Create git commit:** `docs(map): update Cortex function knowledge graph — [N] functions, [M] dependencies`
+13. **Create git commit:** `docs(map): update Cortex function knowledge graph — [N] functions, [M] dependencies`
 
-12. **Display summary:**
+14. **Display summary:**
 ```
 CocoMap complete — [timestamp]
   Functions mapped: [N]
@@ -132,4 +160,6 @@ Do NOT:
 - Return full analysis results to orchestrator context — agents write to intermediate files only
 - Proceed without archiving previous map (if one exists)
 - Skip the gap detection pass (gaps are often the most actionable finding)
-- Generate a visualization — the committed JSON is the data layer; visualization is a future enhancement
+- Generate a visualization — the committed JSON is the data layer; visualization is handled by `$sketch deps`
+- Skip transitive reduction unless `--reduce off` is explicitly passed — transitive closure graphs are unreadable beyond ~10 nodes
+- Treat reduction failure as blocking — fall back to full closure with a warning, never abort the map build
