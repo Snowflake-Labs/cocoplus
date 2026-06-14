@@ -1,0 +1,9 @@
+{
+  "name": "handdrawn",
+  "nodeStyle": "shape=mxgraph.rough.rectangle;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#827717;",
+  "edgeStyle": "shape=mxgraph.rough.connector;",
+  "groupStyle": "shape=mxgraph.rough.rectangle;fillColor=#f9fbe7;strokeColor=#827717;",
+  "layout": "LR",
+  "maxWidth": 2000,
+  "description": "Hand-drawn style — sketchy look for exploratory diagrams and whiteboard sessions"
+}
