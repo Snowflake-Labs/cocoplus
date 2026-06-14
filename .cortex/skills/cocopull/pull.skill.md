@@ -1,7 +1,7 @@
 ---
 name: pull
-description: Distill large context files (evaluation artifacts, schema dumps, query result sets, analysis outputs) into LLM-optimized dense form — preserving all decision-relevant content verbatim while compressing redundant narrative and oversized tabular data
-version: 1.0.0
+description: Distill large context files (evaluation artifacts, schema dumps, query result sets, analysis outputs) into LLM-optimized dense form or human-readable narrative (--human). Default output is machine-dense; --human produces a prose summary for stakeholder consumption.
+version: 1.1.0
 user-invocable: true
 command: $pull
 author: "CocoPlus"
@@ -21,10 +21,45 @@ Distill a file or directory of files into a pull artifact (`.pull.md`) that pres
 
 ## Arguments
 
-- `<target>` (required): File path or directory to distill. Eligible file types: `.md`, `.json`, `.sql`, `.txt`
-- `--validate` (optional): Run round-trip reconstruction test after distillation
+| Argument | Description |
+|----------|-------------|
+| `<target>` (required) | File path or directory to distill. Eligible: `.md`, `.json`, `.sql`, `.txt` |
+| `--validate` (optional) | Run round-trip reconstruction test after distillation |
+| `--human` (optional) | Produce human-readable narrative summary instead of LLM-dense pull file |
+
+**Two output modes:**
+- **Default (no flag):** Produce `<target>.pull.md` — machine-dense, LLM-optimized, verbatim decision values. Used automatically by CocoHarvest.
+- **`--human`:** Produce `<target>.pull-human.md` — prose narrative for stakeholder consumption. Not used by CocoHarvest. Never overwrites the `.pull.md` machine output.
 
 ## Step-by-Step Behavior
+
+### `$pull <target> --human`
+
+1. **Verify initialization and target** (same as default mode steps 1–2).
+
+2. **Spawn Sonnet narrative subagent:**
+   Reads `<target>` and produces a prose summary optimized for a non-technical stakeholder audience. Rules:
+   - Lead with the most important conclusion or finding (inverted pyramid)
+   - Use plain language — no SQL, no JSON field names unless unavoidable
+   - Express numeric values in context: not "0.88" but "88% accuracy — above the 85% threshold set in discuss.md"
+   - Maximum 500 words unless source content genuinely requires more
+   - Do not include raw tables — translate to sentences or brief bullets
+
+3. **Write output** to `<target>.pull-human.md`. Include header:
+   ```markdown
+   ---
+   pull_source: [source file path]
+   pull_timestamp: [ISO8601]
+   pull_mode: human
+   audience: stakeholder
+   ---
+   ```
+
+4. **Do NOT update** `.cocoplus/pull/manifest.json` for human-mode output — human pull files are not CocoHarvest artifacts.
+
+5. **Display:** "Human summary written to `<target>.pull-human.md`" and show the full output.
+
+---
 
 ### `$pull <target> [--validate]`
 
@@ -179,10 +214,12 @@ This skill is complete when:
 ## Anti-Rationalization
 
 Do NOT:
-- Paraphrase numeric values, thresholds, field names, or constraint values — Rule 1 is non-negotiable
+- Paraphrase numeric values, thresholds, field names, or constraint values in default mode — Rule 1 is non-negotiable
 - Run the validation V2 agent before V1 has produced the probe questions
 - Allow V2 to read the source file — it reads only the pull file (circular test prevention)
 - Use the same agent to both generate probe questions and answer them
 - Mark reliability as `high` for scores below 85%
 - Auto-use a `low` reliability pull file in CocoHarvest — always fall back to source
-- Delete the source file — CocoPull only writes new `.pull.md` files alongside sources
+- Delete the source file — CocoPull only writes new files alongside sources
+- Use `--human` output in CocoHarvest — human pull files are stakeholder artifacts, not context files
+- Overwrite an existing `.pull.md` when running `--human` — the two modes produce separate files
