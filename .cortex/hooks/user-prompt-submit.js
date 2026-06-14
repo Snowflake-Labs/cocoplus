@@ -5,16 +5,25 @@
  * Stdin JSON format from Coco:
  *   { "message": "$de Review this SQL", "session_id": "sess-..." }
  *
- * Features:
- *   - Context Mode: prepend phase/mode summary to incoming message (≤100 tokens)
- *   - Persona routing: `$de`, `$ae`, etc. shorthand triggers from personas.json
- *   - Command passthrough: `/` prefixed messages are not intercepted
+ * Three-Tier Latency Contract (CocoScout):
+ *   Tier 1 — Deterministic, no LLM, <50ms: persona routing, command passthrough,
+ *             context-mode flag check. Runs inline, blocks the hook return.
+ *   Tier 2 — Async, no hard deadline: CocoScout context injection (subagent,
+ *             Haiku, target <5s). Spawned via fire-and-forget; hook returns immediately.
+ *   Tier 3 — Batch/off-cycle: audit flush, dream promotion, grove reindex.
+ *             Never runs in UserPromptSubmit — deferred to SessionEnd or cron.
+ *
+ * Tier 1 operations in this file: sections 1, 2, 3 (command passthrough,
+ *   persona routing, context-mode overlay). All run before any I/O-bound work.
+ * Tier 2 operations: CocoScout subagent spawn (fire-and-forget after Tier 1).
+ * Tier 3: not present here — handled in session-end.js.
  */
 
 'use strict';
 
 const fs   = require('fs');
 const path = require('path');
+const { execFile } = require('child_process');
 const { isoUtc, appendJsonLine, logError, readStdinJson, readJsonString } = require('./_common.js');
 
 const COCOPLUS_DIR = '.cocoplus';
@@ -41,31 +50,51 @@ function loadPersonaMap() {
   }
 }
 
+function spawnCocoScout(message, ts) {
+  // Tier 2: fire-and-forget CocoScout subagent. Hook returns immediately; scout
+  // completes async within its 5s budget and injects context via hook-log.
+  const scoutScript = path.join('.cortex', 'scripts', 'cocoscout-invoke.js');
+  if (!fs.existsSync(scoutScript)) return;
+  execFile(process.execPath, [scoutScript, '--message', message.slice(0, 200)], {
+    timeout: 6000,
+    windowsHide: true,
+  }, (err) => {
+    if (err && err.killed) {
+      appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'scout_timeout', ts });
+    }
+  });
+}
+
 function main() {
   if (!fs.existsSync(COCOPLUS_DIR)) return;
 
-  const ts    = isoUtc();
-  const event = readStdinJson();
+  const tier1Start = Date.now();
+  const ts         = isoUtc();
+  const event      = readStdinJson();
 
   const message   = event.message   || process.env.COCO_USER_MESSAGE || '';
   const sessionId = event.session_id || process.env.COCO_SESSION_ID  || 'unknown';
 
   appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', ts });
 
+  // --- Tier 1 start (deterministic, <50ms target) ---
+
   // 1. Command passthrough — do not intercept /commands
   if (message.startsWith('/')) {
-    appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'command_passthrough', ts });
+    appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'command_passthrough', tier: 1, ts });
     return;
   }
 
   // 2. Persona routing — detect $ shorthand prefix
   const personaMap = loadPersonaMap();
+  let routed = false;
   for (const [shorthand, personaName] of Object.entries(personaMap)) {
     if (message.startsWith(shorthand + ' ') || message === shorthand) {
       const taskText = message.slice(shorthand.length).trim();
       appendJsonLine(HOOK_LOG, {
         hook: 'user-prompt-submit',
         action: 'persona_routed',
+        tier: 1,
         shorthand,
         persona: personaName,
         task: taskText.slice(0, 100),
@@ -80,7 +109,8 @@ function main() {
       try {
         fs.writeFileSync(subagentsPath, JSON.stringify(registry, null, 2));
       } catch (_) { /* non-fatal */ }
-      return;
+      routed = true;
+      break;
     }
   }
 
@@ -92,7 +122,6 @@ function main() {
       phase = readJsonString(metaPath, 'current_phase') || 'unknown';
     }
 
-    // Read active modes for context summary
     const modesDir = path.join(COCOPLUS_DIR, 'modes');
     let activeModes = '';
     try {
@@ -104,10 +133,28 @@ function main() {
     appendJsonLine(HOOK_LOG, {
       hook: 'user-prompt-submit',
       action: 'context_prepended',
+      tier: 1,
       phase,
       active_modes: activeModes,
       ts,
     });
+  }
+
+  const tier1Ms = Date.now() - tier1Start;
+  if (tier1Ms > 50) {
+    appendJsonLine(HOOK_LOG, {
+      hook: 'user-prompt-submit',
+      action: 'tier1_sla_breach',
+      tier: 1,
+      elapsed_ms: tier1Ms,
+      ts,
+    });
+  }
+
+  // --- Tier 2 start (async, fire-and-forget) ---
+  // CocoScout context injection: spawned only for non-command, non-routed messages.
+  if (!routed) {
+    spawnCocoScout(message, ts);
   }
 }
 

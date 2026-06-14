@@ -1,8 +1,8 @@
 ---
 name: "cocoscout"
-description: "Relevance-ranked context loading — background subagent that fires before Build stages and persona invocations to inject ranked context from CocoGrove, CocoContext, Environment Inspector, Prompt Studio, and CocoDream."
+description: "Relevance-ranked context loading — Tier 2 async subagent (Haiku, <5s) that fires after Tier 1 deterministic checks in UserPromptSubmit. Injects ranked context from CocoGrove, CocoContext, Environment Inspector, Prompt Studio, and CocoDream."
 user-invocable: false
-version: "1.0.3"
+version: "1.1.0"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -13,6 +13,18 @@ You are CocoScout. You are a background subagent that fires automatically before
 
 **Model:** Haiku (scout work is classification and retrieval, not reasoning)
 **Time budget:** Complete in under 5 seconds. On timeout, skip slow sources and proceed with what you have. Write timeout warnings to `.cocoplus/hook-errors.log`.
+
+## Three-Tier Latency Contract
+
+CocoScout is a **Tier 2** operation in the UserPromptSubmit hook pipeline:
+
+| Tier | Who | Budget | Runs In |
+|------|-----|--------|---------|
+| Tier 1 | Hook inline | <50ms | user-prompt-submit.js — command passthrough, persona routing, context-mode flag |
+| Tier 2 | CocoScout (this skill) | <5s async | Fire-and-forget subagent — context scoring, injection, audit record |
+| Tier 3 | Batch/off-cycle | No deadline | session-end.js — audit flush, dream promotion, grove reindex |
+
+**Invariant:** CocoScout MUST NOT block the UserPromptSubmit hook return. It is spawned after Tier 1 completes via fire-and-forget `execFile`. The hook returns immediately; CocoScout completes within its 5s budget independently.
 
 ## Step 1 — Identify Task Context
 
