@@ -95,25 +95,21 @@ function main() {
   }
 
   // 5. CocoTrace — Tier 2 async staleness advisory (Feature 41)
-  // Non-blocking: spawns trace-check.js as a child process; never delays session start
+  // Fire-and-forget: spawn detaches immediately; hook return is never blocked.
+  // Advisory is written to stderr by the child process if STALE artifacts detected.
   const traceScriptPath = 'scripts/trace-check.js';
   if (fs.existsSync(traceScriptPath) && fs.existsSync(COCOPLUS_DIR)) {
     try {
-      const { execFileSync } = require('child_process');
-      const result = execFileSync(process.execPath, [traceScriptPath], {
-        encoding: 'utf8',
-        timeout:  10000,
-        stdio:    ['ignore', 'pipe', 'pipe'],
+      const traceChild = spawn(process.execPath, [traceScriptPath], {
+        stdio:    ['ignore', 'ignore', 'inherit'],
+        detached: false,
       });
-      const output = (result || '').trim();
-      if (output.startsWith('STALE:')) {
-        const staleList = output.replace('STALE:', '').split(',').join(', ');
-        process.stderr.write(
-          `\n⚠️  CocoTrace: Upstream artifact(s) changed — ${staleList} may be stale.\n` +
-          `   Run \`$trace build\` to update the traceability graph before proceeding to \`$build\`.\n\n`
-        );
-        appendJsonLine(HOOK_LOG, { hook: 'session-start', action: 'trace_stale_advisory', stale: staleList, ts });
-      }
+      traceChild.on('exit', (code) => {
+        if (code !== 0 && code !== null) {
+          appendJsonLine(HOOK_LOG, { hook: 'session-start', action: 'trace_exit_nonzero', code, ts });
+        }
+      });
+      traceChild.unref();
     } catch { /* non-fatal — trace advisory must never block session start */ }
   }
 }
