@@ -1,7 +1,7 @@
 ---
 name: sentinel
-description: CocoSentinel — eight-dimension artifact quality gate. Dimension G evidence pre-gate runs first (deterministic, <50ms); if PASS, spawns A1–F in parallel. Invoked via $sentinel <file>.
-version: "1.1.0"
+description: CocoSentinel — eight-dimension artifact quality gate. Dimension G evidence pre-gate runs first (deterministic, <50ms); if PASS, spawns A1–H in parallel. Dimension H FAIL overrides all others to BLOCKED. Invoked via $sentinel <file>.
+version: "1.1.1"
 author: CocoPlus
 tags:
   - cocosentinel
@@ -13,7 +13,9 @@ blocking: true
 
 ## Objective
 
-You are executing CocoSentinel — the artifact quality gate. Your task is to evaluate a single artifact across seven dimensions in parallel and produce an overall APPROVED / CONDITIONAL / BLOCKED verdict.
+You are executing CocoSentinel — the artifact quality gate. Your task is to evaluate a single artifact across eight dimensions in parallel and produce an overall APPROVED / CONDITIONAL / BLOCKED verdict.
+
+**Override rule:** Dimension H (Clean Code) FAIL overrides all other dimension outcomes to BLOCKED, regardless of A1–F verdicts.
 
 Before proceeding, verify that `.cocoplus/` exists in the current directory. If it does not, output: "CocoPlus is not initialized in this directory. Run `$pod init` to set up the CocoPlus project bundle and try again." Then stop.
 
@@ -94,9 +96,9 @@ Include `reward_hacking_signals` (if any WARNs present) in the Step 11 report ev
 
 Write zero-byte file `.cocoplus/sentinel/active-evaluation.lock`. This prevents PreCompact from compacting the session while evaluation is in progress.
 
-## Step 7 — Spawn Seven Dimension Sub-Agents in Parallel
+## Step 7 — Spawn Eight Dimension Sub-Agents in Parallel
 
-Spawn all seven dimension sub-agents simultaneously. Each receives:
+Spawn all eight dimension sub-agents simultaneously. Each receives:
 - The artifact content (with untrusted content wrapped)
 - Its specific mandate
 - Its `prior_rejection_context` (two most recent BLOCKED sentinel records for that dimension)
@@ -109,10 +111,11 @@ Dimension agents:
 - `sentinel-d` — Resilience
 - `sentinel-e` — Maintainability
 - `sentinel-f` — Compliance
+- `sentinel-h` — Clean Code (66-Rule Taxonomy)
 
 **Critical:** No dimension agent receives another's verdict before producing its own. Parallelism is the enforcement mechanism.
 
-Wait for all seven verdicts before proceeding to Step 8.
+Wait for all eight verdicts before proceeding to Step 8.
 
 ## Step 8 — Delete Active Evaluation Lock
 
@@ -120,13 +123,14 @@ Delete `.cocoplus/sentinel/active-evaluation.lock`.
 
 ## Step 9 — Synthesize Overall Outcome
 
-Apply verdict logic:
+Apply verdict logic (in order — first matching rule wins):
 
 | Outcome | Condition |
 |---------|-----------|
-| APPROVED | All dimensions PASS or CONCERN (ADVISORY) |
-| CONDITIONAL | One or more CONCERN (BLOCKING) — no FAIL |
+| BLOCKED | Dimension H returns FAIL (override — ignores all other verdicts) |
 | BLOCKED | Any dimension returns FAIL |
+| CONDITIONAL | One or more CONCERN (BLOCKING) — no FAIL |
+| APPROVED | All dimensions PASS or CONCERN (ADVISORY) |
 
 ## Step 10 — Write Result JSON
 
@@ -182,6 +186,7 @@ Dimension Results:
   D  — Resilience:                 <verdict>
   E  — Maintainability:            <verdict>
   F  — Compliance:                 <verdict>
+  H  — Clean Code (66-Rule):       <verdict>
 
 [For each non-PASS dimension, show evidence and recommendation]
 
@@ -208,9 +213,10 @@ Dimension Results:
 ## Exit Criteria
 
 - `sentinel-pregate.js` runs before any sub-agent is spawned
-- Dimension G FAIL stops evaluation immediately — no A1–F agents spawned
+- Dimension G FAIL stops evaluation immediately — no A1–H agents spawned
 - Dimension G BLOCKED record written to CocoWisdom with `dimension: "G"`
+- Dimension H FAIL overrides overall outcome to BLOCKED regardless of A1–F verdicts
 - Result JSON written to `.cocoplus/sentinel/<sha>.json`
 - Active evaluation lock created before sub-agent spawn and deleted after all verdicts received
 - BLOCKED outcomes written to CocoWisdom via `scripts/wisdom-writer.js`
-- Developer sees full dimension-by-dimension report (G through F) with overall verdict
+- Developer sees full dimension-by-dimension report (G, A1–F, H) with overall verdict
