@@ -779,6 +779,13 @@ $discuss
 <p>When all three conditions hold — spec score ≥9, scope ≤3 files, no EHRB indicators — Quick Mode bypass is recommended: skip Plan phase and proceed directly to Build.</p>
 <p><strong>Output:</strong> <code>lifecycle/discuss.md</code> + CocoSpec score in <code>lifecycle/spec-score.md</code>.</p>
 <hr>
+<p><strong><code>$discuss --red-team</code></strong> — Run an adversarial challenge session after the PASS gate</p>
+<pre><code>
+$discuss --red-team
+</code></pre>
+<p>Runs the standard <code>$discuss</code> wizard first. After a PASS score (≥9), activates an adversarial challenge session that interrogates every decision locked in <code>discuss.md</code>: Is the chosen model the right cost/accuracy tradeoff? Is the evaluation dataset representative of production distribution? Is the accuracy threshold stakeholder-approved or assumed? Is there an uncovered scope-creep vector? Each challenge is assigned a risk level (LOW / MEDIUM / HIGH). Advisory only — never blocks <code>$plan</code>. Report appended to <code>lifecycle/discuss-red-team.md</code>.</p>
+<p><strong>Output:</strong> Standard discuss output + <code>lifecycle/discuss-red-team.md</code> risk summary. Non-blocking.</p>
+<hr>
 <h2 id="developer-engagement-observer-cocowatch">Developer Engagement Observer — CocoWatch</h2>
 <p>CocoWatch is always on. It has no user-invocable commands. Its session summary surfaces automatically at <code>$cocoplus ship</code> and at FULL checkpoints. Consult it before shipping; there is nothing to invoke.</p>
 <p>The summary shows the Engagement Zone (1 = over-delegation, 2 = healthy collaboration, 3 = under-utilization), Delegation Intensity (ratio of accepted-without-modification to total outputs), and Review Depth (engagement quality signals including timing and reasoning presence). Zone 1 sessions include a list of specific findings that received less than threshold engagement time, by filename and finding number.</p>
@@ -844,6 +851,14 @@ $pull lifecycle/evaluation-results.md --validate
 <p>After producing the pull file, spawns a verification subagent that reads only the pull file and answers a set of probe questions generated from the source. Answers are compared against ground-truth answers drawn from the original by a separate agent. A pull file scoring below 85% match rate is flagged <code>reliability: low</code> in its header — CocoHarvest will not automatically use it as a stage input. Use <code>--validate</code> the first time you pull a new document type to assess whether the compression pattern is reliable for that type.</p>
 <p><strong>Output:</strong> Pull file + validation summary appended to pull file header with reliability classification.</p>
 <hr>
+<p><strong><code>$pull &lt;target&gt; --human</code></strong> — Produce a human-readable stakeholder narrative</p>
+<pre><code>
+$pull lifecycle/evaluation-results.md --human
+$pull lifecycle/dora-snapshot.json --human
+</code></pre>
+<p>Produces a prose summary optimized for stakeholder consumption rather than agent context. A Sonnet subagent applies an inverted-pyramid structure (most important finding first), plain language (no raw field names or SQL), and a 500-word cap. Numeric values are expressed in context — "88% accuracy — above the 85% threshold set in discuss.md" rather than "0.88". Written to <code>&lt;target&gt;.pull-human.md</code> alongside the source, completely independent of the machine-dense <code>.pull.md</code>. Not used by CocoHarvest — this is a communication artifact, not a context artifact.</p>
+<p><strong>Output:</strong> <code>&lt;target&gt;.pull-human.md</code>. No changes to manifest.</p>
+<hr>
 <p><strong><code>$pull search "&lt;query&gt;"</code></strong> — Full-text search across session archives</p>
 <pre><code>
 $pull search "accuracy threshold evaluation"
@@ -863,7 +878,7 @@ $sentinel lifecycle/spec.md
 $sentinel queries/sentiment_classifier.sql
 </code></pre>
 <p>Without a file argument, evaluates the most recently modified committed artifact. With a file argument, evaluates the specified file. Before spawning dimension sub-agents, runs <code>sentinel-pregate.js</code> (Dimension G — deterministic, &lt;50ms): validates that the submission includes concrete execution evidence, non-trivial test coverage, no success claims without attached output, and no single-agent self-evaluation. If Dimension G fails, returns BLOCKED immediately — the seven dimension agents do not run.</p>
-<p>If Dimension G passes, spawns seven dimension sub-agents simultaneously, each in an independent context window:</p>
+<p>If Dimension G passes, spawns eight dimension sub-agents simultaneously, each in an independent context window:</p>
 <ul>
   <li><strong>A1 — Security Attack Surface (Haiku):</strong> Input validation gaps, injection pathways, IDENTIFIER() binding, EXECUTE IMMEDIATE construction</li>
   <li><strong>A2 — Security Defensive Posture (Haiku):</strong> Privilege minimality, data exposure risk, error message schema leakage</li>
@@ -872,6 +887,7 @@ $sentinel queries/sentiment_classifier.sql
   <li><strong>D — Resilience (Haiku):</strong> Failure path completeness, RETRY_AFTER patterns, VARIANT extraction guards</li>
   <li><strong>E — Maintainability (Haiku):</strong> Naming convention consistency with <code>cocoplus-context.md</code>, clarity for a reader unfamiliar with the session</li>
   <li><strong>F — Compliance (Haiku):</strong> PII handling requirements, schema write permissions, credit thresholds in constitutional document</li>
+  <li><strong>H — Clean Code (Haiku):</strong> 66-rule numbered taxonomy evaluation across Categories C (Comments), F (Functions), G (General), N (Naming), T (Tests). A FAIL from Dimension H overrides all other dimension verdicts to BLOCKED.</li>
 </ul>
 <p>Each dimension produces a verdict (PASS / CONCERN (ADVISORY) / CONCERN (BLOCKING) / FAIL) with evidence citing the specific line or pattern, and a recommendation. The synthesis agent produces the overall outcome: APPROVED, CONDITIONAL, or BLOCKED.</p>
 <p>Full report written to <code>.cocoplus/sentinel/&lt;artifact-sha&gt;.json</code>.</p>
@@ -924,7 +940,7 @@ $wisdom search "PII masking"
 <pre><code>
 $wisdom insights
 </code></pre>
-<p>Invokes a Haiku sub-agent to read <code>rejections.jsonl</code> and produce a structured synthesis: most frequently blocked dimension, quality trend over time (improving/stable/degrading), dimension health table (total blocks, last 30 days, trend direction). Written to <code>.cocoplus/wisdom/insights-&lt;date&gt;.md</code> — committed to git as a project artifact.</p>
+<p>Invokes a Haiku sub-agent to read <code>rejections.jsonl</code> and produce a structured synthesis: most frequently blocked dimension, quality trend over time (improving/stable/degrading), dimension health table (total blocks, last 30 days, trend direction). Uses carry-forward thesis pattern: loads the <code>## Thesis</code> section from the most recent prior insights file and preserves it verbatim, then appends a <code>### New Evidence</code> subsection with findings from the latest records. The thesis is never replaced — only extended. Written to <code>.cocoplus/wisdom/insights-&lt;date&gt;.md</code> — committed to git.</p>
 <p><strong>Output:</strong> <code>insights-&lt;date&gt;.md</code> + git commit.</p>
 <hr>
 <p><strong><code>$wisdom export</code></strong> — Export all rejection records as a formatted Markdown report</p>
@@ -942,7 +958,7 @@ $cocoplus review
 $cocoplus review path/to/artifact.sql
 </code></pre>
 <p>Without a target, reviews the current staged git diff. With a target, reviews the specified file. Runs <code>pr-complexity.js</code> (deterministic) to compute a complexity score, size bucket, non-test ratio, schema layer diversity, estimated review time, and risk flags. If size bucket is XL (≥800 lines of change), surfaces a split recommendation before proceeding with the review.</p>
-<p>Proceeds through four phases: Context Gathering (PR description, linked issue, CI status), High-Level Review (architecture and strategy — structural problems are surfaced here before line-by-line work), Line-by-Line Review (logic, security, performance, maintainability, reuse — with explicit reuse check before accepting new code), Summary and Verdict.</p>
+<p>Proceeds through five phases: Context Gathering (PR description, linked issue, CI status), High-Level Review (architecture and strategy — structural problems are surfaced here before line-by-line work), Line-by-Line Review (logic, security, performance, maintainability, reuse — with explicit reuse check before accepting new code), Summary and Verdict, Clean Code Enforcement (Phase 5 — scans Categories C/F/G/N/T of the 66-rule taxonomy; every finding carries a mandatory rule-number citation; mandatory <code>praise</code> finding citing a correctly-applied rule).</p>
 <p>Applies nine universal anti-patterns before any language-specific guide: Parameter Sprawl, Leaky Abstractions, Stringly-Typed Code, Nested Conditionals, Copy-Paste Variants, No-Op Updates, TOCTOU Race Conditions (specifically flagging Snowflake <code>IF EXISTS THEN INSERT</code> patterns), Over-Broad Reads, Redundant State.</p>
 <p>Finding labels: <code>blocking</code> · <code>important</code> · <code>nit</code> · <code>suggestion</code> · <code>learning</code> · <code>praise</code> (mandatory — at least one per review). Verdict: APPROVE / COMMENT / REQUEST_CHANGES.</p>
 <p>Review output written to <code>.cocoplus/review/cocoreview-&lt;timestamp&gt;.md</code> — committed to git.</p>
@@ -994,8 +1010,8 @@ $ops
 $ops dora
 </code></pre>
 <p>Runs <code>dora-metrics.js</code> (deterministic — no LLM) to compute four DORA-adapted metrics from Snowflake task execution history and <code>git log</code>: Pipeline Run Frequency, Data Availability Lead Time, Failure Recovery Time, and Data Quality Failure Rate. Each metric is classified against standard DORA tier thresholds (Elite / High / Medium / Low). A Haiku sub-agent then generates a narrative synthesis citing specific pipeline names, dates, and quantities — no vague generalities.</p>
-<p>Report written to <code>.cocoplus/ops/dora-snapshot.json</code> and committed to git after each run.</p>
-<p><strong>Output:</strong> DORA report with tier classifications + notable signals + git commit.</p>
+<p>Report written to <code>.cocoplus/ops/dora-snapshot.json</code> and committed to git after each run. After commit, <code>ops-thesis-updater.js</code> runs asynchronously to extend <code>.cocoplus/ops/dora-thesis.md</code> with a dated evidence block from the new snapshot — carry-forward pattern, never overwriting prior content.</p>
+<p><strong>Output:</strong> DORA report with tier classifications + notable signals + git commit + async thesis extension.</p>
 <hr>
 <p><strong><code>$ops sprint</code></strong> — Compute current sprint health</p>
 <pre><code>
@@ -1025,6 +1041,74 @@ $ops refresh
 <p>Re-runs <code>dora-metrics.js</code> against current Snowflake task history and updates <code>dora-snapshot.json</code>. Useful for refreshing the metrics view after a long pipeline run completes without regenerating the full narrative report.</p>
 <p><strong>Output:</strong> Updated <code>dora-snapshot.json</code> + git commit.</p>
 <hr>
+<h2 id="decision-audit-trail-cocoaudit">Decision Audit Trail — CocoAudit</h2>
+<p><strong><code>$audit view</code></strong> — Display the full append-only decision audit trail</p>
+<pre><code>
+$audit view
+</code></pre>
+<p>Reads and displays <code>lifecycle/audit.md</code> — the append-only log of every AI recommendation, tool call, and gate decision made during the session. Each entry includes timestamp, event type, and a brief rationale. Provides a complete chronological record for compliance review or retrospective analysis.</p>
+<p><strong>Output:</strong> Formatted display of <code>lifecycle/audit.md</code>.</p>
+<hr>
+<p><strong><code>$audit view --from &lt;date&gt;</code></strong> — Filter audit trail from a specific date</p>
+<pre><code>
+$audit view --from 2025-01-15
+</code></pre>
+<p>Displays only audit entries from the specified date onward. Accepts ISO date format (YYYY-MM-DD). Useful for reviewing decisions made during a specific sprint or release window.</p>
+<p><strong>Output:</strong> Filtered view of <code>lifecycle/audit.md</code> from the specified date.</p>
+<hr>
+<p><strong><code>$audit export</code></strong> — Export audit trail as a timestamped compliance document</p>
+<pre><code>
+$audit export
+</code></pre>
+<p>Exports the complete audit trail to <code>.cocoplus/audit-export-[YYYY-MM-DDTHH-MM-SSZ].md</code> — a uniquely timestamped, immutable snapshot. Each invocation produces a new file; prior exports are never overwritten. Intended for compliance handoffs, stakeholder review packages, or archival.</p>
+<p><strong>Output:</strong> <code>.cocoplus/audit-export-[timestamp].md</code> + event count displayed.</p>
+<hr>
+<h2 id="artifact-trace-cocoTrace">Artifact Traceability — CocoTrace</h2>
+<p><strong><code>$trace build</code></strong> — Build the artifact traceability map for the current project</p>
+<pre><code>
+$trace build
+</code></pre>
+<p>Scans all lifecycle artifacts (<code>spec.md</code>, <code>plan.md</code>, task files, test outputs, <code>ship.md</code>) and constructs a traceability map linking requirements to implementations to tests to delivery. Writes the map to <code>lifecycle/trace.md</code>. Runs asynchronously as a non-blocking advisory after SessionStart.</p>
+<p><strong>Output:</strong> <code>lifecycle/trace.md</code> traceability map.</p>
+<hr>
+<p><strong><code>$trace gaps</code></strong> — Report requirements with no corresponding test or implementation</p>
+<pre><code>
+$trace gaps
+</code></pre>
+<p>Reads the traceability map and identifies orphaned requirements — spec items that have no linked implementation artifact, or implementations with no test coverage link. Outputs a gap report to <code>lifecycle/trace-gaps.md</code>. Advisory only, never blocks build.</p>
+<p><strong>Output:</strong> <code>lifecycle/trace-gaps.md</code> gap summary.</p>
+<hr>
+<p><strong><code>$trace show &lt;artifact&gt;</code></strong> — Show all trace links for a specific artifact</p>
+<pre><code>
+$trace show spec.md
+$trace show plan.md
+</code></pre>
+<p>Displays all upstream and downstream links for the named artifact — what requirements it satisfies, what tests cover it, what delivery artifacts reference it. Useful for impact analysis before modifying a critical artifact.</p>
+<p><strong>Output:</strong> Formatted trace link table for the specified artifact.</p>
+<hr>
+<h2 id="schema-diagram-cocosketch">Schema &amp; Architecture Diagrams — CocoSketch</h2>
+<p><strong><code>$sketch schema</code></strong> — Generate an entity-relationship diagram for the current data model</p>
+<pre><code>
+$sketch schema
+</code></pre>
+<p>Reads Snowflake table definitions from the scanned context and generates a Mermaid ER diagram representing the current schema. Auto-layout applied via <code>sketch-autolayout.js</code>. Writes to <code>lifecycle/sketch-schema.md</code>. Validates diagram syntax before writing via <code>sketch-validate.js</code>.</p>
+<p><strong>Output:</strong> <code>lifecycle/sketch-schema.md</code> with rendered Mermaid ER diagram.</p>
+<hr>
+<p><strong><code>$sketch flow</code></strong> — Generate a data flow diagram for the current pipeline</p>
+<pre><code>
+$sketch flow
+</code></pre>
+<p>Reads <code>flow.json</code> and task definitions to produce a Mermaid flowchart showing data movement through the pipeline: sources → transforms → destinations. Validates and auto-layouts the diagram. Writes to <code>lifecycle/sketch-flow.md</code>.</p>
+<p><strong>Output:</strong> <code>lifecycle/sketch-flow.md</code> with rendered Mermaid flowchart.</p>
+<hr>
+<p><strong><code>$sketch deps</code></strong> — Generate a dependency graph with transitive reduction (default on)</p>
+<pre><code>
+$sketch deps
+$sketch deps --reduce off
+</code></pre>
+<p>Generates a Mermaid dependency graph for all pipeline tasks. By default, applies transitive reduction via <code>map-reduce.js</code> — removes edges that are implied by longer paths, eliminating visual clutter without losing information. Use <code>--reduce off</code> to see the raw full dependency graph including all implied edges.</p>
+<p><strong>Output:</strong> <code>lifecycle/sketch-deps.md</code> with Mermaid dependency graph.</p>
+<hr>
 <h2 id="hooks-automatic-reference-only">Hooks (Automatic — Reference Only)</h2>
 <p>These hooks fire on Coco lifecycle events. They are documented here for understanding the system, not for manual invocation.</p>
 <table>
@@ -1037,7 +1121,7 @@ $ops refresh
 <tr>
   <td style="text-align:left"><strong>SessionStart</strong></td>
   <td style="text-align:left">Coco session begins</td>
-  <td style="text-align:left">Reads state, initializes CocoMeter, triggers inspector background scan if auto-mode active, evaluates CocoSeed trigger conditions and surfaces newly-ready seeds</td>
+  <td style="text-align:left">Reads state, initializes CocoMeter, triggers inspector background scan if auto-mode active, evaluates CocoSeed trigger conditions and surfaces newly-ready seeds; spawns CocoTrace async advisory (non-blocking, Tier 2 fire-and-forget)</td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>SessionEnd</strong></td>
@@ -1052,12 +1136,12 @@ $ops refresh
 <tr>
   <td style="text-align:left"><strong>PostToolUse</strong></td>
   <td style="text-align:left">After any tool call</td>
-  <td style="text-align:left">Memory Engine capture layer — records significant tool use events to warm memory layer; CocoHealth samples context utilization and fires threshold warnings when applicable</td>
+  <td style="text-align:left">Memory Engine capture layer — records significant tool use events to warm memory layer; CocoHealth samples context utilization and fires threshold warnings when applicable; CocoAudit appends tool call event to <code>lifecycle/audit.md</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>UserPromptSubmit</strong></td>
   <td style="text-align:left">Developer submits a prompt</td>
-  <td style="text-align:left">Intercepts <code>$&lt;persona&gt;</code> shorthand for persona routing; intercepts <code>$cocoplus on</code> and <code>$cocoplus off</code></td>
+  <td style="text-align:left">Intercepts <code>$&lt;persona&gt;</code> shorthand for persona routing; intercepts <code>$cocoplus on</code> and <code>$cocoplus off</code>; applies three-tier latency contract: Tier 1 (&lt;50ms) inline blocking, Tier 2 async fire-and-forget advisory, Tier 3 deferred to background</td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>SubagentStop</strong></td>
@@ -1099,7 +1183,7 @@ $ops refresh
 </tr>
 <tr>
   <td style="text-align:left"><strong>Lifecycle</strong></td>
-  <td style="text-align:left"><code>$bloom</code> · <code>$bloom --skip</code> · <code>$bloom crystallize</code> · <code>$spec --quick</code> · <code>$spec --full</code> · <code>$discuss</code> · <code>$cocoplus plan</code> · <code>$cocoplus build</code> · <code>$cocoplus test</code> · <code>$cocoplus review</code> · <code>$cocoplus ship</code> · <code>$rewind [--tag]</code> · <code>$fork</code></td>
+  <td style="text-align:left"><code>$bloom</code> · <code>$bloom --skip</code> · <code>$bloom crystallize</code> · <code>$spec --quick</code> · <code>$spec --full</code> · <code>$discuss</code> · <code>$discuss --red-team</code> · <code>$cocoplus plan</code> · <code>$cocoplus build</code> · <code>$cocoplus test</code> · <code>$cocoplus review</code> · <code>$cocoplus ship</code> · <code>$rewind [--tag]</code> · <code>$fork</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Pipeline</strong></td>
@@ -1183,7 +1267,7 @@ $ops refresh
 </tr>
 <tr>
   <td style="text-align:left"><strong>Pull</strong></td>
-  <td style="text-align:left"><code>$pull &lt;target&gt;</code> · <code>$pull --validate</code> · <code>$pull search "&lt;query&gt;"</code></td>
+  <td style="text-align:left"><code>$pull &lt;target&gt;</code> · <code>$pull --validate</code> · <code>$pull --human</code> · <code>$pull search "&lt;query&gt;"</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Docs</strong></td>
@@ -1199,7 +1283,7 @@ $ops refresh
 </tr>
 <tr>
   <td style="text-align:left"><strong>Map</strong></td>
-  <td style="text-align:left"><code>$map</code> · <code>$map diff</code> · <code>$map explain &lt;target&gt;</code></td>
+  <td style="text-align:left"><code>$map</code> · <code>$map diff</code> · <code>$map explain &lt;target&gt;</code> · <code>$map --reduce</code> · <code>$map --reduce off</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Seeds</strong></td>
@@ -1208,6 +1292,18 @@ $ops refresh
 <tr>
   <td style="text-align:left"><strong>CocoWatch</strong></td>
   <td style="text-align:left"><em>(automatic — summary at <code>$cocoplus ship</code> and FULL checkpoints)</em></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Audit</strong></td>
+  <td style="text-align:left"><code>$audit view</code> · <code>$audit view --from &lt;date&gt;</code> · <code>$audit export</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Trace</strong></td>
+  <td style="text-align:left"><code>$trace build</code> · <code>$trace gaps</code> · <code>$trace show &lt;artifact&gt;</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Sketch</strong></td>
+  <td style="text-align:left"><code>$sketch schema</code> · <code>$sketch flow</code> · <code>$sketch deps</code> · <code>$sketch deps --reduce off</code></td>
 </tr>
 </tbody>
 </table>
