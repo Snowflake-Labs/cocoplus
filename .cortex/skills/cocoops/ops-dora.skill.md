@@ -1,7 +1,7 @@
 ---
 name: ops-dora
-description: CocoOps DORA metrics — computes four DORA-adapted delivery metrics from Snowflake task history and git log. Invoked via $ops dora.
-version: "1.0.0"
+description: CocoOps DORA metrics — computes four DORA-adapted delivery metrics from Snowflake task history and git log. Extends longitudinal delivery thesis via ops-thesis-updater.js (async, non-blocking). Invoked via $ops dora.
+version: "1.1.0"
 author: CocoPlus
 tags:
   - cocoops
@@ -53,6 +53,18 @@ Do not produce: 'your pipelines may be slow' — instead produce: 'pipeline X ha
 
 Write insights to `.cocoplus/ops/dora-insights-<YYYY-MM-DD>.md`. Commit both `dora-snapshot.json` and the insights file only if either file has changed since the last commit (use `git diff --quiet` to check before committing). If neither file changed, skip the commit and note: "Snapshot unchanged since last run — no commit needed."
 
+## Step 5b — Extend Longitudinal Thesis (Async)
+
+After committing the snapshot, spawn `scripts/ops-thesis-updater.js` as a fire-and-forget async call (does not block the report display):
+
+```
+node scripts/ops-thesis-updater.js
+```
+
+This script reads `dora-snapshot.json` and extends `.cocoplus/ops/dora-thesis.md` with a new evidence block. It never replaces the prior thesis — only appends. If the script fails, log warning to `.cocoplus/hook-errors.log` and continue (non-fatal).
+
+Commit `dora-thesis.md` if it changed: `docs(ops): extend longitudinal delivery thesis — [date]`
+
 ## Step 6 — Display Report
 
 ```
@@ -77,6 +89,8 @@ Notable signals:
 | Let LLM compute the metrics | Metrics must be deterministic — same inputs always produce same numbers |
 | Omit pipeline names from narrative | Vague generalities are useless — citations are a constraint, not a preference |
 | Skip committing dora-snapshot.json | Snapshot is a team artifact — it must be in git for team members to see it |
+| Replace dora-thesis.md content | Thesis is longitudinal — replacing destroys delivery history; only extend via ops-thesis-updater.js |
+| Block report display on thesis update | Thesis update is async and non-blocking — display proceeds immediately after Step 5 |
 
 ## Exit Criteria
 
@@ -84,3 +98,4 @@ Notable signals:
 - Haiku narrative cites specific pipeline names, dates, quantities
 - `dora-snapshot.json` committed to git
 - Insights file written to date-stamped path
+- `ops-thesis-updater.js` spawned async after commit; `dora-thesis.md` committed if changed
