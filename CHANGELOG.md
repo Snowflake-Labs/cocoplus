@@ -4,6 +4,67 @@ All notable changes to CocoPlus are documented here.
 
 ---
 
+## [1.1.1] — June 2026
+
+### Added
+
+#### CocoAudit — Session Audit Trail (Feature 40)
+- `cocoaudit.skill.md` — `$audit view` displays last 20 audit events with optional `--from <date>` filter; `$audit export` writes unique timestamped export files (idempotent per session)
+- `audit-export.skill.md` — namespace router for `$audit export` sub-command
+- Opt-in via `modes/cocoaudit.on` sentinel file; created during `$pod init` when developer selects audit mode
+- `post-tool-use.js` Section 6: appends ISO 8601 UTC timestamped records to `lifecycle/audit.md` using `fs.appendFileSync` exclusively — never read-modify-write
+- `session-end.js` Section 3b: auto-commits `audit.md` with `chore(cocoaudit): append session audit record [timestamp]`
+- `pod-init.skill.md` extended: prompts "Enable session audit trail?" and creates `modes/cocoaudit.on` + `lifecycle/audit.md` with project header block
+
+#### CocoTrace — Artifact Traceability Graph (Feature 41)
+- `cocotrace.skill.md` — `$trace build` runs SHA-256 scan and commits `lifecycle/trace.json`; `$trace gaps` reports orphaned requirements and uncovered code; `$trace show <artifact>` renders ASCII upstream/downstream chain
+- `scripts/trace-check.js` — deterministic SHA-256 content-hash scanner; staleness propagates downstream via iterative edge traversal; no LLM; outputs "OK" or "STALE:node1,node2"; exits gracefully on missing state
+- `session-start.js` Section 5: spawns `trace-check.js` as Tier 2 async check; writes advisory to stderr if any artifact is STALE; non-fatal on failure
+
+#### CocoSketch — Visual Diagram Generation (Feature 42)
+- `cocosketch.skill.md` — seven-step draw.io pipeline for `$sketch schema`, `$sketch flow`, `$sketch deps`; validates XML before Step 5; no `-e` for preview PNG; `-e` for final PNG; repairs IEND after Step 7; fallback chain to Mermaid
+- `scripts/sketch-validate.js` — deterministic draw.io XML lint; checks `mxGraphModel` root, closing tag, required cells (id="0", id="1"), duplicate ids, orphaned edge references; exit 0=PASS, exit 1=FAIL
+- `scripts/sketch-autolayout.js` — Kahn's algorithm topological sort; LR level assignment; NODE_W=120, NODE_H=60, H_GAP=50, V_GAP=40, MARGIN=30; used for >15 nodes
+- `scripts/sketch-repair.js` — restores truncated PNG IEND chunk from draw.io `-e` exports; finds last IEND marker, verifies 12-byte chunk integrity, repairs from chunk start with complete IEND_CHUNK buffer
+- Built-in style presets: `default.json` (blue palette, orthogonal, LR), `corporate.json` (greyscale, bold, TB), `handdrawn.json` (rough/sketchy, LR)
+
+### Updated
+
+#### CocoBehavior — Boy Scout Rule (Feature 22 Enhancement)
+- `SKILL.md` v1.1.1: Constraint 5 added — Boy Scout Rule; one 66-rule violation per code-touch with mandatory rule-number citation (`"G25 applied: [what changed]"`); 66-rule reference table for Cortex code (F1, F3, G25, G36, N7, T9); "five constraints" in closing paragraph
+
+#### CocoReview — Phase 5 Clean Code Enforcement (Feature 38 Enhancement)
+- `cocoreview.skill.md`: Step 7b added — Phase 5 scans Categories C, F, G, N, T with mandatory rule-number citations; YAML finding format with `phase`, `rule`, `severity`, `finding`, `file`, `line`; mandatory praise invariant; Exit Criteria updated to require Phase 5 praise finding
+- `skills/cocoreview/clean-code.md` (new): 66-rule taxonomy reference guide with Cortex/Snowflake violation examples for all categories (C1–C5, E1–E3, F1–F4, G1–G36, N1–N7, T1–T9); Phase 5 review protocol with finding format
+
+#### CocoSentinel — Dimension H Clean Code Gate (Feature 36 Enhancement)
+- `sentinel.skill.md` v1.1.1: eight dimensions (A1–F, H); Dimension H FAIL overrides all others to BLOCKED; Step 7 spawns 8 parallel agents; Step 9 verdict logic updated with H-override rule; report template includes H row
+- `sentinel-h.agent.md` (new): Dimension H — Clean Code (66-Rule Taxonomy); FAIL on structural violations (G5, G22, G31, N7 at cross-file scope); mandatory praise in every output; OVERRIDE_NOTE field when FAIL
+
+#### CocoDiscuss — Red-Team Mode (Feature 30 Enhancement)
+- `discuss.skill.md` v1.1.0: `--red-team` flag documented; post-PASS trigger for red-team session; non-blocking advisory
+- `red-team.skill.md` (new): adversarial challenge session against all six `discuss.md` decision dimensions; per-challenge Risk Level (LOW/MEDIUM/HIGH); report written to `lifecycle/discuss-red-team.md` (append-only); never blocks `$plan`
+
+#### CocoScout — Three-Tier Latency Contract (Feature 24 Enhancement)
+- `SKILL.md` v1.1.0: Three-Tier Latency Contract table documented (Tier 1 <50ms inline, Tier 2 <5s async, Tier 3 batch/off-cycle); Tier 2 invariant: CocoScout must not block `UserPromptSubmit` hook return
+- `user-prompt-submit.js`: Tier 1/2/3 contract documented in file header; Tier 1 SLA breach logging at >50ms; Tier 2 `spawnCocoScout()` via `execFile` fire-and-forget; persona routing sets `routed` flag to suppress scout spawn
+
+#### CocoMap — Transitive Reduction (Feature 28 Enhancement)
+- `map.skill.md` v1.1.0: `--reduce` / `--reduce off` flags; Step 7 runs `map-reduce.js` before merge; `structural.reduction` field in `coco-map.json`; anti-rationalization updated
+- `scripts/map-reduce.js` (new): standard transitive reduction; O(V×E) BFS reachability; no LLM; atomic output write; outputs `removed_edges`, `reduction_stats`
+
+#### CocoWisdom — Carry-Forward Thesis (Feature 37 Enhancement)
+- `wisdom-insights.skill.md` v1.1.0: Step 1 loads prior thesis from most recent `insights-*.md`; Haiku mandate updated with carry-forward rule (prior thesis verbatim + `### New Evidence` subsection); insights file template includes `## Thesis` section; same-day file collision produces timestamped filename
+
+#### CocoOps — Longitudinal Thesis (Feature 39 Enhancement)
+- `ops-dora.skill.md` v1.1.0: Step 5b spawns `ops-thesis-updater.js` async after commit; `dora-thesis.md` committed if changed
+- `scripts/ops-thesis-updater.js` (new): deterministic carry-forward thesis writer; reads `dora-snapshot.json`, appends dated evidence block to `dora-thesis.md`; never overwrites prior content
+
+#### CocoPull — Two Output Modes (Feature 35 Enhancement)
+- `pull.skill.md` v1.1.0: `--human` flag produces `<target>.pull-human.md` — prose narrative for stakeholder consumption; not used by CocoHarvest; never overwrites machine `.pull.md`; Sonnet subagent with inverted-pyramid structure, 500-word cap, plain language constraint
+
+---
+
 ## [1.1.0] — May 2026
 
 ### Added
