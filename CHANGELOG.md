@@ -4,7 +4,7 @@ All notable changes to CocoPlus are documented here.
 
 ---
 
-## [1.2.0] — June 2026
+## [1.1.0] — June 2026
 
 ### Added
 
@@ -517,10 +517,3 @@ All notable changes to CocoPlus are documented here.
 - All 56 skills — Exit Criteria and Anti-Rationalization sections added
 - All platform-specific bash commands in skills replaced with Node.js one-liners
 
----
-
-[1.0.0]: https://github.com/Snowflake-Labs/cocoplus/releases/tag/v1.0.0
-[1.0.1]: https://github.com/Snowflake-Labs/cocoplus/releases/tag/v1.0.1
-[1.0.2]: https://github.com/Snowflake-Labs/cocoplus/releases/tag/v1.0.2
-[1.0.3]: https://github.com/Snowflake-Labs/cocoplus/releases/tag/v1.0.3
-[1.1.0]: https://github.com/Snowflake-Labs/cocoplus/releases/tag/v1.1.0
