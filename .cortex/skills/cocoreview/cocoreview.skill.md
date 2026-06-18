@@ -1,7 +1,7 @@
 ---
 name: cocoreview
 description: CocoReview — structured code review with six-severity findings vocabulary, progressive disclosure architecture, and universal anti-pattern baseline. Invoked via $review [file] [--complexity] [--security] [--architecture] [--language <lang>].
-version: "1.0.0"
+version: "1.2.0"
 author: CocoPlus
 tags:
   - cocoreview
@@ -139,6 +139,39 @@ Finding format:
 
 If no clean-code violations are found, emit praise for the most clearly applied rule observed. Never omit the Phase 5 praise finding.
 
+## Step 7c — Phase 6: Complexity Audit (CocoLean Five-Tag Classification)
+
+Phase 6 applies the five CocoLean classification tags to the Cortex function layer of the reviewed artifact. This is a retrospective surface-area analysis on the completed artifact — not pre-commit like `$lean review`, but post-build and artifact-scoped. Phase 6 always runs on every artifact review.
+
+For each construct in the artifact's Cortex function layer, determine which tags apply:
+
+| Tag | Meaning | Finding Severity |
+|-----|---------|-----------------|
+| `delete` | No callers, no tests, no declared purpose in `spec.md` or `discuss.md` | `blocking` if touches trust boundary; `important` otherwise |
+| `stdlib` | Logic reimplementing a Snowflake built-in — include specific replacement | `important` |
+| `native` | AI function performing a task more correctly expressed as a native object (stream, task, dynamic table, alert, policy, materialized view) — include recommended object type | `important` |
+| `yagni` | Abstractions, flags, or extension points with no corresponding spec requirement | `nit` if no security risk; `important` if expands attack surface or adds untested code paths |
+| `shrink` | One logical operation expressed in more code than required | `nit` |
+
+**Finding format (Phase 6):**
+```yaml
+- phase: 6
+  tag: stdlib
+  severity: important
+  finding: "GET_PATH() built-in available — manual JSON key extraction reimplements it"
+  file: classify_entity.sql
+  line: 34
+  action: "Replace with: GET_PATH(obj, 'entity.type')"
+```
+
+**Phase 6 tag distribution summary** (required in output): `delete:[N] stdlib:[N] native:[N] yagni:[N] shrink:[N]`
+
+**Mandatory praise invariant (Phase 6):** If the artifact shows restraint — a task expressible in two lines is expressed in two lines, a native object is used instead of a custom function — emit a `praise` finding citing the specific example.
+
+**Carve-outs:** Never tag trust boundary implementations, security controls, data loss prevention, compliance requirements, or error handling as `delete`, `yagni`, or `shrink`. These are always exempt.
+
+**Integration:** Phase 6 uses the same five-tag vocabulary as `$lean review`. The difference: `$lean review` is diff-scoped and pre-commit; Phase 6 is artifact-scoped and post-build. Both tools share vocabulary so findings are trend-analyzable across CocoReview reports over time.
+
 ## Step 8 — Write and Commit Review Output
 
 Write the structured review to `.cocoplus/review/cocoreview-<YYYY-MM-DD-HHMMSS>.md`:
@@ -171,6 +204,10 @@ Write the structured review to `.cocoplus/review/cocoreview-<YYYY-MM-DD-HHMMSS>.
 ### Clean Code (Phase 5)
 - [[rule-id]] [finding] (severity: nit/praise)
 
+### Complexity Audit (Phase 6)
+**Tag distribution:** delete:[N] stdlib:[N] native:[N] yagni:[N] shrink:[N]
+- [[tag]] [finding] (severity: important/nit/praise)
+
 ### Verdict
 [APPROVE / COMMENT / REQUEST_CHANGES] — [one-line rationale]
 ```
@@ -199,5 +236,6 @@ Show the Summary and Verdict sections.
 - XL artifacts get split recommendation surfaced
 - At least one `praise` finding in every review (Phases 1-4)
 - Phase 5 clean-code section present with at least one rule-cited `praise` finding
+- Phase 6 complexity audit section present with tag distribution summary
 - Structured review template output committed to git
 - `complexity-cache.json` is NOT committed (gitignored)
