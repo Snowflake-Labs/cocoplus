@@ -20,7 +20,7 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is
 ## Step 1 — Run Deterministic Diff Scanner
 
 ```
-node .cortex/scripts/lean-review.js
+node scripts/lean-review.js
 ```
 
 The script reads `git diff` (unstaged and staged changes), applies AST-level pattern matching, and outputs a JSON finding list. Read the JSON output.

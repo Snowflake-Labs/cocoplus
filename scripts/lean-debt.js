@@ -14,8 +14,6 @@
  * { records: Array<DebtRecord>, summary: { total, high, medium, low, malformed }, generated_at: ISO8601 }
  */
 
-'use strict';
-
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
@@ -65,12 +63,14 @@ function parseMarker(raw) {
   return fields;
 }
 
-// Get git blame date for a file:line
+// Get git blame date for a specific line
 function getAnnotationDate(filePath, lineNum) {
   try {
     const rel = path.relative(PROJECT_ROOT, filePath);
-    const out = execSync(`git log -1 --format="%ai" -- "${rel}"`, { encoding: 'utf8' }).trim();
-    return out ? new Date(out) : new Date();
+    const out = execSync(`git blame -L ${lineNum},${lineNum} --porcelain -- "${rel}"`, { encoding: 'utf8' });
+    const match = out.match(/^author-time (\d+)/m);
+    if (match) return new Date(parseInt(match[1], 10) * 1000);
+    return new Date();
   } catch {
     return new Date();
   }
