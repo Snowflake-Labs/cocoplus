@@ -958,7 +958,7 @@ $cocoplus review
 $cocoplus review path/to/artifact.sql
 </code></pre>
 <p>Without a target, reviews the current staged git diff. With a target, reviews the specified file. Runs <code>pr-complexity.js</code> (deterministic) to compute a complexity score, size bucket, non-test ratio, schema layer diversity, estimated review time, and risk flags. If size bucket is XL (≥800 lines of change), surfaces a split recommendation before proceeding with the review.</p>
-<p>Proceeds through five phases: Context Gathering (PR description, linked issue, CI status), High-Level Review (architecture and strategy — structural problems are surfaced here before line-by-line work), Line-by-Line Review (logic, security, performance, maintainability, reuse — with explicit reuse check before accepting new code), Summary and Verdict, Clean Code Enforcement (Phase 5 — scans Categories C/F/G/N/T of the 66-rule taxonomy; every finding carries a mandatory rule-number citation; mandatory <code>praise</code> finding citing a correctly-applied rule).</p>
+<p>Proceeds through six phases: Context Gathering (PR description, linked issue, CI status), High-Level Review (architecture and strategy — structural problems are surfaced here before line-by-line work), Line-by-Line Review (logic, security, performance, maintainability, reuse — with explicit reuse check before accepting new code), Summary and Verdict, Clean Code Enforcement (Phase 5 — scans Categories C/F/G/N/T of the 66-rule taxonomy; every finding carries a mandatory rule-number citation; mandatory <code>praise</code> finding citing a correctly-applied rule), Complexity Audit (Phase 6 — applies the five CocoLean tags to the Cortex function layer: <code>delete</code> · <code>stdlib</code> · <code>native</code> · <code>yagni</code> · <code>shrink</code>; tag distribution summary required in every report).</p>
 <p>Applies nine universal anti-patterns before any language-specific guide: Parameter Sprawl, Leaky Abstractions, Stringly-Typed Code, Nested Conditionals, Copy-Paste Variants, No-Op Updates, TOCTOU Race Conditions (specifically flagging Snowflake <code>IF EXISTS THEN INSERT</code> patterns), Over-Broad Reads, Redundant State.</p>
 <p>Finding labels: <code>blocking</code> · <code>important</code> · <code>nit</code> · <code>suggestion</code> · <code>learning</code> · <code>praise</code> (mandatory — at least one per review). Verdict: APPROVE / COMMENT / REQUEST_CHANGES.</p>
 <p>Review output written to <code>.cocoplus/review/cocoreview-&lt;timestamp&gt;.md</code> — committed to git.</p>
@@ -1040,6 +1040,43 @@ $ops refresh
 </code></pre>
 <p>Re-runs <code>dora-metrics.js</code> against current Snowflake task history and updates <code>dora-snapshot.json</code>. Useful for refreshing the metrics view after a long pipeline run completes without regenerating the full narrative report.</p>
 <p><strong>Output:</strong> Updated <code>dora-snapshot.json</code> + git commit.</p>
+<hr>
+<h2 id="complexity-prevention-cocolean">Complexity Prevention — CocoLean</h2>
+<p><strong><code>$lean</code> / <code>$lean full</code></strong> — Activate full mode and run the pre-build decision ladder</p>
+<pre><code>
+$lean
+$lean full
+</code></pre>
+<p>Activates all three CocoLean modes and presents the six-rung Cortex-adapted decision ladder before any new Cortex AI function, pipeline stage, or subagent is written. The ladder traverses from cheapest to most expensive: deterministic rule → native built-in → existing UDF → single AI_COMPLETE call → ten-line minimum → full function or pipeline. The developer identifies which rung the task lands on; CocoLean responds with rung-appropriate guidance. Intensity level written to <code>.cocoplus/modes/lean.mode</code> — persists across sessions.</p>
+<p><strong>Output:</strong> Decision ladder displayed, intensity mode set to <code>full</code>.</p>
+<hr>
+<p><strong><code>$lean lite</code></strong> — Switch to lite mode (decision ladder only)</p>
+<pre><code>
+$lean lite
+</code></pre>
+<p>Activates only the pre-build decision ladder. <code>$lean review</code> and <code>$lean debt</code> remain available but are not automatically triggered. Lowest friction mode — suited to early exploration phases.</p>
+<p><strong>Output:</strong> Intensity mode set to <code>lite</code>, decision ladder presented.</p>
+<hr>
+<p><strong><code>$lean ultra</code></strong> — Switch to ultra mode (full + enforcement)</p>
+<pre><code>
+$lean ultra
+</code></pre>
+<p>All three modes active with enforcement. A contested Rung 1 decision (the task appears deterministically solvable without AI) requires an explicit developer rationale before <code>$plan</code> proceeds. <code>blocking</code> findings from <code>$lean review</code> prevent commit until resolved. Suited to pre-release phases or periods of known complexity risk.</p>
+<p><strong>Output:</strong> Intensity mode set to <code>ultra</code>, decision ladder presented.</p>
+<hr>
+<p><strong><code>$lean review</code></strong> — Run diff-scoped over-engineering audit on current uncommitted changes</p>
+<pre><code>
+$lean review
+</code></pre>
+<p>Scans the current git diff (staged + unstaged) using <code>lean-review.js</code> — deterministic, no LLM, Tier 1 latency. Applies five CocoLean classification tags in severity order: <code>delete</code> (code with no callers, no tests, no spec reference — highest priority), <code>yagni</code> (speculative abstractions for undeclared requirements), <code>stdlib</code> (logic reimplementing a Snowflake built-in — includes replacement construct), <code>native</code> (AI function better expressed as a native Snowflake object — includes recommended type), <code>shrink</code> (verbose implementation of a single logical operation). Trust boundary implementations, security controls, and compliance requirements are always exempt. In <code>ultra</code> mode, <code>blocking</code> findings prevent commit until resolved.</p>
+<p><strong>Output:</strong> Finding list sorted by severity tier. Clean diffs report: "No over-engineering findings in current changes."</p>
+<hr>
+<p><strong><code>$lean debt</code></strong> — Run shortcut debt ledger harvest across the CocoPod</p>
+<pre><code>
+$lean debt
+</code></pre>
+<p>Harvests all <code>cocoplus:</code> comment markers across the CocoPod using <code>lean-debt.js</code> — deterministic, Tier 1 latency. Each marker carries three fields: <code>simplified=</code> (what shortcut was taken), <code>ceiling=</code> (condition under which it fails), <code>trigger=</code> (specific event prompting rework). Calculates ceiling imminence from current project metrics and ranks findings by <code>ceiling_imminence × days_since_annotation</code>. A Haiku narrative layer adds pattern analysis. Run before sprint planning and before any release gate.</p>
+<p><strong>Output:</strong> <code>.cocoplus/lifecycle/lean-debt.md</code> — committed to git.</p>
 <hr>
 <h2 id="decision-audit-trail-cocoaudit">Decision Audit Trail — CocoAudit</h2>
 <p><strong><code>$audit view</code></strong> — Display the full append-only decision audit trail</p>
@@ -1292,6 +1329,10 @@ $sketch deps --reduce off
 <tr>
   <td style="text-align:left"><strong>CocoWatch</strong></td>
   <td style="text-align:left"><em>(automatic — summary at <code>$cocoplus ship</code> and FULL checkpoints)</em></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Lean</strong></td>
+  <td style="text-align:left"><code>$lean</code> · <code>$lean lite</code> · <code>$lean full</code> · <code>$lean ultra</code> · <code>$lean review</code> · <code>$lean debt</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Audit</strong></td>
