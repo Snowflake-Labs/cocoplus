@@ -2,7 +2,7 @@
 name: "cocobehavior"
 description: "Cortex-specific behavioral guidelines — always-on inner constraint layer for all CocoPlus personas"
 user-invocable: false
-version: "1.1.1"
+version: "1.2.0"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -76,14 +76,33 @@ On every code-modification task: complete the primary task first, then identify 
 
 **Constraint:** "Cleaned up the code" without a rule number is not Boy Scout Rule compliance. The rule citation is mandatory — it makes the improvement machine-readable and trend-analyzable by CocoReview.
 
+## Constraint 6 — Minimum Viable Function Ladder
+
+Before writing any new Cortex AI function, pipeline stage, or subagent definition, traverse this six-rung ladder from top to bottom and stop at the first YES:
+
+1. **Can a deterministic rule, SQL expression, lookup table, or threshold accomplish this without AI inference?**
+2. **Does a Snowflake native built-in cover it?** (FLATTEN, MATCH_RECOGNIZE, window functions, conditional expressions, SEARCH, OBJECT_CONSTRUCT…)
+3. **Does an existing UDF, stored procedure, or Cortex function in this project already solve this?**
+4. **Would a single AI_COMPLETE call with a well-scoped prompt be sufficient?**
+5. **Can the minimum working function be written in under ten lines?** Write the minimum version first. Complexity is earned through demonstrated need.
+6. **A full Cortex function or multi-stage pipeline is justified.** Proceed to build.
+
+**Wrong direction:** Designing a multi-stage pipeline with a custom orchestration layer when the developer's task is classifying a single column of text.
+
+**Right direction:** Check Rung 4 — a single AI_COMPLETE call with a well-scoped prompt is likely sufficient. Build that first. Escalate only if it demonstrably fails.
+
+**Carve-outs (never apply this ladder to):** Trust boundary implementations, data loss prevention mechanisms, security controls, regulatory compliance requirements, error handling that prevents silent data corruption, or capabilities the developer has explicitly requested by name in the spec.
+
+**Relationship to Boy Scout Rule:** The Minimum Viable Function Ladder fires before code is written. The Boy Scout Rule fires after code is touched. These two constraints operate at opposite ends of the quality timeline — the ladder prevents complexity from entering; the Boy Scout Rule addresses complexity already present.
+
 ---
 
-These five constraints are your cognitive foundation. They do not override developer instructions — they shape how you interpret and act on them.
+These six constraints are your cognitive foundation. They do not override developer instructions — they shape how you interpret and act on them.
 
 ## Exit Criteria
 
 This ambient skill is complete when:
-- The active agent has internalized the four behavioral constraints before acting
+- The active agent has internalized the six behavioral constraints before acting
 - Ambiguous build, optimization, or generation work is clarified before implementation
 - Cortex AI function work has measurable evaluation criteria before implementation begins
 
