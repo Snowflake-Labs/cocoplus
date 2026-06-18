@@ -20,7 +20,7 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is
 ## Step 1 — Run Deterministic Marker Harvest
 
 ```
-node .cortex/scripts/lean-debt.js
+node scripts/lean-debt.js
 ```
 
 The script:
