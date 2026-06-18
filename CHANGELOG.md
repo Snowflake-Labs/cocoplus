@@ -4,6 +4,40 @@ All notable changes to CocoPlus are documented here.
 
 ---
 
+## [1.2.0] — June 2026
+
+### Added
+
+#### CocoLean — Minimum Viable Cortex Surface (Feature 43)
+- `cocolean/lean.skill.md` — `$lean`, `$lean lite`, `$lean full`, `$lean ultra` activate the six-rung Cortex-adapted decision ladder and set the intensity mode in `.cocoplus/modes/lean.mode`; intensity persists across sessions; three intensity levels: lite (ladder only), full (all modes, default), ultra (full + enforcement — contested Rung 1 requires explicit rationale before `$plan` proceeds)
+- `cocolean/lean-review.skill.md` — `$lean review` invokes `lean-review.js` (deterministic, no LLM, Tier 1 latency) to scan the current git diff and apply five classification tags in severity order: `delete` (no callers, no tests, no spec reference), `yagni` (speculative abstractions), `stdlib` (reimplemented built-ins — includes replacement construct), `native` (AI function better expressed as native Snowflake object — includes recommended type), `shrink` (verbose single-operation implementation); carve-outs (trust boundaries, security controls, compliance) are always exempt
+- `cocolean/lean-debt.skill.md` — `$lean debt` invokes `lean-debt.js` (deterministic harvest, Haiku narrative layer) to scan all `cocoplus:` markers across the CocoPod; each marker carries `simplified=`, `ceiling=`, `trigger=` fields; findings ranked by `ceiling_imminence × days_since_annotation`; report committed to `.cocoplus/lifecycle/lean-debt.md`
+- `scripts/lean-review.js` — deterministic diff scanner; reads staged + unstaged git diff; applies stdlib/native/yagni/shrink/delete patterns via regex and AST matching; checks declared requirements in `spec.md` and `discuss.md` for yagni/delete classification; no LLM
+- `scripts/lean-debt.js` — deterministic `cocoplus:` marker harvester; walks all project files; extracts three required fields; calculates ceiling imminence from project metrics (`dora-snapshot.json`, `flow.json`, seed count); ranks by `ceiling_imminence × days_since_annotation`; outputs JSON; LLM narrative is added by the skill layer
+
+### Updated
+
+#### CocoBehavior — Minimum Viable Function Ladder (Feature 22 Enhancement)
+- `cocobehavior/SKILL.md` v1.2.0: Constraint 6 added — Minimum Viable Function Ladder; six-rung pre-build checklist embedded as compact constraint; fires before any tool call that creates a new Cortex function, stage handler, or subagent definition; advisory by default, enforcing in `$lean ultra` mode; carve-outs match CocoLean's non-negotiable exemptions; closing paragraph updated to "six constraints"; Exit Criteria updated from four to six
+
+#### CocoReview — Phase 6 Complexity Audit (Feature 38 Enhancement)
+- `cocoreview.skill.md` v1.2.0: Step 7c added — Phase 6 Complexity Audit; applies five CocoLean classification tags (`delete`/`stdlib`/`native`/`yagni`/`shrink`) to the Cortex function layer of the reviewed artifact; tag distribution summary (`delete:[N] stdlib:[N] native:[N] yagni:[N] shrink:[N]`) required in every report; mandatory `praise` finding when artifact shows complexity restraint; carve-outs match CocoLean exemptions; Phase 6 always runs (not routed by flags); output template updated with "Complexity Audit (Phase 6)" section; Exit Criteria updated to require Phase 6 tag distribution summary
+
+#### Persona Agent Files — Character Backstories
+- `data-engineer.agent.md`: **Background** paragraph added — pipeline failure modes, upstream schema assumptions, contract between teams
+- `analytics-engineer.agent.md`: **Background** paragraph added — metric definition discipline, dashboard number disagreements
+- `data-scientist.agent.md`: **Background** paragraph added — plausible-vs-correct distinction, evaluation metric as hypothesis
+- `data-analyst.agent.md`: **Background** paragraph added — ad-hoc query documentation discipline, assumption capture
+- `bi-analyst.agent.md`: **Background** paragraph added — dashboard usage decay, decision-enablement test before design
+- `data-product-manager.agent.md`: **Background** paragraph added — specified-vs-needed gap, decision-enablement framing
+- `data-steward.agent.md`: **Background** paragraph added — undocumented schema assumptions as organizational debt
+- `chief-data-officer.agent.md`: **Background** paragraph added — organizational absorption rate, operationalizability over elegance
+
+#### Plugin Manifest
+- `plugin.json` v1.2.0: skills array gains `cocolean/lean`, `cocolean/lean-review`, `cocolean/lean-debt`; scripts array gains `scripts/lean-review.js`, `scripts/lean-debt.js`
+
+---
+
 ## [1.1.1] — June 2026
 
 ### Added
