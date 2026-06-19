@@ -4,6 +4,16 @@
 
 Built using only Coco-native constructs: Skills, Agents, Hooks, and AGENTS.md.
 
+## Star History
+
+<a href="https://www.star-history.com/?repos=Snowflake-Labs%2Fcocoplus&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Snowflake-Labs/cocoplus&type=date&theme=dark&legend=bottom-right" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Snowflake-Labs/cocoplus&type=date&legend=bottom-right" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Snowflake-Labs/cocoplus&type=date&legend=bottom-right" />
+ </picture>
+</a>
+
 ---
 
 ## What It Does
