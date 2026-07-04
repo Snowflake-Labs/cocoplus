@@ -4,18 +4,6 @@
 
 Built using only Coco-native constructs: Skills, Agents, Hooks, and AGENTS.md.
 
-## Star History
-
-<a href="https://www.star-history.com/?repos=Snowflake-Labs%2Fcocoplus&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Snowflake-Labs/cocoplus&type=date&theme=dark&legend=bottom-right" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Snowflake-Labs/cocoplus&type=date&legend=bottom-right" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Snowflake-Labs/cocoplus&type=date&legend=bottom-right" />
- </picture>
-</a>
-
----
-
 ## What It Does
 
 CocoPlus wraps a structured development lifecycle around every project — from requirements capture through production ship — enforcing phase gates, parallel specialist execution, and checkpoint-validated delivery at each step. It decomposes work across eight specialist personas matched to domain, runs them in isolated git worktrees, and tracks every decision, token, and quality finding across sessions. A multi-layer safety gate protects production Snowflake objects from accidental modification, while a persistent pattern library and project knowledge base compound institutional memory over time. Thirty-five features covering orchestration, evaluation, governance, cost visibility, prompt engineering, pre-spec commitment, multi-agent deliberation, and context distillation — all running on Coco-native constructs with no external services.
