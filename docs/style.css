@@ -66,12 +66,24 @@ nav {
 }
 
 nav .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   color: #fff;
   font-weight: 700;
   font-size: 0.95rem;
   margin-right: 1rem;
   white-space: nowrap;
   text-decoration: none;
+}
+
+nav .brand img {
+  height: 24px;
+  width: auto;
+  display: block;
+}
+
+nav .brand span {
   background: linear-gradient(135deg, var(--accent), #ffffff);
   -webkit-background-clip: text;
   background-clip: text;
