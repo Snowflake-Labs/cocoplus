@@ -1,0 +1,26 @@
+<svg width="180" height="180" xmlns="http://www.w3.org/2000/svg" class="cocoplus-logo" role="img" aria-label="CocoPlus logo">
+ <defs>
+  <linearGradient id="beanGradientColor" x1="0" y1="0" x2="1" y2="1">
+   <stop offset="0%" stop-color="#7c3aed"/>
+   <stop offset="52%" stop-color="#4f46e5"/>
+   <stop offset="100%" stop-color="#0284c7"/>
+  </linearGradient>
+  <linearGradient id="plusGradientColor" x1="0" y1="0" x2="1" y2="1">
+   <stop offset="0%" stop-color="#8b5cf6"/>
+   <stop offset="100%" stop-color="#2563eb"/>
+  </linearGradient>
+ </defs>
+ <g>
+  <title>Layer 1</title>
+  <g id="svg_1">
+   <ellipse cx="49" cy="68" rx="24" ry="54" transform="rotate(35, 49, 68)" fill="url(#beanGradientColor)" id="svg_2"/>
+   <path d="m34,30c25,23 11,54 -9,81" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" id="svg_3"/>
+   <ellipse cx="85" cy="90" rx="27" ry="58" transform="rotate(62, 85, 90)" fill="url(#beanGradientColor)" id="svg_4"/>
+   <path d="m40,87c31,-23 60,-26 89,-17" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" id="svg_5"/>
+   <ellipse cx="77" cy="115" rx="25" ry="60" transform="rotate(83, 77, 115)" fill="url(#beanGradientColor)" id="svg_6"/>
+   <path d="m26,122c36,-24 71,-28 109,-19" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" id="svg_7"/>
+   <circle cx="140" cy="132" r="26" fill="url(#plusGradientColor)" stroke="#ffffff" stroke-width="7" id="svg_8"/>
+   <path d="m140,117l0,30m-15,-15l30,0" stroke="#ffffff" stroke-width="8" stroke-linecap="round" id="svg_9"/>
+  </g>
+ </g>
+</svg>

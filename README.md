@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/cocoplus_logo_color.svg" alt="CocoPlus logo" width="200">
+</p>
+
 # CocoPlus
 
 **CocoPlus** is an AI-powered development lifecycle plugin for the Snowflake Cortex Code CLI. It brings structured, multi-agent workflows to data engineering projects — covering everything from project initialization through spec, plan, build, test, review, and ship phases.

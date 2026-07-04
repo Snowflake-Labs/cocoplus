@@ -1,0 +1,16 @@
+<svg width="180" height="180" xmlns="http://www.w3.org/2000/svg" class="cocoplus-logo" role="img" aria-label="CocoPlus logo">
+ <g>
+  <title>Layer 1</title>
+  <g id="svg_1">
+   <ellipse cx="54" cy="68" rx="24" ry="54" transform="rotate(35, 54, 68)" fill="#111111" id="svg_2"/>
+   <path d="m39,30c25,23 11,54 -9,81" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" id="svg_3"/>
+   <ellipse cx="90" cy="90" rx="27" ry="58" transform="rotate(62, 90, 90)" fill="#111111" id="svg_4"/>
+   <path d="m45,87c31,-23 60,-26 89,-17" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" id="svg_5"/>
+   <ellipse cx="82" cy="115" rx="25" ry="60" transform="rotate(83, 82, 115)" fill="#111111" id="svg_6"/>
+   <path d="m31,122c36,-24 71,-28 109,-19" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" id="svg_7"/>
+   <circle cx="145" cy="132" r="26" fill="#111111" stroke="#ffffff" stroke-width="7" id="svg_8"/>
+   <path d="m145,117l0,30m-15,-15l30,0" stroke="#ffffff" stroke-width="8" stroke-linecap="round" id="svg_9"/>
+  </g>
+ </g>
+
+</svg>
