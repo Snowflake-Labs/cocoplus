@@ -536,6 +536,13 @@ $patterns promote FINDING-047
 <p>Elevates a CocoCupper finding to a permanent pattern in <code>.cocoplus/grove/patterns/</code>. Prompts for name, description, context (when to apply), anti-context (when not to apply), and tags. Promoted patterns are markdown files in git — editable and versionable.</p>
 <p><strong>Output:</strong> New pattern file + confirmation.</p>
 <hr>
+<p><strong><code>$grove score &lt;pattern-id&gt;</code></strong> — Score a candidate pattern before promotion</p>
+<pre><code>
+$grove score pat-20260701-001
+</code></pre>
+<p>Scores the pattern on three dimensions (0–3 each): Durability, Impact, Scope. Total ≥6 → promote; 4–5 → watch; ≤3 → ignore — except a 3 on any single dimension is a strong promotion candidate regardless of total. Also applies the three mandatory distillation rules (descriptive-to-prescriptive, verbose-to-concise, conditional-to-absolute) to the pattern text before it can be written to the convention entry.</p>
+<p><strong>Output:</strong> Scoring summary and decision threshold result, displayed before promotion is confirmed.</p>
+<hr>
 <p><strong><code>$grove glossary</code></strong> — Propose domain terms from recent artifacts</p>
 <pre><code>
 $grove glossary
@@ -648,6 +655,27 @@ $secondeye history
 </code></pre>
 <p>Lists all reports in <code>.cocoplus/lifecycle/</code> with finding counts by tier and acknowledgment status.</p>
 <p><strong>Output:</strong> Report index. No state changes.</p>
+<hr>
+<p><strong><code>$secondeye shadow-add</code></strong> — Add a candidate rule to silent shadow evaluation</p>
+<pre><code>
+$secondeye shadow-add
+</code></pre>
+<p>Interactively collects a lens, trigger pattern, and description, and writes it to <code>secondeye/shadow-rules.json</code>. Shadow rules run in parallel with active critics on every <code>$secondeye</code> invocation but never affect the verdict — they only accumulate activation and acceptance evidence.</p>
+<p><strong>Output:</strong> New entry in <code>secondeye/shadow-rules.json</code>.</p>
+<hr>
+<p><strong><code>$secondeye shadow-report</code></strong> — Check promotion readiness of shadow rules</p>
+<pre><code>
+$secondeye shadow-report
+</code></pre>
+<p>Computes each shadow rule's activation rate (how often it fires) and developer-acceptance rate (how often its findings are independently corroborated), and reports promotion readiness against fixed thresholds.</p>
+<p><strong>Output:</strong> Per-rule activation rate, acceptance rate, and promotion readiness.</p>
+<hr>
+<p><strong><code>$secondeye shadow-promote &lt;rule-id&gt;</code></strong> — Move a shadow rule into the active critic pool</p>
+<pre><code>
+$secondeye shadow-promote sq-014
+</code></pre>
+<p>Promotes a shadow rule that meets <code>shadow-report</code> thresholds into the active critic pool, removing it from the shadow pool.</p>
+<p><strong>Output:</strong> Rule moved from shadow pool to active pool.</p>
 <hr>
 <h2 id="doc-engine">Doc Engine</h2>
 <hr>
@@ -950,6 +978,22 @@ $wisdom export
 <p>Generates a complete formatted Markdown report of all rejection records for retrospective review or external sharing. Does not modify the store.</p>
 <p><strong>Output:</strong> Formatted report. No state changes.</p>
 <hr>
+<p><strong><code>$wisdom route</code></strong> — Route auto-captured corrections to proposed skill edits</p>
+<pre><code>
+$wisdom route
+</code></pre>
+<p>Groups CocoCupper's auto-captured corrections (<code>cupper/auto-captured.json</code>) by skill context and classifies each group as <code>incorrect-behavior</code>, <code>missing-variant</code>, or <code>agent-misapplication</code>. Presents a proposed edit per group for explicit developer confirmation — no skill file is ever modified automatically, regardless of how many corrections support the edit.</p>
+<p><strong>Output:</strong> Proposed edits awaiting developer confirmation.</p>
+<hr>
+<h2 id="behavioral-maturity-cocobehavior">Behavioral Maturity — CocoBehavior</h2>
+<hr>
+<p><strong><code>$behavior maturity</code></strong> — Report the CocoPod's current automation maturity level</p>
+<pre><code>
+$behavior maturity
+</code></pre>
+<p>Computes the current maturity level (L0 Manual, L1 Assisted, L2 Supervised, L3 Autonomous-Eligible) from <code>cocoplus.toml</code> and <code>.cocoplus/modes/</code>. L3 requires all ten readiness checklist items to pass — including active CocoAudit, CocoContract outcome contracts for all production-bound functions, and full CocoTrace coverage. Result written to <code>.cocoplus/maturity.json</code>; also shown in <code>$cocoplus status</code>.</p>
+<p><strong>Output:</strong> Current level + L3 checklist pass/fail breakdown.</p>
+<hr>
 <h2 id="structured-code-review-cocoreview">Structured Code Review — CocoReview</h2>
 <hr>
 <p><strong><code>$cocoplus review</code></strong> — Run a structured holistic code review on the current change</p>
@@ -1078,6 +1122,58 @@ $lean debt
 <p>Harvests all <code>cocoplus:</code> comment markers across the CocoPod using <code>lean-debt.js</code> — deterministic, Tier 1 latency. Each marker carries three fields: <code>simplified=</code> (what shortcut was taken), <code>ceiling=</code> (condition under which it fails), <code>trigger=</code> (specific event prompting rework). Calculates ceiling imminence from current project metrics and ranks findings by <code>ceiling_imminence × days_since_annotation</code>. A Haiku narrative layer adds pattern analysis. Run before sprint planning and before any release gate.</p>
 <p><strong>Output:</strong> <code>.cocoplus/lifecycle/lean-debt.md</code> — committed to git.</p>
 <hr>
+<h2 id="outcome-contracts-cococontract">Outcome Contracts — CocoContract</h2>
+<p><strong><code>$contract init [function-name]</code></strong> — Declare a new outcome contract before generation begins</p>
+<pre><code>
+$contract init classify_sentiment
+</code></pre>
+<p>Guides the developer through three required fields — a named persona from a specific workflow context, an observable result in non-implementation language, and a falsifiability condition — with inline validation rejecting generic personas and implementation-phrased results. Commits <code>outcomes/&lt;function-name&gt;/contract.md</code>. A pre-build gate blocks <code>$spec</code> and <code>$build</code> for this function until the contract is committed.</p>
+<p><strong>Output:</strong> <code>outcomes/&lt;function-name&gt;/contract.md</code> — committed to git.</p>
+<hr>
+<p><strong><code>$contract prove [function-name] --tier &lt;tier&gt;</code></strong> — Record an evidence submission</p>
+<pre><code>
+$contract prove classify_sentiment --tier e2e
+</code></pre>
+<p>Records evidence at one of five tiers (<code>e2e</code>, <code>reference</code>, <code>spec</code>, <code>differential</code>, <code>unit</code> — strongest first) bound to the function's current source hash. Only <code>e2e</code> and <code>reference</code> evidence satisfies <code>$ship</code> certification; <code>unit</code> evidence is recordable but never sufficient regardless of thoroughness.</p>
+<p><strong>Output:</strong> Evidence record written to <code>contract-evidence.json</code> (gitignored).</p>
+<hr>
+<p><strong><code>$contract ci</code></strong> — Re-execute all archived contracts as a CI regression gate</p>
+<pre><code>
+$contract ci
+</code></pre>
+<p>Re-executes every archived contract's falsifiability condition where machine-executable, reports pass/fail per contract, and exits non-zero on any regression. Intended for use as a pre-deployment CI gate. No override flags exist for <code>$ship</code> enforcement at any point in this pipeline.</p>
+<p><strong>Output:</strong> Pass/fail report per contract; non-zero exit on regression.</p>
+<hr>
+<h2 id="strategy-learning-cocorefine">Strategy Learning — CocoRefine</h2>
+<p><strong><code>$refine add</code></strong> — Add a new strategy to the committed CocoStrategyBook</p>
+<pre><code>
+$refine add
+</code></pre>
+<p>Interactively collects identity, context, strategy content, and an evidence attribution record — a CocoContract evidence record, CocoSentinel verdict, or resolved SecondEye finding, never the recording agent's own assessment. Rejects strategy content containing hedging language ("might", "could", "possibly").</p>
+<p><strong>Output:</strong> New strategy YAML at <code>cocoplus/strategies/&lt;id&gt;.yaml</code> — committed to git.</p>
+<hr>
+<p><strong><code>$refine search [query]</code></strong> — Search the CocoStrategyBook</p>
+<pre><code>
+$refine search "sentiment classification"
+</code></pre>
+<p>Searches by task type, data characteristics, or keyword. Deprecated strategies are excluded by default.</p>
+<p><strong>Output:</strong> Matching strategies with context fields and deprecation status.</p>
+<hr>
+<h2 id="session-retrieval-cocorecall">Session Retrieval — CocoRecall</h2>
+<p><strong><code>$recall search &lt;query&gt;</code></strong> — Query the local SQLite session index</p>
+<pre><code>
+$recall search "warehouse sizing decision"
+</code></pre>
+<p>Searches a normalized local index (<code>.cocoplus/recall.db</code>, gitignored) at roughly one thousand tokens per query — about fifty times more efficient than loading raw transcripts. Session-diverse by default (one representative turn per session); <code>--all</code> returns every matching turn; <code>--session &lt;id&gt;</code> restricts to one session. Every result carries session ID, turn ID, a retrieval-time source-exists flag, and a suggested follow-up query. Returns verbatim excerpts only — never a synthesized summary.</p>
+<p><strong>Output:</strong> Cited search results, verbatim.</p>
+<hr>
+<p><strong><code>$recall import [--since &lt;date&gt;]</code></strong> — Rebuild or update the session index</p>
+<pre><code>
+$recall import --since 2026-06-01
+</code></pre>
+<p>Rebuilds or incrementally updates <code>recall.db</code> from transcripts at <code>~/.snowflake/cortex/conversations/</code>. Requires Node 22.5+ (uses the built-in <code>node:sqlite</code> module — no native binary dependency).</p>
+<p><strong>Output:</strong> Updated <code>.cocoplus/recall.db</code> (gitignored).</p>
+<hr>
 <h2 id="decision-audit-trail-cocoaudit">Decision Audit Trail — CocoAudit</h2>
 <p><strong><code>$audit view</code></strong> — Display the full append-only decision audit trail</p>
 <pre><code>
@@ -1099,6 +1195,13 @@ $audit export
 </code></pre>
 <p>Exports the complete audit trail to <code>.cocoplus/audit-export-[YYYY-MM-DDTHH-MM-SSZ].md</code> — a uniquely timestamped, immutable snapshot. Each invocation produces a new file; prior exports are never overwritten. Intended for compliance handoffs, stakeholder review packages, or archival.</p>
 <p><strong>Output:</strong> <code>.cocoplus/audit-export-[timestamp].md</code> + event count displayed.</p>
+<hr>
+<p><strong><code>$audit ci</code></strong> — Run the contract regression phase before standard audit verification</p>
+<pre><code>
+$audit ci
+</code></pre>
+<p>Re-executes all archived CocoContract falsifiability conditions before verifying the audit log's structural integrity. A contract regression is reported with the same severity as a failing safety gate. Also records the four CocoContract lifecycle event categories (declaration, evidence submission, stale-evidence detection, archive) to <code>lifecycle/audit.md</code> as they occur.</p>
+<p><strong>Output:</strong> Pass/fail report; non-zero exit on regression.</p>
 <hr>
 <h2 id="artifact-trace-cocoTrace">Artifact Traceability — CocoTrace</h2>
 <p><strong><code>$trace build</code></strong> — Build the artifact traceability map for the current project</p>
@@ -1122,6 +1225,20 @@ $trace show plan.md
 </code></pre>
 <p>Displays all upstream and downstream links for the named artifact — what requirements it satisfies, what tests cover it, what delivery artifacts reference it. Useful for impact analysis before modifying a critical artifact.</p>
 <p><strong>Output:</strong> Formatted trace link table for the specified artifact.</p>
+<hr>
+<p><strong><code>$trace blast &lt;object&gt;</code></strong> — Compute the blast radius of a Snowflake object before changing it</p>
+<pre><code>
+$trace blast customer_events
+</code></pre>
+<p>Reports every Cortex function that depends on the named table, view, column, or Cortex model — the dependency type (read/write/structural) for each, the downstream chain to its CocoBloom commitment and CocoSpec outcome statement, and whether its CocoContract evidence is stale relative to the object's current state. Sourced from <code>snowflake-deps.json</code>, maintained automatically by <code>$trace sync</code>.</p>
+<p><strong>Output:</strong> Blast radius table with affected functions, dependency types, and contract staleness flags.</p>
+<hr>
+<p><strong><code>$trace check --before-change "&lt;description&gt;"</code></strong> — Pre-change impact gate (informational, non-blocking)</p>
+<pre><code>
+$trace check --before-change "widen customer_events.event_type to VARCHAR(500)"
+</code></pre>
+<p>Runs the blast radius computation for the change described, and records the assessment to <code>lifecycle/audit.md</code> via CocoAudit. Does not block the change — it proves blast radius was assessed before the change was applied, for audit purposes.</p>
+<p><strong>Output:</strong> Blast radius summary; audit record confirmation.</p>
 <hr>
 <h2 id="schema-diagram-cocosketch">Schema &amp; Architecture Diagrams — CocoSketch</h2>
 <p><strong><code>$sketch schema</code></strong> — Generate an entity-relationship diagram for the current data model</p>
@@ -1264,7 +1381,7 @@ $sketch deps --reduce off
 </tr>
 <tr>
   <td style="text-align:left"><strong>Grove</strong></td>
-  <td style="text-align:left"><code>$patterns view</code> · <code>$patterns promote</code> · <code>$grove glossary</code> · <code>$grove glossary view</code></td>
+  <td style="text-align:left"><code>$patterns view</code> · <code>$patterns promote</code> · <code>$grove score &lt;pattern-id&gt;</code> · <code>$grove glossary</code> · <code>$grove glossary view</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Dream</strong></td>
@@ -1280,7 +1397,7 @@ $sketch deps --reduce off
 </tr>
 <tr>
   <td style="text-align:left"><strong>SecondEye</strong></td>
-  <td style="text-align:left"><code>$secondeye</code> · <code>$secondeye --artifact</code> · <code>$secondeye --model</code> · <code>$secondeye acknowledge [--hitl-only] [--blocking-only]</code> · <code>$secondeye history</code></td>
+  <td style="text-align:left"><code>$secondeye</code> · <code>$secondeye --artifact</code> · <code>$secondeye --model</code> · <code>$secondeye acknowledge [--hitl-only] [--blocking-only]</code> · <code>$secondeye history</code> · <code>$secondeye shadow-add</code> · <code>$secondeye shadow-report</code> · <code>$secondeye shadow-promote &lt;rule-id&gt;</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Sentinel</strong></td>
@@ -1288,11 +1405,27 @@ $sketch deps --reduce off
 </tr>
 <tr>
   <td style="text-align:left"><strong>Wisdom</strong></td>
-  <td style="text-align:left"><code>$wisdom</code> · <code>$wisdom list [--gate] [--since] [--dimension]</code> · <code>$wisdom search "&lt;pattern&gt;"</code> · <code>$wisdom insights</code> · <code>$wisdom export</code></td>
+  <td style="text-align:left"><code>$wisdom</code> · <code>$wisdom list [--gate] [--since] [--dimension]</code> · <code>$wisdom search "&lt;pattern&gt;"</code> · <code>$wisdom insights</code> · <code>$wisdom export</code> · <code>$wisdom route</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Code Review</strong></td>
   <td style="text-align:left"><code>$cocoplus review</code> · <code>$cocoplus review --complexity</code> · <code>$cocoplus review --security</code> · <code>$cocoplus review --architecture</code> · <code>$cocoplus review --language &lt;lang&gt;</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Behavior</strong></td>
+  <td style="text-align:left"><code>$behavior maturity</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Contract</strong></td>
+  <td style="text-align:left"><code>$contract init [name]</code> · <code>$contract check</code> · <code>$contract prove --tier &lt;tier&gt;</code> · <code>$contract archive</code> · <code>$contract ci</code> · <code>$contract status</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Refine</strong></td>
+  <td style="text-align:left"><code>$refine search</code> · <code>$refine add</code> · <code>$refine update &lt;id&gt;</code> · <code>$refine deprecate &lt;id&gt;</code> · <code>$refine history &lt;id&gt;</code> · <code>$refine status</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Recall</strong></td>
+  <td style="text-align:left"><code>$recall search &lt;query&gt;</code> · <code>$recall show &lt;session-id&gt;</code> · <code>$recall import [--since]</code> · <code>$recall sources</code> · <code>$recall status</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Ops</strong></td>
@@ -1336,11 +1469,11 @@ $sketch deps --reduce off
 </tr>
 <tr>
   <td style="text-align:left"><strong>Audit</strong></td>
-  <td style="text-align:left"><code>$audit view</code> · <code>$audit view --from &lt;date&gt;</code> · <code>$audit export</code></td>
+  <td style="text-align:left"><code>$audit view</code> · <code>$audit view --from &lt;date&gt;</code> · <code>$audit export</code> · <code>$audit ci</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Trace</strong></td>
-  <td style="text-align:left"><code>$trace build</code> · <code>$trace gaps</code> · <code>$trace show &lt;artifact&gt;</code></td>
+  <td style="text-align:left"><code>$trace build</code> · <code>$trace gaps</code> · <code>$trace show &lt;artifact&gt;</code> · <code>$trace blast &lt;object&gt;</code> · <code>$trace check --before-change</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Sketch</strong></td>
