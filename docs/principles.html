@@ -26,11 +26,11 @@
 <div class="page-header">
   <div class="label">Design Principles</div>
   <h1>The Design Principles</h1>
-  <p class="subtitle">These are the twelve ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
+  <p class="subtitle">These are the seventeen ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
 </div>
 
 <div class="content">
-<p>These are the twelve ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
+<p>These are the seventeen ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
 <p>A principle without a reason is just a constraint. With a reason, it becomes a compass.</p>
 <hr>
 <h2 id="1-native-first-always">1. Native First, Always</h2>
@@ -71,6 +71,7 @@
 <p>The temptation is always to add more "just in case." Just-in-case context becomes noise. Noise makes it harder for the agent to reason about the signal. A skill that loads 600 lines of context to execute a 30-line workflow is a skill whose design should be questioned.</p>
 <p>The hard limit is a forcing function for clear boundaries. If AGENTS.md can only hold 200 lines, you have to decide what belongs there and what belongs in the warm layer. That decision-making process is valuable in itself — it forces you to articulate what the ambient context of a session actually needs to contain.</p>
 <p>Progressive disclosure is how the system scales. At session 10, it works. At session 200, it still works, because the context budget is managed rather than exhausted.</p>
+<p>Brevity in skill files turns out to be more than an aesthetic preference — it's measurable. Internal evaluation found that a skill file padded with explanatory methodology prose raised output regression rates from roughly 6% to roughly 10% compared to a compressed version carrying the same active instructions. Longer prompts dilute the weight of each instruction; a model can partially follow a long explanation in a way it can't partially follow a short directive. The test when compressing a skill file isn't "does this feel succinct" — it's "if I cut this explanation in half, does output quality improve or degrade."</p>
 <hr>
 <h2 id="7-classify-failure-before-retry">7. Classify Failure Before Retry</h2>
 <p>When a stage fails, the failure must be understood before it is addressed.</p>
@@ -112,6 +113,34 @@
 <p>Before any feature is built, the test is: does the developer experience value directly? Does it save them time? Does it prevent an error they would have made? Does it produce an artifact they actually want? If the answer is "it helps governance" or "it satisfies the audit trail," the next question is: does the developer experience that help, or does it happen invisibly behind them?</p>
 <p>CocoPlus is not a governance layer. It is a productivity layer. The difference is where the value lands. Governance lands in reports. Productivity lands in the developer's experience of doing the work.</p>
 <p>If CocoPlus ever starts to feel like something to work around rather than something to work with, this principle has been violated.</p>
+<hr>
+<h2 id="13-look-up-before-inferring">13. Look Up Before Inferring</h2>
+<p>When an authoritative source exists — a catalog of valid values, a documented API contract, a structured reference file — query it before guessing. Inference is the fallback for what can't be looked up, not the default path that happens to work most of the time.</p>
+<p>Snowflake function signatures, Cortex API parameters, supported data types, and the draw.io shape catalog are all lookable. When CocoSketch needs the correct <code>shape=mxgraph.*</code> string for an AWS service icon, it queries the shape index rather than guessing from the service name. A wrong shape string renders as a blank box — the visual output silently lies. A correct one renders the intended icon.</p>
+<p>Before asking a model to produce a specific technical value — a function name, a parameter, a type identifier, a command flag — ask whether that value exists somewhere readable. If it does, read it. This ordering is the difference between output that's reliable and output that's merely plausible.</p>
+<hr>
+<h2 id="14-scope-boundary-as-feature">14. Scope Boundary as Feature</h2>
+<p>Every CocoPlus capability defines what it is not for, with a clear redirect to what should be used instead. This isn't a disclaimer — it's a precision affordance.</p>
+<p>A tool that claims to do everything signals it understands nothing about tradeoffs. CocoSketch is the commit-grade visual artifact tool: quick whiteboard diagrams go to Mermaid, interactive exploration goes to CocoMap, complex developer-authored diagrams go to CocoSketch. Each boundary routes the developer to the better tool for their actual need.</p>
+<p>The same discipline applies system-wide. CocoAudit is for regulated compliance trails, not general session logging. CocoTrace is for requirements coverage, not general file-change tracking. CocoReview is for code artifacts, not specification documents. A "when NOT to use" section in a skill's frontmatter carries as much weight as the "when to use" section — scope boundaries are what stop a feature from drifting into adjacent responsibilities it was never designed for.</p>
+<hr>
+<h2 id="15-two-consumers-two-output-modes">15. Two Consumers, Two Output Modes</h2>
+<p>When an output will be read by both a machine agent and a human developer, one format optimized for neither is a false economy. The two have structurally different requirements.</p>
+<p>Machine-optimized output maximizes information density — no section headers, no prose transitions, no narrative framing. Every token carries information. This is what CocoHarvest loads as stage input and what CocoFlow passes between pipeline steps; formatting prose in that path spends token budget on structure the consuming model gets no value from.</p>
+<p>Human-optimized output prioritizes comprehension — a summary at the top, section headers for navigation, prose transitions between dense sections. This is what a developer reads to verify a distillation or review a report at a glance.</p>
+<p>CocoPull's two modes (compact default, <code>--human</code> flag) embody this directly, as does CocoSketch's preview PNG versus final PNG. The distillation logic stays shared; only the formatting layer branches at the last step based on who's reading. Never optimize for the more forgiving consumer — the human — and hand the result to the less forgiving one, the LLM context window.</p>
+<hr>
+<h2 id="16-minimum-viable-surface">16. Minimum Viable Surface</h2>
+<p>Every Cortex function, CocoFlow stage, and plugin construct should be the minimum surface area that credibly solves the stated problem — sufficient, and no larger than sufficient.</p>
+<p>This counters a real bias: the path of least resistance for a language model is to generate. Asked to solve a simple problem, a model often produces a complex solution, because complexity is more available in its training distribution and looks more like effort. CocoLean makes the countermeasure explicit — the six-rung decision ladder (deterministic rule → native built-in → existing UDF → single AI_COMPLETE call → minimum-line function → full Cortex function) runs before any new function gets written, and stops at the first rung that answers the need.</p>
+<p>The same logic applies to CocoFlow stages (a single well-scoped LLM call beats three chained synthesis steps that produce the same output quality) and to plugin constructs themselves (a skill loading in 150 tokens beats an equivalent one loading in 300). The constraint is equivalence, not degradation — minimum surface never means less capability, only no excess.</p>
+<p>This principle never applies to trust boundaries, data loss prevention, security controls, regulatory compliance, or error handling that prevents silent data corruption. Those aren't excess — they're the safety surface everything else sits on. The question is whether a stage needs four synthesis steps, never whether a trust boundary check is YAGNI.</p>
+<hr>
+<h2 id="17-outcome-before-evidence">17. Outcome Before Evidence</h2>
+<p>Declare what correct behavior looks like before the generator begins. The outcome contract must exist as an independent, committed artifact before any spec, plan, or build activity produces the function it will evaluate.</p>
+<p>This addresses a failure mode invisible from inside the system that produces it: when an agent generates a function and then evaluates it against criteria the same agent authored, the evaluation is self-confirming by construction. The generator's intentions were present the whole time — evaluation criteria derived after the fact cannot be independent of the output they're judging. A more rigorous self-authored evaluation just produces a more rigorous tautology. The question was never the quality of the evaluation — it's the independence of the oracle.</p>
+<p>"Before" means structurally before: the contract is declared before <code>$spec</code> or <code>$build</code> runs, committed to version control ahead of generation, and authored by the developer or a designated oracle-author who is not the generating agent. The commit timestamp is what proves independence. Evidence is then classified by epistemic strength — real-endpoint execution with an externally verifiable result is the only tier sufficient for production certification; evaluation that shares session context with the generator is explicitly insufficient, no matter how thorough it reads.</p>
+<p>This principle is a close relative of Evidence Over Assertion (4) — that one says don't assert what you haven't measured, this one says don't measure against criteria you invented after building the thing you're measuring. CocoContract is the operational instrument: <code>$contract init</code> is how the oracle gets declared and committed before generation begins, and the stop hook on <code>$ship</code> is what makes this an architectural invariant instead of a suggestion.</p>
 <hr>
 <blockquote><p><em>Principles are only principles when they are applied in the cases where violating them would be convenient.</em></p></blockquote>
 </div>
