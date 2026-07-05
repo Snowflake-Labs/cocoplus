@@ -1,10 +1,10 @@
 ---
 name: cocotrace
 description: Build and query the SHA-256 requirements-to-implementation traceability graph across lifecycle artifacts
-version: "1.0.0"
+version: "1.1.0"
 author: sgsshankar
 tags: [traceability, quality, sha256, audit, lifecycle]
-commands: ["$trace build", "$trace gaps", "$trace show"]
+commands: ["$trace build", "$trace gaps", "$trace show", "$trace blast", "$trace check"]
 user-invocable: true
 ---
 
@@ -78,6 +78,31 @@ CocoTrace maintains a directed dependency graph: `bloom.md → discuss.md → sp
                              └── eval-results [missing]
    ```
 
+### `$trace blast <object>`
+
+Computes the blast radius for a named Snowflake object (table, view, column, or Cortex model identifier) — all Cortex functions in the CocoPod that depend on it.
+
+1. Run `node scripts/trace-blast.js --object "<object>"`. The script reads `snowflake-deps.json` (the reverse index of function → object dependencies, maintained by `$trace sync`) and returns every function that depends on `<object>`.
+2. For each affected function, report the dependency type (`read`, `write`, or `structural`), the downstream traceability chain to its CocoBloom commitment and CocoSpec outcome statement, and whether its CocoContract evidence is stale relative to the object's current state.
+3. Display:
+
+   ```
+   ## Blast Radius: customer_events (table)
+
+   | Function              | Dependency | Chain                                    | Contract Evidence |
+   |------------------------|-----------|-------------------------------------------|--------------------|
+   | classify_sentiment     | read      | bloom → spec § 2.1 → build/classify.sql   | STALE — reprove required |
+   | enrich_customer_profile| write     | bloom → spec § 3.4 → build/enrich.sql     | current |
+
+   2 functions affected. 1 requires CocoContract re-proof after this change.
+   ```
+
+`snowflake-deps.json` is committed to the CocoPod repository and updated by `$trace sync` (extends `trace-check.js`) whenever a build artifact changes — it records, per function, the objects read, the objects written, and the Cortex API features depended on.
+
+### `$trace check --before-change "<change description>"`
+
+A pre-change impact gate, not a permission gate — it does not block the change. Runs the blast radius computation for the objects implied by `<change description>`, generates a human-readable impact summary, and records the gate event in `lifecycle/audit.md` via CocoAudit (proving blast radius was assessed before the change was applied). Output the same blast radius table as `$trace blast`, prefixed with the change description and an audit confirmation line: "Recorded to lifecycle/audit.md as a pre-change impact assessment."
+
 ## SessionStart Integration
 `trace-check.js` runs at SessionStart (Tier 2 async — non-blocking). If any artifact is stale, a non-blocking advisory appears:
 
@@ -101,6 +126,8 @@ CocoTrace maintains a directed dependency graph: `bloom.md → discuss.md → sp
 - [ ] Modifying `bloom.md` causes `discuss.md`, `spec.md`, `plan.md` to show `stale`
 - [ ] `$trace gaps` handles missing section headings gracefully
 - [ ] SessionStart surfaces staleness advisory non-blockingly
+- [ ] `$trace blast <object>` returns affected functions with dependency type and CocoContract staleness flag, sourced from `snowflake-deps.json`
+- [ ] `$trace check --before-change` records the gate event to `lifecycle/audit.md` without blocking the change
 
 ## Anti-Rationalization
 
