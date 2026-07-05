@@ -23,7 +23,7 @@
 
 const fs   = require('fs');
 const path = require('path');
-const { execFile } = require('child_process');
+const { execFile, execFileSync } = require('child_process');
 const { isoUtc, appendJsonLine, logError, readStdinJson, readJsonString } = require('./_common.js');
 
 const COCOPLUS_DIR = '.cocoplus';
@@ -85,9 +85,38 @@ function main() {
     return;
   }
 
+  // 1b. CocoContract gate — Tier 1, <50ms: block $spec/$build/$ship without a
+  // committed outcome contract / fresh e2e-or-reference evidence (Feature 44).
+  const CONTRACT_COMMANDS = { '$spec': 'spec', '$build': 'build', '$ship': 'ship' };
+  for (const [cmd, gateCommand] of Object.entries(CONTRACT_COMMANDS)) {
+    if (message.startsWith(cmd + ' ') || message === cmd) {
+      const fnArg = message.slice(cmd.length).trim().split(/\s+/)[0] || '';
+      if (fnArg) {
+        const gateScript = path.join('scripts', 'contract-gate.js');
+        if (fs.existsSync(gateScript)) {
+          try {
+            const out = execFileSync(process.execPath, [gateScript, '--command', gateCommand, '--function', fnArg], { encoding: 'utf8', timeout: 2000 });
+            const result = JSON.parse(out);
+            if (result.action === 'BLOCK') {
+              appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'contract_gate_blocked', tier: 1, command: gateCommand, function: fnArg, reason: result.reason, ts });
+              console.error(result.reason);
+              process.exit(1);
+            }
+          } catch (err) {
+            // Gate failing to run is non-fatal — CocoContract is advisory-safe,
+            // never a hard dependency for the hook itself to stay alive.
+            logError('user-prompt-submit', `contract-gate failed: ${err.message}`);
+          }
+        }
+      }
+      break;
+    }
+  }
+
   // 2. Persona routing — detect $ shorthand prefix
   const personaMap = loadPersonaMap();
   let routed = false;
+  let routedPersona = null;
   for (const [shorthand, personaName] of Object.entries(personaMap)) {
     if (message.startsWith(shorthand + ' ') || message === shorthand) {
       const taskText = message.slice(shorthand.length).trim();
@@ -110,8 +139,24 @@ function main() {
         fs.writeFileSync(subagentsPath, JSON.stringify(registry, null, 2));
       } catch (_) { /* non-fatal */ }
       routed = true;
+      routedPersona = personaName;
       break;
     }
+  }
+
+  // 2b. CocoCupper auto-capture (Feature 8 enhancement) — fire-and-forget so
+  // its <200ms budget never risks the surrounding Tier 1 <50ms SLA for the
+  // rest of this hook. Silent: writes to auto-captured.json only, no output.
+  const cupperScript = path.join('scripts', 'cupper-capture.js');
+  if (fs.existsSync(cupperScript)) {
+    const skillContext = routedPersona;
+    const cupperArgs = [cupperScript, '--message', message.slice(0, 500)];
+    if (skillContext) cupperArgs.push('--skill-context', skillContext);
+    execFile(process.execPath, cupperArgs, { timeout: 200, windowsHide: true }, (err) => {
+      if (err && err.killed) {
+        appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'cupper_capture_timeout', ts });
+      }
+    });
   }
 
   // 3. Context Mode overlay — prepend phase context to normal messages
