@@ -172,14 +172,19 @@ function main() {
     }
   }
 
-  // 6. CocoAudit — Tier 2 async append-only audit record (Feature 40)
+  // 6. CocoAudit — Tier 2 async append-only audit record (Feature 40; contract
+  // lifecycle events added as a Feature 44 / ninth-cycle enhancement)
   // Decision-type events: plan-approved, spec-gate-passed, ship-confirmed, secondeye-acknowledged, sentinel-approved
   const AUDIT_EVENTS = {
-    'plan-approved':          ['Write', 'Edit'],
-    'spec-gate-passed':       ['Write'],
-    'ship-confirmed':         ['Write'],
-    'secondeye-acknowledged': ['Write'],
-    'sentinel-approved':      ['Write'],
+    'plan-approved':               ['Write', 'Edit'],
+    'spec-gate-passed':            ['Write'],
+    'ship-confirmed':              ['Write'],
+    'secondeye-acknowledged':      ['Write'],
+    'sentinel-approved':           ['Write'],
+    'contract-declared':           ['Write'],
+    'contract-evidence-submitted': ['Write'],
+    'contract-evidence-stale':     ['Write'],
+    'contract-archived':           ['Write'],
   };
   const auditOnPath = path.join(COCOPLUS_DIR, 'modes', 'cocoaudit.on');
   if (fs.existsSync(auditOnPath) && succeeded) {
@@ -193,6 +198,9 @@ function main() {
       else if (filePath.includes('lifecycle/deployment') && toolName === 'Write') auditEventId = 'ship-confirmed';
       else if (filePath.includes('.secondeye-') && toolName === 'Write') auditEventId = 'secondeye-acknowledged';
       else if (filePath.includes('sentinel/approvals') && toolName === 'Write') auditEventId = 'sentinel-approved';
+      else if (filePath.includes('outcomes/') && filePath.endsWith('contract.md') && toolName === 'Write') auditEventId = 'contract-declared';
+      else if (filePath.includes('contract-evidence.json') && toolName === 'Write') auditEventId = 'contract-evidence-submitted';
+      else if (filePath.includes('outcomes/') && filePath.endsWith('history.md') && toolName === 'Write') auditEventId = 'contract-archived';
 
       if (auditEventId) {
         const block = [
