@@ -158,6 +158,21 @@ harvest/*-tasks.json.bak
 
 # Pull artifacts are derived unless explicitly promoted
 *.pull.md
+
+# CocoContract working state (outcomes/ archive itself is committed)
+contract-evidence.json
+
+# CocoRefine learning-cycle queue
+refine/pending.jsonl
+
+# CocoRecall local session index (rebuilt via $recall import)
+recall.db
+
+# SecondEye shadow rule findings (do not affect verdict; regenerable)
+secondeye/shadow-findings.json
+
+# CocoCupper auto-captured corrections (silent capture, regenerable)
+cupper/auto-captured.json
 ```
 
 ## Create Root AGENTS.md Shim

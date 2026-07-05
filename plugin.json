@@ -1,6 +1,6 @@
 {
   "name": "cocoplus",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "CocoPlus — AI-powered development lifecycle plugin for Snowflake Cortex Code CLI",
   "author": "sgsshankar, viveksrinivasanss",
   "license": "MIT",
@@ -77,7 +77,10 @@
     "cocoplus-config/cocoplus-config",
     "cocolean/lean",
     "cocolean/lean-review",
-    "cocolean/lean-debt"
+    "cocolean/lean-debt",
+    "cococontract/contract",
+    "cocorefine/refine",
+    "cocorecall/recall"
   ],
   "scripts": [
     "scripts/wisdom-writer.js",
@@ -94,7 +97,20 @@
     "scripts/map-reduce.js",
     "scripts/ops-thesis-updater.js",
     "scripts/lean-review.js",
-    "scripts/lean-debt.js"
+    "scripts/lean-debt.js",
+    "scripts/contract-prove.js",
+    "scripts/contract-gate.js",
+    "scripts/_contract-hash.js",
+    "scripts/refine-update.js",
+    "scripts/refine-reflect.js",
+    "scripts/recall-import.js",
+    "scripts/shadow-report.js",
+    "scripts/behavior-maturity.js",
+    "scripts/cupper-capture.js",
+    "scripts/grove-score.js",
+    "scripts/trace-blast.js",
+    "scripts/audit-ci.js",
+    "scripts/wisdom-route.js"
   ],
   "hooks": [
     "session-start",
