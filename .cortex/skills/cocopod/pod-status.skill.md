@@ -1,7 +1,7 @@
 ---
 name: "pod-status"
-description: "Display complete CocoPlus project state: lifecycle phase, CocoFlow pipeline status, active modes, memory state, safety gate, inspector, meter, personas, patterns, and cupper findings. Run at any time to get a full project overview."
-version: "1.0.2"
+description: "Display complete CocoPlus project state: lifecycle phase, CocoFlow pipeline status, active modes, memory state, safety gate, inspector, meter, personas, patterns, cupper findings, and automation maturity level. Run at any time to get a full project overview."
+version: "1.0.3"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -25,6 +25,7 @@ Read each file listed below. If a file is missing, use the default value shown. 
 | `.cocoplus/meter/current-session.json` | not tracking |
 | `.cocoplus/grove/cupper-findings.md` | no findings |
 | `.cocoplus/modes/` directory listing | no modes active |
+| `.cocoplus/maturity.json` | not yet computed — run `$behavior maturity` |
 
 ## Generate Status Report
 
@@ -69,6 +70,11 @@ Check for presence of these flag files and report on/off:
 
 ### 8. Personas Used
 - List any subagent IDs recorded in `lifecycle/meta.json` or `AGENTS.md`
+
+### 9. Maturity Level
+- Current level (L0 Manual / L1 Assisted / L2 Supervised / L3 Autonomous-Eligible) from `.cocoplus/maturity.json`
+- If missing: "Not yet computed — run `$behavior maturity`"
+- If L3 not reached: number of L3 readiness checklist items passing (e.g. "6/10 — run `$behavior maturity` for the full breakdown")
 
 Output as a clean markdown table per section. Complete in under 2 seconds.
 
