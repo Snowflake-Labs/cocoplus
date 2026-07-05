@@ -80,7 +80,8 @@
     "cocolean/lean-debt",
     "cococontract/contract",
     "cocorefine/refine",
-    "cocorecall/recall"
+    "cocorecall/recall",
+    "cocobehavior/behavior-maturity"
   ],
   "scripts": [
     "scripts/wisdom-writer.js",

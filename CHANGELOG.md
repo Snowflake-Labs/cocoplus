@@ -37,7 +37,9 @@ All notable changes to CocoPlus are documented here.
 - `scripts/shadow-report.js` — computes per-rule activation rate and developer-acceptance rate against promotion thresholds
 
 #### CocoBehavior — L0–L3 Maturity Classification (Feature 22 Enhancement)
-- `cocobehavior/SKILL.md` v1.3.0: `$behavior maturity` command; L0 (Manual) through L3 (Autonomous-Eligible) levels; L3 ten-item readiness checklist
+- `cocobehavior/behavior-maturity.skill.md` (new, `user-invocable: true`): `$behavior maturity` command; L0 (Manual) through L3 (Autonomous-Eligible) levels; L3 ten-item readiness checklist
+- `cocobehavior/SKILL.md` v1.3.0: adds a short pointer to the new maturity command; the ambient constraint layer itself remains `user-invocable: false`
+- `cocopod/pod-status.skill.md` v1.0.3: new Maturity Level section reads `.cocoplus/maturity.json` and surfaces the current level in `$pod status`
 - `scripts/behavior-maturity.js` — deterministic level computation from `cocoplus.toml` and `.cocoplus/modes/`; writes `.cocoplus/maturity.json`
 
 #### CocoReview — METR Rejection Taxonomy (Feature 38 Enhancement)
