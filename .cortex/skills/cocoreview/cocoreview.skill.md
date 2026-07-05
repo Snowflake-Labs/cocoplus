@@ -1,7 +1,7 @@
 ---
 name: cocoreview
 description: CocoReview — structured code review with six-severity findings vocabulary, progressive disclosure architecture, and universal anti-pattern baseline. Invoked via $review [file] [--complexity] [--security] [--architecture] [--language <lang>].
-version: "1.2.0"
+version: "1.3.0"
 author: CocoPlus
 tags:
   - cocoreview
@@ -89,6 +89,31 @@ Apply the loaded reference guides. For each finding, assign a severity from the 
 **TOCTOU detection:** Specifically flag Snowflake `IF EXISTS THEN INSERT` patterns and recommend `MERGE` instead.
 
 **Mandatory praise:** If ANY well-constructed pattern exists in the artifact, emit at least one `praise` finding. If no well-constructed pattern is found, emit: `praise: Evaluation scope was limited — no exemplary patterns identified in this review.`
+
+**METR taxonomy classification:** Classify every Phase 1 (universal anti-pattern) finding under one of five METR categories — sourced from METR's real-world evaluation findings on the empirical gap between benchmark pass rates and actual merge outcomes:
+
+| Category | Covers |
+|----------|--------|
+| `code-quality` | Correctness defects, logic errors, missing null/error handling |
+| `style` | Naming, formatting, convention deviation |
+| `scope` | Change touches more than the stated task requires |
+| `collateral-effects` | Change has side effects on unrelated behavior or callers |
+| `defensive-code` | Missing or excessive defensive checks relative to actual trust boundary |
+
+**Evidence citation requirement:** Every `blocking` and `important` finding must cite the evidence tier that grounds it: `e2e` (observed failure against a real execution), `reference` (contradicts an externally sourced standard), or `project-historical` (contradicts a documented prior decision in `cocoplus-context.md` or `plan.md`). A finding citing only `unit` evidence (a self-constructed test case) or `self-assessment` (the reviewing agent's own judgment with no external grounding) **may not exceed `nit` severity** — regardless of how confident the finding reads.
+
+Finding format with taxonomy and evidence:
+```yaml
+- phase: 1
+  metr_category: scope
+  severity: important
+  evidence_tier: project-historical
+  finding: "Change modifies the retry backoff constant, which was not part of the requested WHERE-clause fix"
+  file: pipeline.sql
+  line: 88
+```
+
+**Mandatory specificity fields for `scope`, `collateral-effects`, and `defensive-code` findings:** these three categories must additionally include `requested_change` (what was actually asked for) and `observed_delta` (what the artifact does beyond or short of that) — a finding in these categories without both fields is incomplete and must not be surfaced as-is.
 
 ## Step 6 — Security Review (if --security or security risk flags)
 
@@ -239,3 +264,6 @@ Show the Summary and Verdict sections.
 - Phase 6 complexity audit section present with tag distribution summary
 - Structured review template output committed to git
 - `complexity-cache.json` is NOT committed (gitignored)
+- Every Phase 1 finding carries a `metr_category` label (code-quality/style/scope/collateral-effects/defensive-code)
+- Every `blocking` and `important` finding cites an `evidence_tier`; findings citing only unit/self-assessment evidence are capped at `nit`
+- `scope`, `collateral-effects`, and `defensive-code` findings include both `requested_change` and `observed_delta`
