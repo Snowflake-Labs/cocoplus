@@ -1,7 +1,7 @@
 ---
 name: "cup-history"
 description: "Display the last N CocoCupper findings from .cocoplus/grove/cupper-findings.md. Usage: $cup history [n] where n defaults to 5."
-version: "1.0.0"
+version: "1.1.0"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -30,7 +30,23 @@ Output each finding in summary format:
 
 Then show the full text of the most recent finding.
 
-Output: "Showing [N] of [total] findings. Use `$patterns promote [finding-id]` to promote a finding to the pattern library."
+## Auto-Captured Corrections (Feature 8 Enhancement)
+
+Correction detection runs silently on every developer prompt via `user-prompt-submit.js` calling `scripts/cupper-capture.js` (Tier 1, no LLM, <200ms), appending matches to `.cocoplus/cupper/auto-captured.json`. This section surfaces those alongside the manual findings above.
+
+Read `.cocoplus/cupper/auto-captured.json` if it exists. For each auto-captured correction, apply a routing classification:
+- **incorrect-behavior** — the correction reverses or contradicts an action just taken
+- **missing-variant** — the correction asks for an option or mode that didn't exist
+- **agent-misapplication** — the correction indicates a skill or persona was invoked in the wrong context
+
+Output a second table:
+```
+| Timestamp | Correction Text | Routing | Skill Context |
+|-----------|-----------------|---------|----------------|
+[one row per auto-captured entry]
+```
+
+Output: "Showing [N] of [total] findings and [M] auto-captured corrections. Use `$patterns promote [finding-id]` to promote a finding to the pattern library. Use `$wisdom route` to route auto-captured corrections to skill edits."
 
 ## Anti-Rationalization
 
@@ -44,3 +60,4 @@ Output: "Showing [N] of [total] findings. Use `$patterns promote [finding-id]` t
 - [ ] A summary table with columns ID, Title, Type, Severity, Date, Promoted is output
 - [ ] The full text of the most recent finding is displayed below the table
 - [ ] The output footer shows total finding count and promote command hint
+- [ ] Auto-captured corrections from `.cocoplus/cupper/auto-captured.json` (if present) are shown alongside manual findings with a routing classification
