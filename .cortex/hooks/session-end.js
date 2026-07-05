@@ -119,6 +119,25 @@ function main() {
     }
   } catch (_) { /* non-fatal */ }
 
+  // 4a. CocoRecall — Tier 2 async index update (Feature 46). Fire-and-forget;
+  // failure here (including an old Node runtime lacking node:sqlite) must
+  // never block session end.
+  try {
+    const recallScript = path.join('scripts', 'recall-import.js');
+    if (fs.existsSync(recallScript)) {
+      const { spawn } = require('child_process');
+      const sinceArg = meterStartedAt || ts;
+      const child = spawn(process.execPath, [recallScript, '--import', '--since', sinceArg], {
+        detached: true, stdio: 'ignore', windowsHide: true,
+      });
+      child.on('error', (err) => logError('session-end', `recall-import spawn failed: ${err.message}`));
+      child.unref();
+      appendJsonLine(HOOK_LOG, { hook: 'session-end', action: 'recall_import_triggered', ts });
+    }
+  } catch (err) {
+    logError('session-end', `recall-import trigger failed: ${err.message}`);
+  }
+
   // 4. Update .cocoplus/AGENTS.md hot layer (with 200-line enforcement)
   const phase = readJsonString(path.join(COCOPLUS_DIR, 'lifecycle', 'meta.json'), 'current_phase') || 'unknown';
   try {
