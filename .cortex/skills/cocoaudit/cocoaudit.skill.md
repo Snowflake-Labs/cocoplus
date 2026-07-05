@@ -1,7 +1,7 @@
 ---
 name: cocoaudit
 description: View and export the append-only session audit trail for regulated environments
-version: "1.0.0"
+version: "1.1.0"
 author: sgsshankar
 tags: [audit, compliance, traceability, regulated]
 commands: ["$audit view", "$audit export"]
@@ -14,6 +14,19 @@ user-invocable: true
 CocoAudit reads the append-only audit trail at `lifecycle/audit.md`. Every plan approval, spec gate passage, `$ship` confirmation, SecondEye acknowledgment, and CocoSentinel approval is recorded verbatim with an ISO 8601 UTC timestamp. The record is never summarized, never overwritten, and never deleted within a project's lifetime.
 
 **Enabling CocoAudit:** Enabled at `$pod init` when the developer selects "Enable session audit trail? (recommended for regulated environments)". This creates `modes/cocoaudit.on` and initializes `lifecycle/audit.md` with a project header.
+
+## CocoContract Lifecycle Events (Feature 44 Enhancement)
+
+CocoAudit records four categories of CocoContract event, written by `contract-prove.js` and the archive step of `contract.skill.md` via the same `lifecycle/audit.md` append logic post-tool-use.js already uses:
+
+1. **Contract declaration** — full text of a new outcome contract (persona, observable result, falsifiability condition) plus the session ID and timestamp of declaration.
+2. **Evidence submission** — evidence tier (e2e / reference / spec / differential / unit), the function version hash at submission time, the result (pass/fail), and the verbatim evidence description.
+3. **Stale-evidence detection** — recorded when a previously passing evidence check is found stale due to a function version change: the prior passing version hash, the current version hash, and the detection timestamp.
+4. **Contract archive** — recorded when a contract is committed to `outcomes/`, with the contract content hash.
+
+### `$audit ci`
+
+Extends `$audit` with a contract regression phase that runs **before** standard audit log verification. Run `node scripts/audit-ci.js`. The regression phase reads all archived contracts in `outcomes/`, re-executes each contract's falsifiability condition where machine-executable (e2e checks against a real Cortex endpoint), and records pass/fail. A contract whose re-execution fails is a behavioral regression — reported with the same severity as a failing safety gate. Intended for use as a CI/CD pre-deployment gate.
 
 ## Commands
 
@@ -70,6 +83,8 @@ Result: Build phase unlocked
 - [ ] `$audit export` produces unique timestamped files on each invocation
 - [ ] Both commands fail gracefully with clear error when `modes/cocoaudit.on` absent
 - [ ] Both commands fail gracefully when `lifecycle/audit.md` absent
+- [ ] All four CocoContract event categories (declaration, evidence submission, stale-evidence detection, archive) are documented and recognized by `$audit view`
+- [ ] `$audit ci` runs the contract regression phase before standard audit log verification and exits non-zero on any regression
 
 ## Anti-Rationalization
 
