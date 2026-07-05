@@ -274,6 +274,7 @@ function main() {
       } catch (_) { }
     }
     appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'sentinel-dimension', subagent_id: subagentId, status, ts });
+    if (status === 'completed') queueRefineReflection(event, ts);
     return;
   }
 
@@ -309,6 +310,7 @@ function main() {
       }
     }
     appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'secondeye', subagent_id: subagentId, verdict, ts });
+    queueRefineReflection(event, ts);
     return;
   }
 
@@ -360,6 +362,48 @@ function main() {
 
   // 13. Unknown — log and ignore
   appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'unknown', subagent_id: subagentId, ts });
+}
+
+// CocoRefine (Feature 45) — queue evaluation subagent completions for the
+// Reflect step. Only queues when the event carries enough context to ground
+// an attribution later (a strategy was actually injected this session).
+const REFINE_PENDING = path.join(COCOPLUS_DIR, 'refine', 'pending.jsonl');
+const REFINE_QUEUE_THRESHOLD = 5;
+
+function queueRefineReflection(event, ts) {
+  const strategyIds = event.injected_strategy_ids || event.strategy_ids || [];
+  const functionName = event.function_name || event.artifact_reference || null;
+  const functionVersionHash = event.function_version_hash || event.source_hash || null;
+  if (!strategyIds.length || !functionName || !functionVersionHash) return;
+
+  for (const strategyId of strategyIds) {
+    appendJsonLine(REFINE_PENDING, {
+      strategy_id: strategyId,
+      session_id: event.session_id || process.env.COCO_SESSION_ID || 'unknown',
+      function_name: functionName,
+      function_version_hash: functionVersionHash,
+      queued_at: ts,
+    });
+  }
+
+  let queueLength = 0;
+  try {
+    queueLength = fs.readFileSync(REFINE_PENDING, 'utf8').split('\n').filter(Boolean).length;
+  } catch (_) { /* file just created above */ }
+
+  if (queueLength >= REFINE_QUEUE_THRESHOLD) {
+    const reflectScript = path.join('scripts', 'refine-reflect.js');
+    if (fs.existsSync(reflectScript)) {
+      try {
+        const child = spawn(process.execPath, [reflectScript], { detached: true, stdio: 'ignore', windowsHide: true });
+        child.on('error', (err) => logError('subagent-stop', `refine-reflect spawn failed: ${err.message}`));
+        child.unref();
+        appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'refine-reflect-triggered', queue_length: queueLength, ts });
+      } catch (err) {
+        logError('subagent-stop', `refine-reflect spawn failed: ${err.message}`);
+      }
+    }
+  }
 }
 
 try {
