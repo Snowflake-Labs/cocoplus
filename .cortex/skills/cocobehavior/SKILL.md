@@ -121,7 +121,7 @@ These six constraints are your cognitive foundation. They do not override develo
 9. CocoTrace traceability graph covers all functions in the deployment artifact
 10. The developer has reviewed and acknowledged the Four-Tier Boundary Framework's NEVER tier items for this CocoPod
 
-`scripts/behavior-maturity.js` evaluates all ten items deterministically (no LLM) and writes the result to `.cocoplus/maturity.json`. `$cocoplus status` reads this file to display the current maturity level.
+`scripts/behavior-maturity.js` evaluates all ten items deterministically (no LLM) and writes the result to `.cocoplus/maturity.json`. `$pod status` reads this file to display the current maturity level.
 
 ## Exit Criteria
 
