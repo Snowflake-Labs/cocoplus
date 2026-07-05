@@ -54,6 +54,54 @@ function computeSha256(fullPath) {
   } catch { return null; }
 }
 
+// Feature 41 ninth-cycle enhancement: maintain snowflake-deps.json, the
+// reverse-index source for trace-blast.js. Deterministic regex extraction —
+// no SQL parser, no LLM. Scans lifecycle/build/ artifacts for object
+// references keyed by a CREATE FUNCTION/PROCEDURE name in the same file.
+function updateSnowflakeDeps() {
+  const buildDir = path.join(COCOPLUS_DIR, 'lifecycle', 'build');
+  const depsPath = path.join(COCOPLUS_DIR, 'lifecycle', 'snowflake-deps.json');
+  if (!fs.existsSync(buildDir)) return;
+
+  let files;
+  try { files = fs.readdirSync(buildDir).filter(f => /\.(sql|py)$/i.test(f)); } catch { return; }
+
+  const deps = {};
+  for (const file of files) {
+    let content;
+    try { content = fs.readFileSync(path.join(buildDir, file), 'utf8'); } catch { continue; }
+
+    const fnMatch = content.match(/CREATE\s+(?:OR\s+REPLACE\s+)?(?:FUNCTION|PROCEDURE)\s+(\w+)/i);
+    if (!fnMatch) continue;
+    const functionName = fnMatch[1];
+
+    const reads = new Set();
+    const writes = new Set();
+    const cortexFeatures = new Set();
+
+    const fromMatches = content.matchAll(/\bFROM\s+([a-zA-Z_][\w.]*)/gi);
+    for (const m of fromMatches) reads.add(m[1]);
+    const joinMatches = content.matchAll(/\bJOIN\s+([a-zA-Z_][\w.]*)/gi);
+    for (const m of joinMatches) reads.add(m[1]);
+
+    const intoMatches = content.matchAll(/\b(?:INSERT\s+INTO|MERGE\s+INTO|UPDATE)\s+([a-zA-Z_][\w.]*)/gi);
+    for (const m of intoMatches) writes.add(m[1]);
+
+    const cortexMatches = content.matchAll(/\b(AI_COMPLETE|AI_CLASSIFY|AI_EXTRACT|AI_SUMMARIZE_AGG|SNOWFLAKE\.CORTEX\.\w+)\b/gi);
+    for (const m of cortexMatches) cortexFeatures.add(m[1].toUpperCase());
+
+    deps[functionName] = {
+      reads: [...reads],
+      writes: [...writes],
+      cortex_features: [...cortexFeatures],
+    };
+  }
+
+  if (Object.keys(deps).length > 0) {
+    fs.writeFileSync(depsPath, JSON.stringify(deps, null, 2), 'utf8');
+  }
+}
+
 function main() {
   if (!fs.existsSync(COCOPLUS_DIR)) {
     console.log('OK');
@@ -129,6 +177,8 @@ function main() {
   const lifecycleDir = path.join(COCOPLUS_DIR, 'lifecycle');
   if (!fs.existsSync(lifecycleDir)) fs.mkdirSync(lifecycleDir, { recursive: true });
   fs.writeFileSync(tracePath, JSON.stringify(trace, null, 2), 'utf8');
+
+  updateSnowflakeDeps();
 
   // Output summary
   const staleNodes = Object.entries(nodes)
