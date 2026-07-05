@@ -1,7 +1,7 @@
 ---
 name: "secondeye"
 description: "Multi-model parallel plan critique. Spawns five SecondEye Critic instances in parallel (Efficiency, Completeness, Risk, Devil's Advocate, Edge Case Hunter), aggregates findings with HITL/AFK, BLOCKING/MINOR, and six-severity labels, and writes a structured report. Critical findings create a soft gate on $build. Usage: $secondeye [--artifact spec|plan|review] [--model haiku|sonnet|opus]."
-version: "1.1.0"
+version: "1.2.0"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -12,6 +12,22 @@ Your objective is to run a multi-model adversarial critique of a lifecycle artif
 
 Before proceeding, verify that `.cocoplus/` exists.
 If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
+
+## Shadow Rule Commands
+
+Shadow rules are candidate SecondEye rules evaluated silently alongside active rules — their findings never affect the verdict, but their activation rate and developer-acceptance rate accumulate evidence for promotion.
+
+### `$secondeye shadow-add`
+
+Interactively collect a rule definition (lens, trigger pattern, description) and write it to `.cocoplus/secondeye/shadow-rules.json`. Do not add the rule to the active critic pool.
+
+### `$secondeye shadow-report`
+
+Run `node scripts/shadow-report.js`. Reads `.cocoplus/secondeye/shadow-findings.json`, computes per-rule activation rate (how often the rule fires across reviews) and developer-acceptance rate (how often a surfaced shadow finding matches a finding the developer subsequently acted on), and reports promotion readiness against configured thresholds.
+
+### `$secondeye shadow-promote <rule-id>`
+
+Move a shadow rule from `.cocoplus/secondeye/shadow-rules.json` into the active critic rule pool once `shadow-report` shows it meets promotion thresholds. Removing it from the shadow pool after promotion.
 
 ## Parse Arguments
 
@@ -107,7 +123,10 @@ At least one `praise` finding is required if any well-constructed pattern is pre
 ```
 
 Spawn all five SecondEye Critic subagents in parallel, one per task prompt file.
-Wait for all five to complete.
+
+**Shadow rules:** if `.cocoplus/secondeye/shadow-rules.json` exists and is non-empty, spawn one additional critic per shadow rule, using the same artifact and lens-style task prompt but writing findings to `.cocoplus/secondeye/shadow-findings.json` (append, one record per finding: `rule_id`, `artifact`, `finding`, `ts`) instead of a staging file. Shadow findings run in parallel with the active five but are never read into `## Aggregate Findings` — they do not affect HITL/AFK, BLOCKING/MINOR, severity, or verdict in any way.
+
+Wait for all five active critics (and any shadow critics) to complete.
 
 ## Aggregate Findings
 
@@ -252,3 +271,5 @@ Report: .cocoplus/lifecycle/secondeye-[timestamp].md
 - [ ] Verdict derived from severity labels: BLOCKING if any `blocking` finding; CONCERNS if any `important`; APPROVE if only non-escalating labels
 - [ ] Critic outputs are aggregated into `.cocoplus/lifecycle/secondeye-[timestamp].md` with `critical_open` and acknowledgment metadata
 - [ ] Output clearly indicates whether `$build` is soft-gated and shows the `--hitl-only` and `--blocking-only` acknowledge options
+- [ ] Shadow rules (if any exist) run in parallel with active critics and record to `shadow-findings.json` without influencing HITL/AFK, BLOCKING/MINOR, severity, or verdict
+- [ ] `shadow-report.js` computes per-rule activation rate and developer-acceptance rate before any promotion is considered
