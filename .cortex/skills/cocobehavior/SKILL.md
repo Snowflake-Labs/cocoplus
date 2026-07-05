@@ -2,7 +2,7 @@
 name: "cocobehavior"
 description: "Cortex-specific behavioral guidelines — always-on inner constraint layer for all CocoPlus personas"
 user-invocable: false
-version: "1.2.0"
+version: "1.3.0"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -98,6 +98,30 @@ Before writing any new Cortex AI function, pipeline stage, or subagent definitio
 ---
 
 These six constraints are your cognitive foundation. They do not override developer instructions — they shape how you interpret and act on them.
+
+## L0–L3 Maturity Levels
+
+`$behavior maturity` reports the CocoPod's current automation maturity level, computed by `scripts/behavior-maturity.js` from `cocoplus.toml` and `.cocoplus/modes/`.
+
+- **L0 — Manual:** No CocoPlus automation modes enabled beyond initialization. Every phase gate requires explicit developer action.
+- **L1 — Assisted:** Core lifecycle automation enabled (memory, safety gate) but SecondEye/CocoSentinel are not yet configured with block rules.
+- **L2 — Supervised:** SecondEye is active with block rules and CocoSentinel is configured for at least one artifact type. HITL stages still require developer approval before proceeding.
+- **L3 — Autonomous-Eligible:** All ten L3 readiness items below pass. AFK stages may proceed without per-stage developer approval, subject to the Four-Tier Boundary Framework's NEVER tier.
+
+**L3 Readiness Checklist** (all ten required — a CocoPod may not operate at L3 without passing this at `$pod init` or `$pod upgrade --l3`):
+
+1. `cocoplus-context.md` constitutional document is complete and current
+2. `cocoplus.toml` defines explicit tool permission tiers for all agents
+3. All CocoFlow stage handlers have deterministic script fallbacks
+4. SecondEye is active with at least five block rules
+5. CocoSentinel is configured for all artifact types the pipeline produces
+6. A rollback-by-git-tag strategy is documented in `plan.md`
+7. CocoAudit is active and capturing all HUMAN REQUIRED tier operations
+8. CocoContract outcome contracts exist for all production-bound functions
+9. CocoTrace traceability graph covers all functions in the deployment artifact
+10. The developer has reviewed and acknowledged the Four-Tier Boundary Framework's NEVER tier items for this CocoPod
+
+`scripts/behavior-maturity.js` evaluates all ten items deterministically (no LLM) and writes the result to `.cocoplus/maturity.json`. `$cocoplus status` reads this file to display the current maturity level.
 
 ## Exit Criteria
 
