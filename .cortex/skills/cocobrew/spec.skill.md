@@ -1,7 +1,7 @@
 ---
 name: "spec"
 description: "Enter the Spec phase of CocoBrew. Guides the developer through structured requirements capture: goal, success criteria, constraints, personas involved, data sources, and deliverables. Writes spec.md to .cocoplus/lifecycle/ and creates a git commit."
-version: "1.0.3"
+version: "1.0.4"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -58,6 +58,27 @@ Ask each question in sequence. Wait for the developer's response before proceedi
 
 **Question 6:** What is the target timeline? (If unknown, say "TBD".)
 
+## Outcome Statement Pre-Gate
+
+Before vague language detection or five-dimension scoring, require an Outcome Statement. This is CocoContract's initial human-authored oracle for the function's behavioral contract — it must exist before any scoring runs.
+
+Ask the developer: "State the outcome in this form: 'When this function works, [persona] sees [result].' Name a specific persona and a non-implementation result."
+
+Validate the answer:
+1. A `## Outcome Statement` section must be producible from the answer (non-empty).
+2. It must follow the template "When this function works, [persona] sees [result]" with a named persona (not a generic "user" or "developer") and a result stated in observable, non-implementation language.
+3. It must not match these anti-patterns (case-insensitive): "the function returns", "the system handles", "users can". A match means the statement describes implementation behavior, not an observed outcome.
+
+If the statement fails any check, return a FAIL verdict immediately with the specific rejection reason and re-ask before any dimension scoring occurs:
+
+```
+CocoSpec Outcome Statement — FAIL
+  Reason: [specific rejection — e.g. "matched anti-pattern 'the function returns'" or "persona is generic ('a user')"]
+  Restate using: "When this function works, [specific persona] sees [observable result]."
+```
+
+Do not proceed to Vague Language Detection or scoring until a passing Outcome Statement is recorded. Once passed, store it verbatim for the `## Outcome Statement` section of `spec.md`.
+
 ## Vague Language Detection
 
 Before writing the specification document, use `.cocoplus/scripts/spec-validator.js` for deterministic vague language detection on the draft spec answers. If the script is unavailable, fall back to the inline scan below.
@@ -97,6 +118,9 @@ Write `.cocoplus/lifecycle/spec.md`:
 **Date:** [ISO 8601 timestamp]
 **Phase:** Spec (1/6)
 **Phase ID:** [generated phase ID]
+
+## Outcome Statement
+[Passed Outcome Statement, verbatim — referenced by CocoContract as the initial human-authored oracle]
 
 ## Goal
 [Developer's answer to Question 1]
@@ -160,10 +184,13 @@ Output: "Spec captured. Commit created: `feat(spec): initial project specificati
 | Ask all 6 questions at once | Batched questions reduce answer quality — always one at a time |
 | Skip questions if developer seems impatient | All 6 are required — spec.md must be complete |
 | Skip git commit | Every phase must commit for rollback traceability |
+| Accept "the function returns X" as the Outcome Statement because it's specific | Specific implementation detail is still not an observed outcome — the anti-pattern check exists precisely to catch this |
+| Let a generic persona ("a user", "a developer") pass because the rest of the statement is well-formed | The persona must be specific — a generic persona makes the whole statement unfalsifiable against a real workflow |
 
 ## Exit Criteria
 
-- [ ] `.cocoplus/lifecycle/spec.md` exists with all six sections (Goal, Success Criteria, Out of Scope, Existing Snowflake Objects, Target Users, Timeline)
+- [ ] A passing Outcome Statement is recorded before any dimension scoring runs
+- [ ] `.cocoplus/lifecycle/spec.md` exists with all seven sections (Outcome Statement, Goal, Success Criteria, Out of Scope, Existing Snowflake Objects, Target Users, Timeline)
 - [ ] `.cocoplus/lifecycle/spec.md` has a valid Phase ID in format `spec-YYYYMMDD-NNN`
 - [ ] `.cocoplus/lifecycle/meta.json` `phases_completed` array contains `"spec"` and `current_phase` is `"spec"`
 - [ ] Git commit with message `feat(spec): initial project specification captured` exists in log
