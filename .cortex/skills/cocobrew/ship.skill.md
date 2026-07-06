@@ -1,7 +1,7 @@
 ---
 name: "ship"
 description: "Enter the Ship phase of CocoBrew. Reads review.md approval, generates structured commit, creates semantic version tag, optionally creates PR via gh CLI, and records deployment details. Requires approved review."
-version: "1.0.1"
+version: "1.1.0"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -23,6 +23,9 @@ Verify that required lifecycle artifact files exist on disk — meta.json alone 
 
 Read `.cocoplus/lifecycle/review.md`. Verify `## Approval Status` contains `APPROVED`.
 If not: output "Review has not been approved. Run `$review` to complete the approval process." Then stop.
+
+Read `.cocoplus/lifecycle/review-state.json` if it exists. If any finding has `severity: BLOCKED` and `resolved` is not `true`:
+Output: "Ship blocked: [N] unresolved BLOCKED finding(s) require a human decision before shipping. Run `$review clear-blocked --id <finding-id> --rationale <text>` to resolve each one." List each unresolved finding's ID and one-line summary. Then stop. **BLOCKED findings are treated identically to BLOCKING findings — there is no override.**
 
 ## Determine Version
 
@@ -149,3 +152,4 @@ Full CocoBrew lifecycle complete: Spec → Plan → Build → Test → Review �
 - [ ] Git tag matching `v*.*.*` exists pointing to the release commit
 - [ ] `.cocoplus/lifecycle/meta.json` `current_phase` is `"shipped"` and `phases_completed` contains `"ship"`
 - [ ] `.cocoplus/AGENTS.md` contains `Phase: SHIPPED` with version and timestamp
+- [ ] `$ship` is blocked when any `BLOCKED` finding in `review-state.json` is unresolved, with no override path
