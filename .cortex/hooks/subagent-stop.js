@@ -13,7 +13,7 @@
 
 const fs   = require('fs');
 const path = require('path');
-const { spawn } = require('child_process');
+const { spawn, execFileSync } = require('child_process');
 const { isoUtc, appendJsonLine, logError, readStdinJson } = require('./_common.js');
 
 const COCOPLUS_DIR = '.cocoplus';
@@ -74,6 +74,22 @@ function main() {
   const worktreeBranch = event.worktree_branch || '';
 
   appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', subagent_id: subagentId, status, ts });
+
+  // 0. CocoPivot status envelope validation (Feature 47, Tier 1, <200ms) —
+  // runs for every subagent completion, independent of type. Never blocks:
+  // a malformed envelope is logged as a quality warning, not a hard failure.
+  if (event.status_envelope) {
+    try {
+      const envelopeScript = path.join('scripts', 'status-envelope-check.js');
+      if (fs.existsSync(envelopeScript)) {
+        execFileSync(process.execPath, [envelopeScript, '--envelope', JSON.stringify(event.status_envelope)], {
+          timeout: 2000, windowsHide: true,
+        });
+      }
+    } catch (err) {
+      logError('subagent-stop', `status-envelope-check failed: ${err.message}`);
+    }
+  }
 
   // 1. Identify subagent type by ID prefix
   const isCupper    = subagentId.startsWith('cupper-');
