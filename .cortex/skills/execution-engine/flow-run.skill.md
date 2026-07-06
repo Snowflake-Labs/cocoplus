@@ -1,7 +1,7 @@
 ---
 name: "flow-run"
 description: "Execute a CocoFlow pipeline from flow.json. Supports adaptive parallelism (--concurrency flag), dual-file state recovery, intermediate result persistence for parallel evaluation runs, HITL stage pausing, and dual synthesis path with deterministic rule-based fallback. If a stage-id is provided, execute only that stage."
-version: "1.1.0"
+version: "1.2.0"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -132,6 +132,46 @@ For stages with `"type": "loop"`:
 - Track iteration count in flow.json as `iteration_count`
 - Each iteration can reference previous iteration output
 
+## Parallel Stages (Fan-Out, Feature 47 Enhancement)
+
+For stages with `"type": "parallel"`:
+
+```json
+{
+  "type": "parallel",
+  "label": "Multi-perspective audit",
+  "pods": ["sentinel-pod", "review-pod", "trace-pod"],
+  "on_partial": "continue_with_flag",
+  "on_error": "halt"
+}
+```
+
+1. Spawn all pods in the `pods:` list simultaneously, in a single response turn. Do not advance to the next flow step until every pod has reported a terminal status: `COMPLETE`, `PARTIAL`, `ERROR`, or `SKIPPED`.
+2. Each pod's subagent output must open with a status envelope (see Pattern: Agent Status Envelope). `status-envelope-check.js` validates and records it to `.cocoplus/pod-status.json` at SubagentStop.
+3. If `require_complete: true` is set on the step: halt the flow if any pod reports anything other than `COMPLETE`, regardless of `on_partial:`.
+4. Otherwise, apply `on_partial:` when any pod reports `PARTIAL`:
+   - `continue_with_flag` (default) — proceed to the next step; the convergence step will flag the partial source
+   - `halt` — stop the flow, surface the partial pods to the developer
+   - `skip_partial` — proceed, but exclude PARTIAL pod outputs from the subsequent convergence step
+5. Apply `on_error:` when any pod reports `ERROR`:
+   - `halt` (default) — stop the flow
+   - `continue_with_flag` — proceed, flag the errored pod in convergence output
+
+## Converge Stages (Fan-In, Feature 47 Enhancement)
+
+For stages with `"type": "converge"`:
+
+```json
+{
+  "type": "converge",
+  "label": "Synthesize findings",
+  "handler": "cococonverge",
+  "output": "lifecycle/FINDINGS.md"
+}
+```
+
+A `converge:` step is the fan-in point for the immediately preceding `parallel:` step. When `handler: cococonverge` is set, invoke `$pivot run` automatically once all upstream pods have reached terminal status — this writes the file named in `output:`. A `parallel:` step with no subsequent `converge:` step in the flow definition is incomplete; when building or validating a flow definition, warn: "Parallel step '[label]' has no subsequent converge step — N pod outputs will have no synthesis step and the reconciliation burden falls on the developer."
+
 ## Create Stage Commit
 
 After each stage completes successfully:
@@ -175,3 +215,6 @@ Time: [duration]
 - [ ] If consecutive failures reached `maxConsecutiveFailures`, pipeline halted with escalation message
 - [ ] If any stage had `on_failure: stop` and failed, the pipeline halted immediately with an actionable error message
 - [ ] If any synthesis stage used the rule-based fallback, a `synthesis_fallback` notification was written to `ui-notifications.jsonl` and the developer was notified
+- [ ] `parallel:` steps do not advance until all listed pods report a terminal status; `on_partial:` and `on_error:` govern behavior per the step's declared values
+- [ ] `converge:` steps with `handler: cococonverge` invoke `$pivot run` automatically once upstream pods reach terminal status
+- [ ] A `parallel:` step without a subsequent `converge:` step triggers a validator warning
