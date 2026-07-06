@@ -26,11 +26,11 @@
 <div class="page-header">
   <div class="label">Design Principles</div>
   <h1>The Design Principles</h1>
-  <p class="subtitle">These are the seventeen ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
+  <p class="subtitle">These are the eighteen ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
 </div>
 
 <div class="content">
-<p>These are the seventeen ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
+<p>These are the eighteen ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
 <p>A principle without a reason is just a constraint. With a reason, it becomes a compass.</p>
 <hr>
 <h2 id="1-native-first-always">1. Native First, Always</h2>
@@ -142,6 +142,11 @@
 <p>"Before" means structurally before: the contract is declared before <code>$spec</code> or <code>$build</code> runs, committed to version control ahead of generation, and authored by the developer or a designated oracle-author who is not the generating agent. The commit timestamp is what proves independence. Evidence is then classified by epistemic strength — real-endpoint execution with an externally verifiable result is the only tier sufficient for production certification; evaluation that shares session context with the generator is explicitly insufficient, no matter how thorough it reads.</p>
 <p>This principle is a close relative of Evidence Over Assertion (4) — that one says don't assert what you haven't measured, this one says don't measure against criteria you invented after building the thing you're measuring. CocoContract is the operational instrument: <code>$contract init</code> is how the oracle gets declared and committed before generation begins, and the stop hook on <code>$ship</code> is what makes this an architectural invariant instead of a suggestion.</p>
 <hr>
+<hr>
+<h2 id="18-declarative-agency-boundary">18. Declarative Agency Boundary</h2>
+<p>A pod's authority is fully defined by what it explicitly declares it will do and what it explicitly declares it will not do. Undeclared territory does not default to "available" — it defaults to "not my concern." Explicit exclusion is as architecturally load-bearing as explicit inclusion.</p>
+<p>In a single-pod system, scope is defined by what the pod includes. In a multi-pod system, scope is defined by the intersection of every pod's inclusions and exclusions. Two undeclared territories facing each other produce overlap by default — both pods may reasonably conclude a concern is theirs, and both fire, producing duplicate or contradictory guidance on the same issue. Two explicit exclusions facing each other produce a clean boundary by design, with no ambiguity for either pod to resolve at runtime.</p>
+<p>Every CocoPod definition carries an <code>excludes:</code> field alongside its capability description, naming the concern classes it does not own. CocoPivot's scope anomaly detection depends entirely on this — a pod without a declared exclusion boundary cannot be evaluated for scope discipline, because there is nothing to check its output against. This is why the field is required for any pod running in a parallel workflow: without it, the convergence step has no way to tell a legitimate finding from scope creep.</p>
 <blockquote><p><em>Principles are only principles when they are applied in the cases where violating them would be convenient.</em></p></blockquote>
 </div>
 

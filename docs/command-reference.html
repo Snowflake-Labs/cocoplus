@@ -1007,6 +1007,14 @@ $cocoplus review path/to/artifact.sql
 <p>Finding labels: <code>blocking</code> · <code>important</code> · <code>nit</code> · <code>suggestion</code> · <code>learning</code> · <code>praise</code> (mandatory — at least one per review). Verdict: APPROVE / COMMENT / REQUEST_CHANGES.</p>
 <p>Review output written to <code>.cocoplus/review/cocoreview-&lt;timestamp&gt;.md</code> — committed to git.</p>
 <p><strong>Output:</strong> Structured review report with findings and verdict.</p>
+<p>Every finding also carries a <code>priority</code> (P1 pre-deploy / P2 this sprint / P3 this month / P4 backlog) and <code>effort</code> (XS / S / M / L / XL) field, independent of severity. <code>XL</code>-effort findings require explicit developer acknowledgment before the review is treated as actioned.</p>
+<hr>
+<p><strong><code>$review clear-blocked --id &lt;finding-id&gt; --rationale &lt;text&gt;</code></strong> — Resolve a BLOCKED finding</p>
+<pre><code>
+$review clear-blocked --id FIND-014 --rationale "Accepted online migration with default-value backfill per platform team decision"
+</code></pre>
+<p><code>BLOCKED</code> is a fifth finding state for decisions outside the reviewer's authority — architectural judgment, business context, or regulatory interpretation the review cannot resolve on its own. Every <code>BLOCKED</code> finding states what was found, why human judgment is required, and the options as understood, without ranking. <code>$ship</code> treats <code>BLOCKED</code> identically to <code>blocking</code> — no override exists. This command records the rationale in the audit trail and resolves the finding in <code>review-state.json</code>.</p>
+<p><strong>Output:</strong> Finding marked resolved; ship-eligibility status for any remaining BLOCKING/BLOCKED findings.</p>
 <hr>
 <p><strong><code>$cocoplus review --complexity</code></strong> — Run only the PR complexity analysis</p>
 <pre><code>
@@ -1428,6 +1436,10 @@ $sketch deps --reduce off
   <td style="text-align:left"><code>$recall search &lt;query&gt;</code> · <code>$recall show &lt;session-id&gt;</code> · <code>$recall import [--since]</code> · <code>$recall sources</code> · <code>$recall status</code></td>
 </tr>
 <tr>
+  <td style="text-align:left"><strong>Pivot</strong></td>
+  <td style="text-align:left"><code>$pivot run</code> · <code>$pivot run --since &lt;timestamp&gt;</code> · <code>$pivot show</code> · <code>$pivot status</code> · <code>$pivot clear</code></td>
+</tr>
+<tr>
   <td style="text-align:left"><strong>Ops</strong></td>
   <td style="text-align:left"><code>$ops</code> · <code>$ops dora</code> · <code>$ops sprint</code> · <code>$ops suggest</code> · <code>$ops demo</code> · <code>$ops refresh</code></td>
 </tr>
@@ -1483,6 +1495,39 @@ $sketch deps --reduce off
 </table>
 <hr>
 <blockquote><p><em>A reference document is a map, not a destination. Use it to find the right path, then put it down and walk.</em></p></blockquote>
+<hr>
+<h2 id="multi-pod-convergence-cocopivot">Multi-Pod Convergence — CocoPivot</h2>
+<p><strong><code>$pivot run</code></strong> — Converge all parallel pod outputs into FINDINGS.md</p>
+<pre><code>
+$pivot run
+</code></pre>
+<p>Reads all pod outputs recorded in <code>.cocoplus/pod-status.json</code> from the most recent <code>parallel:</code> step, applies the deterministic three-pass deduplication algorithm (same file:line, then same issue type in file, then similar snippet), assigns inherited priority/effort/severity, and writes <code>lifecycle/FINDINGS.md</code> plus <code>lifecycle/findings-state.json</code>. Scope anomalies (findings that fall inside a contributing pod's own <code>excludes:</code> declaration) are excluded from FINDINGS.md and recorded separately.</p>
+<p><strong>Output:</strong> <code>lifecycle/FINDINGS.md</code> (committed) + <code>findings-state.json</code> (gitignored).</p>
+<hr>
+<p><strong><code>$pivot run --since &lt;timestamp&gt;</code></strong> — Re-converge using only pods completed after a timestamp</p>
+<pre><code>
+$pivot run --since 2026-07-10T14:00:00Z
+</code></pre>
+<p>Useful when additional pods have completed since the last convergence run.</p>
+<hr>
+<p><strong><code>$pivot show</code></strong> — Display the current FINDINGS.md, grouped by priority</p>
+<pre><code>
+$pivot show
+</code></pre>
+<p>Includes the Coverage Note section if any contributing pod was PARTIAL.</p>
+<hr>
+<p><strong><code>$pivot status</code></strong> — Summary of the last convergence run</p>
+<pre><code>
+$pivot status
+</code></pre>
+<p>Total unique findings, counts by priority tier and severity, contributing pods with completion status, and the timestamp of the last run.</p>
+<hr>
+<p><strong><code>$pivot clear</code></strong> — Archive the current FINDINGS.md and reset for a new run</p>
+<pre><code>
+$pivot clear
+</code></pre>
+<p>Archives to <code>lifecycle/findings-archive/&lt;timestamp&gt;-FINDINGS.md</code> — never deletes.</p>
+<p><strong>Output:</strong> Archived file + reset findings-state.json.</p>
 </div>
 
 <footer>
