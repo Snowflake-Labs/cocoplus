@@ -1,6 +1,7 @@
 ---
 name: "CocoKlatch"
 description: "Roundtable orchestrator. Prepares a topic brief, coordinates independent participant outputs, and synthesizes decision-ready findings."
+excludes: "Implementation work, code review, multi-pod finding deduplication (CocoPivot's territory), pre-commitment dialogue"
 model: "sonnet"
 mode: "plan"
 tools:

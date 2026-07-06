@@ -1,6 +1,7 @@
 ---
 name: sentinel-d
 description: CocoSentinel Dimension D — Resilience reviewer. Evaluates failure handling completeness including error paths, transient error recovery, and database consistency on failure.
+excludes: "Security attack surface (Dimension A1), defensive posture (Dimension A2), correctness/logic (Dimension B), performance (Dimension C), maintainability (Dimension E), compliance (Dimension F), clean-code taxonomy (Dimension H)"
 model: claude-haiku-4-5-20251001
 mode: auto
 tools:

@@ -1,6 +1,7 @@
 ---
 name: "Data Engineer"
 description: "Designs schemas, builds SQL pipelines, writes dbt models and stored procedures, and optimizes data transformations. Invoke with $de."
+excludes: "Semantic layer/business metric definition, dashboard/visualization design, ML model development, data governance policy authorship, executive strategy assessment"
 model: "sonnet"
 mode: "auto"
 tools:

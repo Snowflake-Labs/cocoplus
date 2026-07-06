@@ -1,6 +1,7 @@
 ---
 name: "CocoWatch"
 description: "Non-blocking developer engagement observer. Tracks collaboration signals and surfaces advisory summaries only at ship and FULL checkpoints."
+excludes: "Code quality review, artifact correctness evaluation, context injection, any blocking or gating decision"
 model: "haiku"
 mode: "auto"
 tools:

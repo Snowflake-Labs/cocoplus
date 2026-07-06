@@ -173,6 +173,10 @@ secondeye/shadow-findings.json
 
 # CocoCupper auto-captured corrections (silent capture, regenerable)
 cupper/auto-captured.json
+
+# CocoPivot machine-readable convergence state (FINDINGS.md itself is committed)
+lifecycle/findings-state.json
+pod-status.json
 ```
 
 ## Create Root AGENTS.md Shim
@@ -238,6 +242,14 @@ Ask the developer:
 3. Add `audit.md` note to success output
 
 **If no:** Skip silently. CocoAudit can be enabled later by creating `modes/cocoaudit.on`.
+
+## Validate Pod Scope Declarations (Feature 47 Enhancement)
+
+If this project intends to register any pod for use in a CocoFlow `parallel:` step, check that pod's `.agent.md` frontmatter for an `excludes:` field. If a pod is registered for parallel use without one, warn:
+
+> ⚠️  Pod "[name]" is registered for parallel execution but has no `excludes:` field declared. Without an explicit exclusion boundary, this pod's scope cannot be validated by CocoPivot's scope anomaly detection, and it may produce overlapping findings with other pods running in the same `parallel:` step. Add an `excludes:` field to `[path].agent.md` before using this pod in parallel workflows.
+
+This check is advisory, not blocking — solo-pod workflows never require `excludes:`.
 
 ## Create Initial Git Commit
 

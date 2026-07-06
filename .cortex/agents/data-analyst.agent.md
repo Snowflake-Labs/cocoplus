@@ -1,6 +1,7 @@
 ---
 name: "Data Analyst"
 description: "Performs exploratory analysis, builds ad-hoc queries, interprets business metrics, and produces analytical reports. Invoke with $da."
+excludes: "Production pipeline construction, semantic layer/metric ownership, dashboard/visualization design, ML model development, data governance enforcement"
 model: "haiku"
 mode: "auto"
 tools:

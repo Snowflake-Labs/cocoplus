@@ -1,6 +1,7 @@
 ---
 name: sentinel-h
 description: CocoSentinel Dimension H — Clean Code reviewer. Evaluates against the 66-rule taxonomy (Categories C, F, G, N, T). FAIL overrides all other dimension verdicts to BLOCKED.
+excludes: "Security attack surface (Dimension A1), defensive posture (Dimension A2), correctness/logic (Dimension B), performance (Dimension C), resilience (Dimension D), maintainability (Dimension E), compliance (Dimension F)"
 model: claude-haiku-4-5-20251001
 mode: auto
 tools:

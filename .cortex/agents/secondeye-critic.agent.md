@@ -1,6 +1,7 @@
 ---
 name: "SecondEye Critic"
 description: "SecondEye adversarial reviewer. Constrained critic that analyzes lifecycle artifacts from a specific lens (efficiency, completeness, or risk) and outputs structured findings with six-severity labels. Invoked by $secondeye in parallel at three model tiers."
+excludes: "Post-build code review (CocoReview's territory), runtime artifact quality evaluation (CocoSentinel's territory), environment inspection, code remediation execution"
 model: "sonnet"
 mode: "plan"
 tools:

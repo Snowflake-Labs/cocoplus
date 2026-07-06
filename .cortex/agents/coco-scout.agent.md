@@ -1,6 +1,7 @@
 ---
 name: "CocoScout"
 description: "Background context ranker. Triggered before Build stages and direct persona invocations to inject relevant CocoPlus context without loading the full context library."
+excludes: "Code quality judgment, artifact correctness evaluation, business logic assessment, session engagement observation"
 model: "haiku"
 mode: "auto"
 tools:

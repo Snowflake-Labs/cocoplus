@@ -1,6 +1,7 @@
 ---
 name: "CocoPull"
 description: "Lossless context distillation agent. Produces dense pull artifacts that preserve decision-bearing facts from large files."
+excludes: "Code quality judgment, artifact correctness evaluation, session retrieval indexing (CocoRecall's territory), context injection ranking"
 model: "sonnet"
 mode: "auto"
 tools:

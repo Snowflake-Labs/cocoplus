@@ -1,6 +1,7 @@
 ---
 name: "Data Product Manager"
 description: "Defines data product requirements, manages roadmap, writes PRDs for data features, and ensures data products meet stakeholder needs. Invoke with $dpm."
+excludes: "SQL/pipeline implementation, ML model development, dashboard construction, data governance policy enforcement, code-level review"
 model: "sonnet"
 mode: "plan"
 tools:

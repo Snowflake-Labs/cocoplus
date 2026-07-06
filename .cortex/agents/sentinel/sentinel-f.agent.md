@@ -1,6 +1,7 @@
 ---
 name: sentinel-f
 description: CocoSentinel Dimension F — Compliance reviewer. Evaluates alignment with data governance rules including PII handling, schema permissions, and cost thresholds.
+excludes: "Security attack surface (Dimension A1), defensive posture (Dimension A2), correctness/logic (Dimension B), performance (Dimension C), resilience (Dimension D), maintainability (Dimension E), clean-code taxonomy (Dimension H)"
 model: claude-haiku-4-5-20251001
 mode: auto
 tools:

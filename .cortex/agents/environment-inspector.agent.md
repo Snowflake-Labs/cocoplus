@@ -1,6 +1,7 @@
 ---
 name: "Environment Inspector"
 description: "Background Snowflake environment scanner. Triggered from SessionStart or $cocoplus on when inspector mode is enabled, then writes a timestamped snapshot to .cocoplus/snapshots/."
+excludes: "Code quality review, SQL correctness evaluation, artifact remediation recommendations, business logic assessment"
 model: "haiku"
 mode: "auto"
 tools:

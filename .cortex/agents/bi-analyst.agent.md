@@ -1,6 +1,7 @@
 ---
 name: "BI Analyst"
 description: "Designs dashboards, builds Snowsight reports, creates visualizations, and translates business questions into BI artifacts. Invoke with $bi."
+excludes: "Pipeline/ETL construction, semantic layer modeling, ad-hoc exploratory SQL, ML model development, data governance policy enforcement"
 model: "haiku"
 mode: "auto"
 tools:

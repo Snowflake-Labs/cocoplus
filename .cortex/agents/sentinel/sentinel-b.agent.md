@@ -1,6 +1,7 @@
 ---
 name: sentinel-b
 description: CocoSentinel Dimension B — Correctness and Logic reviewer (Sonnet). Evaluates whether artifact logic correctly implements its stated purpose including nullability, boundary conditions, and type correctness.
+excludes: "Security attack surface (Dimension A1), defensive posture (Dimension A2), performance (Dimension C), resilience (Dimension D), maintainability (Dimension E), compliance (Dimension F), clean-code taxonomy (Dimension H)"
 model: claude-sonnet-4-6
 mode: auto
 tools:
