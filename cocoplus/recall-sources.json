@@ -2,7 +2,7 @@
   "sources": [
     {
       "path": "~/.snowflake/cortex/conversations",
-      "description": "Default local Cortex Code session transcript directory"
+      "description": "Default local Snowflake Coco session transcript directory"
     }
   ]
 }

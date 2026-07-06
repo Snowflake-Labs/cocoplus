@@ -35,13 +35,13 @@
 <hr>
 <h2 id="prerequisites">Prerequisites</h2>
 <p>Before you begin:</p>
-<p><strong>Coco CLI</strong> — Snowflake Cortex Code CLI installed and connected to a Snowflake account. Run <code>cortex --version</code> to verify. If Coco isn't installed, start with the <a href="https://docs.snowflake.com/en/user-guide/cortex-code">Snowflake Cortex Code documentation</a> before coming back here.</p>
+<p><strong>Coco CLI</strong> — Snowflake Coco installed and connected to a Snowflake account. Run <code>cortex --version</code> to verify. If Coco isn't installed, start with the <a href="https://docs.snowflake.com/en/user-guide/cortex-code">Snowflake Coco documentation</a> before coming back here.</p>
 <p><strong>Git</strong> — Your project directory must be a git repository. CocoPlus is tightly coupled to git — lifecycle phase commits, worktree isolation for parallel builds, rollback by commit hash. If your project isn't in git, run <code>git init &amp;&amp; git commit --allow-empty -m "init"</code> before proceeding.</p>
 <p><strong>CocoPlus plugin installed</strong> — Install the CocoPlus plugin from GitHub:</p>
 <pre><code>
 cortex skill add Snowflake-Labs/cocoplus
 </code></pre>
-<p><strong>Known Limitation:</strong> The CocoPlus repo uses <code>.skill.md</code> files which may not be auto-discovered by all Cortex Code versions. If the <code>skill add</code> command reports "No valid skills found", use the <code>--plugin-dir</code> flag when launching Cortex Code instead:</p>
+<p><strong>Known Limitation:</strong> The CocoPlus repo uses <code>.skill.md</code> files which may not be auto-discovered by all Coco versions. If the <code>skill add</code> command reports "No valid skills found", use the <code>--plugin-dir</code> flag when launching Coco instead:</p>
 <pre><code>
 cortex --plugin-dir Snowflake-Labs/cocoplus
 </code></pre>
