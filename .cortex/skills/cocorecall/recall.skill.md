@@ -29,7 +29,7 @@ Default behavior is **session-diverse**: return the single highest-relevance tur
 
 Every result carries four mandatory citation fields — never omit any of them:
 
-1. **Session ID** — the Cortex Code session identifier (source transcript at `~/.snowflake/cortex/conversations/<session-id>`)
+1. **Session ID** — the Snowflake Coco session identifier (source transcript at `~/.snowflake/cortex/conversations/<session-id>`)
 2. **Turn ID** — the specific turn within the session
 3. **Source Exists** — boolean, checked at retrieval time (not index time) against the actual transcript path
 4. **Suggested Follow-Up** — a query recommendation built from the retrieved turn's entity tags ("search for `<entity>` to find related decisions in other sessions")

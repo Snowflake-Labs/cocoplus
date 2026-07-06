@@ -4,13 +4,13 @@
 
 # CocoPlus
 
-**CocoPlus** is an AI-powered development lifecycle plugin for the Snowflake Cortex Code CLI. It brings structured, multi-agent workflows to data engineering projects — covering everything from project initialization through spec, plan, build, test, review, and ship phases.
+**CocoPlus** is an Agentic Operating System for Snowflake Coco. It brings structured, multi-agent workflows to data engineering projects — covering everything from project initialization through spec, plan, build, test, review, and ship phases.
 
 Built using only Coco-native constructs: Skills, Agents, Hooks, and AGENTS.md.
 
 ## What It Does
 
-CocoPlus wraps a structured development lifecycle around every project — from requirements capture through production ship — enforcing phase gates, parallel specialist execution, and checkpoint-validated delivery at each step. It decomposes work across eight specialist personas matched to domain, runs them in isolated git worktrees, and tracks every decision, token, and quality finding across sessions. A multi-layer safety gate protects production Snowflake objects from accidental modification, while a persistent pattern library and project knowledge base compound institutional memory over time. Thirty-five features covering orchestration, evaluation, governance, cost visibility, prompt engineering, pre-spec commitment, multi-agent deliberation, and context distillation — all running on Coco-native constructs with no external services.
+CocoPlus wraps a structured development lifecycle around every project — from requirements capture through production ship — enforcing phase gates, parallel specialist execution, and checkpoint-validated delivery at each step. It decomposes work across eight specialist personas matched to domain, runs them in isolated git worktrees, and tracks every decision, token, and quality finding across sessions. A multi-layer safety gate protects production Snowflake objects from accidental modification, while a persistent pattern library and project knowledge base compound institutional memory over time. Forty-seven features covering orchestration, evaluation, governance, cost visibility, prompt engineering, pre-spec commitment, multi-agent deliberation, context distillation, outcome certainty, and multi-pod convergence — all running on Coco-native constructs with no external services.
 
 ## Specialist Personas
 
@@ -46,7 +46,7 @@ See [cocoplus.dev](https://cocoplus.dev) for the full documentation site.
 
 ## Requirements
 
-- Snowflake Cortex Code CLI (`coco`) with plugin support
+- Snowflake Coco CLI (`coco`) with plugin support
 - Node.js (for hooks — Windows/Mac/Linux compatible)
 - Git
 
