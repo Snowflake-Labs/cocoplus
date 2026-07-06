@@ -26,11 +26,11 @@
 <div class="page-header">
   <div class="label">Feature Catalog</div>
   <h1>The Features</h1>
-  <p class="subtitle">CocoPlus has forty-six features. They are not forty-six independent capabilities you can pick from a menu. They are forty-six expressions of the same underlying design — a system where each piece reinforces the others.</p>
+  <p class="subtitle">CocoPlus has forty-seven features. They are not forty-seven independent capabilities you can pick from a menu. They are forty-seven expressions of the same underlying design — a system where each piece reinforces the others.</p>
 </div>
 
 <div class="content">
-<p>CocoPlus has forty-six features. They are not forty-six independent capabilities you can pick from a menu. They are forty-six expressions of the same underlying design — a system where each piece reinforces the others.</p>
+<p>CocoPlus has forty-seven features. They are not forty-seven independent capabilities you can pick from a menu. They are forty-seven expressions of the same underlying design — a system where each piece reinforces the others.</p>
 <p>Some features are always active. Some are toggled on by choice. Some run invisibly in the background. Some you will use every day. Some you will reach for only when the work demands it.</p>
 <p>Here they are, in the order they matter.</p>
 <hr>
@@ -504,7 +504,14 @@
 <p>Loading a single past session transcript to find one relevant decision can cost forty to sixty thousand tokens — more than most active sessions have available. CocoRecall builds a local, normalized SQLite index (<code>.cocoplus/recall.db</code>, gitignored) over four tables — sessions, turns, entities, citations — enabling precision retrieval at roughly one thousand tokens per query, about fifty times more efficient than raw transcript search.</p>
 <p><strong>Retrieval, not interpretation:</strong> CocoRecall's mandate is strict — return verbatim turn excerpts with full citation metadata, never a synthesized summary. A retrieval system that paraphrases in its own words can quietly confirm the querying agent's current approach and hide contradicting history; that is the self-oracle failure mode applied to institutional memory. Every result carries four mandatory citation fields: session ID, turn ID, a source-exists flag verified at retrieval time (not index time), and a suggested follow-up query built from the turn's entity tags. Search is session-diverse by default — one representative turn per session — so a single verbose session cannot dominate results. Entirely local; no session data is transmitted anywhere.</p>
 <hr>
-<p><em>Forty-six features, one idea: give the developer a system that works as hard to be right as it works to be fast.</em></p>
+<h2 id="feature-47-cocopivot-multi-pod-convergence-synthesizer">Feature 47: CocoPivot — Multi-Pod Convergence Synthesizer</h2>
+<p><strong>Commands:</strong> <code>$pivot run</code>, <code>$pivot run --since</code>, <code>$pivot show</code>, <code>$pivot status</code>, <code>$pivot clear</code></p>
+<p>When N pods inspect the same codebase in parallel, they produce N separate findings lists — a security pod flags a SQL injection, an API review pod flags "raw query vulnerability," a bug audit pod flags "unvalidated input" at the same line. Three findings, one root cause, and the developer left to reconcile potentially contradictory remediation advice. CocoPivot is the dedicated convergence step that collapses N parallel outputs into one coherent, deduplicated, prioritized action plan — and the sole author of <code>lifecycle/FINDINGS.md</code>, so there is exactly one authoritative source for what needs addressing and in what order.</p>
+<p><strong>Three-pass deduplication (deterministic, no LLM):</strong> Pass 1 merges findings at the same file:line, taking the highest severity and citing every contributing pod. Pass 2 merges findings of the same issue type within the same file even when line numbers differ slightly. Pass 3 merges findings referencing substantially similar code snippets, preferring the more specific description. Finding IDs (<code>PIVOT-NNN</code>) are stable within a session. After deduplication, each finding inherits the <em>highest</em> priority tier and the <em>largest</em> effort estimate among its contributing sources — combined remediation may exceed any single source's original estimate.</p>
+<p><strong>Honesty about coverage:</strong> When a contributing pod reported PARTIAL status, <code>FINDINGS.md</code>'s header carries an explicit Coverage Note naming the pod and what it skipped — a PARTIAL pod's zero findings are never presented as equivalent to a COMPLETE pod's zero findings. CocoPivot also validates every finding's concern class against the emitting pod's declared <code>excludes:</code> boundary; a finding that falls inside a pod's own exclusion list is a scope anomaly, excluded from <code>FINDINGS.md</code> and recorded for review rather than silently accepted.</p>
+<p><strong>Integration with CocoFlow:</strong> CocoPivot is the canonical handler for the new <code>converge:</code> step type — when a flow definition includes <code>handler: cococonverge</code> after a <code>parallel:</code> step, <code>$pivot run</code> is invoked automatically once every pod reaches terminal status. Manual invocation remains available for ad-hoc multi-pod audits outside a defined flow.</p>
+<hr>
+<p><em>Forty-seven features, one idea: give the developer a system that works as hard to be right as it works to be fast.</em></p>
 </div>
 
 <footer>
