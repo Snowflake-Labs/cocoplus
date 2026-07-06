@@ -4,6 +4,43 @@ All notable changes to CocoPlus are documented here.
 
 ---
 
+## [1.3.0] — July 2026
+
+### Added
+
+#### CocoPivot — Multi-Pod Convergence Synthesizer (Feature 47)
+- `cococonverge/cococonverge.skill.md` — `$pivot run/run --since/show/status/clear`; deterministic three-pass deduplication (same file:line → same issue type in file → similar snippet), stable `PIVOT-NNN` finding IDs, priority/effort inheritance (highest/largest among contributing sources), PARTIAL-source transparency in `FINDINGS.md` header, scope anomaly detection against pod `excludes:` declarations
+- `scripts/pivot-merge.js` — deterministic convergence engine, no LLM; reads `.cocoplus/pod-status.json`, writes `lifecycle/FINDINGS.md` (committed) and `lifecycle/findings-state.json` (gitignored)
+- `scripts/status-envelope-check.js` — Tier 1 (<200ms) status envelope validator; validates `pod`/`status`/`timestamp`/`duration_seconds`/`findings_count` on every subagent completion; logs quality warnings without ever blocking
+- `subagent-stop.js` extended: validates every subagent's status envelope (if present) before type-specific routing
+
+### Updated
+
+#### CocoFlow — Fan-out/Fan-in Primitives (Feature 6 Enhancement)
+- `flow-run.skill.md` v1.2.0: `parallel:` step type (spawns N pods simultaneously; `on_partial:`/`on_error:` governance; `require_complete:` option) and `converge:` step type (fan-in; `handler: cococonverge` auto-invokes `$pivot run`); validator warning when a `parallel:` step has no subsequent `converge:` step
+- `flow-status.skill.md` v1.1.0: per-pod completion table for `parallel:` steps, sourced from `pod-status.json`; `PARTIAL` always rendered distinctly from `COMPLETE`
+
+#### CocoReview — BLOCKED Verdict (Feature 38 Enhancement)
+- `cocoreview.skill.md` v1.4.0: fifth output state `BLOCKED` for findings requiring human judgment outside review authority — requires what-was-found, why-human-judgment-is-required, and options-as-understood; `$ship` treats `BLOCKED` identically to `blocking`
+- `cocoreview/review-clear-blocked.skill.md` (new): `$review clear-blocked --id <finding-id> --rationale <text>` records rationale in the audit trail and resolves the finding in `review-state.json`
+- `ship.skill.md` v1.1.0: `$ship` blocked by unresolved `BLOCKED` findings in `review-state.json`, with no override path
+
+#### CocoReview — Effort Sizing and Priority Tiers (Feature 38 Enhancement)
+- `cocoreview.skill.md` v1.4.0: every finding gains `priority:` (P1 pre-deploy / P2 this sprint / P3 this month / P4 backlog) and `effort:` (XS / S / M / L / XL) fields, orthogonal to severity; `XL` findings require explicit developer acknowledgment; CocoPivot inherits highest priority and largest effort when deduplicating across pods
+
+#### CocoPod — Explicit Scope Exclusion (All Pods Enhancement)
+- All 25 `.agent.md` definitions (8 specialist personas, 10 utility/orchestration agents, 8 CocoSentinel dimension reviewers) gain an `excludes:` frontmatter field declaring the concern classes each pod does not own
+- `pod-init.skill.md`: warns when a pod is registered for `parallel:` use without an `excludes:` declaration; advisory, not blocking, for solo-pod workflows
+- `pivot-merge.js` reads `excludes:` from each contributing pod's `.agent.md` at convergence time for scope anomaly detection
+
+#### CocoFlow — PARTIAL Status Propagation (Feature 6 Enhancement)
+- `pod-status.skill.md` v1.0.3→ (see Pod Completion Status section): `$pod status` renders `PARTIAL` pods distinctly, never merged into or displayed as `COMPLETE`, sourced from `pod-status.json`
+
+#### Plugin Manifest
+- `plugin.json` v1.3.0: skills array gains `cococonverge/cococonverge`, `cocoreview/review-clear-blocked`; scripts array gains `pivot-merge.js`, `status-envelope-check.js`
+
+---
+
 ## [1.2.0] — July 2026
 
 ### Added
