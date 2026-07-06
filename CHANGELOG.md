@@ -4,7 +4,7 @@ All notable changes to CocoPlus are documented here.
 
 ---
 
-## [1.3.0] — July 2026
+## [1.2.0] — July 2026
 
 ### Added
 
@@ -13,6 +13,25 @@ All notable changes to CocoPlus are documented here.
 - `scripts/pivot-merge.js` — deterministic convergence engine, no LLM; reads `.cocoplus/pod-status.json`, writes `lifecycle/FINDINGS.md` (committed) and `lifecycle/findings-state.json` (gitignored)
 - `scripts/status-envelope-check.js` — Tier 1 (<200ms) status envelope validator; validates `pod`/`status`/`timestamp`/`duration_seconds`/`findings_count` on every subagent completion; logs quality warnings without ever blocking
 - `subagent-stop.js` extended: validates every subagent's status envelope (if present) before type-specific routing
+
+#### CocoContract — Outcome-Driven Cortex Function Development (Feature 44)
+- `cococontract/contract.skill.md` — `$contract init/check/prove/archive/ci/status`; declares a persona/observable-result/falsifiability-condition contract before `$spec` or `$build` is permitted; commits `outcomes/<function-name>/contract.md`
+- `scripts/contract-prove.js` — records evidence at one of five tiers (e2e/reference/spec/differential/unit, strongest first) bound to the function's current source hash; `--ci` mode re-executes all archived contracts and exits non-zero on regression
+- `scripts/contract-gate.js` — Tier 1, no LLM: blocks `$spec`/`$build` without a committed contract, blocks `$ship` without fresh e2e-or-reference evidence; no override flags exist
+- `scripts/_contract-hash.js` — shared source-hash routine used by both prove and gate so evidence recording and staleness checking never diverge
+- `user-prompt-submit.js` extended: calls `contract-gate.js` for `$spec`, `$build`, `$ship`
+
+#### CocoRefine — Persistent Prompt Strategy Learning Loop (Feature 45)
+- `cocorefine/refine.skill.md` — `$refine search/add/update/deprecate/history/status`; maintains the committed CocoStrategyBook at `cocoplus/strategies/`
+- `scripts/refine-update.js` — atomic add/update/deprecate mutator; rejects hedging language; requires an evidence attribution record (never a self-authored justification); preserves full version history
+- `scripts/refine-reflect.js` — Tier 3 async Reflect step; grounds attribution only in a matching CocoContract evidence record; produces no attribution when the record is missing or incomplete
+- `subagent-stop.js` extended: queues evaluation subagent completions to `refine/pending.jsonl`, triggers `refine-reflect.js` at a queue threshold
+
+#### CocoRecall — CocoPod Session History Retrieval (Feature 46)
+- `cocorecall/recall.skill.md` — `$recall search/show/import/sources/status`; session-diverse retrieval with a mandatory four-field citation contract (session ID, turn ID, source-exists, suggested follow-up); retrieval-not-interpretation — verbatim excerpts only
+- `scripts/recall-import.js` — local SQLite index (`.cocoplus/recall.db`, gitignored) over sessions/turns/entities/citations tables via Node's built-in `node:sqlite` (no native binary dependency); fails gracefully with a clear message on Node runtimes older than 22.5
+- `cocoplus/recall-sources.json` — committed default source path config
+- `session-end.js` extended: Tier 2 async `recall-import.js --since <session-start>`
 
 ### Updated
 
@@ -35,36 +54,6 @@ All notable changes to CocoPlus are documented here.
 
 #### CocoFlow — PARTIAL Status Propagation (Feature 6 Enhancement)
 - `pod-status.skill.md` v1.0.3→ (see Pod Completion Status section): `$pod status` renders `PARTIAL` pods distinctly, never merged into or displayed as `COMPLETE`, sourced from `pod-status.json`
-
-#### Plugin Manifest
-- `plugin.json` v1.3.0: skills array gains `cococonverge/cococonverge`, `cocoreview/review-clear-blocked`; scripts array gains `pivot-merge.js`, `status-envelope-check.js`
-
----
-
-## [1.2.0] — July 2026
-
-### Added
-
-#### CocoContract — Outcome-Driven Cortex Function Development (Feature 44)
-- `cococontract/contract.skill.md` — `$contract init/check/prove/archive/ci/status`; declares a persona/observable-result/falsifiability-condition contract before `$spec` or `$build` is permitted; commits `outcomes/<function-name>/contract.md`
-- `scripts/contract-prove.js` — records evidence at one of five tiers (e2e/reference/spec/differential/unit, strongest first) bound to the function's current source hash; `--ci` mode re-executes all archived contracts and exits non-zero on regression
-- `scripts/contract-gate.js` — Tier 1, no LLM: blocks `$spec`/`$build` without a committed contract, blocks `$ship` without fresh e2e-or-reference evidence; no override flags exist
-- `scripts/_contract-hash.js` — shared source-hash routine used by both prove and gate so evidence recording and staleness checking never diverge
-- `user-prompt-submit.js` extended: calls `contract-gate.js` for `$spec`, `$build`, `$ship`
-
-#### CocoRefine — Persistent Prompt Strategy Learning Loop (Feature 45)
-- `cocorefine/refine.skill.md` — `$refine search/add/update/deprecate/history/status`; maintains the committed CocoStrategyBook at `cocoplus/strategies/`
-- `scripts/refine-update.js` — atomic add/update/deprecate mutator; rejects hedging language; requires an evidence attribution record (never a self-authored justification); preserves full version history
-- `scripts/refine-reflect.js` — Tier 3 async Reflect step; grounds attribution only in a matching CocoContract evidence record; produces no attribution when the record is missing or incomplete
-- `subagent-stop.js` extended: queues evaluation subagent completions to `refine/pending.jsonl`, triggers `refine-reflect.js` at a queue threshold
-
-#### CocoRecall — CocoPod Session History Retrieval (Feature 46)
-- `cocorecall/recall.skill.md` — `$recall search/show/import/sources/status`; session-diverse retrieval with a mandatory four-field citation contract (session ID, turn ID, source-exists, suggested follow-up); retrieval-not-interpretation — verbatim excerpts only
-- `scripts/recall-import.js` — local SQLite index (`.cocoplus/recall.db`, gitignored) over sessions/turns/entities/citations tables via Node's built-in `node:sqlite` (no native binary dependency); fails gracefully with a clear message on Node runtimes older than 22.5
-- `cocoplus/recall-sources.json` — committed default source path config
-- `session-end.js` extended: Tier 2 async `recall-import.js --since <session-start>`
-
-### Updated
 
 #### CocoSpec — Mandatory Outcome Statement (Feature 15 Enhancement)
 - `spec.skill.md` v1.0.4: pre-gate requires a "When this function works, [persona] sees [result]" statement with a named persona and non-implementation result before five-dimension scoring; rejects generic personas and implementation-phrased results; stored in `spec.md`
@@ -106,7 +95,7 @@ All notable changes to CocoPlus are documented here.
 - `scripts/wisdom-route.js` — deterministic first-pass grouping and classification
 
 #### Plugin Manifest
-- `plugin.json` v1.2.0: skills array gains `cococontract/contract`, `cocorefine/refine`, `cocorecall/recall`; scripts array gains fourteen new deterministic scripts for the above features and enhancements
+- `plugin.json` v1.2.0: skills array gains `cococontract/contract`, `cocorefine/refine`, `cocorecall/recall`, `cococonverge/cococonverge`, and `cocoreview/review-clear-blocked`; scripts array gains sixteen new deterministic scripts for the above features and enhancements
 
 ---
 
