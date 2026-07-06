@@ -1,7 +1,7 @@
 ---
 name: "flow-status"
 description: "Show the current execution state of the CocoFlow pipeline: per-stage status, completion percentage, concurrency mode, failed stages with error details, and the next stage to run."
-version: "1.0.2"
+version: "1.1.0"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -48,6 +48,17 @@ on_failure: stop
 Action required: Fix issue and run `$flow run [stage-id]`
 ```
 
+For any stage with `"type": "parallel"`, add a per-pod completion table sourced from `.cocoplus/pod-status.json` (Feature 47 enhancement). Render `PARTIAL` distinctly — never merge it into or display it as `COMPLETE`:
+
+```
+## Parallel Step: [stage name]
+| Pod | Status | Findings | Skipped Checks |
+|-----|--------|----------|-----------------|
+| sentinel-pod | COMPLETE | 4 | — |
+| review-pod | PARTIAL | 2 | timeout on file 3 of 5 |
+| trace-pod | COMPLETE | 1 | — |
+```
+
 ## Anti-Rationalization
 
 | Shortcut / Temptation | Why It Fails |
@@ -62,3 +73,4 @@ Action required: Fix issue and run `$flow run [stage-id]`
 - [ ] Concurrency Mode field with current mode and last transition trigger is shown
 - [ ] Pause status (checked via `.cocoplus/flow.pause` existence) and Next Action are shown
 - [ ] `## Failures` section present for any failed stages with checkpoint details and retry command
+- [ ] `parallel:` stages show a per-pod completion table with `PARTIAL` rendered distinctly from `COMPLETE`

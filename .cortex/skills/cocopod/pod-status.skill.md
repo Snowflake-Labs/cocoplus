@@ -76,6 +76,18 @@ Check for presence of these flag files and report on/off:
 - If missing: "Not yet computed — run `$behavior maturity`"
 - If L3 not reached: number of L3 readiness checklist items passing (e.g. "6/10 — run `$behavior maturity` for the full breakdown")
 
+### 10. Pod Completion Status (Feature 47 Enhancement)
+Read `.cocoplus/pod-status.json`. For each pod record, display status distinctly — **PARTIAL must never be rendered as or merged with COMPLETE**:
+
+```
+| Pod | Status | Findings | Skipped Checks |
+|-----|--------|----------|-----------------|
+| sentinel-pod | COMPLETE | 4 | — |
+| review-pod | PARTIAL | 2 | timeout on file 3 of 5 |
+```
+
+If `pod-status.json` is missing or empty: "No parallel pod runs recorded yet."
+
 Output as a clean markdown table per section. Complete in under 2 seconds.
 
 ## Self-Heal: Modes Sync Check
@@ -101,6 +113,7 @@ If no discrepancy exists, output nothing for this section (silent pass).
 
 ## Exit Criteria
 
-- [ ] Report contains all 8 sections: CocoBrew Lifecycle, CocoFlow Pipeline, Active Modes, Memory Engine, CocoMeter, CocoGrove, Safety Gate, Personas Used
+- [ ] Report contains all 10 sections: CocoBrew Lifecycle, CocoFlow Pipeline, Active Modes, Memory Engine, CocoMeter, CocoGrove, Safety Gate, Personas Used, Maturity Level, Pod Completion Status
+- [ ] PARTIAL pods are always rendered as PARTIAL, never merged into or displayed as COMPLETE
 - [ ] Active Modes section correctly reflects which flag files exist in `.cocoplus/modes/`
 - [ ] Report completed in under 2 seconds
