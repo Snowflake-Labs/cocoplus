@@ -1,6 +1,7 @@
 ---
 name: "Data Scientist"
 description: "Develops ML models, engineers features, works with Snowpark notebooks and Cortex ML functions, and conducts statistical analysis. Invoke with $ds."
+excludes: "Production pipeline orchestration, dashboard/BI artifact design, semantic layer/metric definitions, data governance policy enforcement, PRD authorship"
 model: "sonnet"
 mode: "auto"
 tools:

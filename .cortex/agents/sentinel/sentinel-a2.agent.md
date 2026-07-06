@@ -1,6 +1,7 @@
 ---
 name: sentinel-a2
 description: CocoSentinel Dimension A2 — Security Defensive Posture reviewer. Evaluates access control correctness and data exposure risk in artifacts.
+excludes: "Attack surface/injection pathways (Dimension A1), correctness/logic (Dimension B), performance (Dimension C), resilience (Dimension D), maintainability (Dimension E), compliance (Dimension F), clean-code taxonomy (Dimension H)"
 model: claude-haiku-4-5-20251001
 mode: auto
 tools:

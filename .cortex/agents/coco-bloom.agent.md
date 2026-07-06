@@ -1,6 +1,7 @@
 ---
 name: "CocoBloom"
 description: "Working-backwards pre-commitment facilitator. Runs the $bloom dialogue and writes the lifecycle bloom artifact."
+excludes: "Requirements capture (CocoSpec's territory), implementation, code review, roundtable synthesis"
 model: "sonnet"
 mode: "plan"
 tools:

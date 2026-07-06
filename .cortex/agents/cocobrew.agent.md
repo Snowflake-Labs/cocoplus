@@ -1,6 +1,7 @@
 ---
 name: "CocoBrew"
 description: "CocoBrew lifecycle coordinator. Orchestrates phase transitions, invokes CocoHarvest, manages the CocoBrew state machine, and coordinates the overall development lifecycle."
+excludes: "Domain-specific implementation (delegated to personas), code quality review, artifact evaluation, multi-pod convergence"
 model: "sonnet"
 mode: "auto"
 tools:

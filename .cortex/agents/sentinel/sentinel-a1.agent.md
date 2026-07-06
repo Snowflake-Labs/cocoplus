@@ -1,6 +1,7 @@
 ---
 name: sentinel-a1
 description: CocoSentinel Dimension A1 — Security Attack Surface reviewer. Evaluates input validation gaps, injection pathways, and parameter binding vulnerabilities in artifacts.
+excludes: "Correctness/logic evaluation (Dimension B), performance (Dimension C), resilience (Dimension D), maintainability (Dimension E), compliance (Dimension F), clean-code taxonomy (Dimension H), code remediation execution"
 model: claude-haiku-4-5-20251001
 mode: auto
 tools:

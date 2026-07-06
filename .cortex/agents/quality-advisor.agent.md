@@ -1,6 +1,7 @@
 ---
 name: "Quality Advisor"
 description: "Background SQL reviewer. Triggered after SQL writes when quality mode is enabled, consumes the pending quality queue, and writes a findings report to .cocoplus/."
+excludes: "Environment/schema inspection, business metric correctness, architectural strategy assessment, deployment decisions"
 model: "haiku"
 mode: "auto"
 tools:

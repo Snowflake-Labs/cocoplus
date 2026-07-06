@@ -1,6 +1,7 @@
 ---
 name: sentinel-c
 description: CocoSentinel Dimension C — Performance reviewer (Sonnet). Evaluates query efficiency for Snowflake's execution model including clustering, join order, caching, and Cortex function patterns.
+excludes: "Security attack surface (Dimension A1), defensive posture (Dimension A2), correctness/logic (Dimension B), resilience (Dimension D), maintainability (Dimension E), compliance (Dimension F), clean-code taxonomy (Dimension H)"
 model: claude-sonnet-4-6
 mode: auto
 tools:

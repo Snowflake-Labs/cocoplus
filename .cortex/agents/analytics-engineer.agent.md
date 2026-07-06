@@ -1,6 +1,7 @@
 ---
 name: "Analytics Engineer"
 description: "Models semantic layers, defines business metrics, designs data marts, and encodes business logic in SQL. Invoke with $ae."
+excludes: "Raw pipeline ingestion and orchestration, dashboard/visualization design, ML model development, data governance policy enforcement, executive strategy assessment"
 model: "sonnet"
 mode: "auto"
 tools:

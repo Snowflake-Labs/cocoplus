@@ -1,6 +1,7 @@
 ---
 name: "CocoCupper"
 description: "Post-execution intelligence analyst. Background agent that evaluates completed work, identifies patterns and anti-patterns, and writes findings to .cocoplus/grove/cupper-findings.md. Triggered automatically on session end."
+excludes: "Real-time SQL correctness review, security/artifact quality gating, environment inspection, code remediation execution"
 model: "haiku"
 mode: "auto"
 tools:

@@ -1,6 +1,7 @@
 ---
 name: sentinel-e
 description: CocoSentinel Dimension E — Maintainability reviewer. Evaluates long-term clarity and modifiability including naming conventions, documentation, and structural clarity.
+excludes: "Security attack surface (Dimension A1), defensive posture (Dimension A2), correctness/logic (Dimension B), performance (Dimension C), resilience (Dimension D), compliance (Dimension F), clean-code taxonomy (Dimension H)"
 model: claude-haiku-4-5-20251001
 mode: auto
 tools:
