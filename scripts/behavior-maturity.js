@@ -30,6 +30,15 @@ function readTomlText() {
   }
 }
 
+function declaredMaturity(tomlText) {
+  const match = tomlText.match(/(?:automation_maturity|maturity_level)\s*=\s*["']?(L[0-3])["']?/i);
+  return match ? match[1].toUpperCase() : null;
+}
+
+function tomlFlag(tomlText, key) {
+  return new RegExp(`${key}\\s*=\\s*(true|1|yes)`, 'i').test(tomlText);
+}
+
 function countBlockRules() {
   const rulesPath = path.join(COCOPLUS_DIR, 'secondeye', 'block-rules.json');
   try {
@@ -52,16 +61,16 @@ function countSentinelArtifactTypes() {
 
 function evaluateL3Checklist(tomlText) {
   const items = [
-    { id: 1, description: 'cocoplus-context.md constitutional document is complete and current', pass: fileExists('lifecycle', 'cocoplus-context.md') },
-    { id: 2, description: 'cocoplus.toml defines explicit tool permission tiers for all agents', pass: /\[permissions\.[a-z_-]+\]/i.test(tomlText) },
-    { id: 3, description: 'All CocoFlow stage handlers have deterministic script fallbacks', pass: fileExists('flow.json') && /fallback_script/i.test((() => { try { return fs.readFileSync(path.join(COCOPLUS_DIR, 'flow.json'), 'utf8'); } catch (_) { return ''; } })()) },
-    { id: 4, description: 'SecondEye is active with at least five block rules', pass: countBlockRules() >= 5 },
-    { id: 5, description: 'CocoSentinel is configured for all artifact types the pipeline produces', pass: countSentinelArtifactTypes() > 0 },
-    { id: 6, description: 'A rollback-by-git-tag strategy is documented in plan.md', pass: (() => { try { return /rollback.*git.tag/i.test(fs.readFileSync(path.join(COCOPLUS_DIR, 'lifecycle', 'plan.md'), 'utf8')); } catch (_) { return false; } })() },
-    { id: 7, description: 'CocoAudit is active and capturing all HUMAN REQUIRED tier operations', pass: modeExists('cocoaudit.on') && fileExists('lifecycle', 'audit.md') },
-    { id: 8, description: 'CocoContract outcome contracts exist for all production-bound functions', pass: fs.existsSync(path.resolve(process.cwd(), 'outcomes')) },
-    { id: 9, description: 'CocoTrace traceability graph covers all functions in the deployment artifact', pass: fileExists('lifecycle', 'trace.json') },
-    { id: 10, description: "The developer has reviewed and acknowledged the Four-Tier Boundary Framework's NEVER tier items for this CocoPod", pass: modeExists('boundary-framework.acknowledged') },
+    { id: 1, description: 'Budget guard exists', pass: tomlFlag(tomlText, 'budget_guard') || /budget_limit\s*=/.test(tomlText) },
+    { id: 2, description: 'Verifier is structurally separate from generator', pass: tomlFlag(tomlText, 'separate_verifier') || /verifier_agent\s*=/.test(tomlText) },
+    { id: 3, description: 'Failure escalation ladder is defined', pass: tomlFlag(tomlText, 'failure_escalation_ladder') || /escalation_ladder/.test(tomlText) },
+    { id: 4, description: 'Human override path is documented', pass: tomlFlag(tomlText, 'human_override_path') || /human_override/.test(tomlText) },
+    { id: 5, description: 'Output allowlist is bounded', pass: tomlFlag(tomlText, 'output_allowlist') || /output_allowlist\s*=/.test(tomlText) },
+    { id: 6, description: 'Mandatory path denylist is configured', pass: tomlFlag(tomlText, 'path_denylist') || /path_denylist\s*=/.test(tomlText) },
+    { id: 7, description: 'Kill switch exists', pass: tomlFlag(tomlText, 'kill_switch') },
+    { id: 8, description: 'Run log is committed', pass: tomlFlag(tomlText, 'run_log_committed') || fileExists('lifecycle', 'run-log.md') },
+    { id: 9, description: 'No same-agent verification is enforced', pass: tomlFlag(tomlText, 'no_same_agent_verification') },
+    { id: 10, description: 'Attempt cap is set', pass: /attempt_cap\s*=\s*\d+/i.test(tomlText) },
   ];
   return items;
 }
@@ -78,6 +87,14 @@ function computeLevel(checklist) {
   return 'L0';
 }
 
+function levelRank(level) {
+  return { L0: 0, L1: 1, L2: 2, L3: 3 }[level] ?? 0;
+}
+
+function minLevel(a, b) {
+  return levelRank(a) <= levelRank(b) ? a : b;
+}
+
 function main() {
   if (!fs.existsSync(COCOPLUS_DIR)) {
     console.error(JSON.stringify({ error: 'CocoPlus not initialized. Run $pod init first.' }));
@@ -86,10 +103,15 @@ function main() {
 
   const tomlText = readTomlText();
   const checklist = evaluateL3Checklist(tomlText);
-  const level = computeLevel(checklist);
+  const computedLevel = computeLevel(checklist);
+  const declaredLevel = declaredMaturity(tomlText);
+  const level = declaredLevel ? minLevel(computedLevel, declaredLevel) : computedLevel;
 
   const result = {
     level,
+    computed_level: computedLevel,
+    declared_level: declaredLevel,
+    enforcement: declaredLevel && computedLevel !== level ? 'capped-to-declared-maturity' : 'computed',
     computed_at: new Date().toISOString(),
     l3_checklist: checklist,
     l3_items_passing: checklist.filter(i => i.pass).length,

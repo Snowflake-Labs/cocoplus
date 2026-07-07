@@ -27,16 +27,18 @@ Run `node scripts/behavior-maturity.js`. It reads `cocoplus.toml` and `.cocoplus
 
 **L3 Readiness Checklist** (all ten required — a CocoPod may not operate at L3 without passing this at `$pod init` or `$pod upgrade --l3`):
 
-1. `cocoplus-context.md` constitutional document is complete and current
-2. `cocoplus.toml` defines explicit tool permission tiers for all agents
-3. All CocoFlow stage handlers have deterministic script fallbacks
-4. SecondEye is active with at least five block rules
-5. CocoSentinel is configured for all artifact types the pipeline produces
-6. A rollback-by-git-tag strategy is documented in `plan.md`
-7. CocoAudit is active and capturing all HUMAN REQUIRED tier operations
-8. CocoContract outcome contracts exist for all production-bound functions
-9. CocoTrace traceability graph covers all functions in the deployment artifact
-10. The developer has reviewed and acknowledged the Four-Tier Boundary Framework's NEVER tier items for this CocoPod
+1. Budget guard exists
+2. Verifier is structurally separate from generator
+3. Failure escalation ladder is defined
+4. Human override path is documented
+5. Output allowlist is bounded
+6. Mandatory path denylist is configured
+7. Kill switch exists
+8. Run log is committed
+9. No same-agent verification is enforced
+10. Attempt cap is set
+
+If `cocoplus.toml` declares `automation_maturity = "L0".."L3"` or `maturity_level = "L0".."L3"`, the reported level is capped at that declaration. A pod may not operate above its declared and validated maturity level.
 
 ## Output
 

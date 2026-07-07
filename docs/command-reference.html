@@ -991,7 +991,7 @@ $wisdom route
 <pre><code>
 $behavior maturity
 </code></pre>
-<p>Computes the current maturity level (L0 Manual, L1 Assisted, L2 Supervised, L3 Autonomous-Eligible) from <code>cocoplus.toml</code> and <code>.cocoplus/modes/</code>. L3 requires all ten readiness checklist items to pass — including active CocoAudit, CocoContract outcome contracts for all production-bound functions, and full CocoTrace coverage. Result written to <code>.cocoplus/maturity.json</code>; also shown in <code>$pod status</code>.</p>
+<p>Computes the current maturity level (L0 Manual, L1 Assisted, L2 Supervised, L3 Autonomous-Eligible) from <code>cocoplus.toml</code> and <code>.cocoplus/modes/</code>. If <code>automation_maturity</code> or <code>maturity_level</code> is declared, the reported level is capped at that declaration. L3 requires all ten reference requirements readiness checks to pass: budget guard, separate verifier, escalation ladder, human override, output allowlist, path denylist, kill switch, committed run log, no same-agent verification, and attempt cap. Result written to <code>.cocoplus/maturity.json</code>; also shown in <code>$pod status</code>.</p>
 <p><strong>Output:</strong> Current level + L3 checklist pass/fail breakdown.</p>
 <hr>
 <h2 id="structured-code-review-cocoreview">Structured Code Review — CocoReview</h2>
@@ -1142,7 +1142,7 @@ $contract init classify_sentiment
 <pre><code>
 $contract prove classify_sentiment --tier e2e
 </code></pre>
-<p>Records evidence at one of five tiers (<code>e2e</code>, <code>reference</code>, <code>spec</code>, <code>differential</code>, <code>unit</code> — strongest first) bound to the function's current source hash. Only <code>e2e</code> and <code>reference</code> evidence satisfies <code>$ship</code> certification; <code>unit</code> evidence is recordable but never sufficient regardless of thoroughness.</p>
+<p>Records evidence at one of five tiers (<code>e2e</code>, <code>reference</code>, <code>spec</code>, <code>differential</code>, <code>unit</code> — strongest first) bound to the function's current source hash. Evidence may include a JSON-array <code>--check-command</code> so <code>$contract ci</code> can re-run the archived proof. Only <code>e2e</code> and <code>reference</code> evidence satisfies <code>$ship</code> certification; <code>unit</code> evidence is recordable but never sufficient regardless of thoroughness.</p>
 <p><strong>Output:</strong> Evidence record written to <code>contract-evidence.json</code> (gitignored).</p>
 <hr>
 <p><strong><code>$contract ci</code></strong> — Re-execute all archived contracts as a CI regression gate</p>
@@ -1172,14 +1172,14 @@ $refine search "sentiment classification"
 <pre><code>
 $recall search "warehouse sizing decision"
 </code></pre>
-<p>Searches a normalized local index (<code>.cocoplus/recall.db</code>, gitignored) at roughly one thousand tokens per query — about fifty times more efficient than loading raw transcripts. Session-diverse by default (one representative turn per session); <code>--all</code> returns every matching turn; <code>--session &lt;id&gt;</code> restricts to one session. Every result carries session ID, turn ID, a retrieval-time source-exists flag, and a suggested follow-up query. Returns verbatim excerpts only — never a synthesized summary.</p>
+<p>Searches a normalized local index (<code>.cocoplus/recall.db</code>, gitignored) at roughly one thousand tokens per query — about fifty times more efficient than loading raw transcripts. Session-diverse by default (one representative turn per session); <code>--all</code> returns every matching turn; <code>--session &lt;id&gt;</code>, <code>--function &lt;name&gt;</code>, and <code>--outcome-type &lt;type&gt;</code> narrow results. Every result carries session ID, turn ID, source path, a retrieval-time source-exists flag, and a suggested follow-up query. Returns verbatim excerpts only — never a synthesized summary.</p>
 <p><strong>Output:</strong> Cited search results, verbatim.</p>
 <hr>
 <p><strong><code>$recall import [--since &lt;date&gt;]</code></strong> — Rebuild or update the session index</p>
 <pre><code>
 $recall import --since 2026-06-01
 </code></pre>
-<p>Rebuilds or incrementally updates <code>recall.db</code> from transcripts at <code>~/.snowflake/cortex/conversations/</code>. Requires Node 22.5+ (uses the built-in <code>node:sqlite</code> module — no native binary dependency).</p>
+<p>Rebuilds or incrementally updates <code>recall.db</code> from transcript sources listed in <code>cocoplus/recall-sources.json</code>, falling back to <code>~/.snowflake/cortex/conversations/</code>. Requires Node 22.5+ (uses the built-in <code>node:sqlite</code> module — no native binary dependency).</p>
 <p><strong>Output:</strong> Updated <code>.cocoplus/recall.db</code> (gitignored).</p>
 <hr>
 <h2 id="decision-audit-trail-cocoaudit">Decision Audit Trail — CocoAudit</h2>
@@ -1501,7 +1501,7 @@ $sketch deps --reduce off
 <pre><code>
 $pivot run
 </code></pre>
-<p>Reads all pod outputs recorded in <code>.cocoplus/pod-status.json</code> from the most recent <code>parallel:</code> step, applies the deterministic three-pass deduplication algorithm (same file:line, then same issue type in file, then similar snippet), assigns inherited priority/effort/severity, and writes <code>lifecycle/FINDINGS.md</code> plus <code>lifecycle/findings-state.json</code>. Scope anomalies (findings that fall inside a contributing pod's own <code>excludes:</code> declaration) are excluded from FINDINGS.md and recorded separately.</p>
+<p>Reads all pod outputs recorded in <code>.cocoplus/pod-status.json</code> from the most recent <code>parallel:</code> step, applies the deterministic three-pass deduplication algorithm (same file:line, then same issue type in file, then similar snippet), assigns inherited priority/effort/severity, and writes <code>lifecycle/FINDINGS.md</code> plus <code>lifecycle/findings-state.json</code>. <code>--skip-partial</code> excludes PARTIAL pods from the convergence run. Scope anomalies (findings that fall inside a contributing pod's own <code>excludes:</code> declaration) are excluded from FINDINGS.md and recorded separately.</p>
 <p><strong>Output:</strong> <code>lifecycle/FINDINGS.md</code> (committed) + <code>findings-state.json</code> (gitignored).</p>
 <hr>
 <p><strong><code>$pivot run --since &lt;timestamp&gt;</code></strong> — Re-converge using only pods completed after a timestamp</p>
