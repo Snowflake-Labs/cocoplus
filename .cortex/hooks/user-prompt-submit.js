@@ -91,11 +91,14 @@ function main() {
   for (const [cmd, gateCommand] of Object.entries(CONTRACT_COMMANDS)) {
     if (message.startsWith(cmd + ' ') || message === cmd) {
       const fnArg = message.slice(cmd.length).trim().split(/\s+/)[0] || '';
-      if (fnArg) {
+      if (fnArg || gateCommand === 'ship') {
         const gateScript = path.join('scripts', 'contract-gate.js');
         if (fs.existsSync(gateScript)) {
           try {
-            const out = execFileSync(process.execPath, [gateScript, '--command', gateCommand, '--function', fnArg], { encoding: 'utf8', timeout: 2000 });
+            const gateArgs = [gateScript, '--command', gateCommand];
+            if (fnArg) gateArgs.push('--function', fnArg);
+            else gateArgs.push('--all');
+            const out = execFileSync(process.execPath, gateArgs, { encoding: 'utf8', timeout: 2000 });
             const result = JSON.parse(out);
             if (result.action === 'BLOCK') {
               appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'contract_gate_blocked', tier: 1, command: gateCommand, function: fnArg, reason: result.reason, ts });

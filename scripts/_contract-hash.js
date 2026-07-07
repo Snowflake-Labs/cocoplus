@@ -6,13 +6,13 @@
  * what "the source" means for a given function name.
  */
 
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 const crypto = require('crypto');
 const fs = require('fs');
 
 function sourceHash(functionName) {
   try {
-    const tracked = execSync(`git ls-files -- "*${functionName}*"`, { encoding: 'utf8' })
+    const tracked = execFileSync('git', ['ls-files', '--', `*${functionName}*`], { encoding: 'utf8' })
       .split('\n')
       .filter(Boolean);
     if (tracked.length === 0) {
