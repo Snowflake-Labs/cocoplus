@@ -11,7 +11,9 @@
  *
  * Modes:
  *   --import [--since <date>]        Rebuild/update recall.db from transcripts
- *   --query "<text>" [--all] [--session <id>]   Search the index
+ *   --query "<text>" [--all] [--session <id>] [--function <name>] [--outcome-type <type>]   Search the index
+ *   --show <session-id>            Show a session's full turn sequence
+ *   --sources                      List configured session sources
  *   --status                         Report index health
  *
  * Schema: sessions(id, start_time, end_time, phase_context, entity_tags),
@@ -50,11 +52,25 @@ function parseArgs(argv) {
     if (a === '--import') args.import = true;
     else if (a === '--query') args.query = argv[++i];
     else if (a === '--status') args.status = true;
+    else if (a === '--show') args.show = argv[++i];
+    else if (a === '--sources') args.sources = true;
     else if (a === '--since') args.since = argv[++i];
     else if (a === '--all') args.all = true;
     else if (a === '--session') args.session = argv[++i];
+    else if (a === '--function') args.function = argv[++i];
+    else if (a === '--outcome-type') args.outcomeType = argv[++i];
   }
   return args;
+}
+
+function loadSources() {
+  const defaults = [TRANSCRIPTS_DIR];
+  try {
+    const raw = JSON.parse(fs.readFileSync(SOURCES_PATH, 'utf8'));
+    if (Array.isArray(raw)) return raw.map(String);
+    if (Array.isArray(raw.sources)) return raw.sources.map(source => typeof source === 'string' ? source : source.path).filter(Boolean);
+  } catch (_) { /* use default */ }
+  return defaults;
 }
 
 function openDb(sqlite) {
@@ -66,7 +82,8 @@ function openDb(sqlite) {
       start_time TEXT,
       end_time TEXT,
       phase_context TEXT,
-      entity_tags TEXT
+      entity_tags TEXT,
+      source_path TEXT
     );
     CREATE TABLE IF NOT EXISTS turns (
       id TEXT PRIMARY KEY,
@@ -77,6 +94,36 @@ function openDb(sqlite) {
       text_hash TEXT,
       tags TEXT,
       text TEXT
+    );
+    CREATE TABLE IF NOT EXISTS tool_calls (
+      session_id TEXT,
+      name TEXT,
+      payload TEXT
+    );
+    CREATE TABLE IF NOT EXISTS function_touches (
+      session_id TEXT,
+      function_name TEXT
+    );
+    CREATE TABLE IF NOT EXISTS evaluation_results (
+      session_id TEXT,
+      metric TEXT,
+      value TEXT,
+      payload TEXT
+    );
+    CREATE TABLE IF NOT EXISTS outcome_contracts (
+      session_id TEXT,
+      function_name TEXT,
+      outcome_type TEXT,
+      status TEXT,
+      payload TEXT
+    );
+    CREATE TABLE IF NOT EXISTS strategy_usage (
+      session_id TEXT,
+      strategy_id TEXT
+    );
+    CREATE TABLE IF NOT EXISTS key_decisions (
+      session_id TEXT,
+      decision TEXT
     );
     CREATE TABLE IF NOT EXISTS entities (
       name TEXT,
@@ -96,6 +143,7 @@ function openDb(sqlite) {
       value TEXT
     );
   `);
+  try { db.exec('ALTER TABLE sessions ADD COLUMN source_path TEXT'); } catch (_) { /* already exists */ }
   return db;
 }
 
@@ -118,17 +166,40 @@ function extractEntities(text) {
 }
 
 function listTranscriptFiles(sinceDate) {
-  if (!fs.existsSync(TRANSCRIPTS_DIR)) return [];
-  const files = fs.readdirSync(TRANSCRIPTS_DIR).filter(f => f.endsWith('.json') || f.endsWith('.jsonl'));
+  const files = [];
+  for (const sourceDir of loadSources()) {
+    if (!sourceDir || !fs.existsSync(sourceDir)) continue;
+    for (const file of fs.readdirSync(sourceDir).filter(f => f.endsWith('.json') || f.endsWith('.jsonl'))) {
+      files.push(path.join(sourceDir, file));
+    }
+  }
   if (!sinceDate) return files;
   const sinceTime = new Date(sinceDate).getTime();
   return files.filter(f => {
     try {
-      return fs.statSync(path.join(TRANSCRIPTS_DIR, f)).mtimeMs >= sinceTime;
+      return fs.statSync(f).mtimeMs >= sinceTime;
     } catch (_) {
       return false;
     }
   });
+}
+
+function parseTranscriptFile(filePath) {
+  const text = fs.readFileSync(filePath, 'utf8');
+  if (filePath.endsWith('.jsonl')) {
+    const sessions = text.split(/\r?\n/)
+      .filter(Boolean)
+      .map(line => {
+        try { return JSON.parse(line); } catch (_) { return null; }
+      })
+      .filter(Boolean);
+    if (sessions.length === 1) return sessions[0];
+    return {
+      session_id: path.basename(filePath, path.extname(filePath)),
+      turns: sessions.flatMap((entry, idx) => entry.turns || [{ role: entry.role || entry.speaker || 'unknown', text: entry.text || entry.content || JSON.stringify(entry), seq: idx }]),
+    };
+  }
+  return JSON.parse(text);
 }
 
 function runImport(db, args) {
@@ -137,9 +208,9 @@ function runImport(db, args) {
   let turnCount = 0;
 
   const upsertSession = db.prepare(`
-    INSERT INTO sessions (id, start_time, end_time, phase_context, entity_tags)
-    VALUES (?, ?, ?, ?, ?)
-    ON CONFLICT(id) DO UPDATE SET end_time=excluded.end_time, phase_context=excluded.phase_context, entity_tags=excluded.entity_tags
+    INSERT INTO sessions (id, start_time, end_time, phase_context, entity_tags, source_path)
+    VALUES (?, ?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET end_time=excluded.end_time, phase_context=excluded.phase_context, entity_tags=excluded.entity_tags, source_path=excluded.source_path
   `);
   const upsertTurn = db.prepare(`
     INSERT INTO turns (id, session_id, speaker_role, seq, summary, text_hash, tags, text)
@@ -148,11 +219,23 @@ function runImport(db, args) {
   `);
   const insertEntity = db.prepare(`INSERT INTO entities (name, type, session_id, turn_id) VALUES (?, ?, ?, ?)`);
   const clearEntitiesForSession = db.prepare(`DELETE FROM entities WHERE session_id = ?`);
+  const clearToolCalls = db.prepare(`DELETE FROM tool_calls WHERE session_id = ?`);
+  const clearFunctionTouches = db.prepare(`DELETE FROM function_touches WHERE session_id = ?`);
+  const clearEvaluationResults = db.prepare(`DELETE FROM evaluation_results WHERE session_id = ?`);
+  const clearOutcomeContracts = db.prepare(`DELETE FROM outcome_contracts WHERE session_id = ?`);
+  const clearStrategyUsage = db.prepare(`DELETE FROM strategy_usage WHERE session_id = ?`);
+  const clearKeyDecisions = db.prepare(`DELETE FROM key_decisions WHERE session_id = ?`);
+  const insertToolCall = db.prepare(`INSERT INTO tool_calls (session_id, name, payload) VALUES (?, ?, ?)`);
+  const insertFunctionTouch = db.prepare(`INSERT INTO function_touches (session_id, function_name) VALUES (?, ?)`);
+  const insertEvaluation = db.prepare(`INSERT INTO evaluation_results (session_id, metric, value, payload) VALUES (?, ?, ?, ?)`);
+  const insertOutcome = db.prepare(`INSERT INTO outcome_contracts (session_id, function_name, outcome_type, status, payload) VALUES (?, ?, ?, ?, ?)`);
+  const insertStrategy = db.prepare(`INSERT INTO strategy_usage (session_id, strategy_id) VALUES (?, ?)`);
+  const insertDecision = db.prepare(`INSERT INTO key_decisions (session_id, decision) VALUES (?, ?)`);
 
   for (const file of files) {
     let raw;
     try {
-      raw = JSON.parse(fs.readFileSync(path.join(TRANSCRIPTS_DIR, file), 'utf8'));
+      raw = parseTranscriptFile(file);
     } catch (_) {
       continue; // corrupt or unreadable transcript — skip, do not fail the whole import
     }
@@ -161,6 +244,12 @@ function runImport(db, args) {
     const allEntityTags = new Set();
 
     clearEntitiesForSession.run(sessionId);
+    clearToolCalls.run(sessionId);
+    clearFunctionTouches.run(sessionId);
+    clearEvaluationResults.run(sessionId);
+    clearOutcomeContracts.run(sessionId);
+    clearStrategyUsage.run(sessionId);
+    clearKeyDecisions.run(sessionId);
 
     turns.forEach((turn, idx) => {
       const text = turn.text || turn.content || '';
@@ -185,12 +274,32 @@ function runImport(db, args) {
       }
     });
 
+    for (const call of raw.tool_calls || raw.toolCalls || []) {
+      insertToolCall.run(sessionId, call.name || call.tool || 'unknown', JSON.stringify(call));
+    }
+    for (const fn of raw.functions_touched || raw.functionsTouched || raw.function_names || []) {
+      insertFunctionTouch.run(sessionId, String(fn));
+    }
+    for (const result of raw.evaluation_results || raw.evaluationResults || []) {
+      insertEvaluation.run(sessionId, result.metric || result.name || 'unknown', String(result.value ?? result.status ?? ''), JSON.stringify(result));
+    }
+    for (const contract of raw.outcome_contracts || raw.outcomeContracts || []) {
+      insertOutcome.run(sessionId, contract.function || contract.function_name || null, contract.outcome_type || contract.type || null, contract.status || contract.result || null, JSON.stringify(contract));
+    }
+    for (const strategyId of raw.strategy_ids || raw.strategyIds || []) {
+      insertStrategy.run(sessionId, String(strategyId));
+    }
+    for (const decision of raw.key_decisions || raw.keyDecisions || []) {
+      insertDecision.run(sessionId, String(decision));
+    }
+
     upsertSession.run(
       sessionId,
       raw.start_time || null,
       raw.end_time || null,
       raw.phase_context || null,
-      [...allEntityTags].join(',')
+      [...allEntityTags].join(','),
+      file
     );
     sessionCount++;
   }
@@ -213,20 +322,30 @@ function recencyScore(startTime) {
 }
 
 function runQuery(db, args) {
-  const terms = args.query.toLowerCase().split(/\s+/).filter(Boolean);
+  const terms = (args.query || '').toLowerCase().split(/\s+/).filter(Boolean);
   let sql = `SELECT t.id as turn_id, t.session_id, t.text, t.tags, s.start_time, s.phase_context
              FROM turns t JOIN sessions s ON s.id = t.session_id`;
+  const where = [];
   const params = [];
   if (args.session) {
-    sql += ` WHERE t.session_id = ?`;
+    where.push(`t.session_id = ?`);
     params.push(args.session);
   }
+  if (args.function) {
+    where.push(`EXISTS (SELECT 1 FROM function_touches ft WHERE ft.session_id = t.session_id AND lower(ft.function_name) = lower(?))`);
+    params.push(args.function);
+  }
+  if (args.outcomeType) {
+    where.push(`EXISTS (SELECT 1 FROM outcome_contracts oc WHERE oc.session_id = t.session_id AND lower(oc.outcome_type) = lower(?))`);
+    params.push(args.outcomeType);
+  }
+  if (where.length) sql += ` WHERE ${where.join(' AND ')}`;
   const rows = db.prepare(sql).all(...params);
 
   const scored = rows
     .map(row => ({
       ...row,
-      score: lexicalScore(row.text, row.tags, terms) + recencyScore(row.start_time),
+      score: (terms.length ? lexicalScore(row.text, row.tags, terms) : 1) + recencyScore(row.start_time) + phaseScore(row.phase_context),
     }))
     .filter(row => row.score > 0)
     .sort((a, b) => b.score - a.score);
@@ -245,7 +364,8 @@ function runQuery(db, args) {
   const insertCitation = db.prepare(`INSERT INTO citations (query, session_id, turn_id, source_exists, ts) VALUES (?, ?, ?, ?, ?)`);
 
   const output = results.slice(0, 20).map(row => {
-    const transcriptPath = path.join(TRANSCRIPTS_DIR, `${row.session_id}.json`);
+    const session = db.prepare('SELECT source_path FROM sessions WHERE id = ?').get(row.session_id);
+    const transcriptPath = session && session.source_path ? session.source_path : path.join(TRANSCRIPTS_DIR, `${row.session_id}.json`);
     const sourceExists = fs.existsSync(transcriptPath);
     insertCitation.run(args.query, row.session_id, row.turn_id, sourceExists ? 1 : 0, now);
     const tagList = (row.tags || '').split(',').filter(Boolean);
@@ -253,12 +373,41 @@ function runQuery(db, args) {
       session_id: row.session_id,
       turn_id: row.turn_id,
       text: row.text,
+      source_path: transcriptPath,
       source_exists: sourceExists,
       suggested_follow_up: tagList.length ? `search for \`${tagList[0]}\` to find related decisions in other sessions` : null,
     };
   });
 
   console.log(JSON.stringify({ query: args.query, results: output }, null, 2));
+}
+
+function phaseScore(phaseContext) {
+  if (!phaseContext) return 0;
+  try {
+    const meta = JSON.parse(fs.readFileSync(path.join(COCOPLUS_DIR, 'lifecycle', 'meta.json'), 'utf8'));
+    return meta.current_phase && String(phaseContext).toLowerCase().includes(String(meta.current_phase).toLowerCase()) ? 1 : 0;
+  } catch (_) {
+    return 0;
+  }
+}
+
+function runShow(db, sessionId) {
+  const session = db.prepare('SELECT id, source_path, start_time, end_time, phase_context FROM sessions WHERE id = ?').get(sessionId);
+  if (!session) fail(`Session "${sessionId}" was not found in recall.db`);
+  const turns = db.prepare('SELECT id, speaker_role, seq, text, tags FROM turns WHERE session_id = ? ORDER BY seq ASC').all(sessionId);
+  console.log(JSON.stringify({ session, turns }, null, 2));
+}
+
+function runSources(db) {
+  const configured = loadSources();
+  const indexed = db.prepare('SELECT source_path, COUNT(*) as sessions FROM sessions GROUP BY source_path').all();
+  let lastImport = null;
+  try {
+    const row = db.prepare(`SELECT value FROM import_meta WHERE key = 'last_import'`).get();
+    lastImport = row && row.value;
+  } catch (_) { /* no import */ }
+  console.log(JSON.stringify({ configured_sources: configured, indexed_sources: indexed, last_import: lastImport }, null, 2));
 }
 
 function runStatus(db) {
@@ -294,7 +443,9 @@ function main() {
     if (args.import) runImport(db, args);
     else if (args.query) runQuery(db, args);
     else if (args.status) runStatus(db);
-    else fail('Specify one of --import, --query "<text>", or --status');
+    else if (args.show) runShow(db, args.show);
+    else if (args.sources) runSources(db);
+    else fail('Specify one of --import, --query "<text>", --show <session-id>, --sources, or --status');
   } finally {
     db.close();
   }

@@ -28,6 +28,13 @@ function classify(entry) {
   return 'agent-misapplication';
 }
 
+function destinationFor(entry, routing) {
+  if (entry.skill_context) return 'skill-file';
+  if (/guardrail|never|must not|do not run|don'?t run/i.test(entry.text || '')) return 'guardrails';
+  if (/convention|standard|naming|schema|warehouse/i.test(entry.text || '')) return 'project-conventions';
+  return routing === 'agent-misapplication' ? 'guardrails' : 'project-conventions';
+}
+
 function main() {
   if (!fs.existsSync(COCOPLUS_DIR)) {
     console.error(JSON.stringify({ error: 'CocoPlus not initialized. Run $pod init first.' }));
@@ -60,12 +67,22 @@ function main() {
       skill_context: skillContext,
       correction_count: groupEntries.length,
       routing: dominant,
+      destination: 'skill-file',
       classification_breakdown: counts,
       corrections: groupEntries.map(e => ({ text: e.text, ts: e.ts })),
     };
   });
 
-  console.log(JSON.stringify({ groups, ungrouped_count: entries.length - withContext.length }, null, 2));
+  const ungrouped = entries.filter(e => !e.skill_context).map(entry => {
+    const routing = classify(entry);
+    return {
+      routing,
+      destination: destinationFor(entry, routing),
+      corrections: [{ text: entry.text, ts: entry.ts }],
+    };
+  });
+
+  console.log(JSON.stringify({ groups, ungrouped, ungrouped_count: ungrouped.length }, null, 2));
 }
 
 main();

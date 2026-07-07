@@ -40,10 +40,19 @@ function parseArgs(argv) {
 }
 
 function detectCorrection(message) {
+  if (isMetaInstruction(message)) return null;
   for (const pattern of CORRECTION_PATTERNS) {
     if (pattern.test(message)) return pattern.source;
   }
   return null;
+}
+
+function isMetaInstruction(message) {
+  return /^---\s*\n[\s\S]*?\n---/.test(message) ||
+    /\buser-invocable:\s*(true|false)\b/i.test(message) ||
+    /\bYou are executing (a )?Coco[A-Za-z]+ command\b/i.test(message) ||
+    /\b## Anti-Rationalization\b/i.test(message) ||
+    /\b## Exit Criteria\b/i.test(message);
 }
 
 function appendCapture(entry) {
