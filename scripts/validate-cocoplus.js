@@ -141,6 +141,21 @@ function main() {
     }
   }
 
+  for (const skill of plugin.skills || []) {
+    const skillFile = path.join(repoRoot, '.cortex', 'skills', `${skill}.skill.md`);
+    const skillIndex = path.join(repoRoot, '.cortex', 'skills', skill, 'SKILL.md');
+    if (!fs.existsSync(skillFile) && !fs.existsSync(skillIndex)) {
+      failures.push(`Manifest skill "${skill}" is missing file ${path.relative(repoRoot, skillFile)} or ${path.relative(repoRoot, skillIndex)}`);
+    }
+  }
+
+  for (const script of plugin.scripts || []) {
+    const scriptPath = path.join(repoRoot, script);
+    if (!fs.existsSync(scriptPath)) {
+      failures.push(`Manifest script "${script}" is missing file ${path.relative(repoRoot, scriptPath)}`);
+    }
+  }
+
   for (const agentId of requiredAgents) {
     if (!(plugin.agents || []).includes(agentId)) {
       failures.push(`Required agent "${agentId}" is not registered in plugin.json`);
