@@ -64,12 +64,12 @@ All notable changes to CocoPlus are documented here.
 
 #### CocoBehavior — L0–L3 Maturity Classification (Feature 22 Enhancement)
 - `cocobehavior/behavior-maturity.skill.md` (new, `user-invocable: true`): `$behavior maturity` command; L0 (Manual) through L3 (Autonomous-Eligible) levels; L3 ten-item readiness checklist
-- `cocobehavior/SKILL.md` v1.3.0: adds a short pointer to the new maturity command; the ambient constraint layer itself remains `user-invocable: false`
+- `cocobehavior/SKILL.md` v1.2.0: adds a short pointer to the new maturity command; the ambient constraint layer itself remains `user-invocable: false`
 - `cocopod/pod-status.skill.md` v1.0.3: new Maturity Level section reads `.cocoplus/maturity.json` and surfaces the current level in `$pod status`
 - `scripts/behavior-maturity.js` — deterministic level computation from `cocoplus.toml` and `.cocoplus/modes/`; writes `.cocoplus/maturity.json`
 
 #### CocoReview — METR Rejection Taxonomy (Feature 38 Enhancement)
-- `cocoreview.skill.md` v1.3.0: Phase 1 findings classified under code-quality/style/scope/collateral-effects/defensive-code; `blocking`/`important` findings require an `evidence_tier` citation (e2e/reference/project-historical) — unit/self-assessment evidence is capped at `nit`; scope/collateral/defensive findings require `requested_change` and `observed_delta` fields
+- `cocoreview.skill.md` v1.2.0: Phase 1 findings classified under code-quality/style/scope/collateral-effects/defensive-code; `blocking`/`important` findings require an `evidence_tier` citation (e2e/reference/project-historical) — unit/self-assessment evidence is capped at `nit`; scope/collateral/defensive findings require `requested_change` and `observed_delta` fields
 
 #### CocoCupper — Automatic Correction Capture (Feature 8 Enhancement)
 - `scripts/cupper-capture.js` — Tier 1 (fire-and-forget, <200ms budget), regex-based correction detection on every prompt; silent capture to `cupper/auto-captured.json` (gitignored)
