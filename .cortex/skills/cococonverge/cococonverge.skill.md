@@ -22,7 +22,7 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is
 
 ### `$pivot run`
 
-Run `node scripts/pivot-merge.js`. Reads all pod output files produced by the most recent CocoFlow `parallel:` step execution (from `pod-status.json`), applies the three-pass deduplication algorithm below, assigns priority tiers and effort estimates, and writes `lifecycle/FINDINGS.md` and `lifecycle/findings-state.json`.
+Run `node scripts/pivot-merge.js`. Reads all pod output files produced by the most recent CocoFlow `parallel:` step execution (from `pod-status.json`), applies the three-pass deduplication algorithm below, assigns priority tiers and effort estimates, and writes `lifecycle/FINDINGS.md` and `lifecycle/findings-state.json`. If the upstream flow used `on_partial: skip_partial`, pass `--skip-partial`.
 
 ### `$pivot run --since <timestamp>`
 
@@ -38,7 +38,7 @@ Summary view: total unique findings, count by priority tier (P1/P2/P3/P4), count
 
 ### `$pivot clear`
 
-Archive the current `FINDINGS.md` to `lifecycle/findings-archive/<timestamp>-FINDINGS.md` and reset `findings-state.json` in preparation for a new convergence run.
+Run `node scripts/pivot-merge.js --clear`. Archive the current `FINDINGS.md` to `lifecycle/findings-archive/<timestamp>-FINDINGS.md` and reset `findings-state.json` in preparation for a new convergence run.
 
 ## Deduplication Algorithm (Deterministic — No LLM)
 

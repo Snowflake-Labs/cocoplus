@@ -31,9 +31,11 @@ const PRIORITY_ORDER = ['P4', 'P3', 'P2', 'P1']; // P1 is highest
 const EFFORT_ORDER = ['XS', 'S', 'M', 'L', 'XL'];
 
 function parseArgs(argv) {
-  const args = {};
+  const args = { clear: false, skipPartial: false };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--since') args.since = argv[++i];
+    else if (argv[i] === '--clear') args.clear = true;
+    else if (argv[i] === '--skip-partial') args.skipPartial = true;
   }
   return args;
 }
@@ -51,6 +53,17 @@ function readPodStatus(sinceIso) {
     records = records.filter(r => new Date(r.timestamp).getTime() >= sinceMs);
   }
   return records;
+}
+
+function clearFindings() {
+  fs.mkdirSync(ARCHIVE_DIR, { recursive: true });
+  if (fs.existsSync(FINDINGS_MD_PATH)) {
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    fs.renameSync(FINDINGS_MD_PATH, path.join(ARCHIVE_DIR, `${stamp}-FINDINGS.md`));
+  }
+  fs.mkdirSync(path.dirname(FINDINGS_STATE_PATH), { recursive: true });
+  fs.writeFileSync(FINDINGS_STATE_PATH, JSON.stringify({ generated_at: new Date().toISOString(), findings: [], anomalies: [], contributing_pods: [] }, null, 2), 'utf8');
+  console.log(JSON.stringify({ cleared: true, archive_dir: ARCHIVE_DIR }, null, 2));
 }
 
 function readExcludes(podName) {
@@ -229,6 +242,7 @@ function main() {
   }
 
   const args = parseArgs(process.argv.slice(2));
+  if (args.clear) return clearFindings();
   const podRecords = readPodStatus(args.since);
 
   if (podRecords.length === 0) {
@@ -236,7 +250,8 @@ function main() {
     return;
   }
 
-  const { anomalies, cleanFindings } = detectScopeAnomalies(podRecords);
+  const convergenceRecords = args.skipPartial ? podRecords.filter(r => r.status !== 'PARTIAL') : podRecords;
+  const { anomalies, cleanFindings } = detectScopeAnomalies(convergenceRecords);
 
   const pass1 = dedupPass1(cleanFindings);
   const pass2 = dedupPass2(pass1);
@@ -245,7 +260,7 @@ function main() {
   const merged = pass3.map((group, i) => mergeGroup(group, i));
   const sorted = sortFindings(merged);
 
-  const partialPods = podRecords.filter(r => r.status === 'PARTIAL');
+  const partialPods = args.skipPartial ? [] : podRecords.filter(r => r.status === 'PARTIAL');
 
   fs.mkdirSync(path.dirname(FINDINGS_MD_PATH), { recursive: true });
   fs.writeFileSync(FINDINGS_MD_PATH, renderFindingsMd(sorted, partialPods, anomalies), 'utf8');

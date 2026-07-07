@@ -78,11 +78,15 @@ function main() {
   // 0. CocoPivot status envelope validation (Feature 47, Tier 1, <200ms) —
   // runs for every subagent completion, independent of type. Never blocks:
   // a malformed envelope is logged as a quality warning, not a hard failure.
-  if (event.status_envelope) {
+  if (event.status_envelope || event.output_path || event.output || event.artifact) {
     try {
       const envelopeScript = path.join('scripts', 'status-envelope-check.js');
       if (fs.existsSync(envelopeScript)) {
-        execFileSync(process.execPath, [envelopeScript, '--envelope', JSON.stringify(event.status_envelope)], {
+        const envelopeArgs = [envelopeScript];
+        if (event.status_envelope) envelopeArgs.push('--envelope', JSON.stringify(event.status_envelope));
+        else if (event.output_path || event.artifact) envelopeArgs.push('--output-file', event.output_path || event.artifact);
+        else envelopeArgs.push('--output', String(event.output || ''));
+        execFileSync(process.execPath, envelopeArgs, {
           timeout: 2000, windowsHide: true,
         });
       }
@@ -384,7 +388,7 @@ function main() {
 // Reflect step. Only queues when the event carries enough context to ground
 // an attribution later (a strategy was actually injected this session).
 const REFINE_PENDING = path.join(COCOPLUS_DIR, 'refine', 'pending.jsonl');
-const REFINE_QUEUE_THRESHOLD = 5;
+const REFINE_QUEUE_THRESHOLD = 1;
 
 function queueRefineReflection(event, ts) {
   const strategyIds = event.injected_strategy_ids || event.strategy_ids || [];
