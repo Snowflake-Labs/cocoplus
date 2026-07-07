@@ -4,3 +4,6 @@ Snow-Cocoplus/
 .claude-*
 .claude.*
 CLAUDE.local.md
+
+# Local validation artifacts for coding agents only
+scripts/tests/
