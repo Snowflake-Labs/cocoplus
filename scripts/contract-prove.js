@@ -16,6 +16,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const { execFileSync } = require('child_process');
 const { sourceHash } = require('./_contract-hash.js');
 
 const COCOPLUS_DIR = path.resolve(process.cwd(), '.cocoplus');
@@ -37,6 +38,7 @@ function parseArgs(argv) {
     else if (a === '--function') args.function = argv[++i];
     else if (a === '--tier') args.tier = argv[++i];
     else if (a === '--description') args.description = argv[++i];
+    else if (a === '--check-command') args.checkCommand = argv[++i];
   }
   return args;
 }
@@ -76,6 +78,16 @@ function recordEvidence(args) {
     result: 'pass',
     certifying: CERTIFYING_TIERS.has(args.tier),
   };
+  if (args.checkCommand) {
+    try {
+      const parsed = JSON.parse(args.checkCommand);
+      if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('expected non-empty array');
+      record.check_command = parsed.map(String);
+    } catch (err) {
+      console.error(JSON.stringify({ error: `--check-command must be a JSON array, e.g. ["node","test.js"]: ${err.message}` }));
+      process.exit(1);
+    }
+  }
   evidence[args.function] = record;
   writeEvidence(evidence);
 
@@ -85,6 +97,19 @@ function recordEvidence(args) {
 function checkStaleness(functionName, record) {
   const currentHash = sourceHash(functionName);
   return currentHash !== record.source_hash;
+}
+
+function runCheckCommand(record) {
+  if (!Array.isArray(record.check_command) || record.check_command.length === 0) {
+    return { status: 'skip', reason: 'no executable check command recorded' };
+  }
+  const [cmd, ...args] = record.check_command;
+  try {
+    execFileSync(cmd, args, { cwd: process.cwd(), stdio: 'pipe', timeout: 120000 });
+    return { status: 'pass' };
+  } catch (err) {
+    return { status: 'fail', reason: `check command failed with exit ${err.status ?? 'unknown'}` };
+  }
 }
 
 function runCi() {
@@ -119,7 +144,13 @@ function runCi() {
       anyFailed = true;
       continue;
     }
-    results.push({ function: fn, status: 'pass', tier: record.tier });
+    const check = runCheckCommand(record);
+    if (check.status === 'fail') {
+      results.push({ function: fn, status: 'fail', reason: check.reason });
+      anyFailed = true;
+      continue;
+    }
+    results.push({ function: fn, status: 'pass', tier: record.tier, check: check.status });
   }
 
   console.log(JSON.stringify({ contracts: results }, null, 2));

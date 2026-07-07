@@ -255,6 +255,10 @@ For each construct in the artifact's Cortex function layer, determine which tags
 
 **Integration:** Phase 6 uses the same five-tag vocabulary as `$lean review`. The difference: `$lean review` is diff-scoped and pre-commit; Phase 6 is artifact-scoped and post-build. Both tools share vocabulary so findings are trend-analyzable across CocoReview reports over time.
 
+## Step 7d — CocoContract Alignment
+
+If `outcomes/<function-name>/contract.md` exists for the reviewed function, verify that the artifact still aligns with the declared persona, observable result, and falsifiability condition. If fresh e2e/reference evidence is missing or stale in `.cocoplus/contract-evidence.json`, emit a `blocking` finding with `priority: P1`, `effort: S`, and `evidence_tier: reference` pointing to the contract archive. A green complexity audit does not override failed or missing contract alignment.
+
 ## Step 8 — Write and Commit Review Output
 
 Write the structured review to `.cocoplus/review/cocoreview-<YYYY-MM-DD-HHMMSS>.md`:
@@ -322,6 +326,7 @@ Show the Summary and Verdict sections.
 - At least one `praise` finding in every review (Phases 1-4)
 - Phase 5 clean-code section present with at least one rule-cited `praise` finding
 - Phase 6 complexity audit section present with tag distribution summary
+- CocoContract alignment is checked for reviewed functions that have an outcome contract; missing or stale certification is blocking
 - Structured review template output committed to git
 - `complexity-cache.json` is NOT committed (gitignored)
 - Every Phase 1 finding carries a `metr_category` label (code-quality/style/scope/collateral-effects/defensive-code)

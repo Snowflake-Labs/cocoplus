@@ -22,11 +22,12 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is
 
 ### `$contract init [function-name]`
 
-Guide the developer through declaring a new outcome contract with three required fields:
+Guide the developer through declaring a new outcome contract with an outcome oracle and acceptance checks:
 
 1. **Persona** — a named role from the eight CocoPod personas (Cortex Architect, Data Engineer, ML Engineer, Analytics Engineer, Security Engineer, Data Scientist, DevOps Engineer, Business Analyst). Reject generic roles ("a developer", "an analyst") — the persona must identify a specific role in a specific workflow context.
 2. **Observable Result** — a specific, falsifiable state change the named persona will observe when the function works correctly, in non-technical, non-implementation language. Reject results phrased as return values or implementation detail ("the function returns a JSON object with field X") — restate in persona-observable terms.
 3. **Falsifiability Condition** — a concrete test that would demonstrate failure: the specific condition under which the contract is violated.
+4. **Acceptance Checks** — collect two to five checks. At least one check must be `kind: e2e`, running the real Cortex endpoint with real data or an externally verified equivalent. Store check commands as argument arrays, never shell strings.
 
 Validate each field inline before accepting it. Write the completed contract to `outcomes/<function-name>/contract.md` and commit it. This commit is what the pre-build gate (`contract-gate.js`) checks for before `$spec` or `$build` is permitted to proceed for this function.
 
@@ -44,7 +45,7 @@ Tiers, ordered by epistemic strength (strongest first):
 - **differential** (Tier 4) — demonstrated measurably better than a documented, pre-existing baseline.
 - **unit** (Tier 5) — evaluated against criteria authored in the same session by the same or a context-sharing agent. **Insufficient for `$ship` certification regardless of thoroughness.** Recordable as developmental context only.
 
-Run `node scripts/contract-prove.js --function <function-name> --tier <tier> --description "<text>"`. The script performs the Tier 1 state check synchronously (<200ms) and, for e2e evidence with a machine-executable falsifiability condition, executes the Cortex endpoint check asynchronously. It records the result in `contract-evidence.json` keyed to the function's current source hash.
+Run `node scripts/contract-prove.js --function <function-name> --tier <tier> --description "<text>" [--check-command '["node","check.js"]']`. The script records evidence in `contract-evidence.json` keyed to the function's current source hash. When `--check-command` is provided, `$contract ci` re-executes the exact argument-vector command and fails on non-zero exit.
 
 ### `$contract archive [function-name]`
 
@@ -71,10 +72,10 @@ If either condition fails, `$ship` returns a blocking message naming the functio
 
 ## Exit Criteria
 
-- `$contract init` commits `outcomes/<name>/contract.md` only after all three fields pass inline validation
+- `$contract init` commits `outcomes/<name>/contract.md` only after the outcome fields and 2–5 acceptance checks pass inline validation
 - `$contract prove --tier e2e` records evidence bound to the current source hash
 - `$ship` is blocked when evidence is absent, blocked when evidence is stale, and proceeds only with fresh Tier 1/2 evidence
-- `$contract ci` exits non-zero on any archived-contract regression
+- `$contract ci` re-runs recorded executable check commands and exits non-zero on any archived-contract regression
 - No code path exists that bypasses the evidence-tier or staleness check for `$ship`
 
 ## Anti-Rationalization
