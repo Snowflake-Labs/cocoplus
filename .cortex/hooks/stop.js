@@ -9,7 +9,7 @@
 
 const fs   = require('fs');
 const path = require('path');
-const { spawn } = require('child_process');
+const { spawn, execFile } = require('child_process');
 const { isoUtc, appendJsonLine, logError } = require('./_common.js');
 
 const COCOPLUS_DIR = '.cocoplus';
@@ -72,6 +72,35 @@ function main() {
     agent: 'coco-cupper',
     reason: 'session-stop',
   }, ts);
+
+  const pivotRequested = fs.existsSync(path.join(COCOPLUS_DIR, 'pivot-run-requested'));
+  let convergePending = false;
+  try {
+    const flow = JSON.parse(fs.readFileSync(path.join(COCOPLUS_DIR, 'flow.json'), 'utf8'));
+    convergePending = (flow.stages || []).some(stage =>
+      (stage.type === 'converge' || stage.converge) &&
+      (stage.handler === 'cococonverge' || (stage.converge && stage.converge.handler === 'cococonverge')) &&
+      !['completed', 'skipped'].includes(String(stage.status || '').toLowerCase())
+    );
+  } catch (_) { /* no flow */ }
+
+  if (pivotRequested || convergePending) {
+    const pivotScript = path.join('scripts', 'pivot-merge.js');
+    if (fs.existsSync(pivotScript)) {
+      const child = execFile(process.execPath, [pivotScript], { windowsHide: true }, (err) => {
+        if (err) logError('stop', `pivot-merge failed: ${err.message}`);
+        else appendJsonLine(path.join(COCOPLUS_DIR, 'ui-notifications.jsonl'), {
+          event_type: 'pivot_findings_ready',
+          message: 'CocoPivot convergence complete. Findings written to .cocoplus/lifecycle/FINDINGS.md',
+          timestamp: isoUtc(),
+          source: 'hook.Stop',
+        });
+      });
+      child.on('error', (err) => logError('stop', `pivot-merge spawn failed: ${err.message}`));
+      appendJsonLine(HOOK_LOG, { hook: 'stop', action: 'pivot_merge_triggered', reason: pivotRequested ? 'pivot-requested' : 'converge-pending', ts });
+      try { fs.unlinkSync(path.join(COCOPLUS_DIR, 'pivot-run-requested')); } catch (_) { /* absent */ }
+    }
+  }
 }
 
 try {

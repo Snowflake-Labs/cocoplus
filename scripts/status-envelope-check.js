@@ -7,6 +7,7 @@
  * status report must not be allowed to break the whole pipeline.
  *
  * Usage: node status-envelope-check.js --envelope '<json>'
+ *        node status-envelope-check.js --output-file <subagent-output.md>
  * Envelope schema: { pod, status, timestamp, duration_seconds, findings_count,
  *   errors: [], skipped_checks: [], findings: [] }
  * status must be one of: COMPLETE, PARTIAL, ERROR, SKIPPED
@@ -26,8 +27,38 @@ function parseArgs(argv) {
   const args = {};
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--envelope') args.envelope = argv[++i];
+    else if (argv[i] === '--output-file') args.outputFile = argv[++i];
+    else if (argv[i] === '--output') args.output = argv[++i];
   }
   return args;
+}
+
+function parseScalar(value) {
+  const trimmed = String(value || '').trim();
+  if (trimmed === '[]') return [];
+  if (/^\[.*\]$/.test(trimmed)) {
+    return trimmed.slice(1, -1).split(',').map(s => s.trim()).filter(Boolean);
+  }
+  if (/^\d+$/.test(trimmed)) return Number(trimmed);
+  return trimmed.replace(/^["']|["']$/g, '');
+}
+
+function parseEnvelopeBlock(text) {
+  const match = String(text || '').match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!match) return null;
+  const envelope = {};
+  for (const line of match[1].split(/\r?\n/)) {
+    const item = line.match(/^([A-Za-z_][A-Za-z0-9_]*):\s*(.*)$/);
+    if (item) envelope[item[1]] = parseScalar(item[2]);
+  }
+  return envelope;
+}
+
+function envelopeFromArgs(args) {
+  if (args.envelope) return JSON.parse(args.envelope);
+  if (args.outputFile) return parseEnvelopeBlock(fs.readFileSync(args.outputFile, 'utf8'));
+  if (args.output) return parseEnvelopeBlock(args.output);
+  return null;
 }
 
 function logWarning(message) {
@@ -82,16 +113,20 @@ function main() {
   if (!fs.existsSync(COCOPLUS_DIR)) return;
 
   const args = parseArgs(process.argv.slice(2));
-  if (!args.envelope) {
+  if (!args.envelope && !args.outputFile && !args.output) {
     logWarning('envelope-missing: no --envelope argument provided');
     return;
   }
 
   let envelope;
   try {
-    envelope = JSON.parse(args.envelope);
+    envelope = envelopeFromArgs(args);
+    if (!envelope) {
+      logWarning('envelope-missing: output did not start with a status envelope');
+      return;
+    }
   } catch (err) {
-    logWarning(`envelope-malformed-json: ${err.message}`);
+    logWarning(`envelope-malformed: ${err.message}`);
     return;
   }
 
