@@ -61,7 +61,7 @@ CocoRefine's four-step cycle runs after evaluation results are available for a c
 
 1. **Execute** — CocoBrew loads matching strategies from the CocoStrategyBook into the agent's prompt context before build begins (SkillbookView, read-only). The injected strategy IDs are recorded in session metadata.
 2. **Evaluate** — the declared CocoContract outcome contract or active quality gate runs against the function's output, producing an evidence record at a specific tier.
-3. **Reflect** (`scripts/refine-reflect.js`, Tier 3 async, may invoke Haiku) — examines the actual trace data: injected strategy texts, the specific model outputs produced, and the specific evaluation scores and rubric components. **This step is prohibited from attributing effectiveness based on the reflecting agent's own assessment of strategy quality.** If the evaluation record is missing or incomplete, no attribution is produced — this is a valid, expected outcome, not an error to work around.
+3. **Reflect** (`scripts/refine-reflect.js`, Tier 3 async, may invoke Haiku) — examines the actual trace data: injected strategy IDs, function version hash, model output/evaluation metadata when available, and the specific evaluation evidence record. **This step is prohibited from attributing effectiveness based on the reflecting agent's own assessment of strategy quality.** If the evaluation record is missing or incomplete, no attribution is produced — this is a valid, expected outcome, not an error to work around.
 4. **Update** (`scripts/refine-update.js`) — applies the mutation atomically. Only `add`, `update`, and `deprecate` are permitted; no other write path exists.
 
 ## Access Control
@@ -71,7 +71,7 @@ Optimization and analysis agents receive a **read-only SkillbookView**: current 
 ## Exit Criteria
 
 - `$refine add` rejects any strategy content containing hedging language
-- `$refine add` and `$refine update` both require an evidence attribution record — self-authored justification is rejected
+- `$refine add` and `$refine update` both require a real passing CocoContract, CocoSentinel, or resolved SecondEye evidence attribution record — self-authored justification and nonexistent references are rejected
 - `$refine update` creates a new version record without overwriting or deleting the prior version
 - `$refine deprecate` excludes the strategy from SkillbookView injection while preserving its version history
 - Optimization agents receive read-only SkillbookView; they cannot invoke `refine-update.js` directly

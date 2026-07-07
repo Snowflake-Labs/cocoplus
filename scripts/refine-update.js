@@ -20,6 +20,8 @@ const path = require('path');
 const fs = require('fs');
 
 const STRATEGIES_DIR = path.resolve(process.cwd(), 'cocoplus', 'strategies');
+const COCOPLUS_DIR = path.resolve(process.cwd(), '.cocoplus');
+const CONTRACT_EVIDENCE_PATH = path.join(COCOPLUS_DIR, 'contract-evidence.json');
 
 const HEDGING_PATTERNS = [
   /\bmight\b/i,
@@ -68,6 +70,50 @@ function requireAttribution(strategy) {
   if (!attr || !attr.session_id || !attr.evidence_reference || !attr.function_version_hash) {
     fail('Evidence attribution record is required: session_id, evidence_reference, and function_version_hash must all be present. Self-authored justification does not satisfy this requirement.');
   }
+  if (!evidenceReferenceExists(attr)) {
+    fail(`Evidence attribution reference "${attr.evidence_reference}" was not found or is not passing/fresh. Evidence attribution must cite a recorded CocoContract, CocoSentinel, or SecondEye result.`);
+  }
+}
+
+function readJson(filePath, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (_) {
+    return fallback;
+  }
+}
+
+function readJsonl(filePath) {
+  try {
+    return fs.readFileSync(filePath, 'utf8')
+      .split(/\r?\n/)
+      .filter(Boolean)
+      .map(line => {
+        try { return JSON.parse(line); } catch (_) { return null; }
+      })
+      .filter(Boolean);
+  } catch (_) {
+    return [];
+  }
+}
+
+function evidenceReferenceExists(attr) {
+  const ref = String(attr.evidence_reference || '');
+  if (/^contract:/i.test(ref)) {
+    const fn = ref.replace(/^contract:/i, '');
+    const evidence = readJson(CONTRACT_EVIDENCE_PATH, {});
+    const record = evidence[fn];
+    return Boolean(record && record.result === 'pass' && record.source_hash === attr.function_version_hash);
+  }
+  if (/^sentinel:/i.test(ref)) {
+    const id = ref.replace(/^sentinel:/i, '');
+    return readJsonl(path.join(COCOPLUS_DIR, 'sentinel', 'approvals.jsonl')).some(r => r.id === id || r.artifact_sha === id || r.artifact_path === id);
+  }
+  if (/^secondeye:/i.test(ref)) {
+    const id = ref.replace(/^secondeye:/i, '');
+    return readJsonl(path.join(COCOPLUS_DIR, 'secondeye', 'resolved-findings.jsonl')).some(r => r.id === id || r.finding_id === id);
+  }
+  return false;
 }
 
 function strategyPath(id) {
@@ -200,7 +246,7 @@ function opDeprecate(args) {
 }
 
 function main() {
-  if (!fs.existsSync(path.resolve(process.cwd(), '.cocoplus'))) {
+  if (!fs.existsSync(COCOPLUS_DIR)) {
     fail('CocoPlus not initialized. Run $pod init first.');
   }
 

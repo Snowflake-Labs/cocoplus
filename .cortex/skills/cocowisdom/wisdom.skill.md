@@ -58,7 +58,7 @@ Routes CocoCupper's auto-captured corrections (`.cocoplus/cupper/auto-captured.j
    - **incorrect-behavior** — the skill's instructions produced an action the developer reversed
    - **missing-variant** — the correction asks for an option or mode the skill doesn't support
    - **agent-misapplication** — the skill or persona was invoked in a context it doesn't fit
-   
+
    This classification may invoke Haiku (Tier 3, async) since it requires judging correction intent — unlike CocoCupper's Tier 1 capture, which is pure regex.
 
 2. For each group, `wisdom-route.js` generates a proposed edit (the specific skill section and suggested change) but does not apply it.

@@ -21,11 +21,11 @@ CocoRecall is entirely local. No session data is transmitted anywhere. `recall.d
 
 ## Commands
 
-### `$recall search <query> [--all] [--session <id>]`
+### `$recall search <query> [--all] [--session <id>] [--function <name>] [--outcome-type <type>]`
 
 Run `node scripts/recall-import.js --query "<query>"` (or the dedicated query path if the index already exists) to search the normalized index using a three-factor relevance score: lexical match (query terms against turn text and entity tags), recency (decay-weighted), and phase context match (turns from the current CocoPlus phase rank higher).
 
-Default behavior is **session-diverse**: return the single highest-relevance turn from each matching session, so one verbose session cannot dominate the results. `--all` returns every matching turn across all sessions. `--session <id>` restricts the search to one session.
+Default behavior is **session-diverse**: return the single highest-relevance turn from each matching session, so one verbose session cannot dominate the results. `--all` returns every matching turn across all sessions. `--session <id>` restricts the search to one session. `--function <name>` filters to sessions that touched a function. `--outcome-type <type>` filters to sessions with matching outcome-contract evidence.
 
 Every result carries four mandatory citation fields — never omit any of them:
 
@@ -56,8 +56,9 @@ Report: total sessions indexed, total turns indexed, index freshness (time since
 
 `recall.db` normalizes session data into four tables — see `scripts/recall-import.js` for the exact schema:
 
-- **sessions** — session ID, start/end time, phase context, key entity tags
+- **sessions** — session ID, start/end time, phase context, key entity tags, source path
 - **turns** — turn ID, session ID (FK), speaker role, sequence number, extracted (non-LLM) summary, full-text hash, tag set
+- **tool_calls / function_touches / evaluation_results / outcome_contracts / strategy_usage / key_decisions** — normalized retrieval facets for targeted searches
 - **entities** — entity name, entity type (Snowflake object / function name / Cortex API feature / data concept), session/turn IDs where it appears
 - **citations** — per search result: query text, matched session/turn ID, source-exists flag, citation timestamp
 
@@ -66,6 +67,8 @@ Report: total sessions indexed, total turns indexed, index freshness (time since
 - `$recall search` returns session-diverse results by default with all four citation fields present on every result
 - `$recall show <session-id>` displays the full turn sequence for that session
 - `$recall import --since <date>` imports only sessions after the given date
+- `$recall search --function <name>` and `--outcome-type <type>` filter against normalized session facets
+- `$recall sources` lists configured sources and indexed source counts
 - `recall.db` is present in `.cocoplus/.gitignore`
 - A result whose source transcript has been deleted since indexing reports `source_exists: false` rather than silently omitting the flag or hiding the result
 
