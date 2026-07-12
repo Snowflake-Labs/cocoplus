@@ -618,6 +618,15 @@ Dimension Health:
 $wisdom search "PII masking"
 </code></pre>
 <p>Returns every rejection record that mentioned PII masking — with record IDs, dates, and evidence excerpts. You can trace the history of a recurring issue without reading through commit logs.</p>
+<p><strong>When a pattern becomes policy:</strong> If the team decides a lesson must survive future consolidation, protect it explicitly:</p>
+<pre><code>
+$wisdom keep --id W-PII-001 --text "PII masking requirements must name the exact masked columns and consuming roles."
+</code></pre>
+<p>If an older wisdom entry has been merged into a better rule, remove it only with rationale:</p>
+<pre><code>
+$wisdom forget --id W-OLD-014 --rationale "Merged into W-PII-001 with clearer column-level guidance."
+</code></pre>
+<p>Stable wisdom promotion now requires repeated confirmed evidence across distinct sessions. A single dramatic incident can trigger review, but it does not become institutional memory until the evidence gate is satisfied.</p>
 <hr>
 <h2 id="scenario-19-structured-code-review-before-ship-cocoreview">Scenario 19: Structured Code Review Before Ship — CocoReview</h2>
 <p><strong>The situation:</strong> Your CocoSentinel evaluation returned APPROVED. Now you want an integrative review before making the Ship decision — not dimensional analysis, but a holistic look at whether the code does what it should and whether anything important was missed.</p>
@@ -637,6 +646,12 @@ Suggestions: Nested conditional could be flattened (nit). Reuse existing sanitiz
 </code></pre>
 <p><strong><code>$cocoplus review --security</code> when the context requires it:</strong></p>
 <p>If the function handles user-supplied inputs or PII-classified columns, you'd add the security flag. CocoReview loads the security review guide and the OWASP-aligned severity tiers. Critical findings block merge. In this case, the A1 BLOCKING concern that CocoSentinel already caught and fixed would have surfaced here too under security review — the two gates provide overlapping coverage from different angles.</p>
+<p><strong>When stakeholders need the result:</strong> Export the review without changing the review verdict:</p>
+<pre><code>
+$review export html
+$report export .cocoplus/lifecycle/review.md --format markdown
+</code></pre>
+<p>The exported artifact is packaging, not a new source of truth. CocoReview severity remains the release gate.</p>
 <hr>
 <h2 id="scenario-20-grounding-a-sprint-retrospective-in-evidence-cocoops">Scenario 20: Grounding a Sprint Retrospective in Evidence — CocoOps</h2>
 <p><strong>The situation:</strong> You're preparing for a sprint retrospective on a data pipeline project that's been running for six weeks. You want to bring data, not impressions.</p>
@@ -665,6 +680,142 @@ Notable signals:
 $ops suggest
 </code></pre>
 <p>At 9am on a Monday morning, CocoOps returns the overnight pipeline run status, any failed tasks since Friday's close, and the data freshness state across the three monitored schemas. No vague advice — specific pipeline names, failure timestamps, freshness deltas. The on-call team member has what they need before the standup.</p>
+<hr>
+<h2 id="scenario-21-allocating-ai-costs-with-cocometer-chargeback">Scenario 21: Allocating AI Costs with CocoMeter Chargeback</h2>
+<p><strong>The situation:</strong> A shared CocoPlus project is used by analytics engineering, BI, and data science. The Snowflake invoice shows growing AI usage, but the team needs to know which workflows and cost centers are responsible before changing behavior.</p>
+<pre><code>
+$meter chargeback onboarding
+</code></pre>
+<p>The onboarding check reports whether the chargeback schema exists, whether the fact table has data, whether all users map to cost centers, which users are still <code>UNMAPPED</code>, and whether near-real-time <code>CodingAgent.Step-0</code> observability spans are present.</p>
+<p>After fixing unmapped users in <code>cocoplus.toml</code> or Snowflake user tags:</p>
+<pre><code>
+$meter chargeback refresh
+$meter chargeback invoice
+</code></pre>
+<p>The refresh separates token/inference credits from warehouse compute credits, excludes SYSTEM, sandbox, and background metadata runs, strips system reminders from persisted prompts, and resolves cost centers in this order: explicit user map, user object tag, role map, <code>UNMAPPED</code>. The invoice output is ready for FinOps review because it can explain where every credit came from.</p>
+<p><strong>Decision point:</strong> If <code>includeWarehouse = false</code>, the report answers "what did Coco's model usage cost?" If it is true, the report answers "what did this AI workflow cost end-to-end, including warehouse execution?" The setting is a governance choice, not a display preference.</p>
+<hr>
+<h2 id="scenario-22-checking-snowflake-asset-health-before-a-refactor-cocotrace">Scenario 22: Checking Snowflake Asset Health Before a Refactor — CocoTrace</h2>
+<p><strong>The situation:</strong> You are about to refactor a mature mart schema. There are stale views, old UDFs, and several BI dashboards connected to objects nobody fully remembers. You need more than a dependency list; you need a health signal.</p>
+<pre><code>
+$trace health
+</code></pre>
+<p>CocoTrace scores the asset graph with deterministic inputs: dead asset percentage, circular dependencies, coupling, security findings, layer violations, and churn hotspots. It flags zero-caller UDFs, unqueried views, stale tables, staging objects consumed directly by BI, raw objects updated by app code, and production assets accessed from development contexts.</p>
+<p>After the cleanup branch removes three unused UDFs and fixes a staging-to-BI dependency:</p>
+<pre><code>
+$trace compare .cocoplus/trace/before.json .cocoplus/trace/after.json
+</code></pre>
+<pre><code>
+blast radius 23 -> 18 v / health B+ -> A- ^
+</code></pre>
+<p>The before/after receipt is short enough to paste into a PR. It does not replace review, but it gives reviewers a concrete signal that the refactor reduced risk instead of merely moving code around.</p>
+<hr>
+<h2 id="scenario-23-running-a-flow-with-model-tiers-and-a-valid-no-op">Scenario 23: Running a Flow with Model Tiers and a Valid No-op</h2>
+<p><strong>The situation:</strong> A weekly governance flow checks whether model documentation, lineage notes, and cost-center mappings need updates. Most weeks, nothing changed. You want that "nothing changed" outcome to be explicit, logged, and cheap.</p>
+<p>The flow stages declare model tiers instead of concrete model names:</p>
+<pre><code>
+{
+  "id": "cost-center-check",
+  "type": "check",
+  "model_tier": "smol",
+  "handler": "noop-check"
+}
+</code></pre>
+<p>Before the stage runs, CocoFlow resolves <code>smol</code> from <code>[model_tiers]</code> in <code>cocoplus.toml</code>. If the requested tier is unavailable or unmapped, the stage halts. It does not silently fall back to another model, because that would change both cost and quality semantics.</p>
+<pre><code>
+$flow run
+</code></pre>
+<p>The no-op handler checks the stage state. If there are no changed files and no pending checkpoints, it writes <code>.cocoplus/flow/noop-log.jsonl</code> and marks the stage skipped with a reason. The pipeline still has evidence: the no-op was verified, not assumed.</p>
+<p><strong>Template choice:</strong> For this pattern, start from the No-op Workflow template. For high-risk human approvals, use the HITL Gate template. For a cheap pre-flight, use the Litmus Test template.</p>
+<hr>
+<h2 id="scenario-24-learning-a-prompt-strategy-with-cocorefine">Scenario 24: Learning a Prompt Strategy with CocoRefine</h2>
+<p><strong>The situation:</strong> A support-ticket classifier improved after you added two labeled examples to the prompt. You want the project to remember that strategy, but only if the improvement is backed by evidence.</p>
+<p>First, prove the outcome through the contract or quality gate. Then add the strategy:</p>
+<pre><code>
+$refine add
+</code></pre>
+<p>The strategy must cite a passing CocoContract evidence record, CocoSentinel verdict, or resolved SecondEye finding. Self-assessment does not count.</p>
+<p>During optimization, change exactly one thing per round:</p>
+<pre><code>
+mutation_strategy: add_example
+changed_fields: ["content"]
+evaluation_criteria:
+  - name: no_precision_regression
+    expected: true
+</code></pre>
+<p>The accepted mutation strategies are <code>add_example</code>, <code>add_constraint</code>, <code>restructure</code>, and <code>add_edge_case</code>. CocoRefine rejects multi-field mutations and scored rubrics because they blur cause and effect. If accuracy improves after three changes at once, the project learned that "something helped." If it improves after one binary-tested change, the project learned what helped.</p>
+<hr>
+<h2 id="scenario-25-packaging-a-governance-report-for-review">Scenario 25: Packaging a Governance Report for Review</h2>
+<p><strong>The situation:</strong> You have a CocoAudit timeline, a CocoReview report, and a CocoTrace health receipt. The engineering team wants Markdown in git; a stakeholder wants HTML; someone asks for PDF.</p>
+<pre><code>
+$report export .cocoplus/lifecycle/audit.md --format markdown
+$report export .cocoplus/lifecycle/review.md --format html
+$report export .cocoplus/trace/health.md --format pdf
+</code></pre>
+<p>Markdown and HTML are produced locally. If no PDF renderer is configured, the PDF request returns an explicit renderer-unavailable status instead of pretending a PDF was created.</p>
+<p><strong>What this is not:</strong> Reporting export is packaging. It does not change CocoAudit's append-only source, CocoReview's release verdict, or CocoTrace's deterministic metrics. The exported file is for sharing; the source artifacts remain the authority.</p>
+<hr>
+<h2 id="scenario-26-declaring-success-before-generation-cococontract">Scenario 26: Declaring Success Before Generation — CocoContract</h2>
+<p><strong>The situation:</strong> You are about to build a Cortex function that classifies support tickets. The risk is not only bad code; it is letting the generated function define its own success criteria after the fact.</p>
+<pre><code>
+$contract init classify_ticket_intent
+</code></pre>
+<p>You declare the observable outcome before <code>$spec</code> or <code>$build</code>: who observes the result, what they see, and what falsifies the implementation. The contract is committed under <code>outcomes/classify_ticket_intent/contract.md</code>.</p>
+<p>After implementation, prove the contract against real evidence:</p>
+<pre><code>
+$contract prove classify_ticket_intent --tier reference
+$contract ci
+</code></pre>
+<p>The proof binds evidence to the function's source hash. If the function changes, the proof becomes stale. <code>$ship</code> will not treat stale evidence as production readiness.</p>
+<hr>
+<h2 id="scenario-27-finding-the-session-that-explains-a-decision-cocorecall">Scenario 27: Finding the Session That Explains a Decision — CocoRecall</h2>
+<p><strong>The situation:</strong> A reviewer asks why the semantic model excludes a customer segment. You remember discussing it, but not which session or file contains the decision.</p>
+<pre><code>
+$recall search "excluded enterprise trial customers"
+</code></pre>
+<p>CocoRecall searches the local session index and returns verbatim excerpts with citation metadata: session ID, turn ID, source-exists flag, and suggested follow-up query. It does not summarize from memory or invent a rationale.</p>
+<pre><code>
+$recall show sess-2026-05-14-analytics
+</code></pre>
+<p>You open the cited session, find the original stakeholder constraint, and link it in the PR. Retrieval stays local, citation-bound, and session-diverse so one verbose session does not drown out the rest of the project history.</p>
+<hr>
+<h2 id="scenario-28-converging-parallel-review-findings-cocopivot">Scenario 28: Converging Parallel Review Findings — CocoPivot</h2>
+<p><strong>The situation:</strong> A high-risk SQL migration needs a security pod, governance pod, trace pod, and code-review pod to inspect it independently. You want independent coverage without four disconnected findings files.</p>
+<p>The flow uses a <code>parallel:</code> step followed by a <code>converge:</code> step:</p>
+<pre><code>
+{
+  "type": "parallel",
+  "pods": ["security-pod", "governance-pod", "trace-pod", "review-pod"],
+  "on_partial": "continue_with_flag"
+},
+{
+  "type": "converge",
+  "handler": "cococonverge",
+  "output": "lifecycle/FINDINGS.md"
+}
+</code></pre>
+<p>When every pod reports a terminal status, CocoPivot runs the deterministic merge: same file and line, same issue type in file, then similar snippet. Duplicate findings collapse into one prioritized action with stable <code>PIVOT-NNN</code> IDs. PARTIAL pod output remains visible in the coverage note, never blurred into complete review.</p>
+<pre><code>
+$pivot status
+$pivot show
+</code></pre>
+<p>The developer works from one authoritative <code>FINDINGS.md</code> instead of reconciling four separate reports by hand.</p>
+<hr>
+<h2 id="scenario-29-deciding-how-autonomous-a-project-can-be-cocobehavior">Scenario 29: Deciding How Autonomous a Project Can Be — CocoBehavior</h2>
+<p><strong>The situation:</strong> The team wants some routine stages to run AFK, but nobody wants production-adjacent automation to outrun the project's controls.</p>
+<pre><code>
+$behavior maturity
+</code></pre>
+<p>CocoBehavior computes the project's maturity level from <code>cocoplus.toml</code> and active mode flags. L0 means manual. L3 means autonomous-eligible, but only after the checklist is satisfied: kill switch, attempt cap, safety mode, memory state, and other control signals.</p>
+<p>The result appears in <code>$pod status</code>. The decision is operational: a project can be technically capable of running a stage unattended and still not mature enough to do so responsibly.</p>
+<hr>
+<h2 id="scenario-30-adding-a-manual-audit-event-without-breaking-the-trail">Scenario 30: Adding a Manual Audit Event Without Breaking the Trail — CocoAudit</h2>
+<p><strong>The situation:</strong> A data governance board approves a risky migration in a meeting outside Coco. That approval belongs in the audit trail, but it must be clearly marked as a manual entry.</p>
+<pre><code>
+$audit add "Governance board approved customer mart migration; ticket GOV-1427."
+$audit timeline
+</code></pre>
+<p>The manual event is appended to the same audit source with an explicit Manual Entry label. <code>$audit timeline</code> renders the chronological view without rewriting the source. This keeps external approvals visible while preserving the append-only audit model.</p>
 <hr>
 <blockquote><p><em>A workflow is only a workflow when it outlasts the first deviation. The ones worth keeping are the ones that bend without breaking.</em></p></blockquote>
 </div>
