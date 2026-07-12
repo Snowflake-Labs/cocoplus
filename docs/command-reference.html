@@ -501,6 +501,21 @@ $meter accuracy
 <p><code>$meter accuracy</code> shows: the current adjustment factor and its sample size, the trend over the last five sessions (stable / rising / falling), and the raw per-session history (estimated tokens, actual tokens, ratio). When the adjustment factor is active, <code>$meter estimate</code> output includes a calibration note: "Estimated 45,000 tokens (baseline: 30,000, calibration factor: 1.5x from 8 prior sessions)."</p>
 <p><strong>Output:</strong> Accuracy history table + current calibration factor + trend indicator.</p>
 <hr>
+<p><strong><code>$meter chargeback refresh</code></strong> — Refresh FinOps chargeback facts <em>(CocoMeter Enhanced)</em></p>
+<pre><code>$meter chargeback refresh
+</code></pre>
+<p>Loads Cortex Code usage history, optionally joins warehouse compute attribution when <code>includeWarehouse</code> is enabled, strips system reminders, excludes SYSTEM/sandbox/background metadata records, and resolves cost centers through explicit user maps, user tags, role maps, then <code>UNMAPPED</code>.</p>
+<hr>
+<p><strong><code>$meter chargeback invoice</code></strong> — Generate per-user chargeback invoices</p>
+<pre><code>$meter chargeback invoice
+</code></pre>
+<p>Creates invoice-ready user totals with token credits, optional warehouse credits, total credits, cost center, and amount.</p>
+<hr>
+<p><strong><code>$meter chargeback onboarding</code></strong> — Check chargeback setup readiness</p>
+<pre><code>$meter chargeback onboarding
+</code></pre>
+<p>Reports schema readiness, fact data presence, cost-center mapping status, unmapped users, and near-real-time observability span presence.</p>
+<hr>
 <h2 id="cococupper-post-execution-intelligence">CocoCupper — Post-Execution Intelligence</h2>
 <p>CocoCupper runs automatically via hooks. The manual commands below are for on-demand analysis and review.</p>
 <hr>
@@ -990,6 +1005,16 @@ $wisdom route
 <p>Groups CocoCupper's auto-captured corrections (<code>cupper/auto-captured.json</code>) by skill context and classifies each group as <code>incorrect-behavior</code>, <code>missing-variant</code>, or <code>agent-misapplication</code>. Presents a proposed edit per group for explicit developer confirmation — no skill file is ever modified automatically, regardless of how many corrections support the edit.</p>
 <p><strong>Output:</strong> Proposed edits awaiting developer confirmation.</p>
 <hr>
+<p><strong><code>$wisdom keep</code></strong> — Protect institutional memory from consolidation</p>
+<pre><code>$wisdom keep --id &lt;id&gt; --text "&lt;rule&gt;"
+</code></pre>
+<p>Writes the protected entry to <code>.cocoplus/wisdom/must-keep.md</code>.</p>
+<hr>
+<p><strong><code>$wisdom forget</code></strong> — Record an explicit removal rationale</p>
+<pre><code>$wisdom forget --id &lt;id&gt; --rationale "&lt;reason&gt;"
+</code></pre>
+<p>Appends the rationale to <code>.cocoplus/wisdom/consolidation-log.md</code>. Forgetting without rationale is rejected.</p>
+<hr>
 <h2 id="behavioral-maturity-cocobehavior">Behavioral Maturity — CocoBehavior</h2>
 <hr>
 <p><strong><code>$behavior maturity</code></strong> — Report the CocoPod's current automation maturity level</p>
@@ -1163,7 +1188,7 @@ $contract ci
 <pre><code>
 $refine add
 </code></pre>
-<p>Interactively collects identity, context, strategy content, and an evidence attribution record — a CocoContract evidence record, CocoSentinel verdict, or resolved SecondEye finding, never the recording agent's own assessment. Rejects strategy content containing hedging language ("might", "could", "possibly").</p>
+<p>Interactively collects identity, context, strategy content, and an evidence attribution record — a CocoContract evidence record, CocoSentinel verdict, or resolved SecondEye finding, never the recording agent's own assessment. Rejects strategy content containing hedging language ("might", "could", "possibly"). Optimization rounds must declare one mutation strategy (<code>add_example</code>, <code>add_constraint</code>, <code>restructure</code>, or <code>add_edge_case</code>), exactly one changed field, and binary evaluation criteria.</p>
 <p><strong>Output:</strong> New strategy YAML at <code>cocoplus/strategies/&lt;id&gt;.yaml</code> — committed to git.</p>
 <hr>
 <p><strong><code>$refine search [query]</code></strong> — Search the CocoStrategyBook</p>
@@ -1239,6 +1264,16 @@ $trace show plan.md
 </code></pre>
 <p>Displays all upstream and downstream links for the named artifact — what requirements it satisfies, what tests cover it, what delivery artifacts reference it. Useful for impact analysis before modifying a critical artifact.</p>
 <p><strong>Output:</strong> Formatted trace link table for the specified artifact.</p>
+<hr>
+<p><strong><code>$trace health</code></strong> — Compute Snowflake asset health grade</p>
+<pre><code>$trace health
+</code></pre>
+<p>Uses <code>scripts/health-grader.js</code> to score dead assets, circular dependencies, coupling, security findings, layer violations, and churn hotspots. Honors <code>[trace].show_grade = false</code> by showing metrics without the letter grade.</p>
+<hr>
+<p><strong><code>$trace compare</code></strong> — Show before/after health and blast-radius movement</p>
+<pre><code>$trace compare before.json after.json
+</code></pre>
+<p>Prints a thermal receipt such as <code>blast radius 23 -&gt; 18 v / health B+ -&gt; A- ^</code>.</p>
 <hr>
 <p><strong><code>$trace blast &lt;object&gt;</code></strong> — Compute the blast radius of a Snowflake object before changing it</p>
 <pre><code>
@@ -1387,7 +1422,7 @@ $sketch deps --reduce off
 </tr>
 <tr>
   <td style="text-align:left"><strong>Meter</strong></td>
-  <td style="text-align:left"><code>$meter on</code> · <code>$meter off</code> · <code>$meter</code> · <code>$meter estimate</code> · <code>$meter history</code> · <code>$meter accuracy</code> · <code>$meter view</code> · <code>$meter sync</code></td>
+  <td style="text-align:left"><code>$meter on</code> · <code>$meter off</code> · <code>$meter</code> · <code>$meter estimate</code> · <code>$meter history</code> · <code>$meter accuracy</code> · <code>$meter view</code> · <code>$meter sync</code> · <code>$meter chargeback refresh</code> · <code>$meter chargeback invoice</code> · <code>$meter chargeback onboarding</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Cupper</strong></td>
@@ -1419,7 +1454,7 @@ $sketch deps --reduce off
 </tr>
 <tr>
   <td style="text-align:left"><strong>Wisdom</strong></td>
-  <td style="text-align:left"><code>$wisdom</code> · <code>$wisdom list [--gate] [--since] [--dimension]</code> · <code>$wisdom search "&lt;pattern&gt;"</code> · <code>$wisdom insights</code> · <code>$wisdom export</code> · <code>$wisdom route</code></td>
+  <td style="text-align:left"><code>$wisdom</code> · <code>$wisdom list [--gate] [--since] [--dimension]</code> · <code>$wisdom search "&lt;pattern&gt;"</code> · <code>$wisdom insights</code> · <code>$wisdom export</code> · <code>$wisdom route</code> · <code>$wisdom keep</code> · <code>$wisdom forget</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Code Review</strong></td>
@@ -1491,7 +1526,7 @@ $sketch deps --reduce off
 </tr>
 <tr>
   <td style="text-align:left"><strong>Trace</strong></td>
-  <td style="text-align:left"><code>$trace build</code> · <code>$trace gaps</code> · <code>$trace show &lt;artifact&gt;</code> · <code>$trace blast &lt;object&gt;</code> · <code>$trace check --before-change</code></td>
+  <td style="text-align:left"><code>$trace build</code> · <code>$trace gaps</code> · <code>$trace show &lt;artifact&gt;</code> · <code>$trace health</code> · <code>$trace compare</code> · <code>$trace blast &lt;object&gt;</code> · <code>$trace check --before-change</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Sketch</strong></td>

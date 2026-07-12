@@ -8,6 +8,14 @@ All notable changes to CocoPlus are documented here.
 
 ### Added
 
+#### Eleventh-Cycle Governance Enhancements
+- `cocometer/meter-chargeback.skill.md` and `scripts/chargeback-refresh.js` — CocoMeter Enhanced FinOps chargeback layer with dual token/warehouse credit model, system-reminder stripping, SQL extraction from tool arguments, four-level cost-center resolution, invoice-ready user totals, and onboarding checks
+- `scripts/health-grader.js` — CocoTrace Snowflake asset health grade with dead-asset detection, circular dependency and coupling signals, layer violation checks, churn hotspots, and before/after thermal receipt output
+- `scripts/model-tier-resolve.js`, `scripts/noop-check.js`, and execution-engine templates — CocoFlow model tier abstraction with no silent fallback, logged no-op workflow handling, and five reusable flow patterns: Litmus Test, Drain Loop, HITL Gate, Per-Project Working Directory, and No-op Workflow
+- `wisdom-route.js` enhancements — CocoWisdom evidence gate requiring distinct confirmed sessions, must-keep and forget-with-rationale workflows, and denser-not-larger consolidation validation
+- `refine-update.js` enhancements — CocoRefine structured mutation vocabulary (`add_example`, `add_constraint`, `restructure`, `add_edge_case`), one-change-per-round enforcement, and binary-only evaluation criteria
+- Documentation correction: v1.2.0 remains a 47-feature release; reporting export support is documented as a shared packaging enhancement, not a numbered feature
+
 #### Reporting Exports and Product Backlog Enhancements
 - `reporting/report-export.skill.md` and `scripts/report-export.js` — shared Markdown/HTML export path for CocoOps, CocoTrace, CocoAudit, CocoReview, and CocoSketch artifacts; PDF requests return explicit renderer status instead of silently producing a fake artifact
 - `cocoreview/review-export.skill.md` — `$review export markdown|html|pdf`; CocoReview reports gain a risk dashboard and optional supplemental CVSS-style scoring for security-relevant findings while preserving CocoReview severity as the release gate
