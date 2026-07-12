@@ -26,6 +26,7 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is
 | `$review --architecture` | `universal-quality.md` + `architecture-review.md` |
 | `$review --complexity` | Run `pr-complexity.js` only — no LLM review |
 | `$review --language <lang>` | `universal-quality.md` + explicit language guide |
+| `$review export markdown|html|pdf [report]` | Route to `review-export.skill.md` |
 
 ## Step 1 — Parse Invocation and Run Complexity Analyzer
 
@@ -158,6 +159,17 @@ Apply the five-tier security severity scale:
 
 Snowflake-specific Critical triggers: hardcoded credentials in SQL, missing masking on PII columns, unprotected access to regulated column sets.
 
+For every security-relevant finding, optionally include a supplemental CVSS-style score when enough information is available:
+
+```yaml
+security_score:
+  cvss_style_score: 8.1
+  vector_summary: "network exploitable, high confidentiality impact"
+  note: "Supplemental triage context only; CocoReview severity remains authoritative."
+```
+
+Do not replace CocoReview severity, BLOCKING/BLOCKED behavior, priority, or effort with CVSS. If the score cannot be grounded from the artifact, omit it rather than guessing.
+
 ## Step 7 — Summary and Verdict (Phase 4: ~2–3 minutes)
 
 Determine verdict based on highest finding severity:
@@ -270,6 +282,16 @@ Write the structured review to `.cocoplus/review/cocoreview-<YYYY-MM-DD-HHMMSS>.
 ### Summary
 [1–2 sentences: what this change does and overall quality assessment]
 
+### Risk Dashboard
+| Category | Blocking | Important | Minor | Notes |
+|----------|----------|-----------|-------|-------|
+| Security | [N] | [N] | [N] | [grounded summary] |
+| Governance | [N] | [N] | [N] | [grounded summary] |
+| Compliance | [N] | [N] | [N] | [grounded summary] |
+| Architecture | [N] | [N] | [N] | [grounded summary] |
+| Testing | [N] | [N] | [N] | [grounded summary] |
+| Maintainability | [N] | [N] | [N] | [grounded summary] |
+
 ### Strengths
 - [praise findings — explicit, specific, named]
 
@@ -309,6 +331,7 @@ Write complexity analyzer output to `.cocoplus/review/complexity-cache.json` (gi
 
 Display: "CocoReview complete. Report written to `.cocoplus/review/cocoreview-<timestamp>.md`"
 Show the Summary and Verdict sections.
+Mention that stakeholder exports are available via `$review export markdown`, `$review export html`, and `$review export pdf`.
 
 ## Anti-Rationalization Table
 
@@ -318,6 +341,7 @@ Show the Summary and Verdict sections.
 | Omit praise because nothing stood out | Praise is mandatory — if truly nothing is well-constructed, emit the limited-scope praise finding |
 | Skip Phase 2 (high-level) and go to line-by-line | Perfecting a structurally wrong design wastes everyone's time |
 | Map security tier to six-severity arbitrarily | Security tiers and six-severity labels are orthogonal — Critical security = blocking finding, not a new label |
+| Use CVSS as the release gate | CVSS is supplemental vulnerability-management context; CocoReview severity and BLOCKED/BLOCKING rules remain authoritative |
 
 ## Exit Criteria
 
@@ -337,3 +361,5 @@ Show the Summary and Verdict sections.
 - Every `BLOCKED` finding includes what was found, why human judgment is required, and options as understood, without ranking
 - `$review clear-blocked` requires a rationale and records it in the audit trail before unblocking `$ship`
 - Every `XL`-effort finding is surfaced with an explicit developer acknowledgment prompt
+- Report includes a Risk Dashboard summarizing already-grounded findings by category
+- Security-relevant findings may include supplemental CVSS-style scoring, but severity remains the release gate

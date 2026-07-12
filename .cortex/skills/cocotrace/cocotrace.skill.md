@@ -122,6 +122,16 @@ A pre-change impact gate, not a permission gate — it does not block the change
 ## Git Behavior
 `lifecycle/trace.json` committed after `$trace build`: `chore(cocotrace): update artifact traceability graph`
 
+## Export
+
+Trace reports such as `trace-gaps.md` or blast-radius summaries can be exported through the shared exporter:
+
+```text
+node scripts/report-export.js --source <trace-report.md> --format <markdown|html|pdf> --out-dir .cocoplus/trace/exports
+```
+
+PDF requests report renderer availability; Markdown and HTML are local deterministic exports.
+
 ## Exit Criteria
 - [ ] `$trace build` produces identical `trace.json` on two consecutive runs with no file changes
 - [ ] `trace.json` includes the git branch and commit SHA observed during the trace run

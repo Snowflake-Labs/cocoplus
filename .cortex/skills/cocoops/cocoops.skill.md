@@ -26,7 +26,8 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is
 | `$ops suggest` | `ops-suggest.skill.md` | Time-aware operational suggestions |
 | `$ops demo` | `ops-demo.skill.md` | Activate demo mode |
 | `$ops refresh` | `ops-dora.skill.md` | Re-run DORA computation and update snapshot |
-| `$ops` (no args) | Show dashboard summary | Display last dora-snapshot.json summary |
+| `$ops` (no args) | Show dashboard summary | Display last dora-snapshot.json summary with color-coded metric cards in text form |
+| `$ops dashboard` | Show dashboard summary | Alias for `$ops` default dashboard |
 
 ## Default View (no args)
 
@@ -37,6 +38,15 @@ CocoOps — <project> — <date>
 
 Last DORA snapshot: <timestamp or "None — run $ops dora">
 Overall health: <tier or "Unknown">
+
+Metric cards:
+  Pipeline Run Frequency    [GREEN/YELLOW/RED] <value> <tier>
+  Data Availability Lead    [GREEN/YELLOW/RED] <value> <tier>
+  Failure Recovery Time     [GREEN/YELLOW/RED] <value> <tier>
+  Quality Failure Rate      [GREEN/YELLOW/RED] <value> <tier>
+
+Trend bands:
+  Use dora-thesis.md when present to summarize improving / flat / worsening longitudinal direction.
 
 Quick commands:
   $ops dora     — Compute full DORA metrics

@@ -21,6 +21,9 @@ Run a structured pre-spec working-backwards dialogue that captures the developer
 ## Arguments
 
 - `--skip` (optional): Waive the bloom step and suppress all bloom advisory messages in `$spec`
+- `--resume` (optional): Resume an incomplete bloom dialogue from `.cocoplus/lifecycle/bloom-draft.json`
+- `--discard` (optional): Delete an incomplete bloom draft after confirmation
+- `--template <type>` (optional): Show an example press-release pattern for `ai-function`, `governance`, `analytics-pipeline`, `api-integration`, or `data-quality`
 
 ## Step-by-Step Behavior
 
@@ -34,7 +37,11 @@ Run a structured pre-spec working-backwards dialogue that captures the developer
    ```
    If developer answers N: exit without changes.
 
-3. **Open structured four-question dialogue** — ask each question in sequence, waiting for the developer's full response before proceeding:
+3. **Open structured four-question dialogue** — ask each question in sequence, waiting for the developer's full response before proceeding. After each accepted answer, persist progress to `.cocoplus/lifecycle/bloom-draft.json` with `current_step`, answered fields, and `updated_at`.
+
+   If `--resume` is provided, read `bloom-draft.json`, show progress such as `3/4 questions complete`, and continue from the first unanswered question.
+
+   If `--discard` is provided, confirm before deleting `bloom-draft.json`. Do not delete a completed `bloom.md`.
 
    **Q1 — Beneficiary:**
    ```
@@ -75,6 +82,7 @@ Run a structured pre-spec working-backwards dialogue that captures the developer
    Write your paragraph below (the agent will not generate this for you):
    >
    ```
+   If `--template <type>` is provided, show one example matching that project type before Q4. Templates are examples only; the developer still writes the actual paragraph.
    Do not generate the press release paragraph from the developer's Q1–Q3 answers. The developer writes it themselves. If the developer asks the agent to write it, respond: "The press release must be written by you — it is the commitment artifact. Try writing one sentence at a time: who benefits, what they can do now, and how well it works."
 
 4. **Assemble and write `lifecycle/bloom.md`:**
@@ -100,6 +108,8 @@ Run a structured pre-spec working-backwards dialogue that captures the developer
    ```
 
 5. **Create git commit:** `feat(bloom): pre-commitment working backwards document`
+
+   After successful write, remove `bloom-draft.json` if it exists.
 
 6. **Output confirmation:**
    ```
@@ -138,12 +148,14 @@ Run a structured pre-spec working-backwards dialogue that captures the developer
 - **bloom.md exists and developer declines overwrite:** Exit without changes
 - **Cannot write bloom.md:** Output filesystem error
 - **Cannot write meta.json (for --skip):** Output filesystem error
+- **Cannot write bloom-draft.json:** Output filesystem error and stop before asking the next question
 
 ## Exit Criteria
 
 This skill is complete when ONE of the following is true:
 - `lifecycle/bloom.md` is written with all four sections populated and committed to git
 - `lifecycle/meta.json` contains `"bloom_waived": true` (for `--skip` path)
+- Incomplete sessions can resume from `bloom-draft.json`
 
 ## Anti-Rationalization
 
@@ -153,3 +165,4 @@ Do NOT:
 - Enforce bloom before `$spec` — it is advisory only (`$spec` shows a one-line prompt, not a block)
 - Modify `spec.md`, `plan.md`, or any other lifecycle artifact — bloom only writes `lifecycle/bloom.md`
 - Create a git commit until all four questions are answered and the developer has confirmed the content
+- Use templates as generated commitments — examples guide the developer, they do not replace the developer-written paragraph

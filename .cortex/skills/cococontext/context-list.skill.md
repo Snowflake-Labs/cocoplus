@@ -8,7 +8,7 @@ tags:
   - cococontext
 ---
 
-Your objective is to display a status table of all CocoContext organizational standards files.
+Your objective is to display a status table and completion dashboard for all CocoContext organizational standards files.
 
 ## Pre-flight Check
 
@@ -31,10 +31,17 @@ The six files:
 
 Also check for any additional `.md` files in `.cocoplus/context/` (custom entries added by the team) and include them in the table.
 
+Compute completion:
+- Configured standards: number of the six standard files that exist and contain non-whitespace content
+- Total standards: 6
+- Recommended next standard: first missing high-priority standard in this order: `pii-policy.md`, `governance-gates.md`, `quality-thresholds.md`, `approved-models.md`, `warehouse-policy.md`, `naming-conventions.md`
+
 ## Output
 
 ```
 CocoContext Standards
+Completion: 2/6 standards configured
+Recommended next: pii-policy.md
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Context File             Lines   Last Modified
 ──────────────────────   ─────   ──────────────
@@ -63,3 +70,4 @@ Replace example values with actual data from the filesystem.
 - [ ] Existing files show accurate line count and last-modified date
 - [ ] Missing files shown as "not created"
 - [ ] Footer links to `$context add` and `$context view`
+- [ ] Output includes completion progress and recommended next standard

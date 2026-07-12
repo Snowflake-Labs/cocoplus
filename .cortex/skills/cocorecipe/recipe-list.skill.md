@@ -22,14 +22,25 @@ For each template file found, read the `__recipe_meta` block to get:
 - `name` — recipe identifier
 - `description` — one-line summary
 - `stage_count` — number of stages in the template
+- `category` — functional grouping, default `uncategorized`
+- `estimated_time` — expected execution time, default `unknown`
+- `difficulty` — easy / medium / advanced, default `unknown`
+- `keywords` — search/filter terms
+- `stage_preview` — first five stage names from the recipe body
+
+Use the deterministic helper when available:
+
+```text
+node scripts/recipe-metadata.js --dir <profile-recipes> --dir .cocoplus/recipes
+```
 
 ## Output
 
 ```
 Available CocoRecipes
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-cortex-add-classifier   Build AI_CLASSIFY UDF + eval harness   7 stages
-cortex-add-search       Configure Cortex Search service         5 stages
+cortex-add-classifier   analytics   easy   ~30 min   7 stages   classify, eval
+cortex-add-search       search      medium ~20 min   5 stages   search, service
 cortex-semantic-model   Create Analytics semantic model         6 stages
 cortex-add-extraction   Build AI_EXTRACT UDF + validation       8 stages
 [additional custom recipes if present]
@@ -51,4 +62,5 @@ Replace example values with actual data from the filesystem. If no recipes are f
 
 - [ ] All recipes from both profile and project-local directories shown
 - [ ] Stage count displayed for each recipe
+- [ ] Category, estimated time, difficulty, keywords, and stage preview displayed when present
 - [ ] Footer shows `$recipe use` and `$recipe new` commands

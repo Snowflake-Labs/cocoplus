@@ -67,6 +67,16 @@ This script reads `dora-snapshot.json` and extends `.cocoplus/ops/dora-thesis.md
 
 Commit `dora-thesis.md` if it changed: `docs(ops): extend longitudinal delivery thesis — [date]`
 
+## Optional Export
+
+If the developer asks for a stakeholder export, run:
+
+```text
+node scripts/report-export.js --source .cocoplus/ops/dora-insights-<YYYY-MM-DD>.md --format <markdown|html|pdf> --out-dir .cocoplus/ops/exports
+```
+
+PDF requests report renderer availability; do not block DORA computation on PDF rendering.
+
 ## Step 6 — Display Report
 
 ```
