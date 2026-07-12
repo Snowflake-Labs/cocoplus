@@ -10,6 +10,7 @@
 const fs     = require('fs');
 const path   = require('path');
 const crypto = require('crypto');
+const { spawnSync } = require('child_process');
 
 const COCOPLUS_DIR = '.cocoplus';
 
@@ -31,6 +32,11 @@ const EDGES = [
 ];
 
 const WALK_ORDER = ['bloom.md', 'discuss.md', 'spec.md', 'plan.md', 'build-output', 'eval-results'];
+
+function git(args) {
+  const result = spawnSync('git', args, { encoding: 'utf8' });
+  return result.status === 0 ? result.stdout.trim() : null;
+}
 
 function computeSha256(fullPath) {
   if (!fs.existsSync(fullPath)) return null;
@@ -171,6 +177,10 @@ function main() {
     nodes,
     edges:        EDGES,
     walk_order:   WALK_ORDER,
+    git: {
+      branch: git(['branch', '--show-current']),
+      commit: git(['rev-parse', 'HEAD']),
+    },
     last_checked: new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'),
   };
 

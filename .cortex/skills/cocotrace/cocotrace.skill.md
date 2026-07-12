@@ -114,6 +114,7 @@ A pre-change impact gate, not a permission gate — it does not block the change
 ## Key Constraints
 - `trace-check.js` is DETERMINISTIC — no LLM, no inference
 - SHA-256 computed from file CONTENT, not metadata
+- `trace.json` records git branch and commit metadata for the trace run
 - Staleness propagates in `walk_order` — downstream always stale if upstream changed
 - SessionStart advisory is NON-BLOCKING — never prevents session start
 - `lifecycle/trace.json` committed to git — team-visible
@@ -123,6 +124,7 @@ A pre-change impact gate, not a permission gate — it does not block the change
 
 ## Exit Criteria
 - [ ] `$trace build` produces identical `trace.json` on two consecutive runs with no file changes
+- [ ] `trace.json` includes the git branch and commit SHA observed during the trace run
 - [ ] Modifying `bloom.md` causes `discuss.md`, `spec.md`, `plan.md` to show `stale`
 - [ ] `$trace gaps` handles missing section headings gracefully
 - [ ] SessionStart surfaces staleness advisory non-blockingly

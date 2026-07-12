@@ -42,17 +42,29 @@ function verifyAuditLog() {
   }
   const content = fs.readFileSync(AUDIT_PATH, 'utf8');
   const blocks = content.match(/^## \[/gm) || [];
-  // Structural check only: every event block must have Timestamp, Event, and
-  // Artifact fields. This is a shape check, not a cryptographic integrity
-  // check — append-only discipline is enforced at write time (post-tool-use.js).
   const sections = content.split(/^## \[/m).slice(1);
-  const malformed = sections.filter(s => !/\*\*Timestamp\*\*/.test(s) || !/\*\*Event\*\*/.test(s));
+  let lastTimestamp = 0;
+  const malformed = [];
+  sections.forEach((section, index) => {
+    const timestampMatch = section.match(/\*\*Timestamp\*\*:\s*([^\n]+)/);
+    const eventMatch = section.match(/\*\*Event\*\*:\s*([^\n]+)/);
+    const timestamp = timestampMatch ? Date.parse(timestampMatch[1].trim()) : NaN;
+    if (!timestampMatch || !eventMatch || Number.isNaN(timestamp)) {
+      malformed.push({ block: index + 1, reason: 'missing or invalid Timestamp/Event fields' });
+      return;
+    }
+    if (timestamp < lastTimestamp) {
+      malformed.push({ block: index + 1, reason: 'timestamp order regression' });
+    }
+    lastTimestamp = timestamp;
+  });
 
   return {
     phase: 'audit-log-verification',
     passed: malformed.length === 0,
     total_events: blocks.length,
     malformed_events: malformed.length,
+    malformed,
   };
 }
 
