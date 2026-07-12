@@ -8,6 +8,13 @@ All notable changes to CocoPlus are documented here.
 
 ### Added
 
+#### Reporting Exports and Product Backlog Enhancements
+- `reporting/report-export.skill.md` and `scripts/report-export.js` — shared Markdown/HTML export path for CocoOps, CocoTrace, CocoAudit, CocoReview, and CocoSketch artifacts; PDF requests return explicit renderer status instead of silently producing a fake artifact
+- `cocoreview/review-export.skill.md` — `$review export markdown|html|pdf`; CocoReview reports gain a risk dashboard and optional supplemental CVSS-style scoring for security-relevant findings while preserving CocoReview severity as the release gate
+- `cocoaudit/audit-add.skill.md`, `cocoaudit/audit-timeline.skill.md`, and `scripts/audit-events.js` — manual audit entries are clearly labeled and timeline rendering is display-only over the append-only audit source
+- `scripts/recipe-metadata.js` and `recipe-list.skill.md` — recipe discovery now surfaces category, estimated time, difficulty, keywords, and stage preview when present
+- Product-surface updates: Prompt Studio draft v2 scaffolding for one-prompt comparisons; CocoBloom resumable drafts and project-type examples; CocoContext completion dashboard; CocoOps text dashboard cards; CocoSketch `$sketch diff` and `$sketch view`
+
 #### CocoPivot — Multi-Pod Convergence Synthesizer (Feature 47)
 - `cococonverge/cococonverge.skill.md` — `$pivot run/run --since/show/status/clear`; deterministic three-pass deduplication (same file:line → same issue type in file → similar snippet), stable `PIVOT-NNN` finding IDs, priority/effort inheritance (highest/largest among contributing sources), PARTIAL-source transparency in `FINDINGS.md` header, scope anomaly detection against pod `excludes:` declarations
 - `scripts/pivot-merge.js` — deterministic convergence engine, no LLM; reads `.cocoplus/pod-status.json`, writes `lifecycle/FINDINGS.md` (committed) and `lifecycle/findings-state.json` (gitignored)

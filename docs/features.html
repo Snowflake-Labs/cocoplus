@@ -26,11 +26,11 @@
 <div class="page-header">
   <div class="label">Feature Catalog</div>
   <h1>The Features</h1>
-  <p class="subtitle">CocoPlus has forty-seven features. They are not forty-seven independent capabilities you can pick from a menu. They are forty-seven expressions of the same underlying design — a system where each piece reinforces the others.</p>
+  <p class="subtitle">CocoPlus has forty-eight features. They are not forty-eight independent capabilities you can pick from a menu. They are forty-eight expressions of the same underlying design — a system where each piece reinforces the others.</p>
 </div>
 
 <div class="content">
-<p>CocoPlus has forty-seven features. They are not forty-seven independent capabilities you can pick from a menu. They are forty-seven expressions of the same underlying design — a system where each piece reinforces the others.</p>
+<p>CocoPlus has forty-eight features. They are not forty-eight independent capabilities you can pick from a menu. They are forty-eight expressions of the same underlying design — a system where each piece reinforces the others.</p>
 <p>Some features are always active. Some are toggled on by choice. Some run invisibly in the background. Some you will use every day. Some you will reach for only when the work demands it.</p>
 <p>Here they are, in the order they matter.</p>
 <hr>
@@ -471,7 +471,7 @@
 <p><strong>When to use:</strong> Run <code>$trace build</code> after any lifecycle phase that produces a committed artifact, to establish the traceability checkpoint. The session-start advisory is automatic — if it fires, it means upstream artifacts have changed since the last <code>$trace build</code> and downstream work may be misaligned. Use <code>$trace gaps</code> before <code>$cocoplus ship</code> as a final check that every spec requirement has a traceable implementation.</p>
 <hr>
 <h2 id="feature-42-cocosketch-visual-diagram-generation">Feature 42: CocoSketch — Visual Diagram Generation</h2>
-<p><strong>Commands:</strong> <code>$sketch schema</code>, <code>$sketch flow</code>, <code>$sketch deps</code></p>
+<p><strong>Commands:</strong> <code>$sketch schema</code>, <code>$sketch flow</code>, <code>$sketch deps</code>, <code>$sketch diff</code>, <code>$sketch view</code></p>
 <p>Documentation in data engineering projects decays because maintaining diagrams by hand is slower than changing the code. CocoSketch generates draw.io diagrams directly from the project's live artifacts — the Snowflake schema, the CocoFlow pipeline definition, or the CocoMap dependency graph — so diagrams reflect the current state of the system rather than the state it was in when someone last had time to update them.</p>
 <p>The pipeline is seven deterministic steps, not a single prompt. An LLM generates the XML structure; deterministic scripts validate and repair it. <strong>Step 4</strong> runs <code>sketch-validate.js</code> — a structural lint that checks for a valid <code>mxGraphModel</code> root, required cells with id="0" and id="1", duplicate IDs, and orphaned edge references. If validation fails, the pipeline stops immediately and reports the structural error before any PNG export attempt. <strong>Step 5</strong> exports a preview PNG without the <code>-e</code> flag — embedding XML in the preview truncates the IEND chunk, which vision APIs reject. <strong>Step 7</strong> exports the final PNG with the <code>-e</code> flag (so the developer can open the file directly in draw.io), then runs <code>sketch-repair.js</code> to restore the truncated IEND chunk that the <code>-e</code> flag can introduce. These three invariants — validate before preview, no <code>-e</code> on preview, repair after final — are enforced structurally, not as behavioral instructions.</p>
 <p><strong><code>$sketch schema</code></strong> queries Snowflake for table definitions and constructs an entity-relationship diagram showing FK references, shared key columns, and view dependencies, with transitive reduction applied to keep the graph readable. <strong><code>$sketch flow</code></strong> reads <code>flow.json</code> and renders each stage as a node with HITL gates and mandatory checkpoints marked. <strong><code>$sketch deps</code></strong> reads <code>coco-map.json</code> and renders the function dependency graph, applying transitive reduction by default (<code>--reduce off</code> to show full closure). For graphs over 15 nodes, <code>sketch-autolayout.js</code> computes a Kahn's-algorithm topological sort and assigns coordinates automatically. If draw.io CLI is not available, the pipeline falls back to Mermaid markup.</p>
@@ -511,7 +511,12 @@
 <p><strong>Honesty about coverage:</strong> When a contributing pod reported PARTIAL status, <code>FINDINGS.md</code>'s header carries an explicit Coverage Note naming the pod and what it skipped — a PARTIAL pod's zero findings are never presented as equivalent to a COMPLETE pod's zero findings. CocoPivot also validates every finding's concern class against the emitting pod's declared <code>excludes:</code> boundary; a finding that falls inside a pod's own exclusion list is a scope anomaly, excluded from <code>FINDINGS.md</code> and recorded for review rather than silently accepted.</p>
 <p><strong>Integration with CocoFlow:</strong> CocoPivot is the canonical handler for the new <code>converge:</code> step type — when a flow definition includes <code>handler: cococonverge</code> after a <code>parallel:</code> step, <code>$pivot run</code> is invoked automatically once every pod reaches terminal status. Manual invocation remains available for ad-hoc multi-pod audits outside a defined flow.</p>
 <hr>
-<p><em>Forty-seven features, one idea: give the developer a system that works as hard to be right as it works to be fast.</em></p>
+<h2 id="feature-48-reporting-exports">Feature 48: Reporting Exports — Stakeholder Packaging</h2>
+<p><strong>Commands:</strong> <code>$report export &lt;path&gt; --format markdown|html|pdf</code>, <code>$review export markdown|html|pdf</code></p>
+<p>Many CocoPlus artifacts are already git-native Markdown: CocoReview reports, DORA insights, audit exports, trace summaries, and diagram notes. Reporting Exports provides a shared deterministic packaging layer for those artifacts. Markdown and HTML exports are generated locally with no external service. PDF requests return an explicit renderer status when no renderer is configured rather than pretending a PDF was produced.</p>
+<p><strong>When to use:</strong> Use Markdown for version-controlled review, HTML for browser-based sharing, and PDF only when a compliance or executive workflow requires it and a renderer profile is available.</p>
+<hr>
+<p><em>Forty-eight features, one idea: give the developer a system that works as hard to be right as it works to be fast.</em></p>
 </div>
 
 <footer>
