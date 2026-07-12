@@ -18,7 +18,16 @@ Output: "CocoPlus not initialized. Run $pod init to begin." Then stop.
 
 ## Read Attribution Data
 
-Read `.cocoplus/meter/request-map.jsonl`. If the file is missing or empty, continue — the dashboard will render with local-only data and zero Snowflake rows.
+Read `.cocoplus/meter/request-map.jsonl`. If the file is missing or empty, continue — the dashboard must still render with local-only data and zero Snowflake rows. Use an injected payload shaped like:
+
+```json
+{
+  "local_only": true,
+  "rows": [],
+  "stages": [],
+  "warning": "No local CocoMeter request-map entries were found yet."
+}
+```
 
 Partition entries into two sets:
 - **Direct IDs:** entries where `is_subagent_anchor` is absent or false
@@ -65,11 +74,10 @@ Serialise the merged dataset as JSON.
 
 ## Locate the HTML Template
 
-Template path: `~/.coco/plugins/cocoplus/templates/meter-view.html.template`
-(Windows: `%APPDATA%\coco\plugins\cocoplus\templates\meter-view.html.template`)
+Locate `templates/meter-view.html.template` relative to the installed CocoPlus plugin root. Do not hard-code an OS-specific plugin directory.
 
 Read the template. If missing:
-Output: "CocoMeter template not found at ~/.coco/plugins/cocoplus/templates/meter-view.html.template. Re-install the CocoPlus plugin." Then stop.
+Output: "CocoMeter template not found in the CocoPlus plugin templates directory. Re-install or update the CocoPlus plugin." Then stop.
 
 ## Inject Meter Data
 
@@ -127,6 +135,7 @@ If browser open failed:
 | Shortcut / Temptation | Why It Fails |
 |-----------------------|--------------|
 | Abort if Snowflake query fails | Partial data is still valuable; the dashboard renders in local-only mode gracefully |
+| Abort because request-map.jsonl is missing | A new project still needs a usable dashboard shell; render a local-only empty dashboard |
 | Skip atomic write for meter-view.html | A mid-write crash would leave a corrupt file that the browser opens as blank |
 | Skip last-sync.json update | `$meter sync` uses this to show when data was last refreshed |
 
