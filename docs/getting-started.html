@@ -52,10 +52,11 @@ $pod init
 <p>This creates the <code>.cocoplus/</code> directory and writes the initial state files that every CocoPlus feature reads from and writes to. You'll be prompted for a project name and a brief description. Give it something meaningful — this shows up in every session's context header and in every git commit CocoPlus creates.</p>
 <p>What <code>$pod init</code> does:</p>
 <ul>
-  <li>Creates <code>.cocoplus/</code> with the complete directory structure (lifecycle artifacts, memory files, monitor configs, pattern library, fleet workspace)</li>
+  <li>Creates <code>.cocoplus/</code> with the complete directory structure (lifecycle artifacts, memory files, monitor configs, pattern library, meter, trace, wisdom, recall, and flow workspaces)</li>
   <li>Writes <code>AGENTS.md</code> — the hot memory layer that Coco loads automatically at the start of every session</li>
   <li>Writes <code>project.md</code> with your project metadata</li>
   <li>Initializes <code>flow.json</code> as an empty pipeline template</li>
+  <li>Writes <code>cocoplus.toml</code> with security, warehouse, chargeback, model-tier, trace, and wisdom defaults</li>
   <li>Sets default safety configuration (normal mode, protecting schemas containing "PROD", "PRODUCTION", or "LIVE")</li>
   <li>Creates the initial git commit: <code>feat: initialize CocoPod project structure</code></li>
 </ul>
@@ -101,6 +102,7 @@ $pod status
   <li>Environment Inspector snapshot — schemas, tables, views, Cortex objects it found in your connected Snowflake account</li>
   <li>Safety Gate current mode (normal)</li>
   <li>CocoMeter session tracking (minimal — you just started)</li>
+  <li>CocoMeter chargeback readiness, CocoTrace health configuration, and CocoBehavior maturity level when those artifacts exist</li>
   <li>CocoGrove patterns (empty — you haven't built anything yet)</li>
 </ul>
 <p>If the Environment Inspector found anything notable — schema anomalies, objects without documentation, resource monitors not configured — it will surface them here. This is your first look at your Snowflake environment through CocoPlus's eyes.</p>

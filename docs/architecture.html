@@ -106,6 +106,8 @@
 ├── AGENTS.md              ← hot memory, auto-loaded every session
 ├── project.md             ← project identity and initialization metadata
 ├── flow.json              ← the current CocoFlow pipeline definition
+├── flow/                  ← no-op workflow logs and flow-local execution evidence
+│   └── noop-log.jsonl     ← verified no-op stage records
 ├── lifecycle/             ← phase artifacts: spec, plan, review, deployment
 │   ├── cocoplus-context.md    ← constitutional document — every agent reads this first
 │   ├── bloom.md           ← CocoBloom working backwards commitment (optional, committed)
@@ -124,7 +126,7 @@
 ├── memory/                ← warm memory: decisions, patterns, errors
 ├── context/               ← CocoContext: six organizational standards files
 ├── prompts/               ← per-stage prompt files generated at Plan phase
-├── monitors/              ← four standard monitor configurations
+├── monitors/              ← standard monitor configurations
 ├── grove/                 ← CocoGrove: curated pattern library + cupper findings
 │   ├── patterns/          ← promoted patterns (individual markdown files)
 │   ├── language/          ← ubiquitous language glossary
@@ -143,12 +145,20 @@
 │   └── intermediate/      ← CocoFlow parallel evaluation intermediate results
 ├── meter/                 ← CocoMeter: session tracking and history
 │   ├── accuracy-history.jsonl ← per-session estimation accuracy records
-│   └── adjustment-factor.json ← rolling calibration factor for pre-flight estimates
+│   ├── adjustment-factor.json ← rolling calibration factor for pre-flight estimates
+│   └── chargeback/        ← cost-center facts, onboarding state, and invoice exports
+├── trace/                 ← CocoTrace asset graph, health grade inputs, and receipts
+│   ├── snowflake-assets.json  ← asset graph used by $trace health
+│   └── health.md          ← latest health-grade receipt
+├── outcomes/              ← CocoContract outcome contracts and evidence archives
+│   └── [function]/contract.md ← pre-generation success contract
 ├── sentinel/              ← CocoSentinel artifact quality gate results
 │   ├── &lt;artifact-sha&gt;.json    ← evaluation result per artifact (SHA-bound)
 │   └── approvals.jsonl    ← SHA-bound approval records (append-only)
 ├── wisdom/                ← CocoWisdom institutional rejection memory
 │   ├── rejections.jsonl   ← append-only structured rejection records (committed)
+│   ├── must-keep.md       ← protected wisdom entries
+│   ├── consolidation-log.md ← forget and consolidation rationale
 │   ├── wisdom-index.db    ← SQLite full-text search index
 │   └── insights-&lt;date&gt;.md ← periodic synthesis reports (committed)
 ├── review/                ← CocoReview structured code review outputs
@@ -158,8 +168,9 @@
 │   ├── dora-snapshot.json ← latest DORA metric computation (committed)
 │   ├── sprint-health.json ← current sprint computation (committed)
 │   └── demo/              ← demo mode mock dataset (gitignored)
+├── recall.db              ← CocoRecall local session retrieval index (gitignored)
 ├── index/                 ← CocoPull session archive search index
-│   └── sessions.db        ← SQLite FTS index of session pull archives (gitignored)
+│   └── sessions.db        ← SQLite FTS index of session archives (gitignored)
 ├── snapshots/             ← Environment Inspector scan results
 ├── modes/                 ← mode flag files (inspector.on, memory.on, etc.)
 └── notifications.json     ← notification routing configuration

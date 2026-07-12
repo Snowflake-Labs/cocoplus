@@ -480,7 +480,7 @@ $meter history 5
 <pre><code>
 $meter view
 </code></pre>
-<p>Reads all captured <code>request_id</code> values from <code>.cocoplus/meter/request-map.jsonl</code>, queries <code>SNOWFLAKE.ACCOUNT_USAGE.CORTEX_CODE_CLI_USAGE_HISTORY</code> through Coco's existing Snowflake connection, joins the result with stage attribution data, and generates an interactive HTML dashboard at <code>.cocoplus/meter-view.html</code>. Opens in the OS default browser.</p>
+<p>Reads all captured <code>request_id</code> values from <code>.cocoplus/meter/request-map.jsonl</code>, queries Snowflake's Cortex Code CLI/Desktop/Snowsight usage history through Coco's existing Snowflake connection, joins the result with stage attribution data, and generates an interactive HTML dashboard at <code>.cocoplus/meter-view.html</code>. Opens in the OS default browser.</p>
 <p>Dashboard sections: Summary cards (total tokens, total credits, cache efficiency, output tokens), Stage Attribution table (per-stage token bars, cache hit %, model indicator, click-to-filter), Model Distribution (token consumption by Haiku/Sonnet/Opus), Token Composition (cache-read / cache-write / fresh-input / output proportions), and a full Request Log with <code>REQUEST_ID</code>, parent relationship, stage, time, token breakdown, credits, and model badge.</p>
 <p>The dashboard is a self-contained local HTML file — no network requests, no external dependencies, excluded from git. Data is authoritative: sourced from Snowflake's billing record, attributed per-request, per-stage.</p>
 <p><strong>Data availability:</strong> If <code>request-map.jsonl</code> is missing or empty, the dashboard still renders with local-only data and zero Snowflake rows. Snowflake usage data may appear later because the account-usage view can lag.</p>
@@ -919,13 +919,13 @@ $pull search "schema migration decision" --since 2026-01-01
 <hr>
 <h2 id="artifact-quality-gate-cocosentinel">Artifact Quality Gate — CocoSentinel</h2>
 <hr>
-<p><strong><code>$sentinel [file]</code></strong> — Run a seven-dimension parallel quality evaluation on an artifact</p>
+<p><strong><code>$sentinel [file]</code></strong> — Run an eight-dimension parallel quality evaluation on an artifact</p>
 <pre><code>
 $sentinel
 $sentinel lifecycle/spec.md
 $sentinel queries/sentiment_classifier.sql
 </code></pre>
-<p>Without a file argument, evaluates the most recently modified committed artifact. With a file argument, evaluates the specified file. Before spawning dimension sub-agents, runs <code>sentinel-pregate.js</code> (Dimension G — deterministic, &lt;50ms): validates that the submission includes concrete execution evidence, non-trivial test coverage, no success claims without attached output, and no single-agent self-evaluation. If Dimension G fails, returns BLOCKED immediately — the seven dimension agents do not run.</p>
+<p>Without a file argument, evaluates the most recently modified committed artifact. With a file argument, evaluates the specified file. Before spawning dimension sub-agents, runs <code>sentinel-pregate.js</code> (deterministic, &lt;50ms): validates that the submission includes concrete execution evidence, non-trivial test coverage, no success claims without attached output, and no single-agent self-evaluation. If the pre-gate fails, returns BLOCKED immediately — the eight dimension agents do not run.</p>
 <p>If Dimension G passes, spawns eight dimension sub-agents simultaneously, each in an independent context window:</p>
 <ul>
   <li><strong>A1 — Security Attack Surface (Haiku):</strong> Input validation gaps, injection pathways, IDENTIFIER() binding, EXECUTE IMMEDIATE construction</li>
