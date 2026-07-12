@@ -233,6 +233,7 @@ $flow view --output &lt;path&gt;
 <pre><code>
 $recipe list
 </code></pre>
+<p>Displays recipe metadata including category, estimated execution time, difficulty, keywords, stage count, and a stage preview when the recipe declares those fields.</p>
 <p>Lists the standard recipe library alongside any custom recipes you have created. Shows recipe name, description, parameter count, and last-used date (if applicable).</p>
 <p>Standard library:</p>
 <ul>
@@ -701,6 +702,7 @@ $prompt new
 <pre><code>
 $prompt compare prompts/v1.md prompts/v2.md
 </code></pre>
+<p>If only one prompt path is provided, Prompt Studio can scaffold a clearly marked editable draft variant and stops before comparison. The draft must be revised by the developer before it is treated as a real strategy.</p>
 <p>Runs both prompts against a provided or auto-generated sample dataset. Compares on: accuracy against expected results, output format compliance, verbosity, and token consumption. Produces a structured comparison report with a recommendation.</p>
 <p><strong>Output:</strong> Comparison report.</p>
 <hr>
@@ -824,8 +826,11 @@ $discuss --red-team
 <p><strong><code>$bloom</code></strong> — Open the pre-commitment working backwards dialogue</p>
 <pre><code>
 $bloom
+$bloom --resume
+$bloom --discard
+$bloom --template ai-function
 </code></pre>
-<p>Runs a structured four-question dialogue before <code>$spec</code> begins. The four questions: who benefits and what changes for them? What is the core capability in one sentence? What are the three constraints that bound the solution? Write the press release paragraph — a one-paragraph announcement written as if the feature is already shipped. The developer writes the press release; the agent provides examples. Output is committed to <code>lifecycle/bloom.md</code>.</p>
+<p>Runs a structured four-question dialogue before <code>$spec</code> begins. Progress is persisted to <code>lifecycle/bloom-draft.json</code> after each answer, so <code>--resume</code> continues from the first unanswered question and <code>--discard</code> removes an incomplete draft after confirmation. <code>--template</code> shows an example by project type, but the developer still writes the press-release paragraph. Output is committed to <code>lifecycle/bloom.md</code>.</p>
 <p>When <code>$spec</code> subsequently runs, it reads <code>bloom.md</code> as its first context. CocoDiscuss, when active, includes bloom.md in its pre-plan validation and surfaces a Concern (not a block) if the plan diverges from the original beneficiary or constraint set. At <code>$cocoplus ship</code>, CocoWatch notes whether the bloom commitment was met.</p>
 <p><strong>Output:</strong> <code>lifecycle/bloom.md</code> + git commit <code>feat(bloom): pre-commitment working backwards document</code>.</p>
 <hr>
@@ -1006,6 +1011,7 @@ $cocoplus review path/to/artifact.sql
 <p>Applies nine universal anti-patterns before any language-specific guide: Parameter Sprawl, Leaky Abstractions, Stringly-Typed Code, Nested Conditionals, Copy-Paste Variants, No-Op Updates, TOCTOU Race Conditions (specifically flagging Snowflake <code>IF EXISTS THEN INSERT</code> patterns), Over-Broad Reads, Redundant State.</p>
 <p>Finding labels: <code>blocking</code> · <code>important</code> · <code>nit</code> · <code>suggestion</code> · <code>learning</code> · <code>praise</code> (mandatory — at least one per review). Verdict: APPROVE / COMMENT / REQUEST_CHANGES.</p>
 <p>Review output written to <code>.cocoplus/review/cocoreview-&lt;timestamp&gt;.md</code> — committed to git.</p>
+<p>Review reports now include a Risk Dashboard summarizing grounded findings by security, governance, compliance, architecture, testing, and maintainability. Security-relevant findings may include supplemental CVSS-style scoring, but CocoReview severity remains the release gate. Stakeholder exports are available via <code>$review export markdown</code>, <code>$review export html</code>, and <code>$review export pdf</code>.</p>
 <p><strong>Output:</strong> Structured review report with findings and verdict.</p>
 <p>Every finding also carries a <code>priority</code> (P1 pre-deploy / P2 this sprint / P3 this month / P4 backlog) and <code>effort</code> (XS / S / M / L / XL) field, independent of severity. <code>XL</code>-effort findings require explicit developer acknowledgment before the review is treated as actioned.</p>
 <hr>
@@ -1417,7 +1423,7 @@ $sketch deps --reduce off
 </tr>
 <tr>
   <td style="text-align:left"><strong>Code Review</strong></td>
-  <td style="text-align:left"><code>$cocoplus review</code> · <code>$cocoplus review --complexity</code> · <code>$cocoplus review --security</code> · <code>$cocoplus review --architecture</code> · <code>$cocoplus review --language &lt;lang&gt;</code></td>
+  <td style="text-align:left"><code>$cocoplus review</code> · <code>$cocoplus review --complexity</code> · <code>$cocoplus review --security</code> · <code>$cocoplus review --architecture</code> · <code>$cocoplus review --language &lt;lang&gt;</code> · <code>$review export markdown|html|pdf</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Behavior</strong></td>
@@ -1481,7 +1487,7 @@ $sketch deps --reduce off
 </tr>
 <tr>
   <td style="text-align:left"><strong>Audit</strong></td>
-  <td style="text-align:left"><code>$audit view</code> · <code>$audit view --from &lt;date&gt;</code> · <code>$audit export</code> · <code>$audit ci</code></td>
+  <td style="text-align:left"><code>$audit view</code> · <code>$audit view --from &lt;date&gt;</code> · <code>$audit add</code> · <code>$audit timeline</code> · <code>$audit export</code> · <code>$audit ci</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Trace</strong></td>
@@ -1489,7 +1495,11 @@ $sketch deps --reduce off
 </tr>
 <tr>
   <td style="text-align:left"><strong>Sketch</strong></td>
-  <td style="text-align:left"><code>$sketch schema</code> · <code>$sketch flow</code> · <code>$sketch deps</code> · <code>$sketch deps --reduce off</code></td>
+  <td style="text-align:left"><code>$sketch schema</code> · <code>$sketch flow</code> · <code>$sketch deps</code> · <code>$sketch deps --reduce off</code> · <code>$sketch diff</code> · <code>$sketch view</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Reporting</strong></td>
+  <td style="text-align:left"><code>$report export &lt;path&gt; --format markdown|html|pdf</code></td>
 </tr>
 </tbody>
 </table>
