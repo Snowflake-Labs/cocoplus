@@ -135,6 +135,12 @@ Deduplicate: findings from different critics that describe the same issue → me
 Classify severity: Critical / Advisory / Observation.
 Sort: Critical first, then Advisory, then Observation.
 
+For every aggregate finding, include:
+- `source_lenses`: critic lenses that raised the finding
+- `evidence`: the exact artifact section, file path, or quoted snippet that supports the finding
+- `actionability`: one concrete next action, or "requires developer decision" when no autonomous fix is appropriate
+- `confidence`: high / medium / low, based on specificity of evidence and number of agreeing lenses
+
 **HITL/AFK classification** — for each finding:
 - **HITL:** Requires human judgment before resolution. Default for: Critical severity findings, findings about evaluation methodology, architectural decisions, scope changes, findings where resolution involves a choice between options with different trade-offs.
 - **AFK:** Can be resolved autonomously in the next `$build` pass. Default for: Warning and Info findings that map to known fix patterns (add a NULL check, refactor a subquery, apply an existing CocoGrove pattern).
@@ -224,6 +230,10 @@ action_summary:
 
 ## Consensus Findings
 [Findings identified by multiple critics — include severity label from highest-severity critic]
+
+## Traceability
+| Finding | Source Lenses | Evidence | Actionability | Confidence |
+|---------|---------------|----------|---------------|------------|
 ```
 
 ## Cleanup
@@ -237,6 +247,7 @@ If `critical_open = true`:
 SecondEye review complete. CRITICAL FINDINGS DETECTED.
 [list critical finding titles — each with HITL/AFK and BLOCKING/MINOR tags]
 Action required: [blocking_count] BLOCKING · [hitl_count] HITL requiring developer attention
+Each finding includes source lenses, evidence, actionability, and confidence in the report.
 $build is soft-gated until you acknowledge these findings.
 Run `$secondeye acknowledge --hitl-only` to acknowledge HITL stages.
 Run `$secondeye acknowledge --blocking-only` to acknowledge BLOCKING findings only.
@@ -260,6 +271,7 @@ Report: .cocoplus/lifecycle/secondeye-[timestamp].md
 | Keep staging files after report generation | Leaks temporary artifacts and confuses future runs |
 | Skip praise enforcement | Praise is a structural invariant — a system that only identifies defects produces defensiveness |
 | Use old Critical/Advisory/Observation labels in report | Six-severity labels replaced the three-level system — old labels create aggregation inconsistency |
+| Report a finding without evidence or an action | Uncited critique is hard to trust and cannot be implemented safely |
 
 ## Exit Criteria
 
@@ -268,6 +280,7 @@ Report: .cocoplus/lifecycle/secondeye-[timestamp].md
 - [ ] Every finding is tagged with `severity` label (blocking/important/nit/suggestion/learning/praise), HITL/AFK, and BLOCKING/MINOR
 - [ ] Each critic produced at least one `praise` finding, or the report notes its absence explicitly
 - [ ] Report frontmatter includes `action_summary` with `hitl_count`, `afk_count`, `blocking_count`, `minor_count`, and `severity_counts`
+- [ ] Every aggregate finding includes source lenses, evidence, actionability, and confidence
 - [ ] Verdict derived from severity labels: BLOCKING if any `blocking` finding; CONCERNS if any `important`; APPROVE if only non-escalating labels
 - [ ] Critic outputs are aggregated into `.cocoplus/lifecycle/secondeye-[timestamp].md` with `critical_open` and acknowledgment metadata
 - [ ] Output clearly indicates whether `$build` is soft-gated and shows the `--hitl-only` and `--blocking-only` acknowledge options

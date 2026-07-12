@@ -25,7 +25,11 @@ Scan project artifacts for candidate domain terms and propose additions to `.coc
 
 2. **Create glossary directory:** Ensure `.cocoplus/grove/language/` exists. Create if missing.
 
-3. **Read existing glossary:** Read `.cocoplus/grove/language/glossary.md` if it exists. Extract already-defined terms to avoid duplicate proposals.
+3. **Read existing glossary:** Read `.cocoplus/grove/language/glossary.md` if it exists. Extract already-defined terms and aliases using case-insensitive normalization:
+   - Trim leading/trailing whitespace
+   - Collapse repeated spaces
+   - Compare lowercase term text
+   - Compare aliases as duplicate keys for the canonical term
 
 4. **Scan project artifacts for candidate terms:**
    - `lifecycle/spec.md` — function names, capability descriptions, domain nouns
@@ -42,7 +46,7 @@ Scan project artifacts for candidate domain terms and propose additions to `.coc
    - Process terms that appear in multiple artifacts (e.g., "evaluation harness", "prompt iteration")
    - Exclude generic technical terms (SQL keywords, standard Snowflake function names)
 
-6. **Filter known terms:** Remove any candidates that already appear in the existing glossary.
+6. **Filter known terms:** Remove any candidates that already appear in the existing glossary as either a canonical term or an alias. If a candidate duplicates an alias but adds useful context, propose an update to the existing entry instead of a new term.
 
 7. **Present candidates to developer** one at a time (or in a numbered list for batch review):
    ```
@@ -62,7 +66,7 @@ Scan project artifacts for candidate domain terms and propose additions to `.coc
       ...
    ```
 
-8. **For each accepted entry:** Write to `.cocoplus/grove/language/glossary.md` in the following format:
+8. **For each accepted entry or update:** Write to `.cocoplus/grove/language/glossary.md` in the following format:
    ```markdown
    ## [Term]
    
@@ -71,6 +75,8 @@ Scan project artifacts for candidate domain terms and propose additions to `.coc
    **Associated functions:** [list of function names]
    **Added:** [ISO8601 date]
    ```
+
+   If updating an existing term, preserve its current definition unless the developer explicitly accepts the edited definition. Append new aliases/functions without duplicating existing values.
 
 9. **Create git commit** after all accepted entries are written: `feat(grove): add [N] glossary terms`
 
@@ -112,3 +118,4 @@ Do NOT:
 - Auto-write any term without developer confirmation
 - Add generic SQL/Snowflake technical terms (SELECT, CREATE, AI_CLASSIFY without domain context)
 - Fail silently if no artifacts are found — always report what was scanned
+- Create a new glossary entry when the term already exists as an alias or case-only variant
