@@ -22,23 +22,23 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is
 
 ### `$pivot run`
 
-Run `node scripts/pivot-merge.js`. Reads all pod output files produced by the most recent CocoFlow `parallel:` step execution (from `pod-status.json`), applies the three-pass deduplication algorithm below, assigns priority tiers and effort estimates, and writes `lifecycle/FINDINGS.md` and `lifecycle/findings-state.json`. If the upstream flow used `on_partial: skip_partial`, pass `--skip-partial`.
+Run `node scripts/pivot-merge.js run`. Reads all pod output files produced by the most recent CocoFlow `parallel:` step execution (from `pod-status.json`), applies the three-pass deduplication algorithm below, assigns priority tiers and effort estimates, and writes `lifecycle/FINDINGS.md` and `lifecycle/findings-state.json`. If the upstream flow used `on_partial: skip_partial`, pass `--skip-partial`.
 
 ### `$pivot run --since <timestamp>`
 
-Same as `$pivot run`, but targets only pod outputs that completed after `<timestamp>`. Useful for re-running convergence when additional pods have completed since the last run.
+Run `node scripts/pivot-merge.js run --since <timestamp>`. Targets only pod outputs that completed after `<timestamp>`. Useful for re-running convergence when additional pods have completed since the last run.
 
 ### `$pivot show`
 
-Display the current `lifecycle/FINDINGS.md`, grouped by priority tier. Include the Coverage Note section if any contributing pod was PARTIAL.
+Run `node scripts/pivot-merge.js show`. Display the current `lifecycle/FINDINGS.md`, grouped by priority tier. Include the Coverage Note section if any contributing pod was PARTIAL.
 
 ### `$pivot status`
 
-Summary view: total unique findings, count by priority tier (P1/P2/P3/P4), count by severity (BLOCKING/IMPORTANT/MINOR/ADVISORY), list of contributing pods with completion status (COMPLETE/PARTIAL/ERROR), and timestamp of the last convergence run.
+Run `node scripts/pivot-merge.js status`. Summary view: total unique findings, count by priority tier (P1/P2/P3/P4), count by severity (BLOCKING/IMPORTANT/MINOR/ADVISORY), list of contributing pods with completion status (COMPLETE/PARTIAL/ERROR), and timestamp of the last convergence run.
 
 ### `$pivot clear`
 
-Run `node scripts/pivot-merge.js --clear`. Archive the current `FINDINGS.md` to `lifecycle/findings-archive/<timestamp>-FINDINGS.md` and reset `findings-state.json` in preparation for a new convergence run.
+Run `node scripts/pivot-merge.js clear`. Archive the current `FINDINGS.md` to `lifecycle/findings-archive/<timestamp>-FINDINGS.md` and reset `findings-state.json` in preparation for a new convergence run.
 
 ## Deduplication Algorithm (Deterministic — No LLM)
 
@@ -95,6 +95,7 @@ CocoPivot is the canonical handler for the `converge:` step type. When a flow de
 ## Exit Criteria
 
 - `$pivot run` produces `FINDINGS.md` from N pod outputs with zero duplicate entries for identical file:line findings
+- `$pivot show`, `$pivot status`, and `$pivot clear` are backed by explicit `pivot-merge.js` subcommands
 - PARTIAL-source pods are flagged in the `FINDINGS.md` header, never silently merged as if COMPLETE
 - Scope anomalies are detected against each pod's `excludes:` declaration and excluded from `FINDINGS.md`, with the anomaly itself recorded in `findings-state.json`
 - `pivot-merge.js` is deterministic — identical inputs always produce identical `FINDINGS.md` and `findings-state.json`
