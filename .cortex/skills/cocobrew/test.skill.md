@@ -27,6 +27,9 @@ Read `.cocoplus/lifecycle/spec.md`. For each Success Criterion and Deliverable:
 For each test case:
 1. Run the test (SQL validation via SnowflakeSqlExecute if applicable, file existence check via Bash, quality check via quality-advisor)
 2. Record: PASS or FAIL with actual result
+3. If a test initially fails because of environment setup, permissions, missing metadata, or transient service behavior, document the recovery step explicitly before re-running. Do not hide the failed attempt.
+
+Recovered tests count as PASS only when the final assertion actually passes. The original failure must still appear under `## Recoveries` with the failed command/query, error, recovery action, and final outcome.
 
 ## Write Test Results
 
@@ -56,6 +59,9 @@ Write `.cocoplus/lifecycle/test.md`:
 
 ## Failures
 [Detail any failures with remediation suggestions]
+
+## Recoveries
+[For each recovered test: original command/query, error observed, recovery action taken, final PASS/FAIL]
 ```
 
 ## Update State
@@ -79,10 +85,12 @@ Output: "Test phase complete. [N] tests passed, [M] failed. Check `.cocoplus/lif
 | Skip tests for deliverables that "obviously exist" | The spec mandates verifiable outcomes — assumption-based passing is not evidence |
 | Mark phase complete even if some tests failed | Failing tests are open issues; committing and moving on hides defects from the Review phase |
 | Generate test cases without reading spec.md success criteria | Test cases not anchored to success criteria will miss spec-mandated outcomes entirely |
+| Collapse recovered failures into clean passes | Recovery behavior is release evidence; hiding it removes the signal needed to fix flaky or environment-sensitive tests |
 
 ## Exit Criteria
 
 - [ ] `.cocoplus/lifecycle/test.md` exists with a `## Summary` section showing Tests Run, Passed, and Failed counts
+- [ ] `.cocoplus/lifecycle/test.md` contains `## Recoveries`, even if it says "No recovered failures"
 - [ ] Every Success Criterion from `spec.md` has at least one corresponding test case in `test.md`
 - [ ] `.cocoplus/lifecycle/meta.json` `phases_completed` array contains `"test"`
 - [ ] Git commit with message `test: test execution and validation` exists in log

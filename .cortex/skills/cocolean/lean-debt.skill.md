@@ -23,6 +23,8 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is
 node scripts/lean-debt.js
 ```
 
+Run the command directly with Node. Do not wrap it in PowerShell redirection such as `2>&1`; stderr handling differs across shells and can corrupt the JSON output.
+
 The script:
 1. Scans all `.sql`, `.js`, `.md`, `.yaml`, `.json` files in the CocoPod for `cocoplus:` comment markers
 2. Extracts the three required fields from each marker: **what was simplified**, **ceiling condition**, **upgrade trigger**
@@ -52,7 +54,7 @@ Markers missing any required field are reported as malformed but not blocked.
 
 ## Step 3 — Produce Ranked Deferral Report
 
-Write the report to `.cocoplus/lifecycle/lean-debt.md` and display a summary:
+Write the report to `.cocoplus/lifecycle/lean-debt.md` and display a summary. The summary must include a compact dashboard table grouped by imminence and a trigger surface listing the next concrete events that would force action.
 
 ```markdown
 # CocoLean Debt Ledger
@@ -100,6 +102,19 @@ Malformed markers (missing fields): [N]
 ## Malformed Markers
 
 [file:line] — missing field: [field name]
+
+---
+
+## Trigger Surface
+
+| Trigger | Current Signal | Debt Items Activated |
+|---------|----------------|----------------------|
+| [specific event] | [current metric or unknown] | [file:line list] |
+
+## Integration Notes
+
+- Link CocoReview or SecondEye findings that mention the same file:line as a debt marker.
+- When a review finding is intentionally deferred, add or update a `cocoplus:` marker instead of leaving the deferral only in prose.
 ```
 
 ## Step 4 — Commit the Report
@@ -134,3 +149,4 @@ Append this narrative to the end of `lean-debt.md` under `## Narrative Assessmen
 | Condemn shortcuts with HIGH imminence as mistakes | The ledger records reasonable decisions at the time — the shortcut was right when made; only the ceiling date has changed |
 | Skip the report if the debt count is low | Zero markers may mean no shortcuts were taken, or may mean `cocoplus:` protocol was not followed — surface which it is |
 | Omit the LLM narrative because the deterministic output is sufficient | The deterministic output ranks by formula; the narrative identifies systemic patterns the formula cannot see |
+| Hide the trigger surface inside individual findings | Sprint planning needs a compact list of upcoming events that activate deferred work |

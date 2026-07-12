@@ -14,7 +14,9 @@ Your objective is to initialize the CocoPlus project bundle in the current worki
 
 1. Check if `.cocoplus/` already exists in the current directory.
    - If it does: output "CocoPlus is already initialized in this directory. Use `$pod status` to check current state or `$pod resume` to restore context." Then stop.
-2. Check that a git repository exists (`git rev-parse --git-dir`).
+2. Check that a git repository exists using a shell-safe argument call equivalent to `git rev-parse --git-dir`.
+   - Prefer `spawnSync('git', ['rev-parse', '--git-dir'])` or the host tool's native argument array.
+   - Do not wrap this in PowerShell-specific parsing or string interpolation.
    - If not: offer "Git not detected. Initialize? (yes/no)"
    - If yes: run `git init` and continue.
    - If no: stop.
