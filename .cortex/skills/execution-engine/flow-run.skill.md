@@ -25,6 +25,14 @@ Output: "Pipeline is paused. Run `$flow resume` to continue." Then stop.
 - `--model <value> --stage <stage-id>`: stage-level override (Tier 3). Does not modify `flow.json`.
 - `--concurrency <normal|caution|single-track>`: force concurrency mode for this run. Overrides the mode inferred from SubagentStop signals. Not persisted — next `$flow run` resumes inference from signals.
 
+Stages may also declare `model_tier: "smol" | "regular" | "smart" | "ultra"`. Resolve tiers from `[model_tiers]` in `cocoplus.toml` before spawning the stage:
+
+```text
+node scripts/model-tier-resolve.js --config cocoplus.toml --tier <tier>
+```
+
+If the tier is unmapped or marked unavailable, halt the stage and surface the error. Do not silently fall back to another model.
+
 ## Check Dual-File State for Recovery
 
 Read `flow.json` `runtime.harvest_id` (if present). If a `harvest/[harvest-id]-tasks.json` file exists, read it:
@@ -81,6 +89,7 @@ For each stage to execute:
     - Stages with `synthesis` absent or `synthesis.primary != "llm"` are unaffected.
     - Execution stages (SQL execution, test runs, file writes) do NOT have a fallback — they fail hard by design.
 12. **HITL pause** (if `hitl: true`): after successful completion, output the stage results and ask developer to confirm before spawning downstream stages
+13. **No-op workflow check** (if `handler: "noop-check"`): run `node scripts/noop-check.js --state <state-file>`. If it returns `noop: true`, mark the stage `skipped` with the recorded reason and append `NOOP_SKIPPED` to progress. This is a successful no-op, not an error.
 
 ## Adaptive Checkpoint Typing
 
@@ -172,6 +181,16 @@ For stages with `"type": "converge"`:
 
 A `converge:` step is the fan-in point for the immediately preceding `parallel:` step. When `handler: cococonverge` is set, invoke `$pivot run` automatically once all upstream pods have reached terminal status — this writes the file named in `output:`. A `parallel:` step with no subsequent `converge:` step in the flow definition is incomplete; when building or validating a flow definition, warn: "Parallel step '[label]' has no subsequent converge step — N pod outputs will have no synthesis step and the reconciliation burden falls on the developer."
 
+## Named Flow Templates
+
+Reusable execution patterns live under `.cortex/skills/execution-engine/templates/`:
+
+- Litmus Test
+- Drain Loop
+- HITL Gate
+- Per-Project Working Directory
+- No-op Workflow
+
 ## Create Stage Commit
 
 After each stage completes successfully:
@@ -203,6 +222,8 @@ Time: [duration]
 | Skip dual-file state updates | Without state updates, a context reset leaves the pipeline unrecoverable from files |
 | Let evaluation agents return full results to orchestrator context | Full results from 5 parallel agents saturate orchestrator context; only summaries return, details go to intermediate files |
 | Ignore HITL stage pausing | Downstream stages of a HITL stage may depend on a human decision that hasn't been made |
+| Fall back from `ultra` to `regular` when unavailable | Model tiers are governance declarations; silent fallback changes quality and cost semantics |
+| Treat no-op as a failed stage | A verified no-op is a valid workflow outcome and must be logged as such |
 
 ## Exit Criteria
 
@@ -218,3 +239,5 @@ Time: [duration]
 - [ ] `parallel:` steps do not advance until all listed pods report a terminal status; `on_partial:` and `on_error:` govern behavior per the step's declared values
 - [ ] `converge:` steps with `handler: cococonverge` invoke `$pivot run` automatically once upstream pods reach terminal status
 - [ ] A `parallel:` step without a subsequent `converge:` step triggers a validator warning
+- [ ] Every `model_tier` resolves from `cocoplus.toml` without silent fallback
+- [ ] No-op stages write `noop-log.jsonl` before being marked skipped
