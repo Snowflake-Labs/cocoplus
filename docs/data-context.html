@@ -90,7 +90,11 @@
 </tr>
 <tr>
   <td style="text-align:left">Estimated token cost</td>
-  <td style="text-align:left">CocoMeter Enhanced — per-stage actual attribution from Snowflake's usage view, correlated by request ID</td>
+  <td style="text-align:left">CocoMeter Enhanced — per-stage actual attribution from Snowflake's CLI/Desktop/Snowsight usage views, correlated by request ID; chargeback adds token and optional warehouse-credit ownership by cost center</td>
+</tr>
+<tr>
+  <td style="text-align:left">AI spend owned informally</td>
+  <td style="text-align:left">CocoMeter Chargeback — explicit user map, Snowflake user tag, role map, then <code>UNMAPPED</code>; invoices expose unmapped users instead of hiding them</td>
 </tr>
 <tr>
   <td style="text-align:left">No standing organizational context</td>
@@ -138,11 +142,23 @@
 </tr>
 <tr>
   <td style="text-align:left">Generated artifact quality relies on developer spot-checking</td>
-  <td style="text-align:left">CocoSentinel — seven-dimension parallel artifact quality gate (security, correctness, performance, resilience, maintainability, compliance, evidence integrity); SHA-bound approvals voided automatically on modification</td>
+  <td style="text-align:left">CocoSentinel — eight-dimension parallel artifact quality gate (security, correctness, performance, resilience, maintainability, compliance, evidence integrity, and final synthesis); SHA-bound approvals voided automatically on modification</td>
 </tr>
 <tr>
   <td style="text-align:left">Quality gate failures repeat without institutional learning</td>
-  <td style="text-align:left">CocoWisdom — append-only rejection-pattern store; every gate failure recorded; SecondEye and CocoSentinel primed with project's prior rejection history before each run; <code>$wisdom insights</code> surfaces patterns</td>
+  <td style="text-align:left">CocoWisdom — append-only rejection-pattern store; every gate failure recorded; SecondEye and CocoSentinel primed with project's prior rejection history before each run; evidence gates, must-keep entries, and denser-not-larger consolidation keep memory reliable</td>
+</tr>
+<tr>
+  <td style="text-align:left">Success criteria written after generation</td>
+  <td style="text-align:left">CocoContract — outcome contracts declared and committed before <code>$spec</code> or <code>$build</code>; evidence is bound to source hashes and rechecked in CI</td>
+</tr>
+<tr>
+  <td style="text-align:left">Prior decisions buried in long transcripts</td>
+  <td style="text-align:left">CocoRecall — local session retrieval with verbatim excerpts and mandatory citation metadata; retrieval, not interpretation</td>
+</tr>
+<tr>
+  <td style="text-align:left">Parallel review creates duplicate finding lists</td>
+  <td style="text-align:left">CocoPivot — deterministic multi-pod convergence into one prioritized <code>FINDINGS.md</code> with PARTIAL coverage transparency</td>
 </tr>
 <tr>
   <td style="text-align:left">Code review is a bottleneck or left to convention</td>
