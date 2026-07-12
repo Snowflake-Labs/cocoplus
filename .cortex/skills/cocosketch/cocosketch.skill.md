@@ -4,7 +4,7 @@ description: Generate visual draw.io diagrams from CocoPlus artifacts via a dete
 version: "1.0.0"
 author: sgsshankar
 tags: [visual, diagram, drawio, schema, pipeline, deps]
-commands: ["$sketch schema", "$sketch flow", "$sketch deps"]
+commands: ["$sketch schema", "$sketch flow", "$sketch deps", "$sketch diff", "$sketch view"]
 user-invocable: true
 blocking: false
 when-not-to-use: |
@@ -122,6 +122,28 @@ Record the exact final PNG path in the command output. If Mermaid fallback is us
 6. Compute and report dependency metrics: node count, edge count before reduction, edge count after reduction, and reduction percentage
 7. Output: `.cocoplus/diagrams/deps-[timestamp].png`
 
+## Mode: `$sketch diff <from> <to>`
+
+Compare two schema/dependency snapshots, git refs, or diagram metadata files.
+
+Output:
+- Added objects
+- Removed objects
+- Modified relationships
+- Changed policies or roles when that metadata exists
+
+Write `.cocoplus/diagrams/diff-[from]-[to]-[timestamp].md` and, when draw.io is available, a PNG using the standard seven-step pipeline. If either side cannot be resolved, stop with a clear missing-ref message.
+
+## Mode: `$sketch view [diagram-path]`
+
+Generate a self-contained HTML viewer for a CocoSketch diagram with pan, zoom, filtering, and object metadata. The committed `.drawio`/PNG remains the source artifact; the viewer is a convenience export written to `.cocoplus/diagrams/viewer-[timestamp].html`.
+
+For Markdown/HTML/PDF packaging of generated diagram notes, use:
+
+```text
+node scripts/report-export.js --source <diagram-report.md> --format <markdown|html|pdf> --out-dir .cocoplus/diagrams/exports
+```
+
 ---
 
 ## Exit Criteria
@@ -135,6 +157,8 @@ Record the exact final PNG path in the command output. If Mermaid fallback is us
 - [ ] User style in `~/.cocoplus/sketch-styles/` takes precedence over built-in styles
 - [ ] For >15 nodes, `sketch-autolayout.js` is called in Step 3
 - [ ] Fallback chain (Mermaid → raw XML) executes when draw.io CLI unavailable
+- [ ] `$sketch diff` reports added, removed, modified relationship, and policy/role changes when available
+- [ ] `$sketch view` writes a self-contained HTML viewer without replacing the committed diagram artifact
 
 ## Anti-Rationalization
 

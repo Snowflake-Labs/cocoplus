@@ -11,7 +11,7 @@ blocking: true
 
 # $audit export
 
-Export the complete CocoAudit trail as a uniquely timestamped compliance document.
+Export the complete CocoAudit trail as a uniquely timestamped compliance document. For stakeholder packaging, route Markdown/HTML/PDF formats through the shared exporter.
 
 ## Steps
 
@@ -19,14 +19,16 @@ Export the complete CocoAudit trail as a uniquely timestamped compliance documen
 2. Count total event blocks (lines starting with `## [`)
 3. Generate timestamp: `YYYY-MM-DDTHH-MM-SSZ` (hyphens replace colons for filesystem safety)
 4. Write `.cocoplus/audit-export-[timestamp].md` with header + full verbatim trail
-5. Output path and event count to developer
-6. Never overwrite prior export files — each invocation is uniquely timestamped (idempotent per export)
+5. If a format was requested, run `node scripts/report-export.js --source <exported-md> --format <markdown|html|pdf> --out-dir .cocoplus/audit-exports`
+6. Output path, event count, and export renderer status to developer
+7. Never overwrite prior export files — each invocation is uniquely timestamped (idempotent per export)
 
 ## Exit Criteria
 
 - Export file written to `.cocoplus/audit-export-[timestamp].md`
 - Developer sees path and total event count
 - No prior export file overwritten
+- HTML export is available through `report-export.js`; PDF reports renderer status if no renderer is configured
 
 ## Anti-Rationalization
 

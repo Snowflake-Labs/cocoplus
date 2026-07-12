@@ -14,7 +14,15 @@ Before proceeding, verify that `.cocoplus/` exists.
 If not: output "CocoPlus not initialized in this directory. Run `$pod init` to begin." Then stop.
 
 Parse arguments: `$prompt compare [path-a] [path-b]`
-If arguments missing: output "Usage: $prompt compare [path-a] [path-b]" Then stop.
+If both arguments are missing: output "Usage: $prompt compare [path-a] [path-b]" Then stop.
+
+If only one prompt path is provided:
+1. Validate the prompt exists.
+2. Offer to scaffold a draft comparison variant:
+   "Only one prompt version was provided. Create an editable draft v2 for comparison? [yes/no]"
+3. If yes, copy the prompt to the next version name in the same directory, add a clear frontmatter or top-of-file marker `draft_variant: true`, and add a note: "Draft variant scaffold — edit before using for final comparison."
+4. Stop after creating the draft. Do not run `$prompt compare` until the developer has revised the draft.
+5. If no, show usage and stop.
 
 Read both prompt files. If either does not exist: output error with which file is missing. Then stop.
 
@@ -48,6 +56,7 @@ Recommendation: [which prompt to use and why]
 | Compare with only one input | A single case hides regressions and overfits the recommendation |
 | Skip difference column details | Without explicit diffs, recommendation becomes subjective |
 | Ignore missing prompt file validation | Comparison output becomes misleading and non-reproducible |
+| Treat a scaffolded draft as a real strategy | The draft is only an editable starting point; the developer must revise it before comparison |
 
 ## Exit Criteria
 
@@ -55,3 +64,4 @@ Recommendation: [which prompt to use and why]
 - [ ] Comparison output includes rows for each provided test input with Prompt A output, Prompt B output, and a difference summary
 - [ ] `## Analysis` section includes strengths and weaknesses for each prompt plus a recommendation
 - [ ] Errors for missing arguments or missing files are handled with clear usage guidance
+- [ ] One-prompt invocation can scaffold a clearly marked draft variant and stops before comparison
