@@ -37,6 +37,8 @@ If the script fails (Snowflake unavailable, no git history), output: "CocoOps: u
 
 Read `.cocoplus/ops/dora-snapshot.json` for the computed metrics.
 
+Verify the snapshot includes `benchmarks` with the DORA-adapted tier thresholds used to classify each metric. If absent, add the threshold context to the report narrative from the skill definition before displaying tiers, so "Elite/High/Medium/Low" is never presented without benchmark meaning.
+
 ## Step 4 — Spawn Haiku Narrative Synthesis
 
 Pass the pre-computed metrics snapshot to a Haiku sub-agent with this mandate:
@@ -76,6 +78,7 @@ Failure Recovery Time:     <value> min     [<tier> tier]
 Data Quality Failure Rate: <value>%        [<tier> tier]
 
 Overall health: <ELITE | HIGH | MEDIUM | LOW>
+Benchmark context: DORA-adapted CocoOps thresholds included in dora-snapshot.json
 
 Notable signals:
 • <specific pipeline name>: <specific finding with numbers>

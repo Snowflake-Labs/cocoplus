@@ -64,15 +64,16 @@ function buildEvidenceBlock(snapshot, timestamp) {
     '|--------|-------|------|',
   ];
 
-  const METRIC_LABELS = {
-    pipeline_run_frequency:    'Pipeline Run Frequency',
-    data_availability_lead:    'Data Availability Lead',
-    failure_recovery_time:     'Failure Recovery Time',
-    data_quality_failure_rate: 'Data Quality Failure Rate',
-  };
+  const METRIC_ALIASES = [
+    ['Pipeline Run Frequency', ['run_frequency', 'pipeline_run_frequency']],
+    ['Data Availability Lead', ['lead_time', 'data_availability_lead']],
+    ['Failure Recovery Time', ['recovery_time', 'failure_recovery_time']],
+    ['Data Quality Failure Rate', ['quality_failure_rate', 'data_quality_failure_rate']],
+  ];
 
-  for (const [key, label] of Object.entries(METRIC_LABELS)) {
-    const m     = metrics[key] || {};
+  for (const [label, keys] of METRIC_ALIASES) {
+    const key = keys.find(k => metrics[k]);
+    const m     = key ? metrics[key] : {};
     const value = m.value !== undefined ? String(m.value) : 'N/A';
     const unit  = m.unit  || '';
     const tier  = m.tier  || 'unknown';
