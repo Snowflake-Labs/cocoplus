@@ -21,16 +21,13 @@ CocoPlus wraps a structured development lifecycle around every project — from 
 
 ## Installation
 
-```
-cortex skill add Snowflake-Labs/cocoplus
-```
-
-Verify:
+In Coco, enter:
 
 ```
-cortex plugins list
-# cocoplus should appear in the output
+Install this plugin from [Snowflake-Labs/cocoplus](https://github.com/Snowflake-Labs/cocoplus)
 ```
+
+For manual installation details, see [INSTALLATION.md](INSTALLATION.md).
 
 ## Getting Started
 
