@@ -1,0 +1,42 @@
+# cocoplus.toml - CocoPlus project configuration
+# Single source of truth for all operator-configurable plugin settings.
+# Commit this file to git. Run $cocoplus sync after any change.
+
+[project]
+name = ""                  # Project display name used in CocoOps reports
+snowflake_database = ""    # Target Snowflake database (used by CocoReview and CocoOps)
+snowflake_schema = ""      # Default schema for pipeline analysis
+
+[security]
+# Pre-tool-use hook rules (Four-Tier Boundary Framework).
+# Run $cocoplus sync to propagate changes into .cocoplus/config/security-rules.json.
+always_allow = ["Read"]
+ask_first = ["Write", "Edit", "SnowflakeSqlExecute:INSERT", "SnowflakeSqlExecute:UPDATE"]
+human_required = ["SnowflakeSqlExecute:DROP", "SnowflakeSqlExecute:TRUNCATE", "SnowflakeSqlExecute:DELETE"]
+never = ["credential_read", "external_network_write"]
+
+[warehouses]
+# Snowflake warehouse access control
+allowed = ["DEV_WH"]       # Warehouses permitted for autonomous use
+production_requires_human = true  # Any PROD_WH operation requires human approval
+
+[cost]
+# Token and credit thresholds for CocoMeter Enhanced alerts
+per_session_threshold_credits = 5.0
+alert_threshold_credits = 3.0
+
+[sprint]
+# CocoOps $ops sprint configuration
+# start_date = "2024-01-15"   # ISO date - update at start of each sprint
+# end_date = "2024-01-29"     # ISO date - optional, defaults to start_date + 14 days
+feature_prefix = "feat"       # Commit prefix identifying feature work
+
+[review.rules]
+# CocoReview rule-based fallback synthesis patterns
+no_select_star = true
+require_limit_on_scan = true
+
+[demo]
+# CocoOps and CocoReview demo mode - no Snowflake connection required
+enabled = false
+# activated_at and dataset are managed by $ops demo - do not edit manually
