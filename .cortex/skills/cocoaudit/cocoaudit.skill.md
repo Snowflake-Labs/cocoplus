@@ -36,7 +36,7 @@ Extends `$audit` with a contract regression phase that runs **before** standard 
 1. Check `modes/cocoaudit.on` exists — if not, output: "CocoAudit is not enabled. Enable at `$pod init` or create `modes/cocoaudit.on` manually."
 2. Check `lifecycle/audit.md` exists — if not, output: "Audit trail not yet initialized. Run `$pod init` with audit enabled."
 3. Read `lifecycle/audit.md` and parse `## [Event Type]` header blocks
-4. Apply `--from` filter if provided: compare each block's `**Timestamp**` field to the filter date (ISO 8601 date prefix match, e.g. `2026-06-01`)
+4. Apply `--from` filter if provided: parse each block's `**Timestamp**` field as an ISO 8601 UTC timestamp and include events whose timestamp is greater than or equal to the filter value. A date-only filter such as `2026-06-01` means `2026-06-01T00:00:00Z`.
 5. Without filter: show last 20 blocks; with filter: show all matching blocks
 6. Render in terminal format:
 
@@ -77,9 +77,20 @@ Result: Build phase unlocked
 6. Output: "Audit export written to `.cocoplus/audit-export-[timestamp].md` ([N] events)"
 7. **Idempotent:** Each invocation produces a new timestamped file. Never overwrites prior exports.
 
+### Integrity Checks
+
+When viewing, exporting, or running `$audit ci`, validate audit structure before rendering:
+- Every event block begins with `## [` and includes `**Timestamp**` and `**Event**`
+- Timestamps parse as ISO 8601 UTC
+- Event blocks remain in non-decreasing timestamp order
+- Malformed blocks are reported with their block number and first heading line
+
+Do not modify `audit.md` while checking integrity. Reporting malformed audit structure is allowed; repairing the append-only file requires explicit developer direction.
+
 ## Exit Criteria
 - [ ] `$audit view` renders last 20 events correctly when no `--from` filter
 - [ ] `$audit view --from 2026-06-01` shows only events from that date forward
+- [ ] `$audit view` reports malformed or out-of-order event blocks before rendering
 - [ ] `$audit export` produces unique timestamped files on each invocation
 - [ ] Both commands fail gracefully with clear error when `modes/cocoaudit.on` absent
 - [ ] Both commands fail gracefully when `lifecycle/audit.md` absent
@@ -94,3 +105,4 @@ Result: Build phase unlocked
 | Overwrite prior exports | Idempotent means new file each time, not same file |
 | Use local timezone in timestamps | ISO 8601 UTC only — local timezone timestamps are not audit-grade |
 | Delete or truncate audit.md | Append-only means never delete; it is a compliance artifact |
+| Auto-repair malformed audit blocks | Audit repair changes compliance evidence and requires explicit developer direction |
