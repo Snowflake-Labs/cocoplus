@@ -22,6 +22,8 @@ node .cortex/scripts/ops-suggest.js
 
 Display the returned suggestions with their cited operational signal. Do not invent recommendations when the script reports insufficient data.
 
+If a suggestion has no citation because `dora-snapshot.json` is missing or incomplete, label it as a data gap and show the command that would create the missing evidence (`$ops dora` or `$ops demo`). Do not present uncited suggestions as measured recommendations.
+
 ## Exit Criteria
 
 - Suggestions come from `.cortex/scripts/ops-suggest.js`

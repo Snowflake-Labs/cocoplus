@@ -21,6 +21,35 @@ const { execSync }  = require('child_process');
 const COCOPLUS_DIR  = '.cocoplus';
 const OPS_DIR       = path.join(COCOPLUS_DIR, 'ops');
 const SNAPSHOT_FILE = path.join(OPS_DIR, 'dora-snapshot.json');
+const BENCHMARKS = {
+  source: 'DORA-adapted CocoOps thresholds',
+  metrics: {
+    run_frequency: {
+      elite: '>= 3 runs/day',
+      high: '>= 1 run/week and < 3 runs/day',
+      medium: '>= 1 run/month and < 1 run/week',
+      low: '< 1 run/month',
+    },
+    lead_time: {
+      elite: '< 1 hour',
+      high: '< 1 day',
+      medium: '1 day to 1 week',
+      low: '> 1 month',
+    },
+    recovery_time: {
+      elite: '< 1 hour',
+      high: '< 1 day',
+      medium: '1 day to 1 week',
+      low: '> 1 week',
+    },
+    quality_failure_rate: {
+      elite: '< 5%',
+      high: '5-10%',
+      medium: '10-15%',
+      low: '> 15%',
+    },
+  },
+};
 
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -113,6 +142,7 @@ function main() {
     const demo = computeDemoMetrics();
     if (demo) {
       const snapshot = { ...demo, computed_at: ts, mode: 'demo' };
+      snapshot.benchmarks = snapshot.benchmarks || BENCHMARKS;
       const tmp = SNAPSHOT_FILE + '.tmp.' + process.pid;
       fs.writeFileSync(tmp, JSON.stringify(snapshot, null, 2));
       fs.renameSync(tmp, SNAPSHOT_FILE);
@@ -162,6 +192,7 @@ function main() {
         note:     'Requires SnowflakeSqlExecute',
       },
     },
+    benchmarks: BENCHMARKS,
     git_signals: {
       commits_14d:          gitMetrics.commit_count_14d,
       pipeline_prs:         gitMetrics.pipeline_prs,
