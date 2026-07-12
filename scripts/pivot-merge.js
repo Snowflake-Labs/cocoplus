@@ -31,12 +31,14 @@ const PRIORITY_ORDER = ['P4', 'P3', 'P2', 'P1']; // P1 is highest
 const EFFORT_ORDER = ['XS', 'S', 'M', 'L', 'XL'];
 
 function parseArgs(argv) {
-  const args = { clear: false, skipPartial: false };
+  const args = { command: 'run', clear: false, skipPartial: false };
   for (let i = 0; i < argv.length; i++) {
-    if (argv[i] === '--since') args.since = argv[++i];
+    if (['run', 'show', 'status', 'clear'].includes(argv[i])) args.command = argv[i];
+    else if (argv[i] === '--since') args.since = argv[++i];
     else if (argv[i] === '--clear') args.clear = true;
     else if (argv[i] === '--skip-partial') args.skipPartial = true;
   }
+  if (args.clear) args.command = 'clear';
   return args;
 }
 
@@ -64,6 +66,54 @@ function clearFindings() {
   fs.mkdirSync(path.dirname(FINDINGS_STATE_PATH), { recursive: true });
   fs.writeFileSync(FINDINGS_STATE_PATH, JSON.stringify({ generated_at: new Date().toISOString(), findings: [], anomalies: [], contributing_pods: [] }, null, 2), 'utf8');
   console.log(JSON.stringify({ cleared: true, archive_dir: ARCHIVE_DIR }, null, 2));
+}
+
+function showFindings() {
+  if (!fs.existsSync(FINDINGS_MD_PATH)) {
+    console.log('No FINDINGS.md found. Run $pivot run first.');
+    return;
+  }
+  process.stdout.write(fs.readFileSync(FINDINGS_MD_PATH, 'utf8'));
+}
+
+function countBy(items, key) {
+  return items.reduce((acc, item) => {
+    const value = item[key] || 'UNKNOWN';
+    acc[value] = (acc[value] || 0) + 1;
+    return acc;
+  }, {});
+}
+
+function statusFindings() {
+  let state = {
+    generated_at: null,
+    findings: [],
+    anomalies: [],
+    contributing_pods: [],
+  };
+  try {
+    if (fs.existsSync(FINDINGS_STATE_PATH)) {
+      state = { ...state, ...JSON.parse(fs.readFileSync(FINDINGS_STATE_PATH, 'utf8')) };
+    }
+  } catch (err) {
+    console.error(JSON.stringify({ error: `Unable to read findings-state.json: ${err.message}` }));
+    process.exit(1);
+  }
+
+  const findings = Array.isArray(state.findings) ? state.findings : [];
+  const pods = Array.isArray(state.contributing_pods) ? state.contributing_pods : [];
+  const status = {
+    generated_at: state.generated_at,
+    unique_findings: findings.length,
+    by_priority: countBy(findings, 'priority'),
+    by_severity: countBy(findings, 'severity'),
+    contributing_pods: pods,
+    partial_pods: pods.filter(p => p.status === 'PARTIAL').map(p => p.pod),
+    error_pods: pods.filter(p => p.status === 'ERROR').map(p => p.pod),
+    scope_anomalies: Array.isArray(state.anomalies) ? state.anomalies.length : 0,
+  };
+
+  console.log(JSON.stringify(status, null, 2));
 }
 
 function readExcludes(podName) {
@@ -242,7 +292,9 @@ function main() {
   }
 
   const args = parseArgs(process.argv.slice(2));
-  if (args.clear) return clearFindings();
+  if (args.command === 'clear') return clearFindings();
+  if (args.command === 'show') return showFindings();
+  if (args.command === 'status') return statusFindings();
   const podRecords = readPodStatus(args.since);
 
   if (podRecords.length === 0) {
