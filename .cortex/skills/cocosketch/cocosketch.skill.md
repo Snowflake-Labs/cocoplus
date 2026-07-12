@@ -86,6 +86,8 @@ node scripts/sketch-repair.js <name>.png
 `sketch-repair.js` restores truncated IEND chunk that `-e` can produce.
 Output: `<name>.png` and `<name>.drawio` written to `.cocoplus/diagrams/`.
 
+Record the exact final PNG path in the command output. If Mermaid fallback is used, output the `.mmd` path instead and clearly state that PNG export was unavailable.
+
 ---
 
 ## Mode: `$sketch schema [--tables <list>]`
@@ -117,7 +119,8 @@ Output: `<name>.png` and `<name>.drawio` written to `.cocoplus/diagrams/`.
 3. Default (`--reduce` on): run `node scripts/map-reduce.js <input.json> <reduced.json>` before layout
 4. `--reduce off`: use full transitive closure
 5. Execute seven-step pipeline
-6. Output: `.cocoplus/diagrams/deps-[timestamp].png`
+6. Compute and report dependency metrics: node count, edge count before reduction, edge count after reduction, and reduction percentage
+7. Output: `.cocoplus/diagrams/deps-[timestamp].png`
 
 ---
 
@@ -127,6 +130,8 @@ Output: `<name>.png` and `<name>.drawio` written to `.cocoplus/diagrams/`.
 - [ ] Preview PNG (Step 5) has NO `-e` flag
 - [ ] Final PNG (Step 7) HAS `-e` flag
 - [ ] `$sketch deps` applies transitive reduction by default; `--reduce off` skips it
+- [ ] `$sketch deps` reports node count, original edge count, reduced edge count, and reduction percentage
+- [ ] Command output includes the final PNG path or fallback `.mmd` path
 - [ ] User style in `~/.cocoplus/sketch-styles/` takes precedence over built-in styles
 - [ ] For >15 nodes, `sketch-autolayout.js` is called in Step 3
 - [ ] Fallback chain (Mermaid → raw XML) executes when draw.io CLI unavailable
@@ -140,3 +145,4 @@ Output: `<name>.png` and `<name>.drawio` written to `.cocoplus/diagrams/`.
 | Skip `sketch-repair.js` | Truncated IEND corrupts the PNG in several common viewers |
 | Generate in one LLM shot without pipeline | Single-shot generation produces bad layouts and structural errors |
 | Reuse draw.io binary name without checking | Binary name varies by OS and install method — resolve once |
+| Say "diagram generated" without a path | Users need the exact artifact path to inspect or attach the diagram |
