@@ -33,6 +33,8 @@ const HEDGING_PATTERNS = [
   /\bseems to\b/i,
 ];
 
+const MUTATION_STRATEGIES = new Set(['add_example', 'add_constraint', 'restructure', 'add_edge_case']);
+
 function parseArgs(argv) {
   const args = {};
   for (let i = 0; i < argv.length; i++) {
@@ -72,6 +74,30 @@ function requireAttribution(strategy) {
   }
   if (!evidenceReferenceExists(attr)) {
     fail(`Evidence attribution reference "${attr.evidence_reference}" was not found or is not passing/fresh. Evidence attribution must cite a recorded CocoContract, CocoSentinel, or SecondEye result.`);
+  }
+}
+
+function validateMutationRound(strategy) {
+  if (!strategy.optimization_round && !strategy.mutation_strategy) return;
+  if (!MUTATION_STRATEGIES.has(strategy.mutation_strategy)) {
+    fail(`CocoRefine mutation_strategy must be one of: ${Array.from(MUTATION_STRATEGIES).join(', ')}`);
+  }
+  if (!Array.isArray(strategy.changed_fields) || strategy.changed_fields.length !== 1) {
+    fail('CocoRefine one-change-per-round gate requires exactly one changed_fields entry for an optimization round.');
+  }
+  if (!Array.isArray(strategy.evaluation_criteria) || strategy.evaluation_criteria.length === 0) {
+    fail('CocoRefine optimization rounds require binary evaluation_criteria.');
+  }
+  for (const criterion of strategy.evaluation_criteria) {
+    if ('score' in criterion || 'weight' in criterion || 'scale' in criterion) {
+      fail('CocoRefine evaluation criteria must be binary; scored, weighted, or scaled rubrics are not allowed.');
+    }
+    if (criterion.type && criterion.type !== 'binary') {
+      fail('CocoRefine evaluation criteria must be binary.');
+    }
+    if (!('expected' in criterion) && criterion.type !== 'binary') {
+      fail('CocoRefine evaluation criteria must include a binary expected value or type: "binary".');
+    }
   }
 }
 
@@ -171,6 +197,7 @@ function opAdd(args) {
   if (hedge) fail(`Strategy content contains hedging language (matched: ${hedge}). Rewrite in prescriptive, conditional-free form.`);
 
   requireAttribution(input);
+  validateMutationRound(input);
 
   const strategy = {
     id: input.id,
@@ -183,6 +210,9 @@ function opAdd(args) {
     content: input.content,
     attribution: input.attribution,
     degradation_conditions: input.degradation_conditions || '',
+    mutation_strategy: input.mutation_strategy || '',
+    changed_fields: input.changed_fields || [],
+    evaluation_criteria: input.evaluation_criteria || [],
     history: [],
   };
 
@@ -214,6 +244,7 @@ function opUpdate(args) {
   const hedge = findHedging(input.content || '');
   if (hedge) fail(`Strategy content contains hedging language (matched: ${hedge}). Rewrite in prescriptive, conditional-free form.`);
   requireAttribution(input);
+  validateMutationRound(input);
 
   const existing = readExisting(args.id);
   existing.history = existing.history || [];
@@ -227,6 +258,9 @@ function opUpdate(args) {
   existing.content = input.content;
   existing.attribution = input.attribution;
   if (input.degradation_conditions) existing.degradation_conditions = input.degradation_conditions;
+  if (input.mutation_strategy) existing.mutation_strategy = input.mutation_strategy;
+  if (input.changed_fields) existing.changed_fields = input.changed_fields;
+  if (input.evaluation_criteria) existing.evaluation_criteria = input.evaluation_criteria;
 
   persist(existing);
   console.log(JSON.stringify({ op: 'update', id: args.id, version: existing.version }, null, 2));

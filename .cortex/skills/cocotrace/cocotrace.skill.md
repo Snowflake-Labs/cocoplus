@@ -4,7 +4,7 @@ description: Build and query the SHA-256 requirements-to-implementation traceabi
 version: "1.1.0"
 author: sgsshankar
 tags: [traceability, quality, sha256, audit, lifecycle]
-commands: ["$trace build", "$trace gaps", "$trace show", "$trace blast", "$trace check"]
+commands: ["$trace build", "$trace gaps", "$trace show", "$trace blast", "$trace check", "$trace health", "$trace compare"]
 user-invocable: true
 ---
 
@@ -103,6 +103,32 @@ Computes the blast radius for a named Snowflake object (table, view, column, or 
 
 A pre-change impact gate, not a permission gate — it does not block the change. Runs the blast radius computation for the objects implied by `<change description>`, generates a human-readable impact summary, and records the gate event in `lifecycle/audit.md` via CocoAudit (proving blast radius was assessed before the change was applied). Output the same blast radius table as `$trace blast`, prefixed with the change description and an audit confirmation line: "Recorded to lifecycle/audit.md as a pre-change impact assessment."
 
+### `$trace health`
+
+Compute the Snowflake asset health grade for the current dependency graph. Run:
+
+```text
+node scripts/health-grader.js --input .cocoplus/trace/snowflake-assets.json
+```
+
+The grade is A-F and combines dead asset percentage, circular dependencies, coupling, security findings, layer violations, and churn hotspots. Dead assets include zero-caller UDFs, unqueried views, and stale tables. Layer violations include staging objects consumed directly by BI, raw sources updated by application code, and production assets accessed from development contexts.
+
+If `[trace].show_grade = false` in `cocoplus.toml`, suppress the letter grade but still show the underlying metrics.
+
+### `$trace compare <before.json> <after.json>`
+
+Run:
+
+```text
+node scripts/health-grader.js --compare <before.json> <after.json>
+```
+
+Display the thermal receipt line exactly as a before/after delta, for example:
+
+```text
+blast radius 23 -> 18 v / health B+ -> A- ^
+```
+
 ## SessionStart Integration
 `trace-check.js` runs at SessionStart (Tier 2 async — non-blocking). If any artifact is stale, a non-blocking advisory appears:
 
@@ -140,6 +166,8 @@ PDF requests report renderer availability; Markdown and HTML are local determini
 - [ ] SessionStart surfaces staleness advisory non-blockingly
 - [ ] `$trace blast <object>` returns affected functions with dependency type and CocoContract staleness flag, sourced from `snowflake-deps.json`
 - [ ] `$trace check --before-change` records the gate event to `lifecycle/audit.md` without blocking the change
+- [ ] `$trace health` reports grade inputs and honors `[trace].show_grade = false`
+- [ ] `$trace compare` prints blast-radius and health-grade before/after deltas
 
 ## Anti-Rationalization
 

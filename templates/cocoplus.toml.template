@@ -24,6 +24,22 @@ production_requires_human = true  # Any PROD_WH operation requires human approva
 # Token and credit thresholds for CocoMeter Enhanced alerts
 per_session_threshold_credits = 5.0
 alert_threshold_credits = 3.0
+includeWarehouse = true      # Include warehouse compute credits in CocoMeter chargeback
+show_grade = true            # Show cost/governance grade summaries when available
+
+[model_tiers]
+# CocoFlow model tier abstraction. Do not silently fall back when a tier is unavailable.
+smol = "haiku"
+regular = "sonnet"
+smart = "sonnet"
+ultra = "opus"
+unavailable = []
+
+[trace]
+show_grade = true            # Set false to hide CocoTrace A-F grade while keeping metrics visible
+
+[wisdom]
+min_evidence_sessions = 3    # Distinct confirmed sessions required before stable wisdom promotion
 
 [sprint]
 # CocoOps $ops sprint configuration

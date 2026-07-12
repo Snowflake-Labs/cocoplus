@@ -43,6 +43,15 @@ Run `node scripts/refine-update.js --op add --file <path>` to commit the mutatio
 
 Create a new version of an existing strategy. Read the current YAML, increment the version number, append the prior version's content block to a `history` section (never delete it), apply the new content. Requires a new attribution record for the update — the same self-citation rejection rules from `$refine add` apply. Run `node scripts/refine-update.js --op update --id <strategy-id> --file <path>`.
 
+For optimization rounds, include a structured mutation vocabulary:
+
+- `add_example`
+- `add_constraint`
+- `restructure`
+- `add_edge_case`
+
+Each optimization round must change exactly one field and must use binary evaluation criteria. `refine-update.js` rejects multi-field mutations and scored rubrics so the system can attribute cause and effect to one change.
+
 ### `$refine deprecate <strategy-id> [reason]`
 
 Mark a strategy `deprecated: true` with the recorded reason and timestamp. The version history is preserved — deprecation is not deletion. Deprecated strategies are excluded from SkillbookView injection into future sessions. Run `node scripts/refine-update.js --op deprecate --id <strategy-id> --reason "<reason>"`.
@@ -73,6 +82,7 @@ Optimization and analysis agents receive a **read-only SkillbookView**: current 
 - `$refine add` rejects any strategy content containing hedging language
 - `$refine add` and `$refine update` both require a real passing CocoContract, CocoSentinel, or resolved SecondEye evidence attribution record — self-authored justification and nonexistent references are rejected
 - `$refine update` creates a new version record without overwriting or deleting the prior version
+- Optimization rounds declare one mutation strategy, one changed field, and binary evaluation criteria
 - `$refine deprecate` excludes the strategy from SkillbookView injection while preserving its version history
 - Optimization agents receive read-only SkillbookView; they cannot invoke `refine-update.js` directly
 - `refine-reflect.js` produces no attribution when the evaluation record is missing or incomplete
@@ -86,3 +96,4 @@ Optimization and analysis agents receive a **read-only SkillbookView**: current 
 | Let an optimization agent call `refine-update.js` directly to "save time" | Write access is isolated to the learning cycle's Update step specifically to prevent an agent from influencing the store it is being evaluated against |
 | Overwrite a deprecated strategy's file to "clean up" | Deprecation preserves version history — physical deletion destroys the audit trail of what was tried and why it stopped working |
 | Skip attribution when the evaluation record is incomplete, using the reflecting agent's judgment instead | Producing no attribution is the correct outcome here — never substitute the agent's own assessment for a missing evidence record |
+| Change examples, constraints, and structure in one optimization round | Multi-change rounds destroy attribution; one-change-per-round is mandatory |

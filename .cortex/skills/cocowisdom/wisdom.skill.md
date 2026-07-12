@@ -75,6 +75,31 @@ Routes CocoCupper's auto-captured corrections (`.cocoplus/cupper/auto-captured.j
 
 4. **The routing workflow requires explicit developer confirmation before any file is modified.** No proposed edit is ever applied automatically, regardless of how many corrections support it.
 
+## `$wisdom keep` and `$wisdom forget`
+
+`$wisdom keep --id <id> --text "<rule>"` writes protected institutional memory to `.cocoplus/wisdom/must-keep.md`. Must-keep entries are not candidates for automatic consolidation.
+
+`$wisdom forget --id <id> --rationale "<reason>"` records an explicit removal rationale in `.cocoplus/wisdom/consolidation-log.md`. Forgetting without rationale is rejected.
+
+Use:
+
+```text
+node scripts/wisdom-route.js --keep --id <id> --text "<rule>"
+node scripts/wisdom-route.js --forget --id <id> --rationale "<reason>"
+```
+
+## Evidence Gate and Denser-Not-Larger Rule
+
+Stable CocoWisdom promotion requires at least 3 distinct confirmed sessions by default. The threshold is configurable in `cocoplus.toml` under `[wisdom].min_evidence_sessions`.
+
+Before promoting a consolidated thesis, validate it with:
+
+```text
+node scripts/wisdom-route.js --candidate <candidate.json>
+```
+
+The candidate is rejected if it increases word count without reducing entry count, unless a justified exception is recorded. Consolidation should make memory denser, not merely larger.
+
 ## Anti-Rationalization Table
 
 | Shortcut / Temptation | Why It Fails |
@@ -82,6 +107,8 @@ Routes CocoCupper's auto-captured corrections (`.cocoplus/cupper/auto-captured.j
 | Show "Improving" when only a few sessions exist | Trend requires 8 distinct sessions — fewer sessions cannot establish a pattern |
 | Skip reading rejections.jsonl when file is large | The quality trend depends on the last 8 sessions — truncating the read produces wrong counts |
 | Auto-apply a routed edit when many corrections agree | Volume of corrections is evidence for review, not authorization to skip developer confirmation — the workflow is structurally confirm-first |
+| Promote a wisdom pattern from one dramatic incident | Stable institutional memory requires repeated confirmed evidence across distinct sessions |
+| Grow a thesis without reducing entries | Denser-not-larger keeps memory useful under context pressure |
 
 ## Exit Criteria
 
@@ -89,3 +116,6 @@ Routes CocoCupper's auto-captured corrections (`.cocoplus/cupper/auto-captured.j
 - Trend shows "Improving" only when zero rejections in last 8 distinct sessions
 - `$wisdom route` groups auto-captured corrections by skill file and applies one of the three routing classifications to each group
 - No skill file is modified by `$wisdom route` without explicit developer confirmation of the specific proposed edit
+- `$wisdom keep` writes protected entries to `must-keep.md`
+- `$wisdom forget` records rationale in `consolidation-log.md`
+- Promotion candidates pass evidence and density gates before becoming stable knowledge
