@@ -501,20 +501,20 @@ $meter accuracy
 <p><code>$meter accuracy</code> shows: the current adjustment factor and its sample size, the trend over the last five sessions (stable / rising / falling), and the raw per-session history (estimated tokens, actual tokens, ratio). When the adjustment factor is active, <code>$meter estimate</code> output includes a calibration note: "Estimated 45,000 tokens (baseline: 30,000, calibration factor: 1.5x from 8 prior sessions)."</p>
 <p><strong>Output:</strong> Accuracy history table + current calibration factor + trend indicator.</p>
 <hr>
-<p><strong><code>$meter chargeback refresh</code></strong> — Refresh FinOps chargeback facts <em>(CocoMeter Enhanced)</em></p>
-<pre><code>$meter chargeback refresh
+<p><strong><code>$meter refresh</code></strong> — Refresh FinOps chargeback facts <em>(CocoMeter Enhanced)</em></p>
+<pre><code>$meter refresh
 </code></pre>
-<p>Loads Cortex Code usage history, optionally joins warehouse compute attribution when <code>includeWarehouse</code> is enabled, strips system reminders, excludes SYSTEM/sandbox/background metadata records, and resolves cost centers through explicit user maps, user tags, role maps, then <code>UNMAPPED</code>.</p>
+<p>Loads Cortex Code usage history, optionally joins warehouse compute attribution when <code>includeWarehouse</code> is enabled, strips system reminders, excludes SYSTEM/sandbox/background metadata records, and resolves cost centers through explicit user maps, user tags, role maps, then <code>UNMAPPED</code>. The longer <code>$meter chargeback refresh</code> form remains accepted as a dispatch alias.</p>
 <hr>
-<p><strong><code>$meter chargeback invoice</code></strong> — Generate per-user chargeback invoices</p>
-<pre><code>$meter chargeback invoice
+<p><strong><code>$meter invoice</code></strong> — Generate per-user chargeback invoices</p>
+<pre><code>$meter invoice
 </code></pre>
-<p>Creates invoice-ready user totals with token credits, optional warehouse credits, total credits, cost center, and amount.</p>
+<p>Creates invoice-ready user totals with token credits, optional warehouse credits, total credits, cost center, and amount. The longer <code>$meter chargeback invoice</code> form remains accepted as a dispatch alias.</p>
 <hr>
-<p><strong><code>$meter chargeback onboarding</code></strong> — Check chargeback setup readiness</p>
-<pre><code>$meter chargeback onboarding
+<p><strong><code>$meter status</code></strong> — Check chargeback setup readiness</p>
+<pre><code>$meter status
 </code></pre>
-<p>Reports schema readiness, fact data presence, cost-center mapping status, unmapped users, and near-real-time observability span presence.</p>
+<p>Reports schema readiness, fact data presence, cost-center mapping status, unmapped users, and near-real-time observability span presence. The longer <code>$meter chargeback onboarding</code> form remains accepted as a dispatch alias.</p>
 <hr>
 <h2 id="cococupper-post-execution-intelligence">CocoCupper — Post-Execution Intelligence</h2>
 <p>CocoCupper runs automatically via hooks. The manual commands below are for on-demand analysis and review.</p>
@@ -1422,7 +1422,7 @@ $sketch deps --reduce off
 </tr>
 <tr>
   <td style="text-align:left"><strong>Meter</strong></td>
-  <td style="text-align:left"><code>$meter on</code> · <code>$meter off</code> · <code>$meter</code> · <code>$meter estimate</code> · <code>$meter history</code> · <code>$meter accuracy</code> · <code>$meter view</code> · <code>$meter sync</code> · <code>$meter chargeback refresh</code> · <code>$meter chargeback invoice</code> · <code>$meter chargeback onboarding</code></td>
+  <td style="text-align:left"><code>$meter on</code> · <code>$meter off</code> · <code>$meter</code> · <code>$meter estimate</code> · <code>$meter history</code> · <code>$meter accuracy</code> · <code>$meter view</code> · <code>$meter sync</code> · <code>$meter refresh</code> · <code>$meter invoice</code> · <code>$meter status</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Cupper</strong></td>
