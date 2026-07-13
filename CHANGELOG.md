@@ -10,10 +10,14 @@ All notable changes to CocoPlus are documented here.
 
 #### Eleventh-Cycle Governance Enhancements
 - `cocometer/meter-chargeback.skill.md` and `scripts/chargeback-refresh.js` — CocoMeter Enhanced FinOps chargeback layer with dual token/warehouse credit model, system-reminder stripping, SQL extraction from tool arguments, four-level cost-center resolution, invoice-ready user totals, and onboarding checks
+- `cocometer/meter-status.skill.md`, `cocometer/meter-invoice.skill.md`, and `cocometer/meter-refresh.skill.md` — direct eleventh-cycle command aliases for `$meter status`, `$meter invoice`, and `$meter refresh`, with the longer `$meter chargeback ...` forms retained as compatibility dispatches
+- `scripts/cost-center-resolver.js` and `scripts/invoice-generator.js` — named deterministic helpers for four-level cost-center resolution and per-user HTML/CSV invoice generation
 - `scripts/health-grader.js` — CocoTrace Snowflake asset health grade with dead-asset detection, circular dependency and coupling signals, layer violation checks, churn hotspots, and before/after thermal receipt output
+- `cocotrace/trace-health.skill.md`, `cocotrace/trace-compare.skill.md`, `cocowisdom/wisdom-keep.skill.md`, `cocowisdom/wisdom-forget.skill.md`, and `cocowisdom/wisdom-consolidation-log.skill.md` — direct command skill surfaces for the updated source contract
 - `scripts/model-tier-resolve.js`, `scripts/noop-check.js`, and execution-engine templates — CocoFlow model tier abstraction with no silent fallback, logged no-op workflow handling, and five reusable flow patterns: Litmus Test, Drain Loop, HITL Gate, Per-Project Working Directory, and No-op Workflow
 - `wisdom-route.js` enhancements — CocoWisdom evidence gate requiring distinct confirmed sessions, must-keep and forget-with-rationale workflows, and denser-not-larger consolidation validation
 - `refine-update.js` enhancements — CocoRefine structured mutation vocabulary (`add_example`, `add_constraint`, `restructure`, `add_edge_case`), one-change-per-round enforcement, and binary-only evaluation criteria
+- `.cortex/templates/cocoplus.toml.template` now matches the package template for `[model_tiers]`, `[trace]`, `[wisdom]`, `includeWarehouse`, and governance grade settings
 - Documentation correction: v1.2.0 remains a 47-feature release; reporting export support is documented as a shared packaging enhancement, not a numbered feature
 
 #### Reporting Exports and Product Backlog Enhancements

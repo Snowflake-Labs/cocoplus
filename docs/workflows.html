@@ -684,13 +684,13 @@ $ops suggest
 <h2 id="scenario-21-allocating-ai-costs-with-cocometer-chargeback">Scenario 21: Allocating AI Costs with CocoMeter Chargeback</h2>
 <p><strong>The situation:</strong> A shared CocoPlus project is used by analytics engineering, BI, and data science. The Snowflake invoice shows growing AI usage, but the team needs to know which workflows and cost centers are responsible before changing behavior.</p>
 <pre><code>
-$meter chargeback onboarding
+$meter status
 </code></pre>
 <p>The onboarding check reports whether the chargeback schema exists, whether the fact table has data, whether all users map to cost centers, which users are still <code>UNMAPPED</code>, and whether near-real-time <code>CodingAgent.Step-0</code> observability spans are present.</p>
 <p>After fixing unmapped users in <code>cocoplus.toml</code> or Snowflake user tags:</p>
 <pre><code>
-$meter chargeback refresh
-$meter chargeback invoice
+$meter refresh
+$meter invoice
 </code></pre>
 <p>The refresh separates token/inference credits from warehouse compute credits, excludes SYSTEM, sandbox, and background metadata runs, strips system reminders from persisted prompts, and resolves cost centers in this order: explicit user map, user object tag, role map, <code>UNMAPPED</code>. The invoice output is ready for FinOps review because it can explain where every credit came from.</p>
 <p><strong>Decision point:</strong> If <code>includeWarehouse = false</code>, the report answers "what did Coco's model usage cost?" If it is true, the report answers "what did this AI workflow cost end-to-end, including warehouse execution?" The setting is a governance choice, not a display preference.</p>
