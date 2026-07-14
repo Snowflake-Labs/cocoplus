@@ -1,6 +1,6 @@
 # CocoPlus Plugin — Behavioral Rules
 # Auto-loaded by Coco when CocoPlus plugin is active.
-# This is the plugin-level AGENTS.md (≤200 lines).
+# This is the plugin-level AGENTS.md.
 # Per-project context lives in .cocoplus/AGENTS.md after $pod init.
 
 ## Plugin Identity
