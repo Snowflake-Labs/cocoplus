@@ -94,8 +94,11 @@ After Coco restarts, tell the user to run these commands from the root of the pr
 ```text
 $pod init
 $cocoplus on
+$cocoplus console
 $spec
 ```
+
+For CocoPlus 2.0.0, `$cocoplus console` opens the read-only local dashboard. Optional V2 modes are activated per session with `$pilot on`, `$forge "goal"`, or `$leviathan on`.
 
 ## Validation
 
@@ -126,4 +129,4 @@ If Coco is available in the current environment, verify that Coco recognizes the
 - [ ] `pluginDirs` includes `<user-home>/.snowflake/cortex/plugins/cocoplus`
 - [ ] Existing `pluginDirs` entries and unrelated settings are preserved
 - [ ] User is told to restart Coco
-- [ ] User is given `$pod init`, `$cocoplus on`, and `$spec` as next project-level commands
+- [ ] User is given `$pod init`, `$cocoplus on`, `$cocoplus console`, and `$spec` as next project-level commands

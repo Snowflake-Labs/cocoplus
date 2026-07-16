@@ -4,13 +4,25 @@
 
 # CocoPlus
 
-**CocoPlus** is an Agentic Operating System for Snowflake Coco. It brings structured, multi-agent workflows to data engineering projects — covering everything from project initialization through spec, plan, build, test, review, and ship phases.
+**CocoPlus 2.0.0** is an Agentic Operating System for Snowflake Coco. It brings structured, multi-agent workflows to data engineering projects — covering everything from project initialization through spec, plan, build, test, review, ship phases, browser observability, autonomous orchestration, and governance-aware execution.
 
 Built using only Coco-native constructs: Skills, Agents, Hooks, and AGENTS.md.
 
 ## What It Does
 
-CocoPlus wraps a structured development lifecycle around every project — from requirements capture through production ship — enforcing phase gates, parallel specialist execution, and checkpoint-validated delivery at each step. It decomposes work across eight specialist personas matched to domain, runs them in isolated git worktrees, and tracks every decision, token, and quality finding across sessions. A multi-layer safety gate protects production Snowflake objects from accidental modification, while a persistent pattern library and project knowledge base compound institutional memory over time. Forty-seven features covering orchestration, evaluation, governance, cost visibility, prompt engineering, pre-spec commitment, multi-agent deliberation, context distillation, outcome certainty, FinOps chargeback, asset health, and multi-pod convergence — all running on Coco-native constructs with no external services.
+CocoPlus wraps a structured development lifecycle around every project — from requirements capture through production ship — enforcing phase gates, parallel specialist execution, and checkpoint-validated delivery at each step. It decomposes work across fixed and dynamic specialist personas, runs coordinated workstreams, and tracks decisions, tokens, quality findings, contracts, memory, and governance signals across sessions.
+
+Version 2.0.0 adds the evolved V2 layer:
+
+- **CocoConsole**: a local, read-only browser control plane launched with `$cocoplus console`.
+- **CocoPilot**: opt-in natural-language orchestration with `$pilot on` / `$pilot off`.
+- **CocoForge**: goal-driven expert-team meta-loop with `$forge`.
+- **Leviathan + Ronin**: explicit-activation autonomous coordination and companion interface.
+- **Dynamic Personas**: evidence-gated emergent specialists with retained history.
+- **Governance hooks**: ReviewerLockout and PII governance with observe/enforce rollout.
+- **Console-aware visual commands**: `$flow view` and `$meter view` redirect into CocoConsole when it is running.
+
+The V2 product specifications live in `reference requirements/2.0`; the root plugin implements the V2 runtime and documentation surface while preserving backward-compatible V1 behavior unless an explicit V2 modification applies.
 
 ## Specialist Personas
 
@@ -34,6 +46,8 @@ For manual installation details, see [INSTALLATION.md](INSTALLATION.md).
 ```
 $pod init       — initialize CocoPlus in your project
 $cocoplus on    — activate all features
+$cocoplus console — open the V2 read-only dashboard
+$pilot on       — activate CocoPilot for the current session
 $spec           — start the requirements phase
 ```
 

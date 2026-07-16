@@ -4,6 +4,49 @@ All notable changes to CocoPlus are documented here.
 
 ---
 
+## [2.0.0] — July 2026
+
+### Added
+
+#### CocoPlus 2.0 Runtime Layer
+- `plugin.json` bumped to `2.0.0` and registers the V2 command surface.
+- `reference requirements/2.0` is treated as the source specification set for the V2 program, including CocoConsole, CocoPilot, CocoForge, Leviathan/Ronin, Dynamic Personas, Skill-Native Architecture, and required modifications to existing features.
+- `docs/superpowers/plans/2026-07-16-cocoplus-v2-release.md` captures the implementation plan and validation sequence for the V2 release.
+
+#### CocoConsole
+- `.cortex/scripts/cocoplus-console.js` — local read-only browser control plane launched by `$cocoplus console`.
+- `.cortex/scripts/v2-state.js` — shared V2 lifecycle state helper for JSON state files, mode flags, and append-only activity logs.
+- `assist-mode/cocoplus-console.skill.md` — `$cocoplus console`, `$cocoplus console status`, and `$cocoplus console stop` command contract.
+- CocoConsole reads `.cocoplus/` lifecycle artifacts and exposes Home, Flow, Cost, Quality, Health, Safety, Memory, Sessions, Settings, and Forge panels without mutating project state.
+
+#### CocoPilot, CocoForge, Leviathan/Ronin, and Dynamic Personas
+- `cocopilot/pilot-on.skill.md` and `cocopilot/pilot-off.skill.md` — opt-in session-scoped CocoPilot mode.
+- `cocoforge/forge.skill.md` — `$forge`, `$forge goal`, `$forge status`, and `$forge stop` expert-team meta-loop contract.
+- `leviathan/leviathan.skill.md` — explicit-activation Leviathan and Ronin mode with session archive ingestion rules.
+- `dynamic-personas/*` skills — discover, list, invoke, and dissolve evidence-gated emergent personas while retaining persona history.
+- `governance/governance-status.skill.md` — reports V2 governance policy status and recent hook events.
+
+#### Governance and Hook Policies
+- `UserPromptSubmit` hook now records V2 command activation state for CocoPilot, CocoForge, and Leviathan; CocoForge has priority over CocoPilot while active.
+- `Stop` hook now checkpoints active V2 modes and records CocoRecall Dream Cycle consolidation requests on a 24-hour cadence.
+- `PreToolUse` hook adds ReviewerLockout with enforce and observe modes.
+- `PostToolUse` hook adds PII governance detection with enforce and observe logging; original values are never written to CocoPlus artifacts.
+
+### Changed
+
+- `$flow view` and `$meter view` are now CocoConsole-aware: when CocoConsole is running, they redirect to the Flow or Cost panel; otherwise they preserve the existing standalone HTML behavior.
+- `templates/cocoplus.toml.template` adds `[cocoplus]`, `[cocopilot]`, `[cocoforge]`, `[leviathan]`, `[dynamic_personas]`, and `[governance]` sections.
+- `templates/AGENTS.md.template` adds V2 activation blocks so new pods understand CocoPilot, CocoForge, Leviathan/Ronin, and Dynamic Personas.
+- Root `README.md`, `AGENTS.md`, installation guidance, and the HTML documentation site now present CocoPlus as a V2.0.0 release.
+
+### Compatibility
+
+- Existing V1 commands, hooks, scripts, templates, and feature outputs remain in place unless an explicit V2 modification applies.
+- The Skill-Native Architecture is introduced as the V2 direction while preserving existing deterministic scripts required by the current validator and compatibility surface; CocoConsole remains the permitted local runtime process.
+- No remote services are introduced. CocoConsole is local-only and read-only.
+
+---
+
 ## [1.2.0] — July 2026
 
 ### Added
