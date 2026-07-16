@@ -17,7 +17,7 @@ The current operating layer includes:
 - **CocoConsole**: a local, read-only browser control plane launched with `$cocoplus console`.
 - **CocoPilot**: opt-in natural-language orchestration with `$pilot on` / `$pilot off`.
 - **CocoForge**: goal-driven expert-team meta-loop with `$forge`.
-- **Leviathan Mode + Rohin**: explicit-activation autonomous coordination with a personal assistant return briefing.
+- **Leviathan Mode + Ronin**: explicit-activation autonomous coordination with a personal assistant return briefing.
 - **Dynamic Personas**: evidence-gated emergent specialists with retained history.
 - **Governance hooks**: ReviewerLockout and PII governance with observe/enforce rollout.
 - **Feature-owned runtime**: hooks enqueue deterministic work through feature-owned skill contracts; CocoConsole is the only registered local runtime script.
