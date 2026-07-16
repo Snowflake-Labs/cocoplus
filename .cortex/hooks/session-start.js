@@ -12,18 +12,10 @@ const fs   = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
 const { isoUtc, appendJsonLine, atomicWrite, logError, readJsonString } = require('./_common.js');
-<<<<<<< HEAD
-=======
-const { loadConfig, setFlag, initPilotSession } = require('./_v2-state.js');
->>>>>>> feature/cocoplus-v2.0.0
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const SPAWN_QUEUE  = path.join(COCOPLUS_DIR, 'subagent-spawn-requests.jsonl');
-<<<<<<< HEAD
-=======
-const V2_QUEUE     = path.join(COCOPLUS_DIR, 'v2-runtime-requests.jsonl');
->>>>>>> feature/cocoplus-v2.0.0
 
 function queueAndAttemptBackgroundSpawn(request, ts) {
   appendJsonLine(SPAWN_QUEUE, request);
@@ -60,16 +52,6 @@ function main() {
   const sessionId = process.env.COCO_SESSION_ID || ('sess-' + new Date().toISOString().slice(0, 19).replace(/[-T:]/g, '').replace('T', '-'));
 
   appendJsonLine(HOOK_LOG, { hook: 'session-start', session: sessionId, ts });
-<<<<<<< HEAD
-=======
-  const config = loadConfig();
-
-  if (config.cocopilot && config.cocopilot.auto_activate === true) {
-    setFlag('cocopilot.on', true);
-    initPilotSession('auto-activated at session start', sessionId);
-    appendJsonLine(HOOK_LOG, { hook: 'session-start', action: 'pilot_auto_activated', session: sessionId, ts });
-  }
->>>>>>> feature/cocoplus-v2.0.0
 
   // 1. Detect current lifecycle phase
   let phase = 'unknown';
@@ -112,7 +94,6 @@ function main() {
     }, null, 2));
   }
 
-<<<<<<< HEAD
   // 5. CocoTrace — Tier 2 async staleness advisory (Feature 41)
   // Fire-and-forget: spawn detaches immediately; hook return is never blocked.
   // Advisory is written to stderr by the child process if STALE artifacts detected.
@@ -131,16 +112,6 @@ function main() {
       traceChild.unref();
     } catch { /* non-fatal — trace advisory must never block session start */ }
   }
-=======
-  // 5. CocoTrace — Tier 2 async staleness advisory through the V2 runtime queue.
-  appendJsonLine(V2_QUEUE, {
-    skill: 'cocotrace/trace-check',
-    requested_at: ts,
-    session_id: sessionId,
-    source: 'hook.session-start',
-  });
-  appendJsonLine(HOOK_LOG, { hook: 'session-start', action: 'trace_check_requested', session: sessionId, ts });
->>>>>>> feature/cocoplus-v2.0.0
 }
 
 try {

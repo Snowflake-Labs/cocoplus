@@ -26,19 +26,11 @@
 const fs   = require('fs');
 const path = require('path');
 const { isoUtc, appendJsonLine, logError, readStdinJson } = require('./_common.js');
-<<<<<<< HEAD
-=======
-const { loadConfig } = require('./_v2-state.js');
->>>>>>> feature/cocoplus-v2.0.0
 
 const COCOPLUS_DIR  = '.cocoplus';
 const HOOK_LOG      = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const SAFETY_LOG    = path.join(COCOPLUS_DIR, 'safety-decisions.log');
 const SAFETY_AUDIT  = path.join(COCOPLUS_DIR, 'safety-audit.jsonl');
-<<<<<<< HEAD
-=======
-const GOVERNANCE_LOG = path.join(COCOPLUS_DIR, 'lifecycle', 'governance-log.json');
->>>>>>> feature/cocoplus-v2.0.0
 
 /** Planning artifacts that are scanned for prompt injection */
 const PLANNING_ARTIFACTS = [
@@ -141,38 +133,6 @@ function main() {
   const event    = readStdinJson();
   const toolName = event.tool || process.env.COCO_TOOL_NAME || 'unknown';
   const params   = event.parameters || {};
-<<<<<<< HEAD
-=======
-  const config   = loadConfig();
-
-  // V2 Governance Policy 1: ReviewerLockout. Review/evaluation agents cannot
-  // mutate the artifact they are currently reviewing. Observe mode logs only.
-  if (toolName === 'Write' || toolName === 'Edit') {
-    const governance = config.governance || {};
-    const mode = governance.reviewer_lockout === undefined ? true : governance.reviewer_lockout;
-    const filePath = params.file_path || params.path || '';
-    const reviewerRole = process.env.COCOPLUS_REVIEWER === 'true' ||
-      /review|critic|sentinel|secondeye/i.test(process.env.COCOPLUS_PERSONA || '');
-    const reviewTarget = process.env.COCOPLUS_REVIEW_TARGET || '';
-    const writesReviewedArtifact = reviewerRole && reviewTarget && path.resolve(filePath) === path.resolve(reviewTarget);
-    if (writesReviewedArtifact && mode !== false && mode !== 'false') {
-      appendJsonLine(GOVERNANCE_LOG, {
-        ts,
-        policy: 'reviewer_lockout',
-        tool: toolName,
-        file: filePath,
-        target: reviewTarget,
-        action: mode === 'observe' ? 'WOULD_HAVE_BLOCKED' : 'BLOCKED',
-      });
-      if (mode === 'observe') {
-        allow(`ReviewerLockout observe mode: write would have been blocked for ${filePath}.`);
-      } else {
-        block(`ReviewerLockout: review-mode agents cannot modify the artifact under review (${filePath}).`);
-      }
-      return;
-    }
-  }
->>>>>>> feature/cocoplus-v2.0.0
 
   // --- Step 1: Prompt injection defense scan (planning artifacts on Read) ---
   if (toolName === 'Read' || toolName === 'mcp__files_read') {

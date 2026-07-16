@@ -39,11 +39,7 @@
 <p><strong><code>$pod init</code></strong> — Initialize a new CocoPlus project</p>
 <pre><code>
 $pod init
-<<<<<<< HEAD
 $pod init --name "Data Platform v2"
-=======
-$pod init --name "Data Platform Modernization"
->>>>>>> feature/cocoplus-v2.0.0
 </code></pre>
 <p>Prompts for project name and description if not provided. Creates <code>.cocoplus/</code> directory structure, writes initial <code>AGENTS.md</code>, <code>project.md</code>, <code>flow.json</code>, <code>cocoplus.toml</code>, and <code>notifications.json</code>. Creates the initial git commit. Also generates <code>lifecycle/cocoplus-context.md</code> — the constitutional document that every CocoPlus agent reads first to understand the project's durable context, organizational standards, and active decision record. Fails if <code>.cocoplus/</code> already exists.</p>
 <p><code>cocoplus.toml</code> is the single source of truth for all operator-configurable plugin settings: security rules, cost thresholds, warehouse access, model tier defaults, demo mode flags, and sprint configuration. All downstream artifacts (agent frontmatter, hook rule tables) are generated from it and must not be edited directly.</p>
@@ -94,18 +90,6 @@ $cocoplus migrate-config
 <p>Detects an existing <code>safety-config.json</code> in the project, reads its security rules, populates the <code>[security]</code> section of a new <code>cocoplus.toml</code>, and runs <code>$cocoplus sync</code> to regenerate downstream artifacts. The original <code>safety-config.json</code> is archived (not deleted) after migration. For projects upgrading from an earlier plugin version.</p>
 <p><strong>Output:</strong> <code>cocoplus.toml</code> creation + sync commit + archive of <code>safety-config.json</code>.</p>
 <hr>
-<<<<<<< HEAD
-=======
-<p><strong><code>$migrate v2</code></strong> — Upgrade an existing CocoPod to the current architecture</p>
-<pre><code>
-$migrate v2 --dry-run
-$migrate v2
-$migrate v2 --from 1.x
-</code></pre>
-<p>Inspects an older <code>.cocoplus/</code> project, reports missing current-state directories, config blocks, runtime queue files, dynamic persona registry, and AGENTS activation blocks, then applies the upgrade when run without <code>--dry-run</code>. Legacy artifacts are archived rather than deleted.</p>
-<p><strong>Output:</strong> Migration report, current state files, and a migration commit.</p>
-<hr>
->>>>>>> feature/cocoplus-v2.0.0
 <h2 id="master-toggle-assist-mode">Master Toggle — Assist Mode</h2>
 <hr>
 <p><strong><code>$cocoplus on</code></strong> — Activate all features simultaneously</p>
@@ -123,60 +107,6 @@ $cocoplus off
 <p>Removes all mode flag files. Does not delete any data files — memory content, meter history, grove patterns, and lifecycle artifacts are preserved. Creates git commit. Shows what was deactivated and what state was preserved.</p>
 <p><strong>Output:</strong> Deactivation summary with preserved-state list.</p>
 <hr>
-<<<<<<< HEAD
-=======
-<h2 id="operating-layer-commands">Operating Layer Commands</h2>
-<p><strong><code>$cocoplus console</code></strong> — Launch the read-only local CocoConsole browser control plane</p>
-<pre><code>
-$cocoplus console
-$cocoplus console status
-$cocoplus console stop
-</code></pre>
-<p>Starts a local Node.js server on the configured port (default <code>7779</code>) and writes <code>.cocoplus/lifecycle/console-state.json</code>. If already running, reuses the recorded instance. The dashboard is read-only and never approves gates or mutates project state.</p>
-<hr>
-<p><strong><code>$pilot on</code> / <code>$pilot off</code></strong> — Toggle CocoPilot for the current session</p>
-<pre><code>
-$pilot on
-$pilot off
-</code></pre>
-<p><code>$pilot on</code> creates <code>.cocoplus/modes/cocopilot.on</code> and initializes <code>lifecycle/pilot-session.json</code>. CocoPilot may route natural-language requests and offer suggestions, but cannot perform irreversible actions or bypass approval gates. <code>$pilot off</code> removes the mode flag.</p>
-<hr>
-<p><strong><code>$forge</code></strong> — Start or manage CocoForge</p>
-<pre><code>
-$forge "prepare this project for release"
-$forge goal "keep this warehouse migration moving until ready"
-$forge status
-$forge stop
-</code></pre>
-<p>Starts the expert-team meta-loop. Task Mode is bounded to a goal; Goal Mode persists across sessions. Forge uses Team Lead, Quality Critic, Learning Curator, and specialist roles. Forge has priority over CocoPilot while active.</p>
-<hr>
-<p><strong><code>$leviathan</code></strong> — Manage Leviathan Mode and Ronin</p>
-<pre><code>
-$leviathan on
-$leviathan status
-$leviathan learn
-$leviathan learn status
-$leviathan off
-</code></pre>
-<p><code>$leviathan on</code> is the activation command. It presents the covenant first, then creates <code>.cocoplus/modes/leviathan.on</code>, initializes <code>.cocoplus/lifecycle/leviathan-state.json</code>, and calibrates Ronin for the session. Ronin provides the personal assistant return briefing for autonomy state, hard stops, and active workstreams. <code>$leviathan off</code> exits the mode and checkpoints state.</p>
-<p><code>$leviathan learn</code> ingests synthesized history artifacts into <code>lifecycle/leviathan-state.json</code> without reading raw session transcripts.</p>
-<hr>
-<p><strong><code>$personas discover</code></strong> — Manage Dynamic Personas</p>
-<pre><code>
-$personas discover
-$personas list
-$personas invoke &lt;slug&gt;
-$personas dissolve &lt;slug&gt;
-</code></pre>
-<p>Discovers emergent specialists from repeated project evidence, lists active and candidate personas, invokes active dynamic personas, and dissolves personas while retaining their history.</p>
-<hr>
-<p><strong><code>$governance status</code></strong> — Inspect governance hook policy state</p>
-<pre><code>
-$governance status
-</code></pre>
-<p>Reports ReviewerLockout and PII governance settings from <code>cocoplus.toml</code>, including observe-mode events from <code>lifecycle/governance-log.json</code>.</p>
-<hr>
->>>>>>> feature/cocoplus-v2.0.0
 <h2 id="lifecycle-cocobrew">Lifecycle — CocoBrew</h2>
 <p>The six phases run sequentially. Each phase requires the previous phase to be committed before it can begin.</p>
 <hr>
@@ -1091,11 +1021,7 @@ $wisdom route
 <pre><code>
 $behavior maturity
 </code></pre>
-<<<<<<< HEAD
 <p>Computes the current maturity level (L0 Manual, L1 Assisted, L2 Supervised, L3 Autonomous-Eligible) from <code>cocoplus.toml</code> and <code>.cocoplus/modes/</code>. If <code>automation_maturity</code> or <code>maturity_level</code> is declared, the reported level is capped at that declaration. L3 requires all ten Snow-Cocoplus readiness checks to pass: budget guard, separate verifier, escalation ladder, human override, output allowlist, path denylist, kill switch, committed run log, no same-agent verification, and attempt cap. Result written to <code>.cocoplus/maturity.json</code>; also shown in <code>$pod status</code>.</p>
-=======
-<p>Computes the current maturity level (L0 Manual, L1 Assisted, L2 Supervised, L3 Autonomous-Eligible) from <code>cocoplus.toml</code> and <code>.cocoplus/modes/</code>. If <code>automation_maturity</code> or <code>maturity_level</code> is declared, the reported level is capped at that declaration. L3 requires all ten autonomous-readiness checks to pass: budget guard, separate verifier, escalation ladder, human override, output allowlist, path denylist, kill switch, committed run log, no same-agent verification, and attempt cap. Result written to <code>.cocoplus/maturity.json</code>; also shown in <code>$pod status</code>.</p>
->>>>>>> feature/cocoplus-v2.0.0
 <p><strong>Output:</strong> Current level + L3 checklist pass/fail breakdown.</p>
 <hr>
 <h2 id="structured-code-review-cocoreview">Structured Code Review — CocoReview</h2>
@@ -1452,11 +1378,7 @@ $sketch deps --reduce off
 <tbody>
 <tr>
   <td style="text-align:left"><strong>Setup</strong></td>
-<<<<<<< HEAD
   <td style="text-align:left"><code>$pod init</code> · <code>$pod init --refresh-context</code> · <code>$pod status</code> · <code>$pod resume</code> · <code>$pod kb</code> · <code>$pod checkpoint</code> · <code>$cocoplus sync</code> · <code>$cocoplus migrate-config</code></td>
-=======
-  <td style="text-align:left"><code>$pod init</code> · <code>$pod init --refresh-context</code> · <code>$pod status</code> · <code>$pod resume</code> · <code>$pod kb</code> · <code>$pod checkpoint</code> · <code>$cocoplus sync</code> · <code>$cocoplus migrate-config</code> · <code>$migrate v2</code></td>
->>>>>>> feature/cocoplus-v2.0.0
 </tr>
 <tr>
   <td style="text-align:left"><strong>Assist Mode</strong></td>
@@ -1659,7 +1581,3 @@ $pivot clear
 
 </body>
 </html>
-<<<<<<< HEAD
-=======
-
->>>>>>> feature/cocoplus-v2.0.0

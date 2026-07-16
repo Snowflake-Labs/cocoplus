@@ -4,37 +4,13 @@
 
 # CocoPlus
 
-<<<<<<< HEAD
 **CocoPlus** is an Agentic Operating System for Snowflake Coco. It brings structured, multi-agent workflows to data engineering projects — covering everything from project initialization through spec, plan, build, test, review, and ship phases.
-=======
-**CocoPlus** is an Agentic Operating System for Snowflake Coco. It brings structured, multi-agent workflows to data engineering projects — covering everything from project initialization through spec, plan, build, test, review, ship phases, browser observability, autonomous orchestration, and governance-aware execution.
->>>>>>> feature/cocoplus-v2.0.0
 
 Built using only Coco-native constructs: Skills, Agents, Hooks, and AGENTS.md.
 
 ## What It Does
 
-<<<<<<< HEAD
 CocoPlus wraps a structured development lifecycle around every project — from requirements capture through production ship — enforcing phase gates, parallel specialist execution, and checkpoint-validated delivery at each step. It decomposes work across eight specialist personas matched to domain, runs them in isolated git worktrees, and tracks every decision, token, and quality finding across sessions. A multi-layer safety gate protects production Snowflake objects from accidental modification, while a persistent pattern library and project knowledge base compound institutional memory over time. Forty-seven features covering orchestration, evaluation, governance, cost visibility, prompt engineering, pre-spec commitment, multi-agent deliberation, context distillation, outcome certainty, FinOps chargeback, asset health, and multi-pod convergence — all running on Coco-native constructs with no external services.
-=======
-CocoPlus wraps a structured development lifecycle around every project — from requirements capture through production ship — enforcing phase gates, parallel specialist execution, and checkpoint-validated delivery at each step. It decomposes work across fixed and dynamic specialist personas, runs coordinated workstreams, and tracks decisions, tokens, quality findings, contracts, memory, and governance signals across sessions.
-
-The current operating layer includes:
-
-- **CocoConsole**: a local, read-only browser control plane launched with `$cocoplus console`.
-- **CocoPilot**: opt-in natural-language orchestration with `$pilot on` / `$pilot off`.
-- **CocoForge**: goal-driven expert-team meta-loop with `$forge`.
-- **Leviathan Mode + Ronin**: explicit-activation autonomous coordination with a personal assistant return briefing.
-- **Dynamic Personas**: evidence-gated emergent specialists with retained history.
-- **Governance hooks**: ReviewerLockout and PII governance with observe/enforce rollout.
-- **Feature-owned runtime**: hooks enqueue deterministic work through feature-owned skill contracts; CocoConsole is the only registered local runtime script.
-- **CocoFlow orchestration**: tiered planning, dependency-group dispatch, synthesis passes, and `$flow template` reuse.
-- **Console-aware visual commands**: `$flow view` and `$meter view` redirect into CocoConsole when it is running.
-
-The root plugin implements the current runtime and documentation surface while preserving older project state through explicit migration skills.
-
-Older CocoPods migrate forward with `$migrate v2 --dry-run` and `$migrate v2`; new work should use the feature-owned skills directly.
->>>>>>> feature/cocoplus-v2.0.0
 
 ## Specialist Personas
 
@@ -51,20 +27,6 @@ In Coco, enter:
 Install this plugin from [Snowflake-Labs/cocoplus](https://github.com/Snowflake-Labs/cocoplus)
 ```
 
-<<<<<<< HEAD
-=======
-### Upgrading an Existing CocoPlus Project
-
-After installing the current plugin, open each existing CocoPlus project and run:
-
-```text
-$migrate v2 --dry-run
-$migrate v2
-```
-
-Use the dry run first. It reports the exact project-state changes, tests, validation checks, and cleanup actions before anything is written.
-
->>>>>>> feature/cocoplus-v2.0.0
 For manual installation details, see [INSTALLATION.md](INSTALLATION.md).
 
 ## Getting Started
@@ -72,11 +34,6 @@ For manual installation details, see [INSTALLATION.md](INSTALLATION.md).
 ```
 $pod init       — initialize CocoPlus in your project
 $cocoplus on    — activate all features
-<<<<<<< HEAD
-=======
-$cocoplus console — open the read-only dashboard
-$pilot on       — activate CocoPilot for the current session
->>>>>>> feature/cocoplus-v2.0.0
 $spec           — start the requirements phase
 ```
 

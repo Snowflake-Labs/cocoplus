@@ -1,11 +1,7 @@
 ---
 name: "flow-view"
 description: "Render the current flow.json as an interactive HTML DAG and open it in the default browser. Injects live pipeline data into the flow-view.html.template and writes .cocoplus/flow-view.html."
-<<<<<<< HEAD
 version: "1.0.1"
-=======
-version: "2.0.0"
->>>>>>> feature/cocoplus-v2.0.0
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -15,20 +11,6 @@ tags:
 
 Your objective is to render the CocoFlow pipeline as an interactive HTML visualization.
 
-<<<<<<< HEAD
-=======
-## CocoPlus 2.0 Console-Aware Redirect
-
-Before generating standalone HTML, check `.cocoplus/lifecycle/console-state.json`.
-
-If the file exists and contains `running: true` with a `port` value:
-1. Output: `Opening Flow panel in CocoConsole.`
-2. Open `http://localhost:<port>/flow` in the browser.
-3. Stop. Do not generate a standalone snapshot.
-
-If CocoConsole is not running, continue with the standalone CocoView behavior below.
-
->>>>>>> feature/cocoplus-v2.0.0
 ## Pre-flight Check
 
 Check that `.cocoplus/` exists. If not:

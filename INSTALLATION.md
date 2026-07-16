@@ -87,25 +87,6 @@ After updating `settings.json`, tell the user to restart Coco so it reloads plug
 
 Do not run project initialization automatically unless the user asks for it.
 
-<<<<<<< HEAD
-=======
-## Upgrade Existing CocoPlus Projects
-
-If the user already has projects initialized with CocoPlus 1.x, tell them to upgrade each project after Coco restarts:
-
-```text
-$migrate v2 --dry-run
-$migrate v2
-```
-
-Explain the sequence:
-
-1. `--dry-run` inspects the existing `.cocoplus/` state and reports required migration actions without writing files.
-2. `$migrate v2` applies the project-state migration, runs migration testing and validation, archives legacy configuration artifacts, writes a migration report, and creates a migration commit.
-
-Do not run `$pod init` in an already initialized CocoPlus project.
-
->>>>>>> feature/cocoplus-v2.0.0
 ## Post-Install Guidance
 
 After Coco restarts, tell the user to run these commands from the root of the project where they want CocoPlus active:
@@ -113,18 +94,9 @@ After Coco restarts, tell the user to run these commands from the root of the pr
 ```text
 $pod init
 $cocoplus on
-<<<<<<< HEAD
 $spec
 ```
 
-=======
-$cocoplus console
-$spec
-```
-
-`$cocoplus console` opens the read-only local dashboard. Optional operating modes are activated per session with `$pilot on`, `$forge "goal"`, or `$leviathan on`.
-
->>>>>>> feature/cocoplus-v2.0.0
 ## Validation
 
 Validate installation by checking:
@@ -154,9 +126,4 @@ If Coco is available in the current environment, verify that Coco recognizes the
 - [ ] `pluginDirs` includes `<user-home>/.snowflake/cortex/plugins/cocoplus`
 - [ ] Existing `pluginDirs` entries and unrelated settings are preserved
 - [ ] User is told to restart Coco
-<<<<<<< HEAD
 - [ ] User is given `$pod init`, `$cocoplus on`, and `$spec` as next project-level commands
-=======
-- [ ] Existing CocoPlus 1.x users are told to run `$migrate v2 --dry-run` before `$migrate v2`
-- [ ] User is given `$pod init`, `$cocoplus on`, `$cocoplus console`, and `$spec` as next project-level commands
->>>>>>> feature/cocoplus-v2.0.0
