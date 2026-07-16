@@ -42,6 +42,13 @@
 Install this plugin from [Snowflake-Labs/cocoplus](https://github.com/Snowflake-Labs/cocoplus)
 </code></pre>
 <p>If Coco needs to install the plugin manually, download the repository and place it at <code>&lt;user-home&gt;/.snowflake/cortex/plugins/cocoplus</code>, then add that directory to <code>pluginDirs</code> in Coco's <code>settings.json</code>. Preserve any existing plugin directories.</p>
+<section class="summary-box">
+  <h2>Upgrading From an Earlier CocoPlus Project</h2>
+  <p>If this project already has a <code>.cocoplus/</code> directory from a previous release, do not run <code>$pod init</code> again. After installing the current plugin, run <code>$migrate v2 --dry-run</code> first, review the migration report, then run <code>$migrate v2</code>.</p>
+  <pre><code>$migrate v2 --dry-run
+$migrate v2</code></pre>
+  <p>The migration skill converts project state, runs migration testing and validation, archives superseded configuration files, and writes a migration commit.</p>
+</section>
 <p>That's the full list. CocoPlus adds no external services, no databases, no background processes. If the plugin is installed and Coco is connected to Snowflake, you have everything.</p>
 <hr>
 <h2 id="initialize-your-project">Initialize Your Project</h2>
@@ -86,9 +93,25 @@ Run $pod status in a moment to see results.
 <ul>
   <li>The CocoBrew lifecycle phases — you start those yourself with <code>$spec</code> when you're ready to begin a specific workstream</li>
   <li>CocoSpark — brainstorming is always an explicit choice, never automatic</li>
+  <li>Leviathan Mode — explicit autonomy requires its own covenant acceptance with <code>$leviathan on</code></li>
   <li>CocoFleet — multi-process orchestration requires deliberate setup with a fleet manifest</li>
 </ul>
 <p>These are intentional. A tool that starts things without you is a tool you can't trust.</p>
+<hr>
+<h2 id="activate-leviathan-mode">Activate Leviathan Mode</h2>
+<p>Leviathan Mode is not part of normal activation. It is an explicit-autonomy mode for sessions where you want CocoPlus to coordinate longer-running work under declared hard stops. Turn it on only when you mean to delegate that level of coordination.</p>
+<pre><code>
+$leviathan on
+</code></pre>
+<p>Activation presents the Leviathan covenant before anything changes. The covenant states that Leviathan may coordinate autonomous work across CocoPlus features, Ronin is the developer-facing companion voice, hard stops still come from CocoPlus configuration, and irreversible actions still require developer confirmation.</p>
+<p>After you accept the covenant, CocoPlus creates <code>.cocoplus/modes/leviathan.on</code>, initializes <code>.cocoplus/lifecycle/leviathan-state.json</code>, and calibrates Ronin for the current session. Check the current state at any time:</p>
+<pre><code>
+$leviathan status
+</code></pre>
+<p>When you want to leave explicit-autonomy mode, turn it off:</p>
+<pre><code>
+$leviathan off
+</code></pre>
 <hr>
 <h2 id="verify-your-setup">Verify Your Setup</h2>
 <p>Once the Environment Inspector background scan has had a moment to complete:</p>
@@ -162,3 +185,4 @@ $spark [topic]
 
 </body>
 </html>
+

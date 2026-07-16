@@ -12,10 +12,12 @@ const fs   = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
 const { isoUtc, appendJsonLine, atomicWrite, logError, readJsonString } = require('./_common.js');
+const { loadConfig, setFlag, initPilotSession } = require('./_v2-state.js');
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const SPAWN_QUEUE  = path.join(COCOPLUS_DIR, 'subagent-spawn-requests.jsonl');
+const V2_QUEUE     = path.join(COCOPLUS_DIR, 'v2-runtime-requests.jsonl');
 
 function queueAndAttemptBackgroundSpawn(request, ts) {
   appendJsonLine(SPAWN_QUEUE, request);
@@ -52,6 +54,13 @@ function main() {
   const sessionId = process.env.COCO_SESSION_ID || ('sess-' + new Date().toISOString().slice(0, 19).replace(/[-T:]/g, '').replace('T', '-'));
 
   appendJsonLine(HOOK_LOG, { hook: 'session-start', session: sessionId, ts });
+  const config = loadConfig();
+
+  if (config.cocopilot && config.cocopilot.auto_activate === true) {
+    setFlag('cocopilot.on', true);
+    initPilotSession('auto-activated at session start', sessionId);
+    appendJsonLine(HOOK_LOG, { hook: 'session-start', action: 'pilot_auto_activated', session: sessionId, ts });
+  }
 
   // 1. Detect current lifecycle phase
   let phase = 'unknown';
@@ -94,24 +103,14 @@ function main() {
     }, null, 2));
   }
 
-  // 5. CocoTrace — Tier 2 async staleness advisory (Feature 41)
-  // Fire-and-forget: spawn detaches immediately; hook return is never blocked.
-  // Advisory is written to stderr by the child process if STALE artifacts detected.
-  const traceScriptPath = 'scripts/trace-check.js';
-  if (fs.existsSync(traceScriptPath) && fs.existsSync(COCOPLUS_DIR)) {
-    try {
-      const traceChild = spawn(process.execPath, [traceScriptPath], {
-        stdio:    ['ignore', 'ignore', 'inherit'],
-        detached: false,
-      });
-      traceChild.on('exit', (code) => {
-        if (code !== 0 && code !== null) {
-          appendJsonLine(HOOK_LOG, { hook: 'session-start', action: 'trace_exit_nonzero', code, ts });
-        }
-      });
-      traceChild.unref();
-    } catch { /* non-fatal — trace advisory must never block session start */ }
-  }
+  // 5. CocoTrace — Tier 2 async staleness advisory through the V2 runtime queue.
+  appendJsonLine(V2_QUEUE, {
+    skill: 'cocotrace/trace-check',
+    requested_at: ts,
+    session_id: sessionId,
+    source: 'hook.session-start',
+  });
+  appendJsonLine(HOOK_LOG, { hook: 'session-start', action: 'trace_check_requested', session: sessionId, ts });
 }
 
 try {

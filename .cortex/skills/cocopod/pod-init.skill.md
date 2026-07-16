@@ -44,6 +44,14 @@ Create the following directories (create them even if empty — they are require
 .cocoplus/map/
 .cocoplus/map/intermediate/
 .cocoplus/map/archive/
+.cocoplus/flows/
+.cocoplus/flows/templates/
+.cocoplus/flows/templates/archive/
+.cocoplus/personas/
+.cocoplus/personas/archive/
+.cocoplus/cupper/
+.cocoplus/recall/
+.cocoplus/governance/
 ```
 
 ## Copy Template Files
@@ -179,6 +187,24 @@ cupper/auto-captured.json
 # CocoPivot machine-readable convergence state (FINDINGS.md itself is committed)
 lifecycle/findings-state.json
 pod-status.json
+
+# CocoPlus 2.0 runtime queues and local indexes
+v2-runtime-requests.jsonl
+subagent-spawn-requests.jsonl
+ui-notifications.jsonl
+lifecycle/pilot-session.json
+lifecycle/forge-state.json
+lifecycle/forge-activity.jsonl
+lifecycle/leviathan-state.json
+lifecycle/consolidation-log.json
+lifecycle/governance-log.json
+.last-consolidation
+
+# Execution plan templates are committed when promoted; archives are local by default
+flows/templates/archive/
+
+# Dynamic persona scratch state
+personas/dynamic-registry.json.tmp
 ```
 
 ## Create Root AGENTS.md Shim
@@ -218,6 +244,21 @@ Create `.cocoplus/subagents.json` as an empty registry:
 ```json
 {}
 ```
+
+Create `.cocoplus/personas/dynamic-registry.json`:
+
+```json
+{
+  "version": 1,
+  "active": [],
+  "candidates": [],
+  "dissolved": []
+}
+```
+
+Create `.cocoplus/v2-runtime-requests.jsonl` as an empty queue file. Hooks append V2 feature work requests here rather than invoking legacy scripts directly.
+
+Create `.cocoplus/.last-consolidation` with the current epoch milliseconds so the CocoRecall Dream Cycle starts on the normal 24-hour cadence.
 
 ## CocoAudit Setup (Feature 40)
 
@@ -279,7 +320,9 @@ CocoPlus initialized successfully.
 ├── memory/            ← cross-session decisions and patterns
 ├── grove/             ← CocoGrove pattern library
 ├── meter/             ← CocoMeter token tracking
-├── scripts/           ← deterministic utility scripts
+├── flows/templates/   ← reusable execution plan templates
+├── personas/          ← dynamic persona registry and history files
+├── scripts/           ← compatibility utility scripts copied into CocoPods
 ├── pull/              ← CocoPull manifest and distillation registry
 ├── harvest/           ← pipeline recovery scratch state
 ├── snapshots/         ← Environment Inspector results
@@ -314,4 +357,5 @@ Next steps:
 - [ ] Root `AGENTS.md` shim exists at project root with `cocoplus-agents-redirect` directive
 - [ ] `.cocoplus/personas.json` exists with 8 default shorthand entries (`$de` through `$cdo`)
 - [ ] `.cocoplus/subagents.json` exists as empty `{}`
+- [ ] `.cocoplus/personas/dynamic-registry.json`, `.cocoplus/flows/templates/`, `.cocoplus/v2-runtime-requests.jsonl`, and `.cocoplus/.last-consolidation` exist
 - [ ] Git commit with message `chore(cocopod): initialize CocoPlus project structure` exists in log

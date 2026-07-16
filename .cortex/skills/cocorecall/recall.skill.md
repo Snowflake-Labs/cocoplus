@@ -23,7 +23,7 @@ CocoRecall is entirely local. No session data is transmitted anywhere. `recall.d
 
 ### `$recall search <query> [--all] [--session <id>] [--function <name>] [--outcome-type <type>]`
 
-Run `node scripts/recall-import.js --query "<query>"` (or the dedicated query path if the index already exists) to search the normalized index using a three-factor relevance score: lexical match (query terms against turn text and entity tags), recency (decay-weighted), and phase context match (turns from the current CocoPlus phase rank higher).
+Use the `cocorecall/recall-import` contract to search the normalized index using a three-factor relevance score: lexical match (query terms against turn text and entity tags), recency (decay-weighted), and phase context match (turns from the current CocoPlus phase rank higher).
 
 Default behavior is **session-diverse**: return the single highest-relevance turn from each matching session, so one verbose session cannot dominate the results. `--all` returns every matching turn across all sessions. `--session <id>` restricts the search to one session. `--function <name>` filters to sessions that touched a function. `--outcome-type <type>` filters to sessions with matching outcome-contract evidence.
 
@@ -42,7 +42,7 @@ Load and display the complete turn sequence for the named session, with the turn
 
 ### `$recall import [--since <date>]`
 
-Run `node scripts/recall-import.js --import [--since <date>]`. Rebuilds or incrementally updates `recall.db` from transcripts at `~/.snowflake/cortex/conversations/`. `--since` limits the scan to sessions starting after the given date.
+Use the `cocorecall/recall-import` contract to rebuild or incrementally update `recall.db` from configured local transcript sources. `--since` limits the scan to sessions starting after the given date.
 
 ### `$recall sources`
 
@@ -61,6 +61,19 @@ Report: total sessions indexed, total turns indexed, index freshness (time since
 - **tool_calls / function_touches / evaluation_results / outcome_contracts / strategy_usage / key_decisions** — normalized retrieval facets for targeted searches
 - **entities** — entity name, entity type (Snowflake object / function name / Cortex API feature / data concept), session/turn IDs where it appears
 - **citations** — per search result: query text, matched session/turn ID, source-exists flag, citation timestamp
+
+## CocoRecall Dream Cycle
+
+At Stop, the hook performs a near-free `.last-consolidation` age check. If 24 hours have elapsed, it records a Dream Cycle request in `.cocoplus/lifecycle/consolidation-log.json` and updates `.cocoplus/.last-consolidation`.
+
+The consolidation cycle has four phases:
+
+1. **ORIENT** — inventory `MEMORY.md`, recall status, CocoWisdom, CocoGrove, and persona history files.
+2. **GATHER SIGNAL** — run targeted JSONL pattern extraction over the recent session window. Search for Snowflake schema corrections, SQL performance findings, user workflow preferences, and governance decisions before any LLM processing.
+3. **CONSOLIDATE** — deduplicate, resolve contradictions with provenance, and preserve source citations.
+4. **PRUNE & INDEX** — enforce hot-path line ceilings, archive stale entries rather than deleting them, and keep `MEMORY.md` bounded.
+
+If `.last-consolidation` is older than 48 hours, CocoConsole should surface an amber maintenance indicator.
 
 ## Exit Criteria
 
