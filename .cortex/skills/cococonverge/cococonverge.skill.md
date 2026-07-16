@@ -22,27 +22,27 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is
 
 ### `$pivot run`
 
-Run `node scripts/pivot-merge.js run`. Reads all pod output files produced by the most recent CocoFlow `parallel:` step execution (from `pod-status.json`), applies the three-pass deduplication algorithm below, assigns priority tiers and effort estimates, and writes `lifecycle/FINDINGS.md` and `lifecycle/findings-state.json`. If the upstream flow used `on_partial: skip_partial`, pass `--skip-partial`.
+Use the `skill-native/pivot-merge` contract in `run` mode. Read all pod output files produced by the most recent CocoFlow `parallel:` step execution (from `pod-status.json`), apply the three-pass deduplication algorithm below, assign priority tiers and effort estimates, and write `lifecycle/FINDINGS.md` and `lifecycle/findings-state.json`. If the upstream flow used `on_partial: skip_partial`, exclude PARTIAL pod outputs.
 
 ### `$pivot run --since <timestamp>`
 
-Run `node scripts/pivot-merge.js run --since <timestamp>`. Targets only pod outputs that completed after `<timestamp>`. Useful for re-running convergence when additional pods have completed since the last run.
+Use the `skill-native/pivot-merge` contract in `run` mode and target only pod outputs that completed after `<timestamp>`. Useful for re-running convergence when additional pods have completed since the last run.
 
 ### `$pivot show`
 
-Run `node scripts/pivot-merge.js show`. Display the current `lifecycle/FINDINGS.md`, grouped by priority tier. Include the Coverage Note section if any contributing pod was PARTIAL.
+Display the current `lifecycle/FINDINGS.md`, grouped by priority tier. Include the Coverage Note section if any contributing pod was PARTIAL.
 
 ### `$pivot status`
 
-Run `node scripts/pivot-merge.js status`. Summary view: total unique findings, count by priority tier (P1/P2/P3/P4), count by severity (BLOCKING/IMPORTANT/MINOR/ADVISORY), list of contributing pods with completion status (COMPLETE/PARTIAL/ERROR), and timestamp of the last convergence run.
+Read `lifecycle/findings-state.json` and display: total unique findings, count by priority tier (P1/P2/P3/P4), count by severity (BLOCKING/IMPORTANT/MINOR/ADVISORY), list of contributing pods with completion status (COMPLETE/PARTIAL/ERROR), and timestamp of the last convergence run.
 
 ### `$pivot clear`
 
-Run `node scripts/pivot-merge.js clear`. Archive the current `FINDINGS.md` to `lifecycle/findings-archive/<timestamp>-FINDINGS.md` and reset `findings-state.json` in preparation for a new convergence run.
+Archive the current `FINDINGS.md` to `lifecycle/findings-archive/<timestamp>-FINDINGS.md` and reset `findings-state.json` in preparation for a new convergence run.
 
 ## Deduplication Algorithm (Deterministic — No LLM)
 
-`pivot-merge.js` applies three passes, in order, to all upstream pod outputs:
+The V2 skill-native convergence contract applies three passes, in order, to all upstream pod outputs:
 
 **Pass 1 — Same file:line match:** Two findings referencing the same file at the same line number are the same underlying issue. Take the highest severity from contributing sources, keep the most detailed description, cite all contributing pod names and their original finding IDs.
 
@@ -95,10 +95,10 @@ CocoPivot is the canonical handler for the `converge:` step type. When a flow de
 ## Exit Criteria
 
 - `$pivot run` produces `FINDINGS.md` from N pod outputs with zero duplicate entries for identical file:line findings
-- `$pivot show`, `$pivot status`, and `$pivot clear` are backed by explicit `pivot-merge.js` subcommands
+- `$pivot show`, `$pivot status`, and `$pivot clear` use the skill-native convergence contract and committed/ignored artifacts
 - PARTIAL-source pods are flagged in the `FINDINGS.md` header, never silently merged as if COMPLETE
 - Scope anomalies are detected against each pod's `excludes:` declaration and excluded from `FINDINGS.md`, with the anomaly itself recorded in `findings-state.json`
-- `pivot-merge.js` is deterministic — identical inputs always produce identical `FINDINGS.md` and `findings-state.json`
+- The convergence algorithm is deterministic — identical inputs always produce identical `FINDINGS.md` and `findings-state.json`
 - Merged findings inherit the highest priority tier and largest effort estimate among contributing sources
 - `$pivot clear` archives rather than deletes the current `FINDINGS.md`
 

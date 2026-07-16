@@ -23,18 +23,22 @@
 
 const fs   = require('fs');
 const path = require('path');
-const { execFile, execFileSync } = require('child_process');
+const { execFile } = require('child_process');
 const { isoUtc, appendJsonLine, logError, readStdinJson, readJsonString } = require('./_common.js');
 const {
   checkpointForge,
   checkpointLeviathan,
   flagExists,
   initPilotSession,
+  lifecyclePath,
+  readJson,
   setFlag,
-} = require('../scripts/v2-state.js');
+  writeJson,
+} = require('./_v2-state.js');
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
+const SKILL_QUEUE  = path.join(COCOPLUS_DIR, 'skill-native-requests.jsonl');
 
 /** Default persona shorthand map (overridden by .cocoplus/personas.json if present) */
 const DEFAULT_PERSONAS = {
@@ -95,7 +99,12 @@ function main() {
   }
   if (message === '$pilot off') {
     setFlag('cocopilot.on', false);
-    appendJsonLine(path.join(COCOPLUS_DIR, 'lifecycle', 'pilot-session.jsonl'), { active: false, deactivated_at: ts, session_id: sessionId });
+    const pilotPath = lifecyclePath('pilot-session.json');
+    const pilot = readJson(pilotPath, {});
+    pilot.active = false;
+    pilot.deactivated_at = ts;
+    pilot.session_id = sessionId;
+    writeJson(pilotPath, pilot);
     appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'pilot_deactivated', tier: 1, ts });
     return;
   }
@@ -176,25 +185,14 @@ function main() {
     if (message.startsWith(cmd + ' ') || message === cmd) {
       const fnArg = message.slice(cmd.length).trim().split(/\s+/)[0] || '';
       if (fnArg || gateCommand === 'ship') {
-        const gateScript = path.join('scripts', 'contract-gate.js');
-        if (fs.existsSync(gateScript)) {
-          try {
-            const gateArgs = [gateScript, '--command', gateCommand];
-            if (fnArg) gateArgs.push('--function', fnArg);
-            else gateArgs.push('--all');
-            const out = execFileSync(process.execPath, gateArgs, { encoding: 'utf8', timeout: 2000 });
-            const result = JSON.parse(out);
-            if (result.action === 'BLOCK') {
-              appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'contract_gate_blocked', tier: 1, command: gateCommand, function: fnArg, reason: result.reason, ts });
-              console.error(result.reason);
-              process.exit(1);
-            }
-          } catch (err) {
-            // Gate failing to run is non-fatal — CocoContract is advisory-safe,
-            // never a hard dependency for the hook itself to stay alive.
-            logError('user-prompt-submit', `contract-gate failed: ${err.message}`);
-          }
-        }
+        appendJsonLine(SKILL_QUEUE, {
+          skill: 'skill-native/contract-gate',
+          command: gateCommand,
+          function: fnArg || null,
+          requested_at: ts,
+          source: 'hook.user-prompt-submit',
+        });
+        appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'contract_gate_requested', tier: 1, command: gateCommand, function: fnArg, ts });
       }
       break;
     }
@@ -234,17 +232,14 @@ function main() {
   // 2b. CocoCupper auto-capture (Feature 8 enhancement) — fire-and-forget so
   // its <200ms budget never risks the surrounding Tier 1 <50ms SLA for the
   // rest of this hook. Silent: writes to auto-captured.json only, no output.
-  const cupperScript = path.join('scripts', 'cupper-capture.js');
-  if (fs.existsSync(cupperScript)) {
-    const skillContext = routedPersona;
-    const cupperArgs = [cupperScript, '--message', message.slice(0, 500)];
-    if (skillContext) cupperArgs.push('--skill-context', skillContext);
-    execFile(process.execPath, cupperArgs, { timeout: 200, windowsHide: true }, (err) => {
-      if (err && err.killed) {
-        appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'cupper_capture_timeout', ts });
-      }
-    });
-  }
+  appendJsonLine(SKILL_QUEUE, {
+    skill: 'skill-native/cupper-capture',
+    message: message.slice(0, 500),
+    skill_context: routedPersona,
+    requested_at: ts,
+    source: 'hook.user-prompt-submit',
+  });
+  appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'cupper_capture_requested', tier: 1, ts });
 
   // 3. Context Mode overlay — prepend phase context to normal messages
   if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'context-mode.on'))) {

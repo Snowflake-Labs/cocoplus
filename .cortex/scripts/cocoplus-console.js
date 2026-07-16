@@ -12,7 +12,7 @@ const {
   loadConfig,
   readJson,
   writeJson,
-} = require('./v2-state.js');
+} = require('../hooks/_v2-state.js');
 
 const PANELS = ['home', 'flow', 'cost', 'quality', 'health', 'safety', 'memory', 'sessions', 'settings', 'forge'];
 
@@ -176,4 +176,3 @@ function start() {
 if (require.main === module) {
   start();
 }
-

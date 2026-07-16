@@ -179,6 +179,7 @@
     "execution-engine/flow-resume",
     "execution-engine/flow-run",
     "execution-engine/flow-status",
+    "execution-engine/flow-template",
     "execution-engine/flow-view",
     "fork",
     "memory-engine/memory-capture",
@@ -244,8 +245,7 @@
     "skill-native/recipe-metadata",
     "skill-native/wisdom-route",
     "skill-native/pivot-merge",
-    "skill-native/status-envelope-check",
-    "skill-native/v2-state"
+    "skill-native/status-envelope-check"
   ],
   "scripts": [
     ".cortex/scripts/cocoplus-console.js"

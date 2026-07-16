@@ -9,7 +9,7 @@
 
 const fs   = require('fs');
 const path = require('path');
-const { spawn, execFile } = require('child_process');
+const { spawn } = require('child_process');
 const { isoUtc, appendJsonLine, logError } = require('./_common.js');
 const {
   checkpointForge,
@@ -18,11 +18,12 @@ const {
   lifecyclePath,
   readJson,
   writeJson,
-} = require('../scripts/v2-state.js');
+} = require('./_v2-state.js');
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const SPAWN_QUEUE  = path.join(COCOPLUS_DIR, 'subagent-spawn-requests.jsonl');
+const SKILL_QUEUE  = path.join(COCOPLUS_DIR, 'skill-native-requests.jsonl');
 
 function queueAndAttemptBackgroundSpawn(request, ts) {
   appendJsonLine(SPAWN_QUEUE, request);
@@ -145,21 +146,14 @@ function main() {
   } catch (_) { /* no flow */ }
 
   if (pivotRequested || convergePending) {
-    const pivotScript = path.join('scripts', 'pivot-merge.js');
-    if (fs.existsSync(pivotScript)) {
-      const child = execFile(process.execPath, [pivotScript], { windowsHide: true }, (err) => {
-        if (err) logError('stop', `pivot-merge failed: ${err.message}`);
-        else appendJsonLine(path.join(COCOPLUS_DIR, 'ui-notifications.jsonl'), {
-          event_type: 'pivot_findings_ready',
-          message: 'CocoPivot convergence complete. Findings written to .cocoplus/lifecycle/FINDINGS.md',
-          timestamp: isoUtc(),
-          source: 'hook.Stop',
-        });
-      });
-      child.on('error', (err) => logError('stop', `pivot-merge spawn failed: ${err.message}`));
-      appendJsonLine(HOOK_LOG, { hook: 'stop', action: 'pivot_merge_triggered', reason: pivotRequested ? 'pivot-requested' : 'converge-pending', ts });
-      try { fs.unlinkSync(path.join(COCOPLUS_DIR, 'pivot-run-requested')); } catch (_) { /* absent */ }
-    }
+    appendJsonLine(SKILL_QUEUE, {
+      skill: 'skill-native/pivot-merge',
+      requested_at: ts,
+      reason: pivotRequested ? 'pivot-requested' : 'converge-pending',
+      source: 'hook.stop',
+    });
+    appendJsonLine(HOOK_LOG, { hook: 'stop', action: 'pivot_merge_requested', reason: pivotRequested ? 'pivot-requested' : 'converge-pending', ts });
+    try { fs.unlinkSync(path.join(COCOPLUS_DIR, 'pivot-run-requested')); } catch (_) { /* absent */ }
   }
 }
 

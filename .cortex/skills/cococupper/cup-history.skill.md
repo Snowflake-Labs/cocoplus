@@ -32,7 +32,7 @@ Then show the full text of the most recent finding.
 
 ## Auto-Captured Corrections (Feature 8 Enhancement)
 
-Correction detection runs silently on every developer prompt via `user-prompt-submit.js` calling `scripts/cupper-capture.js` (Tier 1, no LLM, <200ms), appending matches to `.cocoplus/cupper/auto-captured.json`. This section surfaces those alongside the manual findings above.
+Correction detection is requested silently on every developer prompt via `user-prompt-submit.js` appending a `skill-native/cupper-capture` request to `.cocoplus/skill-native-requests.jsonl` (Tier 1, no LLM, <50ms). The skill-native capture path appends matches to `.cocoplus/cupper/auto-captured.json`. This section surfaces those alongside the manual findings above.
 
 Read `.cocoplus/cupper/auto-captured.json` if it exists. For each auto-captured correction, apply a routing classification:
 - **incorrect-behavior** — the correction reverses or contradicts an action just taken

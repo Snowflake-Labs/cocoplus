@@ -17,7 +17,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 const { isoUtc, appendJsonLine, atomicWrite, logError, readJsonString, readJsonNumber, readStdinJson } = require('./_common.js');
 const { readState } = require('./lib/state-reader.js');
-const { loadConfig } = require('../scripts/v2-state.js');
+const { loadConfig } = require('./_v2-state.js');
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
