@@ -149,7 +149,8 @@ $leviathan learn
 $leviathan learn status
 $leviathan off
 </code></pre>
-<p>Activates explicit-autonomy coordination only after covenant acceptance. Ronin provides the personal assistant return briefing for autonomy state, hard stops, and active workstreams. <code>$leviathan learn</code> ingests synthesized history artifacts into <code>lifecycle/leviathan-state.json</code> without reading raw session transcripts.</p>
+<p><code>$leviathan on</code> is the activation command. It presents the covenant first, then creates <code>.cocoplus/modes/leviathan.on</code>, initializes <code>.cocoplus/lifecycle/leviathan-state.json</code>, and calibrates Ronin for the session. Ronin provides the personal assistant return briefing for autonomy state, hard stops, and active workstreams. <code>$leviathan off</code> exits the mode and checkpoints state.</p>
+<p><code>$leviathan learn</code> ingests synthesized history artifacts into <code>lifecycle/leviathan-state.json</code> without reading raw session transcripts.</p>
 <hr>
 <p><strong><code>$personas discover</code></strong> — Manage Dynamic Personas</p>
 <pre><code>
