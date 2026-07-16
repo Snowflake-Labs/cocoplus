@@ -1081,7 +1081,7 @@ $wisdom route
 <pre><code>
 $behavior maturity
 </code></pre>
-<p>Computes the current maturity level (L0 Manual, L1 Assisted, L2 Supervised, L3 Autonomous-Eligible) from <code>cocoplus.toml</code> and <code>.cocoplus/modes/</code>. If <code>automation_maturity</code> or <code>maturity_level</code> is declared, the reported level is capped at that declaration. L3 requires all ten reference requirements readiness checks to pass: budget guard, separate verifier, escalation ladder, human override, output allowlist, path denylist, kill switch, committed run log, no same-agent verification, and attempt cap. Result written to <code>.cocoplus/maturity.json</code>; also shown in <code>$pod status</code>.</p>
+<p>Computes the current maturity level (L0 Manual, L1 Assisted, L2 Supervised, L3 Autonomous-Eligible) from <code>cocoplus.toml</code> and <code>.cocoplus/modes/</code>. If <code>automation_maturity</code> or <code>maturity_level</code> is declared, the reported level is capped at that declaration. L3 requires all ten autonomous-readiness checks to pass: budget guard, separate verifier, escalation ladder, human override, output allowlist, path denylist, kill switch, committed run log, no same-agent verification, and attempt cap. Result written to <code>.cocoplus/maturity.json</code>; also shown in <code>$pod status</code>.</p>
 <p><strong>Output:</strong> Current level + L3 checklist pass/fail breakdown.</p>
 <hr>
 <h2 id="structured-code-review-cocoreview">Structured Code Review — CocoReview</h2>

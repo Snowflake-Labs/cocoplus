@@ -10,7 +10,7 @@ All notable changes to CocoPlus are documented here.
 
 #### CocoPlus Runtime Layer
 - `plugin.json` bumped to `2.0.0` and registers the V2 command surface.
-- `reference requirements/2.0` is treated as the source specification set for CocoConsole, CocoPilot, CocoForge, Leviathan Mode/Ronin, Dynamic Personas, feature-owned runtime architecture, and required modifications to existing features.
+- The release specification covers CocoConsole, CocoPilot, CocoForge, Leviathan Mode/Ronin, Dynamic Personas, feature-owned runtime architecture, and required modifications to existing features.
 
 #### CocoConsole
 - `.cortex/scripts/cocoplus-console.js` — local read-only browser control plane launched by `$cocoplus console`.
