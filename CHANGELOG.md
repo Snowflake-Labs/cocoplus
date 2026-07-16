@@ -8,10 +8,9 @@ All notable changes to CocoPlus are documented here.
 
 ### Added
 
-#### CocoPlus 2.0 Runtime Layer
+#### CocoPlus Runtime Layer
 - `plugin.json` bumped to `2.0.0` and registers the V2 command surface.
-- `reference requirements/2.0` is treated as the source specification set for the V2 program, including CocoConsole, CocoPilot, CocoForge, Leviathan/Ronin, Dynamic Personas, Skill-Native Architecture, and required modifications to existing features.
-- `docs/superpowers/plans/2026-07-16-cocoplus-v2-release.md` captures the implementation plan and validation sequence for the V2 release.
+- `reference requirements/2.0` is treated as the source specification set for CocoConsole, CocoPilot, CocoForge, Leviathan/Ronin, Dynamic Personas, feature-owned runtime architecture, and required modifications to existing features.
 
 #### CocoConsole
 - `.cortex/scripts/cocoplus-console.js` — local read-only browser control plane launched by `$cocoplus console`.
@@ -24,7 +23,7 @@ All notable changes to CocoPlus are documented here.
 - `cocoforge/forge.skill.md` — `$forge`, `$forge goal`, `$forge status`, and `$forge stop` expert-team meta-loop contract.
 - `leviathan/leviathan.skill.md` — explicit-activation Leviathan and Ronin mode with session archive ingestion rules.
 - `dynamic-personas/*` skills — discover, list, invoke, and dissolve evidence-gated emergent personas while retaining persona history.
-- `governance/governance-status.skill.md` — reports V2 governance policy status and recent hook events.
+- `governance/governance-status.skill.md` — reports governance policy status and recent hook events.
 
 #### Governance and Hook Policies
 - `UserPromptSubmit` hook now records V2 command activation state for CocoPilot, CocoForge, and Leviathan; CocoForge has priority over CocoPilot while active.

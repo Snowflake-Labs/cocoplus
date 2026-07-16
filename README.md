@@ -4,7 +4,7 @@
 
 # CocoPlus
 
-**CocoPlus 2.0.0** is an Agentic Operating System for Snowflake Coco. It brings structured, multi-agent workflows to data engineering projects — covering everything from project initialization through spec, plan, build, test, review, ship phases, browser observability, autonomous orchestration, and governance-aware execution.
+**CocoPlus** is an Agentic Operating System for Snowflake Coco. It brings structured, multi-agent workflows to data engineering projects — covering everything from project initialization through spec, plan, build, test, review, ship phases, browser observability, autonomous orchestration, and governance-aware execution.
 
 Built using only Coco-native constructs: Skills, Agents, Hooks, and AGENTS.md.
 
@@ -12,7 +12,7 @@ Built using only Coco-native constructs: Skills, Agents, Hooks, and AGENTS.md.
 
 CocoPlus wraps a structured development lifecycle around every project — from requirements capture through production ship — enforcing phase gates, parallel specialist execution, and checkpoint-validated delivery at each step. It decomposes work across fixed and dynamic specialist personas, runs coordinated workstreams, and tracks decisions, tokens, quality findings, contracts, memory, and governance signals across sessions.
 
-Version 2.0.0 adds the evolved V2 layer:
+The current operating layer includes:
 
 - **CocoConsole**: a local, read-only browser control plane launched with `$cocoplus console`.
 - **CocoPilot**: opt-in natural-language orchestration with `$pilot on` / `$pilot off`.
@@ -20,13 +20,13 @@ Version 2.0.0 adds the evolved V2 layer:
 - **Leviathan + Ronin**: explicit-activation autonomous coordination and companion interface.
 - **Dynamic Personas**: evidence-gated emergent specialists with retained history.
 - **Governance hooks**: ReviewerLockout and PII governance with observe/enforce rollout.
-- **V2-native runtime**: hooks enqueue deterministic work through feature-owned skill contracts; CocoConsole is the only registered local runtime script.
-- **CocoFlow 2.0 orchestration**: tiered planning, dependency-group dispatch, synthesis passes, and `$flow template` reuse.
+- **Feature-owned runtime**: hooks enqueue deterministic work through feature-owned skill contracts; CocoConsole is the only registered local runtime script.
+- **CocoFlow orchestration**: tiered planning, dependency-group dispatch, synthesis passes, and `$flow template` reuse.
 - **Console-aware visual commands**: `$flow view` and `$meter view` redirect into CocoConsole when it is running.
 
-The V2 product specifications live in `reference requirements/2.0`; the root plugin implements the V2 runtime and documentation surface while preserving backward-compatible V1 behavior unless an explicit V2 modification applies.
+The root plugin implements the current runtime and documentation surface while preserving older project state through explicit migration skills.
 
-Older CocoPods migrate forward with `$migrate v2 --dry-run` and `$migrate v2`; new work should use the V2-native feature skills directly.
+Older CocoPods migrate forward with `$migrate v2 --dry-run` and `$migrate v2`; new work should use the feature-owned skills directly.
 
 ## Specialist Personas
 
@@ -50,7 +50,7 @@ For manual installation details, see [INSTALLATION.md](INSTALLATION.md).
 ```
 $pod init       — initialize CocoPlus in your project
 $cocoplus on    — activate all features
-$cocoplus console — open the V2 read-only dashboard
+$cocoplus console — open the read-only dashboard
 $pilot on       — activate CocoPilot for the current session
 $spec           — start the requirements phase
 ```
