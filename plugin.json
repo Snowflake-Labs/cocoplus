@@ -1,6 +1,6 @@
 {
   "name": "cocoplus",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "CocoPlus — Agentic Operating System for Snowflake Coco",
   "author": "sgsshankar, viveksrinivasanss",
   "license": "MIT",
@@ -195,7 +195,17 @@
     "secondeye/secondeye",
     "secondeye/secondeye-acknowledge",
     "secondeye/secondeye-history",
-    "spark-off"
+    "spark-off",
+    "assist-mode/cocoplus-console",
+    "cocopilot/pilot-on",
+    "cocopilot/pilot-off",
+    "cocoforge/forge",
+    "leviathan/leviathan",
+    "dynamic-personas/personas-discover",
+    "dynamic-personas/personas-list",
+    "dynamic-personas/personas-invoke",
+    "dynamic-personas/personas-dissolve",
+    "governance/governance-status"
   ],
   "scripts": [
     ".cortex/scripts/wisdom-writer.js",
@@ -236,7 +246,9 @@
     "scripts/recipe-metadata.js",
     "scripts/wisdom-route.js",
     "scripts/pivot-merge.js",
-    "scripts/status-envelope-check.js"
+    "scripts/status-envelope-check.js",
+    ".cortex/scripts/v2-state.js",
+    ".cortex/scripts/cocoplus-console.js"
   ],
   "hooks": [
     "session-start",

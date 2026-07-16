@@ -25,6 +25,13 @@ const fs   = require('fs');
 const path = require('path');
 const { execFile, execFileSync } = require('child_process');
 const { isoUtc, appendJsonLine, logError, readStdinJson, readJsonString } = require('./_common.js');
+const {
+  checkpointForge,
+  checkpointLeviathan,
+  flagExists,
+  initPilotSession,
+  setFlag,
+} = require('../scripts/v2-state.js');
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
@@ -78,6 +85,83 @@ function main() {
   appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', ts });
 
   // --- Tier 1 start (deterministic, <50ms target) ---
+
+  // 0. CocoPlus 2.0 mode commands and intercept priority.
+  if (message === '$pilot on') {
+    setFlag('cocopilot.on', true);
+    initPilotSession(message, sessionId);
+    appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'pilot_activated', tier: 1, ts });
+    return;
+  }
+  if (message === '$pilot off') {
+    setFlag('cocopilot.on', false);
+    appendJsonLine(path.join(COCOPLUS_DIR, 'lifecycle', 'pilot-session.jsonl'), { active: false, deactivated_at: ts, session_id: sessionId });
+    appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'pilot_deactivated', tier: 1, ts });
+    return;
+  }
+  if (message.startsWith('$forge')) {
+    const goalMode = message.startsWith('$forge goal ');
+    const statusMode = message === '$forge status';
+    const stopMode = message === '$forge stop';
+    if (statusMode) {
+      appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'forge_status_requested', tier: 1, ts });
+      return;
+    }
+    if (stopMode) {
+      setFlag('cocoforge.on', false);
+      checkpointForge({ active: false, phase: 'gate', event_type: 'forge_stop_requested', message: 'Forge stop requested; stop after current phase.' });
+      appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'forge_stop_requested', tier: 1, ts });
+      return;
+    }
+    const goal = message.replace(/^\$forge\s+(goal\s+)?/, '').trim().replace(/^"|"$/g, '');
+    if (goal) {
+      setFlag('cocoforge.on', true);
+      checkpointForge({
+        active: true,
+        mode: goalMode ? 'goal' : 'task',
+        goal,
+        iteration: 1,
+        phase: 'plan',
+        pilot_superseded: flagExists('cocopilot.on'),
+        event_type: 'forge_started',
+        message: `Forge started for goal: ${goal.slice(0, 160)}`,
+      });
+      appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'forge_started', tier: 1, mode: goalMode ? 'goal' : 'task', ts });
+      return;
+    }
+  }
+  if (message.startsWith('$leviathan')) {
+    if (message === '$leviathan on') {
+      setFlag('leviathan.on', true);
+      checkpointLeviathan({ active: true, activated_at: ts, covenant_required: true });
+      appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'leviathan_activation_requested', tier: 1, ts });
+      return;
+    }
+    if (message === '$leviathan off') {
+      setFlag('leviathan.on', false);
+      checkpointLeviathan({ active: false, deactivated_at: ts });
+      appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'leviathan_deactivated', tier: 1, ts });
+      return;
+    }
+    if (message === '$leviathan learn') {
+      checkpointLeviathan({ active: flagExists('leviathan.on'), ingestion_requested_at: ts });
+      appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'leviathan_learn_requested', tier: 1, ts });
+      return;
+    }
+  }
+
+  // Forge Team Lead has priority over CocoPilot while active.
+  if (flagExists('cocoforge.on')) {
+    checkpointForge({
+      phase: 'input',
+      event_type: 'forge_input_observed',
+      message: `Developer input recorded for forge context: ${message.slice(0, 160)}`,
+    });
+    appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'forge_team_lead_intercept', tier: 1, ts });
+  } else if (flagExists('cocopilot.on')) {
+    initPilotSession(message, sessionId);
+    appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'pilot_intercept_observed', tier: 1, ts });
+  }
 
   // 1. Command passthrough — do not intercept /commands
   if (message.startsWith('/')) {

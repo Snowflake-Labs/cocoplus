@@ -11,6 +11,14 @@ const fs   = require('fs');
 const path = require('path');
 const { spawn, execFile } = require('child_process');
 const { isoUtc, appendJsonLine, logError } = require('./_common.js');
+const {
+  checkpointForge,
+  checkpointLeviathan,
+  flagExists,
+  lifecyclePath,
+  readJson,
+  writeJson,
+} = require('../scripts/v2-state.js');
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
@@ -52,6 +60,58 @@ function main() {
   const sessionId = process.env.COCO_SESSION_ID || 'unknown';
 
   appendJsonLine(HOOK_LOG, { hook: 'stop', session: sessionId, ts, action: 'cupper_triggered' });
+
+  // CocoPlus 2.0: checkpoint active autonomous modes.
+  if (flagExists('cocopilot.on')) {
+    const pilotPath = lifecyclePath('pilot-session.json');
+    const pilot = readJson(pilotPath, {});
+    pilot.last_checkpoint_at = ts;
+    pilot.session_id = sessionId;
+    writeJson(pilotPath, pilot);
+    appendJsonLine(HOOK_LOG, { hook: 'stop', action: 'pilot_checkpointed', session: sessionId, ts });
+  }
+
+  if (flagExists('cocoforge.on')) {
+    checkpointForge({
+      active: true,
+      phase: 'checkpoint',
+      event_type: 'forge_session_checkpoint',
+      message: 'Session ended with forge active; state checkpointed for resume.',
+    });
+    appendJsonLine(HOOK_LOG, { hook: 'stop', action: 'forge_checkpointed', session: sessionId, ts });
+  }
+
+  if (flagExists('leviathan.on')) {
+    checkpointLeviathan({
+      active: true,
+      last_session_checkpoint_at: ts,
+      context_snapshot: {
+        session_id: sessionId,
+        active_forge: flagExists('cocoforge.on'),
+        active_pilot: flagExists('cocopilot.on'),
+      },
+    });
+    appendJsonLine(HOOK_LOG, { hook: 'stop', action: 'leviathan_snapshot_checkpointed', session: sessionId, ts });
+  }
+
+  // CocoRecall Dream Cycle cadence: record a maintenance request once per 24h.
+  const lastConsolidationPath = path.join(COCOPLUS_DIR, '.last-consolidation');
+  let shouldConsolidate = true;
+  try {
+    const last = Number(fs.readFileSync(lastConsolidationPath, 'utf8'));
+    shouldConsolidate = Number.isNaN(last) || (Date.now() - last) > 24 * 60 * 60 * 1000;
+  } catch (_) { /* absent => consolidate */ }
+  if (shouldConsolidate) {
+    fs.writeFileSync(lastConsolidationPath, String(Date.now()), 'utf8');
+    appendJsonLine(lifecyclePath('consolidation-log.json'), {
+      ts,
+      session_id: sessionId,
+      phases: ['orient', 'gather_signal', 'consolidate', 'prune_and_index'],
+      status: 'requested',
+      trigger: 'stop-hook-24h-cadence',
+    });
+    appendJsonLine(HOOK_LOG, { hook: 'stop', action: 'recall_dream_cycle_requested', session: sessionId, ts });
+  }
 
   // Checkpoint CocoMeter: record a mid-session stop event in history
   if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'cocometer.on'))) {

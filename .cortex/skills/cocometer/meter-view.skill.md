@@ -1,7 +1,7 @@
 ---
 name: "meter-view"
 description: "Generate the CocoMeter Enhanced HTML dashboard. Queries SNOWFLAKE.ACCOUNT_USAGE.CORTEX_CODE_CLI_USAGE_HISTORY, joins with local request-map.jsonl attribution data, injects into meter-view.html.template, and opens in browser."
-version: "1.0.1"
+version: "2.0.0"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -10,6 +10,17 @@ tags:
 ---
 
 Your objective is to generate and open the CocoMeter token attribution dashboard.
+
+## CocoPlus 2.0 Console-Aware Redirect
+
+Before generating standalone HTML, check `.cocoplus/lifecycle/console-state.json`.
+
+If the file exists and contains `running: true` with a `port` value:
+1. Output: `Opening Cost panel in CocoConsole.`
+2. Open `http://localhost:<port>/cost` in the browser.
+3. Stop. Do not generate a standalone snapshot.
+
+If CocoConsole is not running, continue with the standalone CocoMeter dashboard behavior below.
 
 ## Pre-flight Check
 
