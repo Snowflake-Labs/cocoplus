@@ -43,6 +43,17 @@ In Coco, enter:
 Install this plugin from [Snowflake-Labs/cocoplus](https://github.com/Snowflake-Labs/cocoplus)
 ```
 
+### Upgrading an Existing CocoPlus Project
+
+After installing the current plugin, open each existing CocoPlus project and run:
+
+```text
+$migrate v2 --dry-run
+$migrate v2
+```
+
+Use the dry run first. It reports the exact project-state changes, tests, validation checks, and cleanup actions before anything is written.
+
 For manual installation details, see [INSTALLATION.md](INSTALLATION.md).
 
 ## Getting Started

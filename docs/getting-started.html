@@ -47,6 +47,13 @@
 Install this plugin from [Snowflake-Labs/cocoplus](https://github.com/Snowflake-Labs/cocoplus)
 </code></pre>
 <p>If Coco needs to install the plugin manually, download the repository and place it at <code>&lt;user-home&gt;/.snowflake/cortex/plugins/cocoplus</code>, then add that directory to <code>pluginDirs</code> in Coco's <code>settings.json</code>. Preserve any existing plugin directories.</p>
+<section class="summary-box">
+  <h2>Upgrading From an Earlier CocoPlus Project</h2>
+  <p>If this project already has a <code>.cocoplus/</code> directory from a previous release, do not run <code>$pod init</code> again. After installing the current plugin, run <code>$migrate v2 --dry-run</code> first, review the migration report, then run <code>$migrate v2</code>.</p>
+  <pre><code>$migrate v2 --dry-run
+$migrate v2</code></pre>
+  <p>The migration skill converts project state, runs migration testing and validation, archives superseded configuration files, and writes a migration commit.</p>
+</section>
 <p>That's the full list. CocoPlus adds no external services, no databases, no background processes. If the plugin is installed and Coco is connected to Snowflake, you have everything.</p>
 <hr>
 <h2 id="initialize-your-project">Initialize Your Project</h2>

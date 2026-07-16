@@ -38,6 +38,7 @@ All notable changes to CocoPlus are documented here.
 - `cocorecall/recall.skill.md` now includes the CocoRecall Dream Cycle and JSONL-targeted signal extraction contract.
 - `$pod init` now provisions V2 runtime state directories and files, including flow templates, dynamic persona registry, V2 runtime request queue, and Dream Cycle cadence state.
 - Former script-replacement contracts have been promoted into their owning feature namespaces; `$migrate v2` is the explicit upgrade path for older CocoPods.
+- `$migrate v2` now focuses on released 1.x CocoPods and includes dry-run planning, migration testing, validation gates, and post-migration cleanup.
 
 ### Changed
 
