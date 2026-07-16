@@ -30,11 +30,6 @@
 </div>
 
 <div class="content">
-<section class="summary-box operating-model">
-  <h2>CocoPlus Operating Model</h2>
-  <p>CocoPlus is a governed operating system for Snowflake Coco: CocoConsole for read-only browser visibility, CocoPilot for opt-in natural-language orchestration, CocoForge for goal-driven expert-team loops, Leviathan/Ronin for explicit autonomous coordination, Dynamic Personas for evidence-gated specialists, feature-owned runtime queues, CocoFlow execution plan templates, and governance hooks for ReviewerLockout and PII policy rollout.</p>
-  <p>Current projects use the feature-owned skill architecture directly. Older CocoPods can be upgraded with the migration skills, which archive legacy artifacts while creating the current runtime state.</p>
-</section>
 <p>These are not tutorials. Tutorials teach you the tool. Workflows show you how someone with professional intent would actually use it — with context, trade-offs, and the small decisions that matter.</p>
 <p>Each scenario is self-contained. You don't need to read them in order. Read the ones that match what you're trying to do.</p>
 <hr>
@@ -821,6 +816,27 @@ $audit add "Governance board approved customer mart migration; ticket GOV-1427."
 $audit timeline
 </code></pre>
 <p>The manual event is appended to the same audit source with an explicit Manual Entry label. <code>$audit timeline</code> renders the chronological view without rewriting the source. This keeps external approvals visible while preserving the append-only audit model.</p>
+<hr>
+<h2 id="scenario-31-running-a-guided-session-with-cocopilot">Scenario 31: Running a Guided Session With CocoPilot</h2>
+<p><strong>The situation:</strong> You are working across several CocoPlus features and want one companion to keep the session organized without surrendering approvals or hard gates.</p>
+<pre><code>
+$pilot on
+</code></pre>
+<p>CocoPilot initializes the session state and starts routing natural-language intent toward the right capability. A vague request like "get this migration ready" can become a suggested path through <code>$pod status</code>, <code>$spec</code>, <code>$cocoplus plan</code>, <code>$flow status</code>, or a specialist persona depending on current project state. The point is not that Pilot does the work invisibly. The point is that it reduces command-selection friction while keeping the work legible.</p>
+<p>If the task becomes a bounded goal loop, hand it to CocoForge:</p>
+<pre><code>
+$forge "prepare this warehouse migration for review"
+</code></pre>
+<p>Forge supersedes Pilot while active because the coordination model changes from session assistance to expert-team execution. Pilot can resume after Forge stops if it was active before.</p>
+<p>For explicit autonomy, use Leviathan Mode intentionally:</p>
+<pre><code>
+$leviathan on
+$leviathan status
+</code></pre>
+<p>Leviathan Mode requires covenant acceptance and keeps CocoPlus hard stops in force. Rohin provides the personal assistant return briefing: active workstreams, current autonomy level, hard stops, and what needs the developer's attention next. When the guided session is over, turn Pilot off to return to manual command behavior.</p>
+<pre><code>
+$pilot off
+</code></pre>
 <hr>
 <blockquote><p><em>A workflow is only a workflow when it outlasts the first deviation. The ones worth keeping are the ones that bend without breaking.</em></p></blockquote>
 </div>

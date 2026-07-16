@@ -26,16 +26,11 @@
 <div class="page-header">
   <div class="label">Feature Catalog</div>
   <h1>The Features</h1>
-  <p class="subtitle">CocoPlus has fifty-three core features plus the operating orchestration layer. They are not independent capabilities you can pick from a menu. They are expressions of the same underlying design — a system where each piece reinforces the others.</p>
+  <p class="subtitle">CocoPlus has fifty-four counted product features, with CocoPilot now documented as its own orchestration companion. They are not independent capabilities you can pick from a menu. They are expressions of the same underlying design — a system where each piece reinforces the others.</p>
 </div>
 
 <div class="content">
-<section class="summary-box operating-model">
-  <h2>CocoPlus Operating Model</h2>
-  <p>CocoPlus is a governed operating system for Snowflake Coco: CocoConsole for read-only browser visibility, CocoPilot for opt-in natural-language orchestration, CocoForge for goal-driven expert-team loops, Leviathan/Ronin for explicit autonomous coordination, Dynamic Personas for evidence-gated specialists, feature-owned runtime queues, CocoFlow execution plan templates, and governance hooks for ReviewerLockout and PII policy rollout.</p>
-  <p>Current projects use the feature-owned skill architecture directly. Older CocoPods can be upgraded with the migration skills, which archive legacy artifacts while creating the current runtime state.</p>
-</section>
-<p>CocoPlus has fifty-three core features plus the operating orchestration layer. They are not independent capabilities you can pick from a menu. They are expressions of the same underlying design — a system where each piece reinforces the others.</p>
+<p>CocoPlus has fifty-four counted product features, with CocoPilot now documented as its own orchestration companion. Migration skills remain separate upgrade tooling rather than part of the product feature count. The features are not independent capabilities you can pick from a menu. They are expressions of the same underlying design — a system where each piece reinforces the others.</p>
 <p>Some features are always active. Some are toggled on by choice. Some run invisibly in the background. Some you will use every day. Some you will reach for only when the work demands it.</p>
 <p>Here they are, in the order they matter.</p>
 <hr>
@@ -521,15 +516,20 @@
 <p><strong>Honesty about coverage:</strong> When a contributing pod reported PARTIAL status, <code>FINDINGS.md</code>'s header carries an explicit Coverage Note naming the pod and what it skipped — a PARTIAL pod's zero findings are never presented as equivalent to a COMPLETE pod's zero findings. CocoPivot also validates every finding's concern class against the emitting pod's declared <code>excludes:</code> boundary; a finding that falls inside a pod's own exclusion list is a scope anomaly, excluded from <code>FINDINGS.md</code> and recorded for review rather than silently accepted.</p>
 <p><strong>Integration with CocoFlow:</strong> CocoPivot is the canonical handler for the new <code>converge:</code> step type — when a flow definition includes <code>handler: cococonverge</code> after a <code>parallel:</code> step, <code>$pivot run</code> is invoked automatically once every pod reaches terminal status. Manual invocation remains available for ad-hoc multi-pod audits outside a defined flow.</p>
 <hr>
-<p><em>Fifty-three core features plus the operating orchestration layer, one idea: give the developer a system that works as hard to be right as it works to be fast.</em></p>
+<p><em>Fifty-four core features, one idea: give the developer a system that works as hard to be right as it works to be fast.</em></p>
 <hr>
-<h2 id="operating-runtime-layer">Operating Runtime Layer</h2>
+<h2 id="feature-54-cocopilot-orchestration-companion">Feature 54: CocoPilot — Orchestration Companion</h2>
 <p><strong>Commands:</strong> <code>$cocoplus console</code>, <code>$pilot on</code>, <code>$pilot off</code>, <code>$forge</code>, <code>$leviathan on</code>, <code>$personas discover</code>, <code>$governance status</code></p>
-<p>The operating runtime layer builds on the full CocoPlus feature set rather than replacing it. It adds a visual read surface, natural-language orchestration, goal-mode execution, explicit autonomy, evidence-gated specialist emergence, feature-owned runtime queues, and governance policies that can run in observe mode before enforcement.</p>
+<p>CocoPilot is the counted orchestration companion for the full CocoPlus feature set. It brings together the local read surface, natural-language routing, goal-mode execution, explicit autonomy, evidence-gated specialist emergence, feature-owned runtime queues, and governance policies without replacing the underlying feature gates.</p>
 <p><strong>CocoConsole</strong> is the local browser control plane. It reads lifecycle artifacts and shows Home, Flow, Cost, Quality, Health, Safety, Memory, Sessions, Settings, and Forge panels. It is intentionally read-only: gates are approved in the terminal, not in the browser.</p>
 <p><strong>CocoPilot</strong> is an opt-in session mode. When <code>$pilot on</code> is active, UserPromptSubmit records session intent, routes natural-language requests toward existing CocoPlus capabilities, and preserves the V1 approval boundaries. <code>$pilot off</code> restores manual behavior.</p>
+<section class="summary-box">
+  <h3>Highlighted: Leviathan Mode and Rohin</h3>
+  <p><strong>Leviathan Mode</strong> is the explicit-autonomy extension of CocoPilot. It is activated only after covenant acceptance, inherits CocoPlus hard stops, and coordinates longer-running work without treating autonomy as permission to bypass gates.</p>
+  <p><strong>Rohin</strong> is the personal assistant companion for Leviathan Mode. Rohin gives the developer-facing return briefing, summarizes active workstreams, calls out hard stops, and keeps the handoff human-readable instead of burying autonomy state in raw logs.</p>
+</section>
 <p><strong>CocoForge</strong> is the Meta Loop Expert Team Engine. <code>$forge "goal"</code> starts Task Mode; <code>$forge goal "goal"</code> starts persistent Goal Mode. A Team Lead coordinates specialists, a Quality Critic evaluates evidence from a default-REJECT stance, and a Learning Curator captures reusable knowledge. Forge supersedes Pilot while active.</p>
-<p><strong>Leviathan + Ronin</strong> is explicit-activation autonomous coordination. The covenant model requires informed consent, hard stops remain configured in CocoPlus, and Ronin provides the developer-facing return briefing. Session archive ingestion reads synthesized artifacts only, never raw transcripts.</p>
+<p><strong>Leviathan Mode + Rohin</strong> is explicit-activation autonomous coordination. The covenant model requires informed consent, hard stops remain configured in CocoPlus, and Rohin provides the developer-facing return briefing. Session archive ingestion reads synthesized artifacts only, never raw transcripts.</p>
 <p><strong>Dynamic Personas</strong> supersede fixed-roster-only thinking without deleting the fixed roster. Specialists emerge from evidence, require thresholded support before activation, and retain <code>history.md</code> after dissolution.</p>
 <p><strong>Governance hooks</strong> add ReviewerLockout and PII governance. Both support observe-mode rollout so teams can see what would be blocked or redacted before enforcing the policy.</p>
 <hr>

@@ -10,7 +10,7 @@ All notable changes to CocoPlus are documented here.
 
 #### CocoPlus Runtime Layer
 - `plugin.json` bumped to `2.0.0` and registers the V2 command surface.
-- `reference requirements/2.0` is treated as the source specification set for CocoConsole, CocoPilot, CocoForge, Leviathan/Ronin, Dynamic Personas, feature-owned runtime architecture, and required modifications to existing features.
+- `reference requirements/2.0` is treated as the source specification set for CocoConsole, CocoPilot, CocoForge, Leviathan Mode/Rohin, Dynamic Personas, feature-owned runtime architecture, and required modifications to existing features.
 
 #### CocoConsole
 - `.cortex/scripts/cocoplus-console.js` — local read-only browser control plane launched by `$cocoplus console`.
@@ -18,10 +18,10 @@ All notable changes to CocoPlus are documented here.
 - `assist-mode/cocoplus-console.skill.md` — `$cocoplus console`, `$cocoplus console status`, and `$cocoplus console stop` command contract.
 - CocoConsole reads `.cocoplus/` lifecycle artifacts and exposes Home, Flow, Cost, Quality, Health, Safety, Memory, Sessions, Settings, and Forge panels without mutating project state.
 
-#### CocoPilot, CocoForge, Leviathan/Ronin, and Dynamic Personas
+#### CocoPilot, CocoForge, Leviathan Mode/Rohin, and Dynamic Personas
 - `cocopilot/pilot-on.skill.md` and `cocopilot/pilot-off.skill.md` — opt-in session-scoped CocoPilot mode.
 - `cocoforge/forge.skill.md` — `$forge`, `$forge goal`, `$forge status`, and `$forge stop` expert-team meta-loop contract.
-- `leviathan/leviathan.skill.md` — explicit-activation Leviathan and Ronin mode with session archive ingestion rules.
+- `leviathan/leviathan.skill.md` — explicit-activation Leviathan Mode and Rohin companion flow with session archive ingestion rules.
 - `dynamic-personas/*` skills — discover, list, invoke, and dissolve evidence-gated emergent personas while retaining persona history.
 - `governance/governance-status.skill.md` — reports governance policy status and recent hook events.
 
@@ -44,7 +44,7 @@ All notable changes to CocoPlus are documented here.
 
 - `$flow view` and `$meter view` are now CocoConsole-aware: when CocoConsole is running, they redirect to the Flow or Cost panel; otherwise they preserve the existing standalone HTML behavior.
 - `templates/cocoplus.toml.template` adds `[cocoplus]`, `[cocopilot]`, `[cocoforge]`, `[leviathan]`, `[dynamic_personas]`, and `[governance]` sections.
-- `templates/AGENTS.md.template` adds V2 activation blocks so new pods understand CocoPilot, CocoForge, Leviathan/Ronin, and Dynamic Personas.
+- `templates/AGENTS.md.template` adds V2 activation blocks so new pods understand CocoPilot, CocoForge, Leviathan Mode/Rohin, and Dynamic Personas.
 - Root `README.md`, `AGENTS.md`, installation guidance, and the HTML documentation site now present CocoPlus as a V2.0.0 release.
 
 ### Compatibility

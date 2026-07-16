@@ -30,11 +30,6 @@
 </div>
 
 <div class="content">
-<section class="summary-box operating-model">
-  <h2>CocoPlus Operating Model</h2>
-  <p>CocoPlus is a governed operating system for Snowflake Coco: CocoConsole for read-only browser visibility, CocoPilot for opt-in natural-language orchestration, CocoForge for goal-driven expert-team loops, Leviathan/Ronin for explicit autonomous coordination, Dynamic Personas for evidence-gated specialists, feature-owned runtime queues, CocoFlow execution plan templates, and governance hooks for ReviewerLockout and PII policy rollout.</p>
-  <p>Current projects use the feature-owned skill architecture directly. Older CocoPods can be upgraded with the migration skills, which archive legacy artifacts while creating the current runtime state.</p>
-</section>
 <p>Understanding CocoPlus means understanding a set of core ideas. Not features — ideas. The features are just these ideas made concrete.</p>
 <hr>
 <h2 id="the-lifecycle">The Lifecycle</h2>
@@ -76,6 +71,11 @@
 <p>Each persona has a locked tool set. The Data Steward cannot run arbitrary SQL against production. The Data Scientist can use NotebookExecute; the Data Engineer cannot. These locks are not limitations — they are the persona's identity.</p>
 <p>You invoke them directly (<code>$de Review this procedure for performance issues</code>) or let CocoHarvest assign them automatically based on task type. Either way, you know exactly what expertise is being applied to the problem.</p>
 <p>One agent in the system is never invoked directly: <strong>CocoScout</strong>. It runs before every Build stage and every persona invocation — quietly, in the background, on Haiku. Its job is to scan the available context sources (warm memory, CocoGrove patterns, CocoContext standards, Environment Inspector snapshots) and rank them by relevance to the current task, so the executing agent begins with the most useful framing, not just the most recent. CocoScout doesn't reason about the task — it filters the environment for the agent that will. The practical effect is that each specialist begins its work with a context window shaped to the work at hand rather than the full undifferentiated heap of everything CocoPlus has accumulated.</p>
+<hr>
+<h2 id="cocopilot-and-guided-orchestration">CocoPilot and Guided Orchestration</h2>
+<p>CocoPilot is the session companion that turns intent into guided use of the rest of CocoPlus. It does not own a separate authority model. When <code>$pilot on</code> is active, it routes natural-language requests toward existing features, records session intent, and helps choose the right next command while preserving the same approval gates those features already enforce.</p>
+<p>The useful distinction is companion versus executor. CocoPilot can suggest, route, summarize, and keep session state coherent. It cannot make an irreversible operation safe by saying it is safe, cannot approve its own hard gates, and cannot erase the developer's role in the lifecycle. This is why CocoForge can supersede Pilot while a goal loop is active: orchestration changes, but the boundaries do not.</p>
+<p><strong>Leviathan Mode</strong> is the explicit-autonomy extension of this concept. It requires covenant acceptance before activation, carries hard stops forward, and treats autonomy as coordinated execution under declared limits. <strong>Rohin</strong> is the personal assistant companion for that mode: the voice that returns the briefing, summarizes workstreams, and makes the state understandable when the developer comes back.</p>
 <hr>
 <h2 id="memory">Memory</h2>
 <p>Three layers. Each layer serves a different time horizon.</p>

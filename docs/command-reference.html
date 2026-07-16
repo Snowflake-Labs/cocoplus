@@ -30,11 +30,6 @@
 </div>
 
 <div class="content">
-<section class="summary-box operating-model">
-  <h2>CocoPlus Operating Model</h2>
-  <p>CocoPlus is a governed operating system for Snowflake Coco: CocoConsole for read-only browser visibility, CocoPilot for opt-in natural-language orchestration, CocoForge for goal-driven expert-team loops, Leviathan/Ronin for explicit autonomous coordination, Dynamic Personas for evidence-gated specialists, feature-owned runtime queues, CocoFlow execution plan templates, and governance hooks for ReviewerLockout and PII policy rollout.</p>
-  <p>Current projects use the feature-owned skill architecture directly. Older CocoPods can be upgraded with the migration skills, which archive legacy artifacts while creating the current runtime state.</p>
-</section>
 <p>Every CocoPlus command, organized by the feature that owns it. Each command includes its flags, what it does, and what output to expect.</p>
 <p>Commands marked <strong>[auto]</strong> do not require explicit invocation — they are triggered by hooks. They are documented here for awareness, not for manual use.</p>
 <hr>
@@ -146,7 +141,7 @@ $forge stop
 </code></pre>
 <p>Starts the expert-team meta-loop. Task Mode is bounded to a goal; Goal Mode persists across sessions. Forge uses Team Lead, Quality Critic, Learning Curator, and specialist roles. Forge has priority over CocoPilot while active.</p>
 <hr>
-<p><strong><code>$leviathan</code></strong> — Manage Leviathan and Ronin</p>
+<p><strong><code>$leviathan</code></strong> — Manage Leviathan Mode and Rohin</p>
 <pre><code>
 $leviathan on
 $leviathan status
@@ -154,7 +149,7 @@ $leviathan learn
 $leviathan learn status
 $leviathan off
 </code></pre>
-<p>Activates explicit-autonomy coordination only after covenant acceptance. <code>$leviathan learn</code> ingests synthesized history artifacts into <code>lifecycle/leviathan-state.json</code> without reading raw session transcripts.</p>
+<p>Activates explicit-autonomy coordination only after covenant acceptance. Rohin provides the personal assistant return briefing for autonomy state, hard stops, and active workstreams. <code>$leviathan learn</code> ingests synthesized history artifacts into <code>lifecycle/leviathan-state.json</code> without reading raw session transcripts.</p>
 <hr>
 <p><strong><code>$personas discover</code></strong> — Manage Dynamic Personas</p>
 <pre><code>
