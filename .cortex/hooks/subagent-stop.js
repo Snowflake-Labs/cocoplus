@@ -19,7 +19,7 @@ const { isoUtc, appendJsonLine, logError, readStdinJson } = require('./_common.j
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const SPAWN_QUEUE  = path.join(COCOPLUS_DIR, 'subagent-spawn-requests.jsonl');
-const SKILL_QUEUE  = path.join(COCOPLUS_DIR, 'skill-native-requests.jsonl');
+const V2_QUEUE     = path.join(COCOPLUS_DIR, 'v2-runtime-requests.jsonl');
 
 function readJson(filePath, fallback) {
   try {
@@ -80,8 +80,8 @@ function main() {
   // runs for every subagent completion, independent of type. Never blocks:
   // a malformed envelope is logged as a quality warning, not a hard failure.
   if (event.status_envelope || event.output_path || event.output || event.artifact) {
-    appendJsonLine(SKILL_QUEUE, {
-      skill: 'skill-native/status-envelope-check',
+    appendJsonLine(V2_QUEUE, {
+      skill: 'cococonverge/status-envelope-check',
       requested_at: ts,
       source: 'hook.subagent-stop',
       subagent_id: subagentId,
@@ -307,8 +307,8 @@ function main() {
       (daRebuttalScore !== null && Number(daRebuttalScore) < 4);
 
     if (isBlocked && dimension) {
-      appendJsonLine(SKILL_QUEUE, {
-        skill: 'skill-native/wisdom-writer',
+      appendJsonLine(V2_QUEUE, {
+        skill: 'cocowisdom/wisdom-writer',
         operation: 'record',
         requested_at: ts,
         source: 'hook.subagent-stop',
@@ -407,8 +407,8 @@ function queueRefineReflection(event, ts) {
   } catch (_) { /* file just created above */ }
 
   if (queueLength >= REFINE_QUEUE_THRESHOLD) {
-    appendJsonLine(SKILL_QUEUE, {
-      skill: 'skill-native/refine-reflect',
+    appendJsonLine(V2_QUEUE, {
+      skill: 'cocorefine/refine-reflect',
       requested_at: ts,
       source: 'hook.subagent-stop',
       queue_length: queueLength,

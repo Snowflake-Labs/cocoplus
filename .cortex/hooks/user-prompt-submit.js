@@ -38,7 +38,7 @@ const {
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
-const SKILL_QUEUE  = path.join(COCOPLUS_DIR, 'skill-native-requests.jsonl');
+const V2_QUEUE     = path.join(COCOPLUS_DIR, 'v2-runtime-requests.jsonl');
 
 /** Default persona shorthand map (overridden by .cocoplus/personas.json if present) */
 const DEFAULT_PERSONAS = {
@@ -185,8 +185,8 @@ function main() {
     if (message.startsWith(cmd + ' ') || message === cmd) {
       const fnArg = message.slice(cmd.length).trim().split(/\s+/)[0] || '';
       if (fnArg || gateCommand === 'ship') {
-        appendJsonLine(SKILL_QUEUE, {
-          skill: 'skill-native/contract-gate',
+        appendJsonLine(V2_QUEUE, {
+          skill: 'cococontract/contract-gate',
           command: gateCommand,
           function: fnArg || null,
           requested_at: ts,
@@ -232,8 +232,8 @@ function main() {
   // 2b. CocoCupper auto-capture (Feature 8 enhancement) — fire-and-forget so
   // its <200ms budget never risks the surrounding Tier 1 <50ms SLA for the
   // rest of this hook. Silent: writes to auto-captured.json only, no output.
-  appendJsonLine(SKILL_QUEUE, {
-    skill: 'skill-native/cupper-capture',
+  appendJsonLine(V2_QUEUE, {
+    skill: 'cococupper/cupper-capture',
     message: message.slice(0, 500),
     skill_context: routedPersona,
     requested_at: ts,

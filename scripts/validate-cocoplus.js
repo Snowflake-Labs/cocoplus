@@ -97,6 +97,15 @@ function parseFrontmatterTools(agentFile) {
 function main() {
   const failures = [];
   const plugin = readJson(pluginPath);
+  const skillNativeDir = path.join(repoRoot, '.cortex', 'skills', 'skill-native');
+
+  if ((plugin.skills || []).some((skill) => skill.startsWith('skill-native/'))) {
+    failures.push('V2-only manifest must not register skill-native/* compatibility skills');
+  }
+
+  if (fs.existsSync(skillNativeDir)) {
+    failures.push('V2-only skills tree must not contain .cortex/skills/skill-native compatibility folder');
+  }
 
   const requiredAgents = [
     'coco-bloom',

@@ -23,7 +23,7 @@ CocoRecall is entirely local. No session data is transmitted anywhere. `recall.d
 
 ### `$recall search <query> [--all] [--session <id>] [--function <name>] [--outcome-type <type>]`
 
-Use the `skill-native/recall-import` contract to search the normalized index using a three-factor relevance score: lexical match (query terms against turn text and entity tags), recency (decay-weighted), and phase context match (turns from the current CocoPlus phase rank higher).
+Use the `cocorecall/recall-import` contract to search the normalized index using a three-factor relevance score: lexical match (query terms against turn text and entity tags), recency (decay-weighted), and phase context match (turns from the current CocoPlus phase rank higher).
 
 Default behavior is **session-diverse**: return the single highest-relevance turn from each matching session, so one verbose session cannot dominate the results. `--all` returns every matching turn across all sessions. `--session <id>` restricts the search to one session. `--function <name>` filters to sessions that touched a function. `--outcome-type <type>` filters to sessions with matching outcome-contract evidence.
 
@@ -42,7 +42,7 @@ Load and display the complete turn sequence for the named session, with the turn
 
 ### `$recall import [--since <date>]`
 
-Use the `skill-native/recall-import` contract to rebuild or incrementally update `recall.db` from configured local transcript sources. `--since` limits the scan to sessions starting after the given date.
+Use the `cocorecall/recall-import` contract to rebuild or incrementally update `recall.db` from configured local transcript sources. `--since` limits the scan to sessions starting after the given date.
 
 ### `$recall sources`
 

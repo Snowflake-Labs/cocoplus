@@ -13,7 +13,7 @@ const { updateAgentsMd, readActiveModes, readRecentDecisions } = require('./lib/
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
-const SKILL_QUEUE  = path.join(COCOPLUS_DIR, 'skill-native-requests.jsonl');
+const V2_QUEUE     = path.join(COCOPLUS_DIR, 'v2-runtime-requests.jsonl');
 
 function main() {
   if (!fs.existsSync(COCOPLUS_DIR)) return;
@@ -97,8 +97,8 @@ function main() {
       summary: '',
       features_used: [],
     });
-    appendJsonLine(SKILL_QUEUE, {
-      skill: 'skill-native/session-indexer',
+    appendJsonLine(V2_QUEUE, {
+      skill: 'cocopull/session-indexer',
       operation: 'append',
       session_record: sessionRecord,
       requested_at: ts,
@@ -126,8 +126,8 @@ function main() {
   // failure here (including an old Node runtime lacking node:sqlite) must
   // never block session end.
   try {
-    appendJsonLine(SKILL_QUEUE, {
-      skill: 'skill-native/recall-import',
+    appendJsonLine(V2_QUEUE, {
+      skill: 'cocorecall/recall-import',
       operation: 'import',
       since: meterStartedAt || ts,
       requested_at: ts,

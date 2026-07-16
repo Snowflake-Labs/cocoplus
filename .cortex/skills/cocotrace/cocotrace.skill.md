@@ -19,7 +19,7 @@ CocoTrace maintains a directed dependency graph: `bloom.md → discuss.md → sp
 
 ### `$trace build`
 
-1. Execute the `skill-native/trace-check` contract (deterministic, no LLM, Tier 2 async)
+1. Execute the `cocotrace/trace-check` contract (deterministic, no LLM, Tier 2 async)
 2. Read output `lifecycle/trace.json`
 3. Display summary table:
 
@@ -82,7 +82,7 @@ CocoTrace maintains a directed dependency graph: `bloom.md → discuss.md → sp
 
 Computes the blast radius for a named Snowflake object (table, view, column, or Cortex model identifier) — all Cortex functions in the CocoPod that depend on it.
 
-1. Execute the `skill-native/trace-blast` contract for `<object>`. It reads `snowflake-deps.json` (the reverse index of function → object dependencies, maintained by `$trace sync`) and returns every function that depends on `<object>`.
+1. Execute the `cocotrace/trace-blast` contract for `<object>`. It reads `snowflake-deps.json` (the reverse index of function → object dependencies, maintained by `$trace sync`) and returns every function that depends on `<object>`.
 2. For each affected function, report the dependency type (`read`, `write`, or `structural`), the downstream traceability chain to its CocoBloom commitment and CocoSpec outcome statement, and whether its CocoContract evidence is stale relative to the object's current state.
 3. Display:
 
@@ -130,7 +130,7 @@ blast radius 23 -> 18 v / health B+ -> A- ^
 ```
 
 ## SessionStart Integration
-SessionStart appends a `skill-native/trace-check` request (Tier 2 async — non-blocking). If any artifact is stale, a non-blocking advisory appears:
+SessionStart appends a `cocotrace/trace-check` request (Tier 2 async — non-blocking). If any artifact is stale, a non-blocking advisory appears:
 
 ```
 ⚠️  CocoTrace: discuss.md changed since spec.md was last traced.
@@ -138,7 +138,7 @@ SessionStart appends a `skill-native/trace-check` request (Tier 2 async — non-
 ```
 
 ## Key Constraints
-- `skill-native/trace-check` is DETERMINISTIC — no LLM, no inference
+- `cocotrace/trace-check` is DETERMINISTIC — no LLM, no inference
 - SHA-256 computed from file CONTENT, not metadata
 - `trace.json` records git branch and commit metadata for the trace run
 - Staleness propagates in `walk_order` — downstream always stale if upstream changed

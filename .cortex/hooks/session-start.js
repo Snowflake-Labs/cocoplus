@@ -17,7 +17,7 @@ const { loadConfig, setFlag, initPilotSession } = require('./_v2-state.js');
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const SPAWN_QUEUE  = path.join(COCOPLUS_DIR, 'subagent-spawn-requests.jsonl');
-const SKILL_QUEUE  = path.join(COCOPLUS_DIR, 'skill-native-requests.jsonl');
+const V2_QUEUE     = path.join(COCOPLUS_DIR, 'v2-runtime-requests.jsonl');
 
 function queueAndAttemptBackgroundSpawn(request, ts) {
   appendJsonLine(SPAWN_QUEUE, request);
@@ -103,9 +103,9 @@ function main() {
     }, null, 2));
   }
 
-  // 5. CocoTrace — Tier 2 async staleness advisory through the V2 skill-native queue.
-  appendJsonLine(SKILL_QUEUE, {
-    skill: 'skill-native/trace-check',
+  // 5. CocoTrace — Tier 2 async staleness advisory through the V2 runtime queue.
+  appendJsonLine(V2_QUEUE, {
+    skill: 'cocotrace/trace-check',
     requested_at: ts,
     session_id: sessionId,
     source: 'hook.session-start',

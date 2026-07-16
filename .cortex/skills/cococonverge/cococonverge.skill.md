@@ -22,11 +22,11 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is
 
 ### `$pivot run`
 
-Use the `skill-native/pivot-merge` contract in `run` mode. Read all pod output files produced by the most recent CocoFlow `parallel:` step execution (from `pod-status.json`), apply the three-pass deduplication algorithm below, assign priority tiers and effort estimates, and write `lifecycle/FINDINGS.md` and `lifecycle/findings-state.json`. If the upstream flow used `on_partial: skip_partial`, exclude PARTIAL pod outputs.
+Use the `cococonverge/pivot-merge` contract in `run` mode. Read all pod output files produced by the most recent CocoFlow `parallel:` step execution (from `pod-status.json`), apply the three-pass deduplication algorithm below, assign priority tiers and effort estimates, and write `lifecycle/FINDINGS.md` and `lifecycle/findings-state.json`. If the upstream flow used `on_partial: skip_partial`, exclude PARTIAL pod outputs.
 
 ### `$pivot run --since <timestamp>`
 
-Use the `skill-native/pivot-merge` contract in `run` mode and target only pod outputs that completed after `<timestamp>`. Useful for re-running convergence when additional pods have completed since the last run.
+Use the `cococonverge/pivot-merge` contract in `run` mode and target only pod outputs that completed after `<timestamp>`. Useful for re-running convergence when additional pods have completed since the last run.
 
 ### `$pivot show`
 
@@ -42,7 +42,7 @@ Archive the current `FINDINGS.md` to `lifecycle/findings-archive/<timestamp>-FIN
 
 ## Deduplication Algorithm (Deterministic — No LLM)
 
-The V2 skill-native convergence contract applies three passes, in order, to all upstream pod outputs:
+The V2-native convergence contract applies three passes, in order, to all upstream pod outputs:
 
 **Pass 1 — Same file:line match:** Two findings referencing the same file at the same line number are the same underlying issue. Take the highest severity from contributing sources, keep the most detailed description, cite all contributing pod names and their original finding IDs.
 
@@ -95,7 +95,7 @@ CocoPivot is the canonical handler for the `converge:` step type. When a flow de
 ## Exit Criteria
 
 - `$pivot run` produces `FINDINGS.md` from N pod outputs with zero duplicate entries for identical file:line findings
-- `$pivot show`, `$pivot status`, and `$pivot clear` use the skill-native convergence contract and committed/ignored artifacts
+- `$pivot show`, `$pivot status`, and `$pivot clear` use the V2-native convergence contract and committed/ignored artifacts
 - PARTIAL-source pods are flagged in the `FINDINGS.md` header, never silently merged as if COMPLETE
 - Scope anomalies are detected against each pod's `excludes:` declaration and excluded from `FINDINGS.md`, with the anomaly itself recorded in `findings-state.json`
 - The convergence algorithm is deterministic — identical inputs always produce identical `FINDINGS.md` and `findings-state.json`

@@ -23,7 +23,7 @@ const {
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const SPAWN_QUEUE  = path.join(COCOPLUS_DIR, 'subagent-spawn-requests.jsonl');
-const SKILL_QUEUE  = path.join(COCOPLUS_DIR, 'skill-native-requests.jsonl');
+const V2_QUEUE     = path.join(COCOPLUS_DIR, 'v2-runtime-requests.jsonl');
 
 function queueAndAttemptBackgroundSpawn(request, ts) {
   appendJsonLine(SPAWN_QUEUE, request);
@@ -146,8 +146,8 @@ function main() {
   } catch (_) { /* no flow */ }
 
   if (pivotRequested || convergePending) {
-    appendJsonLine(SKILL_QUEUE, {
-      skill: 'skill-native/pivot-merge',
+    appendJsonLine(V2_QUEUE, {
+      skill: 'cococonverge/pivot-merge',
       requested_at: ts,
       reason: pivotRequested ? 'pivot-requested' : 'converge-pending',
       source: 'hook.stop',

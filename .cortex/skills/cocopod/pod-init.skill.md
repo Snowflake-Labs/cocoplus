@@ -189,7 +189,7 @@ lifecycle/findings-state.json
 pod-status.json
 
 # CocoPlus 2.0 runtime queues and local indexes
-skill-native-requests.jsonl
+v2-runtime-requests.jsonl
 subagent-spawn-requests.jsonl
 ui-notifications.jsonl
 lifecycle/pilot-session.json
@@ -256,7 +256,7 @@ Create `.cocoplus/personas/dynamic-registry.json`:
 }
 ```
 
-Create `.cocoplus/skill-native-requests.jsonl` as an empty queue file. Hooks append V2 skill-native work requests here rather than invoking legacy scripts directly.
+Create `.cocoplus/v2-runtime-requests.jsonl` as an empty queue file. Hooks append V2 feature work requests here rather than invoking legacy scripts directly.
 
 Create `.cocoplus/.last-consolidation` with the current epoch milliseconds so the CocoRecall Dream Cycle starts on the normal 24-hour cadence.
 
@@ -357,5 +357,5 @@ Next steps:
 - [ ] Root `AGENTS.md` shim exists at project root with `cocoplus-agents-redirect` directive
 - [ ] `.cocoplus/personas.json` exists with 8 default shorthand entries (`$de` through `$cdo`)
 - [ ] `.cocoplus/subagents.json` exists as empty `{}`
-- [ ] `.cocoplus/personas/dynamic-registry.json`, `.cocoplus/flows/templates/`, `.cocoplus/skill-native-requests.jsonl`, and `.cocoplus/.last-consolidation` exist
+- [ ] `.cocoplus/personas/dynamic-registry.json`, `.cocoplus/flows/templates/`, `.cocoplus/v2-runtime-requests.jsonl`, and `.cocoplus/.last-consolidation` exist
 - [ ] Git commit with message `chore(cocopod): initialize CocoPlus project structure` exists in log
