@@ -15,7 +15,7 @@ All notable changes to CocoPlus are documented here.
 
 #### CocoConsole
 - `.cortex/scripts/cocoplus-console.js` — local read-only browser control plane launched by `$cocoplus console`.
-- `.cortex/scripts/v2-state.js` — shared V2 lifecycle state helper for JSON state files, mode flags, and append-only activity logs.
+- `.cortex/hooks/_v2-state.js` — hook-local V2 lifecycle state helper for JSON state files, mode flags, and append-only activity logs.
 - `assist-mode/cocoplus-console.skill.md` — `$cocoplus console`, `$cocoplus console status`, and `$cocoplus console stop` command contract.
 - CocoConsole reads `.cocoplus/` lifecycle artifacts and exposes Home, Flow, Cost, Quality, Health, Safety, Memory, Sessions, Settings, and Forge panels without mutating project state.
 
@@ -31,6 +31,13 @@ All notable changes to CocoPlus are documented here.
 - `Stop` hook now checkpoints active V2 modes and records CocoRecall Dream Cycle consolidation requests on a 24-hour cadence.
 - `PreToolUse` hook adds ReviewerLockout with enforce and observe modes.
 - `PostToolUse` hook adds PII governance detection with enforce and observe logging; original values are never written to CocoPlus artifacts.
+- V2 hooks now enqueue deterministic follow-up work through `.cocoplus/skill-native-requests.jsonl` instead of invoking legacy runtime scripts directly.
+
+#### CocoFlow and CocoRecall 2.0
+- `execution-engine/flow-template.skill.md` adds `$flow template list/save/validate/show/delete` for reusable execution plan templates under `.cocoplus/flows/templates/`.
+- `execution-engine/flow-run.skill.md` now documents the V2 execution model: conditional strategic assessment, mandatory orchestration pass, dependency-group dispatch, per-step context briefs capped at 200 words, synthesis pass, and template reuse.
+- `cocorecall/recall.skill.md` now includes the CocoRecall Dream Cycle and JSONL-targeted signal extraction contract.
+- `$pod init` now provisions V2 runtime state directories and files, including flow templates, dynamic persona registry, skill-native request queue, and Dream Cycle cadence state.
 
 ### Changed
 
@@ -42,7 +49,7 @@ All notable changes to CocoPlus are documented here.
 ### Compatibility
 
 - Existing V1 commands, hooks, scripts, templates, and feature outputs remain in place unless an explicit V2 modification applies.
-- The Skill-Native Architecture is introduced as the V2 direction while preserving existing deterministic scripts required by the current validator and compatibility surface; CocoConsole remains the permitted local runtime process.
+- The Skill-Native Architecture is the active V2 runtime direction: `plugin.json` registers CocoConsole as the only script, while compatibility scripts remain as repository artifacts for migration/reference.
 - No remote services are introduced. CocoConsole is local-only and read-only.
 
 ---
