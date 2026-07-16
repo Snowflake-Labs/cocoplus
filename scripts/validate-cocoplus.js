@@ -11,7 +11,11 @@ const hooksDir = path.join(repoRoot, '.cortex', 'hooks');
 const hookLibDir = path.join(hooksDir, 'lib');
 const templatesDir = path.join(repoRoot, 'templates');
 const recipesDir = path.join(repoRoot, 'recipes');
+<<<<<<< HEAD
 const referenceDir = path.join(repoRoot, 'Snow-Cocoplus');
+=======
+const referenceDir = path.join(repoRoot, 'reference-specs');
+>>>>>>> feature/cocoplus-v2.0.0
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -97,6 +101,18 @@ function parseFrontmatterTools(agentFile) {
 function main() {
   const failures = [];
   const plugin = readJson(pluginPath);
+<<<<<<< HEAD
+=======
+  const skillNativeDir = path.join(repoRoot, '.cortex', 'skills', 'skill-native');
+
+  if ((plugin.skills || []).some((skill) => skill.startsWith('skill-native/'))) {
+    failures.push('V2-only manifest must not register skill-native/* compatibility skills');
+  }
+
+  if (fs.existsSync(skillNativeDir)) {
+    failures.push('V2-only skills tree must not contain .cortex/skills/skill-native compatibility folder');
+  }
+>>>>>>> feature/cocoplus-v2.0.0
 
   const requiredAgents = [
     'coco-bloom',
@@ -287,7 +303,11 @@ function main() {
   );
 
   const documentationFiles = [
+<<<<<<< HEAD
     ...walkFiles(path.join(repoRoot, 'Snow-Cocoplus', 'docs'), (filePath) => filePath.endsWith('.md')),
+=======
+    ...walkFiles(path.join(referenceDir, 'docs'), (filePath) => filePath.endsWith('.md')),
+>>>>>>> feature/cocoplus-v2.0.0
     ...walkFiles(path.join(repoRoot, 'docs'), (filePath) => filePath.endsWith('.html')),
   ];
   const documentation = documentationFiles

@@ -56,3 +56,41 @@ require_limit_on_scan = true
 # CocoOps and CocoReview demo mode - no Snowflake connection required
 enabled = false
 # activated_at and dataset are managed by $ops demo - do not edit manually
+<<<<<<< HEAD
+=======
+
+[cocoplus]
+# CocoPlus 2.0 browser control plane
+console_port = 7779
+console_auto_launch = false
+
+[cocopilot]
+# Natural-language orchestration layer over existing CocoPlus features.
+auto_activate = false
+suggestion_verbosity = "normal" # "minimal" | "normal" | "verbose"
+
+[cocoforge]
+# Meta Loop Expert Team Engine.
+default_budget_tokens = 2000000
+l3_enabled = false
+milestone_every_n_iterations = 1
+synthesized_specialist_retention = true
+
+[leviathan]
+# Explicit-activation God Mode and Ronin companion configuration.
+enabled = false
+history_ingestion = true
+context_snapshot_delegation = true
+
+[dynamic_personas]
+# Emergent specialist system. Fixed personas remain available unless superseded.
+enabled = true
+evidence_threshold_sessions = 3
+retain_history_on_dissolve = true
+
+[governance]
+# V2 governance hook policies. Values may be true, false, or "observe".
+reviewer_lockout = true
+pii_filtering = false
+pii_log_redactions = true
+>>>>>>> feature/cocoplus-v2.0.0

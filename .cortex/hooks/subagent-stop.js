@@ -13,12 +13,20 @@
 
 const fs   = require('fs');
 const path = require('path');
+<<<<<<< HEAD
 const { spawn, execFileSync } = require('child_process');
+=======
+const { spawn } = require('child_process');
+>>>>>>> feature/cocoplus-v2.0.0
 const { isoUtc, appendJsonLine, logError, readStdinJson } = require('./_common.js');
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const SPAWN_QUEUE  = path.join(COCOPLUS_DIR, 'subagent-spawn-requests.jsonl');
+<<<<<<< HEAD
+=======
+const V2_QUEUE     = path.join(COCOPLUS_DIR, 'v2-runtime-requests.jsonl');
+>>>>>>> feature/cocoplus-v2.0.0
 
 function readJson(filePath, fallback) {
   try {
@@ -79,6 +87,7 @@ function main() {
   // runs for every subagent completion, independent of type. Never blocks:
   // a malformed envelope is logged as a quality warning, not a hard failure.
   if (event.status_envelope || event.output_path || event.output || event.artifact) {
+<<<<<<< HEAD
     try {
       const envelopeScript = path.join('scripts', 'status-envelope-check.js');
       if (fs.existsSync(envelopeScript)) {
@@ -93,6 +102,18 @@ function main() {
     } catch (err) {
       logError('subagent-stop', `status-envelope-check failed: ${err.message}`);
     }
+=======
+    appendJsonLine(V2_QUEUE, {
+      skill: 'cococonverge/status-envelope-check',
+      requested_at: ts,
+      source: 'hook.subagent-stop',
+      subagent_id: subagentId,
+      status_envelope: event.status_envelope || null,
+      output_path: event.output_path || event.artifact || null,
+      output: event.output ? String(event.output).slice(0, 2000) : null,
+    });
+    appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', action: 'status_envelope_check_requested', subagent_id: subagentId, ts });
+>>>>>>> feature/cocoplus-v2.0.0
   }
 
   // 1. Identify subagent type by ID prefix
@@ -310,9 +331,18 @@ function main() {
       (daRebuttalScore !== null && Number(daRebuttalScore) < 4);
 
     if (isBlocked && dimension) {
+<<<<<<< HEAD
       try {
         const { execFileSync } = require('child_process');
         const record = JSON.stringify({
+=======
+      appendJsonLine(V2_QUEUE, {
+        skill: 'cocowisdom/wisdom-writer',
+        operation: 'record',
+        requested_at: ts,
+        source: 'hook.subagent-stop',
+        record: {
+>>>>>>> feature/cocoplus-v2.0.0
           gate: subagentId.startsWith('da-critic-') ? 'da_critic' : 'secondeye',
           phase: event.phase || null,
           dimension,
@@ -320,6 +350,7 @@ function main() {
           rejection_reason: evidence,
           artifact_reference: event.artifact_path || event.artifact_reference || null,
           da_rebuttal_score: daRebuttalScore,
+<<<<<<< HEAD
         });
         execFileSync(process.execPath, ['.cortex/scripts/wisdom-writer.js', '--record', record], {
           timeout: 3000, windowsHide: true,
@@ -328,6 +359,11 @@ function main() {
       } catch (err) {
         logError('subagent-stop', `wisdom-writer failed: ${err.message}`);
       }
+=======
+        },
+      });
+      appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'wisdom_write_requested', gate: 'secondeye', dimension, ts });
+>>>>>>> feature/cocoplus-v2.0.0
     }
     appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'secondeye', subagent_id: subagentId, verdict, ts });
     queueRefineReflection(event, ts);
@@ -412,6 +448,7 @@ function queueRefineReflection(event, ts) {
   } catch (_) { /* file just created above */ }
 
   if (queueLength >= REFINE_QUEUE_THRESHOLD) {
+<<<<<<< HEAD
     const reflectScript = path.join('scripts', 'refine-reflect.js');
     if (fs.existsSync(reflectScript)) {
       try {
@@ -423,6 +460,15 @@ function queueRefineReflection(event, ts) {
         logError('subagent-stop', `refine-reflect spawn failed: ${err.message}`);
       }
     }
+=======
+    appendJsonLine(V2_QUEUE, {
+      skill: 'cocorefine/refine-reflect',
+      requested_at: ts,
+      source: 'hook.subagent-stop',
+      queue_length: queueLength,
+    });
+    appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'refine_reflect_requested', queue_length: queueLength, ts });
+>>>>>>> feature/cocoplus-v2.0.0
   }
 }
 

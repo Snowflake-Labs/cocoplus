@@ -72,6 +72,14 @@
 <p>You invoke them directly (<code>$de Review this procedure for performance issues</code>) or let CocoHarvest assign them automatically based on task type. Either way, you know exactly what expertise is being applied to the problem.</p>
 <p>One agent in the system is never invoked directly: <strong>CocoScout</strong>. It runs before every Build stage and every persona invocation — quietly, in the background, on Haiku. Its job is to scan the available context sources (warm memory, CocoGrove patterns, CocoContext standards, Environment Inspector snapshots) and rank them by relevance to the current task, so the executing agent begins with the most useful framing, not just the most recent. CocoScout doesn't reason about the task — it filters the environment for the agent that will. The practical effect is that each specialist begins its work with a context window shaped to the work at hand rather than the full undifferentiated heap of everything CocoPlus has accumulated.</p>
 <hr>
+<<<<<<< HEAD
+=======
+<h2 id="cocopilot-and-guided-orchestration">CocoPilot and Guided Orchestration</h2>
+<p>CocoPilot is the session companion that turns intent into guided use of the rest of CocoPlus. It does not own a separate authority model. When <code>$pilot on</code> is active, it routes natural-language requests toward existing features, records session intent, and helps choose the right next command while preserving the same approval gates those features already enforce.</p>
+<p>The useful distinction is companion versus executor. CocoPilot can suggest, route, summarize, and keep session state coherent. It cannot make an irreversible operation safe by saying it is safe, cannot approve its own hard gates, and cannot erase the developer's role in the lifecycle. This is why CocoForge can supersede Pilot while a goal loop is active: orchestration changes, but the boundaries do not.</p>
+<p><strong>Leviathan Mode</strong> is the explicit-autonomy extension of this concept. It requires covenant acceptance before activation, carries hard stops forward, and treats autonomy as coordinated execution under declared limits. <strong>Ronin</strong> is the personal assistant companion for that mode: the voice that returns the briefing, summarizes workstreams, and makes the state understandable when the developer comes back.</p>
+<hr>
+>>>>>>> feature/cocoplus-v2.0.0
 <h2 id="memory">Memory</h2>
 <p>Three layers. Each layer serves a different time horizon.</p>
 <p>The <strong>hot layer</strong> is AGENTS.md. 200 lines, always loaded, always current. This is what Coco sees at the start of every session. It knows the current phase, the active modes, the three most recent key decisions. It is a summary, not an archive.</p>
@@ -152,7 +160,11 @@
 <p>Quality gates fire on individual artifacts in individual sessions. But the patterns that generate failures are not individual — they are institutional. A team that consistently writes vague acceptance criteria will fail the SecondEye spec gate repeatedly until someone names the pattern and changes the practice.</p>
 <p><strong>CocoWisdom</strong> is the mechanism for that naming. Every time a gate blocks — SecondEye at a spec, CocoSentinel at an artifact, the Devil's Advocate with an unrebutted concern — a structured record is appended to the project's wisdom store. The store accumulates across sessions. It is committed to git. It is read by SecondEye and CocoSentinel before they spawn their critic populations, surfacing the three (for SecondEye) or two (for CocoSentinel) most recent rejection records per dimension as prior context.</p>
 <p>This does not constrain how critics evaluate the current artifact — independence is structural, not behavioral. What it does is prime pattern recognition. A critic that has seen the last three acceptance criteria rejections is more likely to notice the fourth occurrence of the same gap than a critic seeing the dimension for the first time. The project's quality gates become progressively better calibrated to the team's specific recurring failure patterns.</p>
+<<<<<<< HEAD
 <p>The append-only invariant matters philosophically as well as practically: the record of what failed cannot be erased. A team can observe its quality trajectory improving. It cannot rewrite the history of where it struggled. v1.2.0 adds an evidence gate before stable wisdom promotion, protected must-keep entries, explicit forget rationale, and denser-not-larger consolidation so memory becomes more useful without becoming larger by default.</p>
+=======
+<p>The append-only invariant matters philosophically as well as practically: the record of what failed cannot be erased. A team can observe its quality trajectory improving. It cannot rewrite the history of where it struggled. CocoWisdom adds an evidence gate before stable wisdom promotion, protected must-keep entries, explicit forget rationale, and denser-not-larger consolidation so memory becomes more useful without becoming larger by default.</p>
+>>>>>>> feature/cocoplus-v2.0.0
 <hr>
 <h2 id="metering-as-governance">Metering as Governance</h2>
 <p>Token tracking begins as a cost estimate. In a governed AI data platform, it becomes an accountability layer. CocoMeter Enhanced attributes actual usage to requests and stages; chargeback extends that attribution to users and cost centers, with token credits separated from optional warehouse compute credits.</p>
@@ -190,3 +202,7 @@
 
 </body>
 </html>
+<<<<<<< HEAD
+=======
+
+>>>>>>> feature/cocoplus-v2.0.0

@@ -51,6 +51,7 @@ If no argument: execute all stages with status != "completed" in dependency orde
 ## Build Execution Order
 
 For full pipeline execution:
+<<<<<<< HEAD
 1. Read `runtime.concurrency_mode` from `flow.json` (or apply `--concurrency` override)
 2. Build dependency graph from flow.json stages
 3. Find all stages with no dependencies (or whose dependencies are all "completed") — these form the first execution group
@@ -60,6 +61,19 @@ For full pipeline execution:
    - **single-track**: spawn 1 stage at a time; wait for completion and checkpoint validation before spawning next
 5. After each stage completes, find newly-unblocked stages (all dependencies now "completed")
 6. Repeat until all stages complete or one fails with on_failure: stop
+=======
+1. Attempt an execution plan template match from `.cocoplus/flows/templates/`. A validated match may skip the strategic assessment and orchestration pass; record the reuse in `.cocoplus/meter/template-benchmarks.jsonl`.
+2. Run the conditional strategic assessment unless a valid template match exists or the workflow is trivially single-stage. Capture objective, risk, quality bar, and escalation boundaries.
+3. Run the mandatory orchestration pass. Produce `dependency_graph`, `dependency_groups`, `tier_assignments`, `expected_outputs`, and one context brief per step. Each `context_briefs[*].text` must be 200 words or fewer.
+4. Read `runtime.concurrency_mode` from `flow.json` (or apply `--concurrency` override)
+5. Dispatch dependency groups, not isolated stages. All stages in the same ready group are submitted in one batch when their dependencies are satisfied.
+6. Apply concurrency mode:
+   - **normal**: spawn all ready stages simultaneously
+   - **caution**: spawn at most 2 stages simultaneously; wait for at least 1 to complete before spawning another
+   - **single-track**: spawn 1 stage at a time; wait for completion and checkpoint validation before spawning next
+7. After each dependency group completes, run a synthesis pass to reconcile contradictions before unblocking downstream groups.
+8. Repeat until all stages complete or one fails with on_failure: stop
+>>>>>>> feature/cocoplus-v2.0.0
 
 ## Execute Each Stage
 
@@ -191,6 +205,11 @@ Reusable execution patterns live under `.cortex/skills/execution-engine/template
 - Per-Project Working Directory
 - No-op Workflow
 
+<<<<<<< HEAD
+=======
+Project-local execution plan templates live under `.cocoplus/flows/templates/` and are managed by `$flow template list/save/validate/show/delete`.
+
+>>>>>>> feature/cocoplus-v2.0.0
 ## Create Stage Commit
 
 After each stage completes successfully:
@@ -241,3 +260,8 @@ Time: [duration]
 - [ ] A `parallel:` step without a subsequent `converge:` step triggers a validator warning
 - [ ] Every `model_tier` resolves from `cocoplus.toml` without silent fallback
 - [ ] No-op stages write `noop-log.jsonl` before being marked skipped
+<<<<<<< HEAD
+=======
+- [ ] Strategic assessment, orchestration pass, dependency-group dispatch, and synthesis pass are recorded unless a validated execution plan template was reused
+- [ ] Every worker context brief is 200 words or fewer
+>>>>>>> feature/cocoplus-v2.0.0

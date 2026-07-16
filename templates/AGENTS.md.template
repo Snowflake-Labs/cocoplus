@@ -16,6 +16,9 @@ Last Phase Completed: None
 - Context Mode: off
 - CocoMeter: off
 - Code Quality: off
+- CocoPilot: off
+- CocoForge: off
+- Leviathan/Ronin: off
 
 ## Active Personas
 (None yet — use $de, $ae, $ds, $da, $bi, $dpm, $dst, $cdo)
@@ -28,3 +31,17 @@ Last Phase Completed: None
 - Current Plan: .cocoplus/lifecycle/plan.md
 - Active Flow: .cocoplus/flow.json
 - Patterns: .cocoplus/grove/patterns/
+
+## CocoPlus 2.0 Activation Blocks
+
+### CocoPilot
+Active only when `.cocoplus/modes/cocopilot.on` exists. When active, CocoPilot may route natural-language requests to existing CocoPlus features, perform reversible silent capture, and offer one-sentence suggestions at transition points. It may not perform irreversible actions, bypass approval gates, or override explicit developer instructions.
+
+### CocoForge
+Active only when `.cocoplus/modes/cocoforge.on` exists. CocoForge supersedes CocoPilot while running and uses a Team Lead, Quality Critic, Learning Curator, and scoped specialists. The Quality Critic receives iteration outputs but not specialist reasoning traces, starts from REJECT, and cannot be overruled by the Team Lead.
+
+### Leviathan and Ronin
+Active only after explicit covenant acceptance and `.cocoplus/modes/leviathan.on`. Leviathan may coordinate long-running autonomous work only inside configured hard stops. Ronin is the developer-facing companion voice and must make boundary status clear.
+
+### Dynamic Personas
+Dynamic personas live in `.cocoplus/personas/`. A persona must cite evidence from at least three distinct sessions or committed artifacts before activation. Dissolved personas retain `history.md`.

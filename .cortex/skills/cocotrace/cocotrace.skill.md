@@ -19,7 +19,11 @@ CocoTrace maintains a directed dependency graph: `bloom.md → discuss.md → sp
 
 ### `$trace build`
 
+<<<<<<< HEAD
 1. Run `node scripts/trace-check.js` (deterministic, no LLM, Tier 2 async)
+=======
+1. Execute the `cocotrace/trace-check` contract (deterministic, no LLM, Tier 2 async)
+>>>>>>> feature/cocoplus-v2.0.0
 2. Read output `lifecycle/trace.json`
 3. Display summary table:
 
@@ -82,7 +86,11 @@ CocoTrace maintains a directed dependency graph: `bloom.md → discuss.md → sp
 
 Computes the blast radius for a named Snowflake object (table, view, column, or Cortex model identifier) — all Cortex functions in the CocoPod that depend on it.
 
+<<<<<<< HEAD
 1. Run `node scripts/trace-blast.js --object "<object>"`. The script reads `snowflake-deps.json` (the reverse index of function → object dependencies, maintained by `$trace sync`) and returns every function that depends on `<object>`.
+=======
+1. Execute the `cocotrace/trace-blast` contract for `<object>`. It reads `snowflake-deps.json` (the reverse index of function → object dependencies, maintained by `$trace sync`) and returns every function that depends on `<object>`.
+>>>>>>> feature/cocoplus-v2.0.0
 2. For each affected function, report the dependency type (`read`, `write`, or `structural`), the downstream traceability chain to its CocoBloom commitment and CocoSpec outcome statement, and whether its CocoContract evidence is stale relative to the object's current state.
 3. Display:
 
@@ -97,7 +105,11 @@ Computes the blast radius for a named Snowflake object (table, view, column, or 
    2 functions affected. 1 requires CocoContract re-proof after this change.
    ```
 
+<<<<<<< HEAD
 `snowflake-deps.json` is committed to the CocoPod repository and updated by `$trace sync` (extends `trace-check.js`) whenever a build artifact changes — it records, per function, the objects read, the objects written, and the Cortex API features depended on.
+=======
+`snowflake-deps.json` is committed to the CocoPod repository and updated by `$trace sync` whenever a build artifact changes — it records, per function, the objects read, the objects written, and the Cortex API features depended on.
+>>>>>>> feature/cocoplus-v2.0.0
 
 ### `$trace check --before-change "<change description>"`
 
@@ -130,7 +142,11 @@ blast radius 23 -> 18 v / health B+ -> A- ^
 ```
 
 ## SessionStart Integration
+<<<<<<< HEAD
 `trace-check.js` runs at SessionStart (Tier 2 async — non-blocking). If any artifact is stale, a non-blocking advisory appears:
+=======
+SessionStart appends a `cocotrace/trace-check` request (Tier 2 async — non-blocking). If any artifact is stale, a non-blocking advisory appears:
+>>>>>>> feature/cocoplus-v2.0.0
 
 ```
 ⚠️  CocoTrace: discuss.md changed since spec.md was last traced.
@@ -138,7 +154,11 @@ blast radius 23 -> 18 v / health B+ -> A- ^
 ```
 
 ## Key Constraints
+<<<<<<< HEAD
 - `trace-check.js` is DETERMINISTIC — no LLM, no inference
+=======
+- `cocotrace/trace-check` is DETERMINISTIC — no LLM, no inference
+>>>>>>> feature/cocoplus-v2.0.0
 - SHA-256 computed from file CONTENT, not metadata
 - `trace.json` records git branch and commit metadata for the trace run
 - Staleness propagates in `walk_order` — downstream always stale if upstream changed
