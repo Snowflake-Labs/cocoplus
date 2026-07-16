@@ -4,7 +4,7 @@
 
 **Goal:** Ship CocoPlus V2.0.0 as a full plugin evolution spanning V2 specs, runtime hooks, command skills, manifests, root docs, changelog, and docs HTML.
 
-**Architecture:** V2 keeps the V1 plugin structure and adds conditional V2 behaviors through skills, hooks, manifest registration, and hook-local state helpers. CocoConsole is the only registered local runtime script; all other V2 modes are represented as skill-native command surfaces, queued skill-native requests, and hook-mediated lifecycle state.
+**Architecture:** V2 keeps the V1 plugin structure and adds conditional V2 behaviors through skills, hooks, manifest registration, and hook-local state helpers. CocoConsole is the only registered local runtime script; all other V2 modes are represented as feature-owned command surfaces, queued V2 runtime requests, and hook-mediated lifecycle state.
 
 **Tech Stack:** Coco skills/agents/hooks, Node.js built-ins, Markdown/HTML docs, existing `scripts/validate-cocoplus.js` validation.
 
@@ -77,7 +77,7 @@
 - [x] Add dynamic persona discover/list/invoke/dissolve skills.
 - [x] Add governance status skill for ReviewerLockout and PII observe/enforce state.
 - [x] Update `$flow view` and `$meter view` skills to redirect to console when running.
-- [x] Commit as `feat(v2): add skill-native V2 command surface`.
+- [x] Commit as `feat(v2): add V2-native command surface`.
 
 ### Task 4: Update Product Docs and HTML Site
 

@@ -20,11 +20,13 @@ Version 2.0.0 adds the evolved V2 layer:
 - **Leviathan + Ronin**: explicit-activation autonomous coordination and companion interface.
 - **Dynamic Personas**: evidence-gated emergent specialists with retained history.
 - **Governance hooks**: ReviewerLockout and PII governance with observe/enforce rollout.
-- **Skill-native runtime**: hooks enqueue deterministic work through Coco-native skill contracts; CocoConsole is the only registered local runtime script.
+- **V2-native runtime**: hooks enqueue deterministic work through feature-owned skill contracts; CocoConsole is the only registered local runtime script.
 - **CocoFlow 2.0 orchestration**: tiered planning, dependency-group dispatch, synthesis passes, and `$flow template` reuse.
 - **Console-aware visual commands**: `$flow view` and `$meter view` redirect into CocoConsole when it is running.
 
 The V2 product specifications live in `reference requirements/2.0`; the root plugin implements the V2 runtime and documentation surface while preserving backward-compatible V1 behavior unless an explicit V2 modification applies.
+
+Older CocoPods migrate forward with `$migrate v2 --dry-run` and `$migrate v2`; new work should use the V2-native feature skills directly.
 
 ## Specialist Personas
 
