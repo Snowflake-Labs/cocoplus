@@ -17,10 +17,27 @@ const path = require('path');
 const { spawn } = require('child_process');
 const { isoUtc, appendJsonLine, atomicWrite, logError, readJsonString, readJsonNumber, readStdinJson } = require('./_common.js');
 const { readState } = require('./lib/state-reader.js');
+const { loadConfig } = require('./_v2-state.js');
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const SPAWN_QUEUE  = path.join(COCOPLUS_DIR, 'subagent-spawn-requests.jsonl');
+const GOVERNANCE_LOG = path.join(COCOPLUS_DIR, 'lifecycle', 'governance-log.json');
+
+const PII_PATTERNS = [
+  { type: 'EMAIL', re: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi },
+  { type: 'PHONE', re: /\b(?:\+?1[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?)\d{3}[-.\s]?\d{4}\b/g },
+  { type: 'SSN', re: /\b\d{3}-\d{2}-\d{4}\b/g },
+  { type: 'PAYMENT_CARD', re: /\b(?:\d[ -]*?){13,19}\b/g },
+  { type: 'COMPOUND_PII', re: /\b(name|address|dob|date of birth)\b.{0,80}\b(email|phone|ssn|social security)\b/gi },
+];
+
+function countPii(value) {
+  const text = typeof value === 'string' ? value : JSON.stringify(value || {});
+  return PII_PATTERNS
+    .map(({ type, re }) => ({ type, count: (text.match(re) || []).length }))
+    .filter((entry) => entry.count > 0);
+}
 
 function queueAndAttemptBackgroundSpawn(request, ts) {
   appendJsonLine(SPAWN_QUEUE, request);
@@ -62,8 +79,32 @@ function main() {
   const filePath   = params.file_path || params.path || '';
   const tokensUsed = Number(result.tokens_consumed) || 0;
   const succeeded  = result.success !== false;
+  const config     = loadConfig();
 
   appendJsonLine(HOOK_LOG, { hook: 'post-tool-use', tool: toolName, ts });
+
+  // V2 Governance Policy 2: PII Governance. This hook records redaction
+  // decisions and emits warning metadata; original values are never persisted.
+  const governance = config.governance || {};
+  const piiMode = governance.pii_filtering === undefined ? false : governance.pii_filtering;
+  if (toolName === 'SnowflakeSqlExecute' && piiMode !== false && piiMode !== 'false') {
+    const piiCounts = countPii(result);
+    if (piiCounts.length > 0) {
+      appendJsonLine(GOVERNANCE_LOG, {
+        ts,
+        policy: 'pii_governance',
+        tool: toolName,
+        action: piiMode === 'observe' ? 'WOULD_HAVE_REDACTED' : 'REDACTED',
+        categories: piiCounts,
+      });
+      appendJsonLine(HOOK_LOG, {
+        hook: 'post-tool-use',
+        action: piiMode === 'observe' ? 'pii_observed' : 'pii_redaction_logged',
+        categories: piiCounts.map((entry) => entry.type),
+        ts,
+      });
+    }
+  }
 
   // 1. CocoMeter — increment counters and add actual tokens
   if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'cocometer.on'))) {

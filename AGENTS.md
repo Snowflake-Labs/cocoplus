@@ -43,6 +43,12 @@ You have the CocoPlus plugin active. CocoPlus enhances Coco with:
 - **CocoWisdom** institutional rejection memory ($wisdom, $wisdom list, $wisdom search, $wisdom insights)
 - **CocoReview** structured code review with six-severity vocabulary ($review, $review --security, $review --complexity)
 - **CocoOps** delivery intelligence dashboard ($ops dora, $ops sprint, $ops suggest, $ops demo)
+- **CocoConsole** V2 read-only local browser control plane ($cocoplus console)
+- **CocoPilot** V2 natural-language orchestration mode ($pilot on/off)
+- **CocoForge** V2 goal-driven expert-team loop ($forge, $forge goal/status/stop)
+- **Leviathan + Ronin** V2 explicit-activation autonomous coordination ($leviathan on/off/status/learn)
+- **Dynamic Personas** V2 evidence-gated emergent specialists ($personas discover/list/invoke/dissolve)
+- **Governance Hooks** V2 ReviewerLockout and PII governance observe/enforce policies
 
 ## Core Behavioral Rules
 
@@ -75,6 +81,13 @@ You have the CocoPlus plugin active. CocoPlus enhances Coco with:
 
 8. **Hooks are authoritative.** If a hook writes to `.cocoplus/`, that is the source of truth.
    Skills read state; hooks update state.
+
+9. **V2 modes are opt-in and conditional.**
+   - CocoPilot is active only when `.cocoplus/modes/cocopilot.on` exists.
+   - CocoForge is active only when `.cocoplus/modes/cocoforge.on` exists and supersedes CocoPilot while running.
+   - Leviathan/Ronin require explicit covenant acceptance and `.cocoplus/modes/leviathan.on`.
+   - Dynamic personas require evidence before activation and retain `history.md` after dissolution.
+   - CocoConsole is read-only; it never approves gates or mutates project state.
 
 ## Persona Shorthand Quick Reference
 

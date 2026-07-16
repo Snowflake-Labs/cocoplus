@@ -13,6 +13,7 @@ const { updateAgentsMd, readActiveModes, readRecentDecisions } = require('./lib/
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
+const V2_QUEUE     = path.join(COCOPLUS_DIR, 'v2-runtime-requests.jsonl');
 
 function main() {
   if (!fs.existsSync(COCOPLUS_DIR)) return;
@@ -96,12 +97,14 @@ function main() {
       summary: '',
       features_used: [],
     });
-    const { execFileSync } = require('child_process');
-    try {
-      execFileSync(process.execPath, ['.cortex/scripts/session-indexer.js', '--append', sessionRecord], {
-        timeout: 5000, windowsHide: true,
-      });
-    } catch (_) { /* non-fatal if indexer fails */ }
+    appendJsonLine(V2_QUEUE, {
+      skill: 'cocopull/session-indexer',
+      operation: 'append',
+      session_record: sessionRecord,
+      requested_at: ts,
+      source: 'hook.session-end',
+    });
+    appendJsonLine(HOOK_LOG, { hook: 'session-end', action: 'session_index_requested', session: sessionId, ts });
   } catch (_) { /* non-fatal */ }
 
   // 3b. CocoAudit — commit audit.md if enabled (Feature 40)
@@ -123,19 +126,16 @@ function main() {
   // failure here (including an old Node runtime lacking node:sqlite) must
   // never block session end.
   try {
-    const recallScript = path.join('scripts', 'recall-import.js');
-    if (fs.existsSync(recallScript)) {
-      const { spawn } = require('child_process');
-      const sinceArg = meterStartedAt || ts;
-      const child = spawn(process.execPath, [recallScript, '--import', '--since', sinceArg], {
-        detached: true, stdio: 'ignore', windowsHide: true,
-      });
-      child.on('error', (err) => logError('session-end', `recall-import spawn failed: ${err.message}`));
-      child.unref();
-      appendJsonLine(HOOK_LOG, { hook: 'session-end', action: 'recall_import_triggered', ts });
-    }
+    appendJsonLine(V2_QUEUE, {
+      skill: 'cocorecall/recall-import',
+      operation: 'import',
+      since: meterStartedAt || ts,
+      requested_at: ts,
+      source: 'hook.session-end',
+    });
+    appendJsonLine(HOOK_LOG, { hook: 'session-end', action: 'recall_import_requested', ts });
   } catch (err) {
-    logError('session-end', `recall-import trigger failed: ${err.message}`);
+    logError('session-end', `recall-import request failed: ${err.message}`);
   }
 
   // 4. Update .cocoplus/AGENTS.md hot layer (with 200-line enforcement)
