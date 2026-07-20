@@ -79,6 +79,19 @@ CocoSpec Outcome Statement — FAIL
 
 Do not proceed to Vague Language Detection or scoring until a passing Outcome Statement is recorded. Once passed, store it verbatim for the `## Outcome Statement` section of `spec.md`.
 
+## Shape Document Contract
+
+Before writing `spec.md`, produce `.cocoplus/lifecycle/shape.md` as the single truth source consumed by plan, implementation, and verification phases. Do not restate or paraphrase shape requirements in later phases; link back to this file.
+
+`shape.md` must contain:
+
+- observable acceptance criteria,
+- rollout/rollback decision: direct deploy, expand-contract, or feature flag,
+- dev harness ladder: L1 fixture-fed logic, L2 direct trigger, L3 seeded/direct UI or report, L4 full flow,
+- inspection surface for judged outputs such as generated SQL, schema recommendations, or analytical summaries.
+
+An L4-only verification path is a plan smell. Require at least one faster harness level unless the developer explicitly accepts the risk.
+
 ## Vague Language Detection
 
 Before writing the specification document, use `.cocoplus/scripts/spec-validator.js` for deterministic vague language detection on the draft spec answers. If the script is unavailable, fall back to the inline scan below.
@@ -191,6 +204,7 @@ Output: "Spec captured. Commit created: `feat(spec): initial project specificati
 
 - [ ] A passing Outcome Statement is recorded before any dimension scoring runs
 - [ ] `.cocoplus/lifecycle/spec.md` exists with all seven sections (Outcome Statement, Goal, Success Criteria, Out of Scope, Existing Snowflake Objects, Target Users, Timeline)
+- [ ] `.cocoplus/lifecycle/shape.md` exists and is referenced by downstream phases without paraphrase
 - [ ] `.cocoplus/lifecycle/spec.md` has a valid Phase ID in format `spec-YYYYMMDD-NNN`
 - [ ] `.cocoplus/lifecycle/meta.json` `phases_completed` array contains `"spec"` and `current_phase` is `"spec"`
 - [ ] Git commit with message `feat(spec): initial project specification captured` exists in log

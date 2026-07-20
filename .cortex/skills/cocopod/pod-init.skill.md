@@ -47,8 +47,12 @@ Create the following directories (create them even if empty — they are require
 .cocoplus/flows/
 .cocoplus/flows/templates/
 .cocoplus/flows/templates/archive/
+.cocoplus/proposals/
+.cocoplus/proposals/archive/
+.cocoplus/session/
 .cocoplus/personas/
 .cocoplus/personas/archive/
+.cocoplus/skills/
 .cocoplus/cupper/
 .cocoplus/recall/
 .cocoplus/governance/
@@ -198,7 +202,16 @@ lifecycle/forge-activity.jsonl
 lifecycle/leviathan-state.json
 lifecycle/consolidation-log.json
 lifecycle/governance-log.json
+lifecycle/retrospective-ledger.jsonl
+session/PROGRESS.md
+session/CONTEXT.md
+session/task-queue.jsonl
+session/stage-evidence.json
+proposals/proposal-log.jsonl
 .last-consolidation
+.last-retrospective
+AGENT_STOP
+STEER.md
 
 # Execution plan templates are committed when promoted; archives are local by default
 flows/templates/archive/
@@ -259,6 +272,31 @@ Create `.cocoplus/personas/dynamic-registry.json`:
 Create `.cocoplus/v2-runtime-requests.jsonl` as an empty queue file. Hooks append V2 feature work requests here rather than invoking legacy scripts directly.
 
 Create `.cocoplus/.last-consolidation` with the current epoch milliseconds so the CocoRecall Dream Cycle starts on the normal 24-hour cadence.
+
+Create `.cocoplus/.last-retrospective` with the current epoch milliseconds so CocoRetro starts on the normal monthly cadence.
+
+Create `.cocoplus/session/PROGRESS.md`:
+
+```markdown
+# CocoSession Progress
+
+## Done
+
+## In Progress
+
+## Next
+
+## Notes
+```
+
+Create `.cocoplus/session/CONTEXT.md` with predicate state:
+
+```text
+SESSION.status=initialized
+SESSION.skill_surface_budget=standard
+```
+
+Create empty `.cocoplus/session/task-queue.jsonl`, `.cocoplus/session/stage-evidence.json`, and `.cocoplus/proposals/proposal-log.jsonl`.
 
 ## CocoAudit Setup (Feature 40)
 
@@ -321,6 +359,8 @@ CocoPlus initialized successfully.
 ├── grove/             ← CocoGrove pattern library
 ├── meter/             ← CocoMeter token tracking
 ├── flows/templates/   ← reusable execution plan templates
+├── proposals/         ← retained CocoFlow stage proposals pending settlement
+├── session/           ← CocoSession handoff, predicate state, evidence, and task queue
 ├── personas/          ← dynamic persona registry and history files
 ├── scripts/           ← compatibility utility scripts copied into CocoPods
 ├── pull/              ← CocoPull manifest and distillation registry
@@ -357,5 +397,5 @@ Next steps:
 - [ ] Root `AGENTS.md` shim exists at project root with `cocoplus-agents-redirect` directive
 - [ ] `.cocoplus/personas.json` exists with 8 default shorthand entries (`$de` through `$cdo`)
 - [ ] `.cocoplus/subagents.json` exists as empty `{}`
-- [ ] `.cocoplus/personas/dynamic-registry.json`, `.cocoplus/flows/templates/`, `.cocoplus/v2-runtime-requests.jsonl`, and `.cocoplus/.last-consolidation` exist
+- [ ] `.cocoplus/personas/dynamic-registry.json`, `.cocoplus/flows/templates/`, `.cocoplus/proposals/`, `.cocoplus/session/`, `.cocoplus/v2-runtime-requests.jsonl`, `.cocoplus/.last-consolidation`, and `.cocoplus/.last-retrospective` exist
 - [ ] Git commit with message `chore(cocopod): initialize CocoPlus project structure` exists in log

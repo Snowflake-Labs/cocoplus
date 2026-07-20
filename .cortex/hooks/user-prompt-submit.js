@@ -39,6 +39,7 @@ const {
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const V2_QUEUE     = path.join(COCOPLUS_DIR, 'v2-runtime-requests.jsonl');
+const SESSION_DIR  = path.join(COCOPLUS_DIR, 'session');
 
 /** Default persona shorthand map (overridden by .cocoplus/personas.json if present) */
 const DEFAULT_PERSONAS = {
@@ -88,6 +89,55 @@ function main() {
 
   appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', ts });
 
+  // CocoSession: one-shot operator steering. The hook records the instruction
+  // once, queues it for the session skill, then clears STEER.md so it cannot
+  // become ambient standing context.
+  const steerPath = path.join(COCOPLUS_DIR, 'STEER.md');
+  if (fs.existsSync(steerPath)) {
+    let steerText = '';
+    try { steerText = fs.readFileSync(steerPath, 'utf8').trim(); } catch (_) { /* absent */ }
+    if (steerText) {
+      appendJsonLine(V2_QUEUE, {
+        skill: 'cocosession/session',
+        action: 'steer',
+        instruction: steerText.slice(0, 1000),
+        requested_at: ts,
+        source: 'hook.user-prompt-submit',
+      });
+      appendJsonLine(HOOK_LOG, {
+        hook: 'user-prompt-submit',
+        action: 'operator_steering_injected',
+        instruction: steerText.slice(0, 160),
+        ts,
+      });
+    }
+    try { fs.unlinkSync(steerPath); } catch (_) { /* already cleared */ }
+  }
+
+  // CocoSession: ensure durable handoff files exist and keep current prompt as
+  // queued work rather than letting mid-session asks erase the active item.
+  try {
+    fs.mkdirSync(SESSION_DIR, { recursive: true });
+    const progressPath = path.join(SESSION_DIR, 'PROGRESS.md');
+    if (!fs.existsSync(progressPath)) {
+      fs.writeFileSync(progressPath, '# CocoSession Progress\n\n## Done\n\n## In Progress\n\n## Next\n\n## Notes\n', 'utf8');
+    }
+    const contextPath = path.join(SESSION_DIR, 'CONTEXT.md');
+    if (!fs.existsSync(contextPath)) {
+      fs.writeFileSync(contextPath, 'SESSION.status=initialized\nSESSION.skill_surface_budget=standard\n', 'utf8');
+    }
+    if (message && !message.startsWith('$')) {
+      appendJsonLine(path.join(SESSION_DIR, 'task-queue.jsonl'), {
+        ts,
+        session_id: sessionId,
+        message: message.slice(0, 500),
+        status: 'queued',
+      });
+    }
+  } catch (err) {
+    logError('user-prompt-submit', `cocosession init failed: ${err.message}`);
+  }
+
   // --- Tier 1 start (deterministic, <50ms target) ---
 
   // 0. CocoPlus 2.0 mode commands and intercept priority.
@@ -112,6 +162,7 @@ function main() {
     const goalMode = message.startsWith('$forge goal ');
     const statusMode = message === '$forge status';
     const stopMode = message === '$forge stop';
+    const disputeMode = message.startsWith('$forge resolve-dispute');
     if (statusMode) {
       appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'forge_status_requested', tier: 1, ts });
       return;
@@ -122,15 +173,34 @@ function main() {
       appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'forge_stop_requested', tier: 1, ts });
       return;
     }
+    if (disputeMode) {
+      checkpointForge({
+        active: flagExists('cocoforge.on'),
+        phase: 'gate',
+        dispute: { status: 'developer_resolution_requested', requested_at: ts },
+        event_type: 'forge_dispute_resolution_requested',
+        message: 'Developer requested refinement ladder dispute resolution.',
+      });
+      appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'forge_dispute_resolution_requested', tier: 1, ts });
+      return;
+    }
     const goal = message.replace(/^\$forge\s+(goal\s+)?/, '').trim().replace(/^"|"$/g, '');
     if (goal) {
+      const ladderEnabled = /\s--ladder(\s|$)/.test(message);
       setFlag('cocoforge.on', true);
       checkpointForge({
         active: true,
         mode: goalMode ? 'goal' : 'task',
-        goal,
+        goal: goal.replace(/\s--ladder(\s|$)/, ' ').trim(),
         iteration: 1,
         phase: 'plan',
+        refinement_ladder: ladderEnabled ? {
+          enabled: true,
+          rungs: [85, 90, 95, 99],
+          current_floor: 80,
+          attempts_at_current_rung: 0,
+          dispute: false,
+        } : { enabled: false },
         pilot_superseded: flagExists('cocopilot.on'),
         event_type: 'forge_started',
         message: `Forge started for goal: ${goal.slice(0, 160)}`,
