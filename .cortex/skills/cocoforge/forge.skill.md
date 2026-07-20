@@ -14,9 +14,11 @@ Your objective is to operate CocoForge.
 ## Modes
 
 - `$forge "goal statement"` starts Task Mode for a bounded goal.
+- `$forge "goal statement" --ladder` starts Task Mode with the refinement ladder enabled.
 - `$forge goal "goal statement"` starts Goal Mode, which persists across sessions.
 - `$forge status` reports current forge state.
 - `$forge stop` stops cleanly after the current phase and emits an early milestone gate.
+- `$forge resolve-dispute` exits a refinement-ladder deadlock and requests developer judgment.
 
 ## Activation
 
@@ -43,6 +45,10 @@ CocoForge uses:
 - Learning Curator: captures reusable patterns and specialist refinements.
 - Specialists: fixed or dynamic personas scoped to the iteration plan.
 
+## Refinement Ladder
+
+When `--ladder` is enabled, the Quality Critic treats achieved rungs as floors. Default rungs are 85, 90, 95, and 99. If a later iteration drops below the current floor, the Critic rejects it even if it improves another dimension. After two failed fix cycles at the same rung, the forge enters dispute state and requires `$forge resolve-dispute`.
+
 ## Milestone Gate
 
 At every gate, output:
@@ -58,4 +64,5 @@ At every gate, output:
 - [ ] Forge state file exists.
 - [ ] Forge activity log has append-only events.
 - [ ] CocoPilot resumes after forge stop if it was active before forge activation.
+- [ ] Ladder sessions preserve the current floor, score trend, and dispute state in `forge-state.json`.
 

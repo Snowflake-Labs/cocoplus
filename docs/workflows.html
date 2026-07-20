@@ -86,7 +86,25 @@ $cocoplus build
 <p><strong>While it runs:</strong> You can monitor progress with <code>$flow status</code>. Each stage shows its status (pending, running, complete, failed), how long it's been running, and whether its checkpoints are satisfied.</p>
 <p><strong>If a stage fails:</strong> The failure reason is written to <code>flow.json</code>. Dependent stages don't start. You can review the failure, fix the issue, and resume from the failed stage with <code>$flow resume [stage-id]</code> — which first validates that all prior stages' checkpoints are intact.</p>
 <p><strong>Checkpoint validation is not optional.</strong> CocoHarvest will not advance to the next stage until the current stage's output files exist and pass validation. This is what prevents a partially-built pipeline from silently proceeding as if complete.</p>
+<p><strong>When evidence gates are enabled:</strong> A stage starts from default-fail and cannot be marked complete until a qualifying evidence artifact has been read. For Snowflake-write stages that opt into retained proposals, the stage writes a proposal under <code>.cocoplus/proposals/</code> and waits for <code>$flow settle --accept</code> or <code>$flow settle --discard</code>.</p>
 <p>Each completed stage creates a git commit: <code>build(&lt;stage-id&gt;): &lt;name&gt; — checkpoints verified</code>. By the time Build completes, you have a granular, auditable history of what was built and in what order.</p>
+<hr>
+<h2 id="scenario-long-running-work-with-cocosession">Scenario: Long-Running Work with CocoSession</h2>
+<p><strong>The situation:</strong> A warehouse migration, backfill, or investigative pipeline may span more than one context window. You need the next session to know exactly what happened without reading a transcript.</p>
+<pre><code>
+$session status
+$flow run --outcome "daily billing table reconciles to finance report"
+$session steer "pause after proposal generation and summarize settlement risk"
+$session progress
+</code></pre>
+<p>CocoSession keeps the current item in <code>PROGRESS.md</code>, machine-checkable predicates in <code>CONTEXT.md</code>, and queued requests in <code>task-queue.jsonl</code>. If the operator creates <code>AGENT_STOP</code> through <code>$session stop</code>, the PreToolUse hook blocks further tool calls until the operator resumes.</p>
+<hr>
+<h2 id="scenario-multi-source-research">Scenario: Multi-Source Research Before Acting</h2>
+<p><strong>The situation:</strong> You need to explain a metric anomaly or schema drift, and the answer depends on Snowflake metadata, project files, and runbooks.</p>
+<pre><code>
+$flow research "why did net revenue change after the warehouse migration?"
+</code></pre>
+<p>The research pipeline decomposes the question, asks for plan approval, retrieves from multiple configured sources in parallel, publishes a cited report, and sends that report to an independent reviewer before it is treated as actionable.</p>
 <hr>
 <h3 id="step-5-test">Step 5: Test</h3>
 <pre><code>

@@ -113,6 +113,13 @@ $leviathan status
 $leviathan off
 </code></pre>
 <hr>
+<h2 id="check-cocosession-continuity">Check CocoSession Continuity</h2>
+<p>For long-running work, verify the handoff layer before you start delegating:</p>
+<pre><code>
+$session status
+</code></pre>
+<p>This reads <code>.cocoplus/session/PROGRESS.md</code>, predicate <code>CONTEXT.md</code>, queued work, and operator-control files. Use <code>$session steer "..."</code> for a one-time redirect and <code>$session stop</code> when you need a clean halt without killing the process.</p>
+<hr>
 <h2 id="verify-your-setup">Verify Your Setup</h2>
 <p>Once the Environment Inspector background scan has had a moment to complete:</p>
 <pre><code>

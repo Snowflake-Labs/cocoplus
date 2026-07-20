@@ -111,10 +111,13 @@ After Coco restarts, tell the user to run these commands from the root of the pr
 $pod init
 $cocoplus on
 $cocoplus console
+$session status
 $spec
 ```
 
 `$cocoplus console` opens the read-only local dashboard. Optional operating modes are activated per session with `$pilot on`, `$forge "goal"`, or `$leviathan on`.
+
+`$session status` verifies the CocoSession handoff surface, predicate context, operator kill-switch state, and queued work. Existing projects that enable the new 2.0 gates should add the optional `[session]`, `[evidence_gate]`, `[proposals]`, `[research]`, and `[retrospective]` configuration blocks through `$migrate v2` rather than hand-editing partial state.
 
 ## Validation
 
@@ -146,4 +149,4 @@ If Coco is available in the current environment, verify that Coco recognizes the
 - [ ] Existing `pluginDirs` entries and unrelated settings are preserved
 - [ ] User is told to restart Coco
 - [ ] Existing CocoPlus 1.x users are told to run `$migrate v2 --dry-run` before `$migrate v2`
-- [ ] User is given `$pod init`, `$cocoplus on`, `$cocoplus console`, and `$spec` as next project-level commands
+- [ ] User is given `$pod init`, `$cocoplus on`, `$cocoplus console`, `$session status`, and `$spec` as next project-level commands

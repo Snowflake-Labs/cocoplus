@@ -24,6 +24,7 @@ const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const SPAWN_QUEUE  = path.join(COCOPLUS_DIR, 'subagent-spawn-requests.jsonl');
 const V2_QUEUE     = path.join(COCOPLUS_DIR, 'v2-runtime-requests.jsonl');
+const SESSION_DIR  = path.join(COCOPLUS_DIR, 'session');
 
 function queueAndAttemptBackgroundSpawn(request, ts) {
   appendJsonLine(SPAWN_QUEUE, request);
@@ -61,6 +62,29 @@ function main() {
   const sessionId = process.env.COCO_SESSION_ID || 'unknown';
 
   appendJsonLine(HOOK_LOG, { hook: 'stop', session: sessionId, ts, action: 'cupper_triggered' });
+
+  // CocoSession durable handoff: every session stop leaves a cold-startable
+  // PROGRESS.md and a predicate-style CONTEXT.md for the next context window.
+  try {
+    fs.mkdirSync(SESSION_DIR, { recursive: true });
+    const progressPath = path.join(SESSION_DIR, 'PROGRESS.md');
+    if (!fs.existsSync(progressPath)) {
+      fs.writeFileSync(progressPath, '# CocoSession Progress\n\n## Done\n\n## In Progress\n\n## Next\n\n## Notes\n', 'utf8');
+    }
+    fs.appendFileSync(progressPath, `\n## Notes\n- ${ts}: Session ${sessionId} stopped; handoff checkpoint recorded.\n`, 'utf8');
+    const contextPath = path.join(SESSION_DIR, 'CONTEXT.md');
+    const predicates = [
+      `SESSION.last_checkpoint=${ts}`,
+      `SESSION.id=${sessionId}`,
+      `MODE.cocopilot=${flagExists('cocopilot.on')}`,
+      `MODE.cocoforge=${flagExists('cocoforge.on')}`,
+      `MODE.leviathan=${flagExists('leviathan.on')}`,
+    ];
+    fs.writeFileSync(contextPath, `${predicates.join('\n')}\n`, 'utf8');
+    appendJsonLine(HOOK_LOG, { hook: 'stop', action: 'cocosession_checkpointed', session: sessionId, ts });
+  } catch (err) {
+    logError('stop', `cocosession checkpoint failed: ${err.message}`);
+  }
 
   // CocoPlus 2.0: checkpoint active autonomous modes.
   if (flagExists('cocopilot.on')) {
@@ -112,6 +136,32 @@ function main() {
       trigger: 'stop-hook-24h-cadence',
     });
     appendJsonLine(HOOK_LOG, { hook: 'stop', action: 'recall_dream_cycle_requested', session: sessionId, ts });
+  }
+
+  // CocoRetro cadence: monthly by default, configurable in cocoplus.toml.
+  const retroPath = lifecyclePath('retrospective-ledger.jsonl');
+  const lastRetroPath = path.join(COCOPLUS_DIR, '.last-retrospective');
+  let shouldRetrospective = true;
+  try {
+    const last = Number(fs.readFileSync(lastRetroPath, 'utf8'));
+    shouldRetrospective = Number.isNaN(last) || (Date.now() - last) > 30 * 24 * 60 * 60 * 1000;
+  } catch (_) { /* absent => request */ }
+  if (shouldRetrospective) {
+    fs.writeFileSync(lastRetroPath, String(Date.now()), 'utf8');
+    appendJsonLine(retroPath, {
+      ts,
+      session_id: sessionId,
+      status: 'requested',
+      trigger: 'stop-hook-monthly-cadence',
+      metric: 'token_weighted_wasted_effort',
+    });
+    appendJsonLine(V2_QUEUE, {
+      skill: 'retrospective/retrospective',
+      command: '$retrospective run',
+      requested_at: ts,
+      source: 'hook.stop',
+    });
+    appendJsonLine(HOOK_LOG, { hook: 'stop', action: 'retrospective_requested', session: sessionId, ts });
   }
 
   // Checkpoint CocoMeter: record a mid-session stop event in history

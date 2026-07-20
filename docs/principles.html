@@ -26,11 +26,11 @@
 <div class="page-header">
   <div class="label">Design Principles</div>
   <h1>The Design Principles</h1>
-  <p class="subtitle">These are the twenty ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
+  <p class="subtitle">These are the twenty-three ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
 </div>
 
 <div class="content">
-<p>These are the twenty ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
+<p>These are the twenty-three ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
 <p>A principle without a reason is just a constraint. With a reason, it becomes a compass.</p>
 <hr>
 <h2 id="1-native-first-always">1. Native First, Always</h2>
@@ -157,6 +157,18 @@
 <p>CocoPilot can reduce friction, but it must not make the system mysterious. A companion that routes intent, suggests commands, or summarizes state is valuable only while the developer can still see what is happening, why it is happening, and which boundary applies next.</p>
 <p>This principle is why CocoPilot records session intent instead of hiding it, why CocoForge supersedes Pilot visibly while a goal loop is active, and why Leviathan Mode requires explicit covenant acceptance before autonomy expands. Ronin follows the same rule: the personal assistant briefing is not decoration, it is the human-readable surface that keeps autonomous coordination accountable.</p>
 <p>Orchestration should make the right path easier to follow. It should never turn a gated system into a black box.</p>
+<hr>
+<h2 id="21-context-rot-is-an-architecture-problem">21. Context Rot Is an Architecture Problem</h2>
+<p>Context rot is the quiet degradation where accumulated tokens reduce the effective weight of earlier instructions. It is not solved by telling the agent to pay more attention. It is solved by architecture: fresh context windows for independent checks, predicate-style persistent state, and skill surface budgets that avoid loading unnecessary instructions.</p>
+<p>If the system needs to remember something important, it must write it in a form that survives context accumulation. CocoSession's <code>CONTEXT.md</code> predicates and CocoConsole's Skill Surface Budget make this visible and enforceable.</p>
+<hr>
+<h2 id="22-proposals-before-commits">22. Proposals Before Commits</h2>
+<p>Agent work that can affect Snowflake objects, committed SQL, or pipeline configuration is safest as a retained proposal until the operator settles it. Reversibility before commit is categorically safer than undo after commit.</p>
+<p>This principle does not slow every workflow. It applies where the stage opts into proposal mode because its output crosses a meaningful boundary. Autonomy may prepare the change; it may not convert the proposal into a live effect without settlement.</p>
+<hr>
+<h2 id="23-actuator-cost-is-monotonic">23. Actuator Cost Is Monotonic</h2>
+<p>Every rule has a cheapest sufficient actuator. A hook fires only when the guarded action fires. A skill loads only when invoked. A structural agent rule loads for a session class. Standing context loads every time, whether relevant or not.</p>
+<p>The cheapest actuator sufficient for the job is the right actuator. CocoRetro and CocoHygiene exist to keep the system honest: they classify failures, measure wasted effort, and propose fixes at the lowest layer that can actually prevent the recurrence.</p>
 <blockquote><p><em>Principles are only principles when they are applied in the cases where violating them would be convenient.</em></p></blockquote>
 </div>
 

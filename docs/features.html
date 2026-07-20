@@ -26,11 +26,11 @@
 <div class="page-header">
   <div class="label">Feature Catalog</div>
   <h1>The Features</h1>
-  <p class="subtitle">CocoPlus has forty-eight counted product features, with CocoPilot now documented as its own orchestration companion. They are not independent capabilities you can pick from a menu. They are expressions of the same underlying design — a system where each piece reinforces the others.</p>
+  <p class="subtitle">CocoPlus has forty-nine counted product features, with CocoPilot and CocoSession documented as orchestration companions. They are not independent capabilities you can pick from a menu. They are expressions of the same underlying design — a system where each piece reinforces the others.</p>
 </div>
 
 <div class="content">
-<p>CocoPlus has forty-eight counted product features, with CocoPilot now documented as its own orchestration companion. Migration skills remain separate upgrade tooling rather than part of the product feature count. The features are not independent capabilities you can pick from a menu. They are expressions of the same underlying design — a system where each piece reinforces the others.</p>
+<p>CocoPlus has forty-nine counted product features, with CocoPilot and CocoSession documented as orchestration companions. Migration skills remain separate upgrade tooling rather than part of the product feature count. The features are not independent capabilities you can pick from a menu. They are expressions of the same underlying design — a system where each piece reinforces the others.</p>
 <p>Some features are always active. Some are toggled on by choice. Some run invisibly in the background. Some you will use every day. Some you will reach for only when the work demands it.</p>
 <p>Here they are, in the order they matter.</p>
 <hr>
@@ -531,12 +531,18 @@
 <p><strong>Dynamic Personas</strong> supersede fixed-roster-only thinking without deleting the fixed roster. Specialists emerge from evidence, require thresholded support before activation, and retain <code>history.md</code> after dissolution.</p>
 <p><strong>Governance hooks</strong> add ReviewerLockout and PII governance. Both support observe-mode rollout so teams can see what would be blocked or redacted before enforcing the policy.</p>
 <hr>
+<h2 id="feature-49-cocosession-multi-session-continuity-and-operator-control">Feature 49: CocoSession — Multi-Session Continuity and Operator Control</h2>
+<p><strong>Commands:</strong> <code>$session status</code>, <code>$session progress</code>, <code>$session steer</code>, <code>$session stop</code>, <code>$session resume</code></p>
+<p>CocoSession is the continuity layer for long-running CocoPlus work. It keeps a durable <code>PROGRESS.md</code> handoff, a predicate-style <code>CONTEXT.md</code> state file, a queued-work log, a kill-switch sentinel, and a one-shot steering file so a future session can resume without relying on transcript memory.</p>
+<p><strong>Operator control:</strong> Creating <code>.cocoplus/AGENT_STOP</code> halts tool use through the PreToolUse hook until the operator removes or resumes it. Writing <code>.cocoplus/STEER.md</code> injects one instruction, then clears the file so redirection does not become permanent ambient context.</p>
+<p><strong>Integrated V2 gates:</strong> CocoSession works with the default-fail evidence gate, retained proposal model, CocoConsole Replay panel, and retrospective ledger. It gives autonomy a file-based handoff surface that stays legible to the developer.</p>
+<hr>
 <h2 id="migration-skills">Migration Skills</h2>
 <p><strong>Commands:</strong> <code>$migrate v2 --dry-run</code>, <code>$migrate v2</code>, <code>$migrate v2 --from 1.x</code></p>
 <p>Migration skills are the upgrade path for older CocoPods. They inspect an existing <code>.cocoplus/</code> directory, report missing runtime directories, config sections, queue files, Dynamic Persona registry files, and AGENTS activation blocks, then apply the upgrade when requested.</p>
 <p>The migration path is intentionally conservative: legacy artifacts are archived rather than deleted, active modes are not enabled automatically, and a migration report is written so the operator can see exactly what changed. New CocoPods start directly in the current architecture through <code>$pod init</code>; migration skills exist only for projects that already carry earlier state.</p>
 <hr>
-<p><em>Forty-eight core features, one idea: give the developer a system that works as hard to be right as it works to be fast.</em></p>
+<p><em>Forty-nine core features, one idea: give the developer a system that works as hard to be right as it works to be fast.</em></p>
 </div>
 
 <footer>
