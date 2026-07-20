@@ -33,6 +33,8 @@ const HOOK_LOG      = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const SAFETY_LOG    = path.join(COCOPLUS_DIR, 'safety-decisions.log');
 const SAFETY_AUDIT  = path.join(COCOPLUS_DIR, 'safety-audit.jsonl');
 const GOVERNANCE_LOG = path.join(COCOPLUS_DIR, 'lifecycle', 'governance-log.json');
+const STAGE_EVIDENCE = path.join(COCOPLUS_DIR, 'session', 'stage-evidence.json');
+const PROPOSAL_LOG = path.join(COCOPLUS_DIR, 'proposals', 'proposal-log.jsonl');
 
 /** Planning artifacts that are scanned for prompt injection */
 const PLANNING_ARTIFACTS = [
@@ -125,6 +127,59 @@ function block(reason) {
   process.stdout.write(JSON.stringify({ action: 'block', reason }) + '\n');
 }
 
+function isTruthy(value) {
+  return value === true || value === 'true' || value === 'observe' || value === 'enabled';
+}
+
+function readJsonFile(filePath, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (_) {
+    return fallback;
+  }
+}
+
+function writeJsonFile(filePath, value) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, JSON.stringify(value, null, 2), 'utf8');
+}
+
+function recordStageEvidence(stageId, filePath, ts) {
+  if (!stageId || !filePath) return;
+  const registry = readJsonFile(STAGE_EVIDENCE, { stages: {} });
+  if (!registry.stages) registry.stages = {};
+  if (!registry.stages[stageId]) registry.stages[stageId] = [];
+  registry.stages[stageId].push({
+    ts,
+    source: 'Read',
+    file: filePath,
+    qualifying: true,
+  });
+  writeJsonFile(STAGE_EVIDENCE, registry);
+}
+
+function stageHasEvidence(stageId) {
+  const registry = readJsonFile(STAGE_EVIDENCE, { stages: {} });
+  const entries = registry.stages && registry.stages[stageId];
+  return Array.isArray(entries) && entries.some((entry) => entry.qualifying);
+}
+
+function stageIsEvidenceExempt(stageId) {
+  const flow = readJsonFile(path.join(COCOPLUS_DIR, 'flow.json'), readJsonFile(path.join(COCOPLUS_DIR, 'lifecycle', 'flow.json'), {}));
+  const stages = Array.isArray(flow.stages) ? flow.stages : [];
+  const stage = stages.find((item) => item.id === stageId || item.name === stageId);
+  return Boolean(stage && (stage.evidence_exempt === true || stage.evidence_exempt === 'true'));
+}
+
+function extractsCompletedStage(params) {
+  const payload = JSON.stringify(params || {});
+  const idMatch = payload.match(/"stage_id"\s*:\s*"([^"]+)"/) ||
+    payload.match(/"id"\s*:\s*"([^"]+)"/) ||
+    payload.match(/"stage"\s*:\s*"([^"]+)"/);
+  if (!idMatch || !/"status"\s*:\s*"completed"/.test(payload)) return null;
+  return idMatch[1];
+}
+
 function main() {
   // No-op if CocoPlus not initialized
   if (!fs.existsSync(COCOPLUS_DIR)) { allow(); return; }
@@ -136,6 +191,15 @@ function main() {
   const toolName = event.tool || process.env.COCO_TOOL_NAME || 'unknown';
   const params   = event.parameters || {};
   const config   = loadConfig();
+
+  // CocoSession kill-switch: operator-created sentinel halts all tool calls.
+  // Removing .cocoplus/AGENT_STOP from outside the agent restores execution.
+  const stopFile = path.join(COCOPLUS_DIR, 'AGENT_STOP');
+  if (fs.existsSync(stopFile)) {
+    appendJsonLine(HOOK_LOG, { hook: 'pre-tool-use', action: 'agent_stop_blocked', tool: toolName, ts });
+    block('CocoSession kill-switch is active: .cocoplus/AGENT_STOP exists. Remove it to resume tool use.');
+    return;
+  }
 
   // V2 Governance Policy 1: ReviewerLockout. Review/evaluation agents cannot
   // mutate the artifact they are currently reviewing. Observe mode logs only.
@@ -165,9 +229,25 @@ function main() {
     }
   }
 
+  // CocoFlow Default-FAIL Evidence Gate. When enabled, a stage cannot be
+  // marked completed until a qualifying Read has been recorded for that stage.
+  if (toolName === 'Write' || toolName === 'Edit') {
+    const evidenceGate = config.evidence_gate || {};
+    const enabled = isTruthy(evidenceGate.enabled);
+    const filePath = params.file_path || params.path || '';
+    const isFlowMutation = /(^|[\\/])\.cocoplus[\\/](lifecycle[\\/])?flow\.json$/i.test(filePath);
+    const stageId = extractsCompletedStage(params);
+    if (enabled && isFlowMutation && stageId && !stageIsEvidenceExempt(stageId) && !stageHasEvidence(stageId)) {
+      appendJsonLine(HOOK_LOG, { hook: 'pre-tool-use', action: 'stage_evidence_blocked', stage_id: stageId, file: filePath, ts });
+      block(`CocoFlow evidence gate: stage "${stageId}" cannot advance to completed until a qualifying evidence file has been read. Read the test result, query output, schema diff, screenshot, or configured evidence artifact first.`);
+      return;
+    }
+  }
+
   // --- Step 1: Prompt injection defense scan (planning artifacts on Read) ---
   if (toolName === 'Read' || toolName === 'mcp__files_read') {
     const filePath = params.file_path || params.path || '';
+    recordStageEvidence(process.env.COCOPLUS_STAGE_ID || params.stage_id || params.stage, filePath, ts);
     const isArtifact = PLANNING_ARTIFACTS.some(a => filePath.endsWith(a));
     if (isArtifact && fs.existsSync(filePath)) {
       try {
@@ -190,6 +270,24 @@ function main() {
 
   // Extract SQL from parameters.sql (spec-defined path)
   const sql = params.sql || params.query || params.statement || '';
+
+  // Retained Proposal Model: proposal-enabled flow stages must not write
+  // directly to Snowflake. The proposal is settled later with $flow settle.
+  const proposalEnabled = process.env.COCOPLUS_WRITES_VIA_PROPOSAL === 'true' ||
+    params.writes_via_proposal === true ||
+    params.proposal_mode === true;
+  if (proposalEnabled && /\b(CREATE|ALTER|DROP|TRUNCATE|INSERT|UPDATE|DELETE|MERGE|GRANT|REVOKE)\b/i.test(sql)) {
+    const stageId = process.env.COCOPLUS_STAGE_ID || params.stage_id || 'unknown-stage';
+    appendJsonLine(PROPOSAL_LOG, {
+      ts,
+      stage_id: stageId,
+      action: 'DIRECT_WRITE_BLOCKED',
+      tool: toolName,
+      summary: sql.slice(0, 160),
+    });
+    block(`Retained Proposal Model: stage "${stageId}" is proposal-enabled. Write the SQL proposal under .cocoplus/proposals/${stageId}/ and settle it with $flow settle --accept ${stageId} before touching Snowflake.`);
+    return;
+  }
 
   // Determine safety mode from flag files (fast existence check only)
   let safetyMode = 'normal'; // default per spec

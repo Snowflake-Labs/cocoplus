@@ -35,6 +35,19 @@ smart = "sonnet"
 ultra = "opus"
 unavailable = []
 
+[model_roles]
+# Judgment roles default to stronger models than execution roles.
+orchestrator = "smart"
+synthesis = "smart"
+worker = "regular"
+facilitator = "smart"
+evaluator = "smart"
+
+[session]
+# Skill Surface Budget protects context from unnecessary standing instructions.
+skill_surface_budget = "standard" # "core" | "standard" | "full"
+context_predicates = true
+
 [trace]
 show_grade = true            # Set false to hide CocoTrace A-F grade while keeping metrics visible
 
@@ -73,6 +86,8 @@ default_budget_tokens = 2000000
 l3_enabled = false
 milestone_every_n_iterations = 1
 synthesized_specialist_retention = true
+refinement_ladder_enabled = false
+refinement_rungs = [85, 90, 95, 99]
 
 [leviathan]
 # Explicit-activation God Mode and Ronin companion configuration.
@@ -91,3 +106,24 @@ retain_history_on_dissolve = true
 reviewer_lockout = true
 pii_filtering = false
 pii_log_redactions = true
+
+[evidence_gate]
+# CocoFlow stage advancement remains opt-in for existing projects.
+enabled = false
+qualifying_reads = ["test", "query-output", "schema-diff", "screenshot", "report"]
+
+[proposals]
+# Stage-level `writes_via_proposal = true` is the normal activation path.
+default_for_snowflake_writes = false
+retain_discarded = true
+
+[research]
+default_mode = "linear" # "linear" | "deep"
+require_plan_approval = true
+max_depth = 1
+max_breadth = 2
+local_doc_paths = []
+
+[retrospective]
+cadence_days = 30
+enabled = true

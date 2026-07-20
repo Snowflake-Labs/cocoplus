@@ -49,7 +49,7 @@
 <hr>
 <h2 id="what-cocoplus-actually-is">What CocoPlus Actually Is</h2>
 <p>CocoPlus is an Agentic Operating System for Snowflake Coco. It runs entirely inside Coco's native architecture — no external services, no databases, no side-car processes. Everything it does, it does through Coco's own mechanisms: skills, subagents, hooks, and a single configuration file.</p>
-<p>It adds fifty-three core capabilities plus an operating orchestration layer to Coco, organized around a central idea: <strong>your development lifecycle has phases, those phases have natural transitions, and a good tool should make those transitions visible and deliberate</strong>.</p>
+<p>It adds forty-nine core capabilities plus an operating orchestration layer to Coco, organized around a central idea: <strong>your development lifecycle has phases, those phases have natural transitions, and a good tool should make those transitions visible and deliberate</strong>.</p>
 <p>The phases are: Spec, Plan, Build, Test, Review, Ship. Not novel. Versions of this sequence have been in software engineering for decades. What CocoPlus adds is the discipline to actually follow them inside an AI session — where the temptation to skip ahead is constant and the cost of skipping is invisible until it isn't.</p>
 <p>Around this lifecycle, CocoPlus adds:</p>
 <ul>
@@ -58,6 +58,7 @@
   <li><strong>Safety</strong> — because not every mistake is recoverable, and the ones that aren't recoverable deserve harder protection than a strongly-worded prompt.</li>
   <li><strong>Independent critique</strong> — because the agent that writes the plan has a vested interest in approving it. SecondEye sends the plan to three models simultaneously — Haiku for efficiency, Sonnet for completeness, Opus for risk — and requires you to face their combined judgment before Build begins.</li>
   <li><strong>Intelligence capture</strong> — because every session produces patterns worth keeping and anti-patterns worth documenting, and neither should be allowed to evaporate.</li>
+  <li><strong>Operator control</strong> — because long-running autonomy needs handoff files, kill switches, steering, and proposal settlement, not vibes.</li>
 </ul>
 <hr>
 <h2 id="the-snowflake-context-matters">The Snowflake Context Matters</h2>

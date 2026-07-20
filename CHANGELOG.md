@@ -40,10 +40,19 @@ All notable changes to CocoPlus are documented here.
 - Former script-replacement contracts have been promoted into their owning feature namespaces; `$migrate v2` is the explicit upgrade path for older CocoPods.
 - `$migrate v2` now focuses on released 1.x CocoPods and includes dry-run planning, migration testing, validation gates, and post-migration cleanup.
 
+#### Eighteenth-Cycle 2.0 Additions
+- `cocosession/session.skill.md` — CocoSession multi-session continuity with `PROGRESS.md`, predicate `CONTEXT.md`, operator kill-switch, one-shot steering, and queued mid-session requests.
+- `PreToolUse` now supports opt-in default-fail stage evidence gating and retained-proposal protection for proposal-enabled Snowflake-write stages.
+- `execution-engine/flow-settle.skill.md` and `execution-engine/flow-research.skill.md` add retained proposal settlement and multi-source research pipelines.
+- `cocobrew/observer.skill.md`, `retrospective/retrospective.skill.md`, `cocohygiene/hygiene.skill.md`, and `cocometer/meter-benchmark.skill.md` add read-only skill observation, periodic quality retrospective, model-upgrade simplification audits, and p-hat benchmarking before iteration.
+- CocoForge gains an optional refinement ladder with `$forge "goal" --ladder` and `$forge resolve-dispute`.
+- CocoSpec now produces a shape document contract with observable criteria, rollout/rollback decision, harness ladder, and inspection surface requirements.
+- CocoConsole now surfaces Stage Evidence, Skill Surface Budget, Retained Proposals, CocoSession handoff, Replay predicate context, retrospective ledger, and Forge refinement ladder state.
+
 ### Changed
 
 - `$flow view` and `$meter view` are now CocoConsole-aware: when CocoConsole is running, they redirect to the Flow or Cost panel; otherwise they preserve the existing standalone HTML behavior.
-- `templates/cocoplus.toml.template` adds `[cocoplus]`, `[cocopilot]`, `[cocoforge]`, `[leviathan]`, `[dynamic_personas]`, and `[governance]` sections.
+- `templates/cocoplus.toml.template` adds `[cocoplus]`, `[cocopilot]`, `[cocoforge]`, `[leviathan]`, `[dynamic_personas]`, `[governance]`, `[session]`, `[evidence_gate]`, `[proposals]`, `[research]`, `[retrospective]`, and role-based model allocation sections.
 - `templates/AGENTS.md.template` adds V2 activation blocks so new pods understand CocoPilot, CocoForge, Leviathan Mode/Ronin, and Dynamic Personas.
 - Root `README.md`, `AGENTS.md`, installation guidance, and the HTML documentation site now present CocoPlus as a V2.0.0 release.
 

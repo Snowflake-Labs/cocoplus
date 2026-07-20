@@ -24,6 +24,7 @@ Output: "Pipeline is paused. Run `$flow resume` to continue." Then stop.
 - `--model <haiku|sonnet|opus>`: pipeline-level model default (Tier 2). Without `--stage`, applies to all stages.
 - `--model <value> --stage <stage-id>`: stage-level override (Tier 3). Does not modify `flow.json`.
 - `--concurrency <normal|caution|single-track>`: force concurrency mode for this run. Overrides the mode inferred from SubagentStop signals. Not persisted — next `$flow run` resumes inference from signals.
+- `--outcome "<observable result>"`: records the outcome frame for this run. If absent and the request is implementation-framed, ask: "What does success look like? Describe the state of the world when this work is done, not the steps to get there."
 
 Stages may also declare `model_tier: "smol" | "regular" | "smart" | "ultra"`. Resolve tiers from `[model_tiers]` in `cocoplus.toml` before spawning the stage:
 
@@ -32,6 +33,8 @@ node scripts/model-tier-resolve.js --config cocoplus.toml --tier <tier>
 ```
 
 If the tier is unmapped or marked unavailable, halt the stage and surface the error. Do not silently fall back to another model.
+
+Resolve role-based defaults from `[model_roles]`: orchestration and synthesis use judgment tiers; worker steps use execution tiers; facilitator and evaluator roles use elevated judgment tiers unless explicitly overridden in the flow definition.
 
 ## Check Dual-File State for Recovery
 
@@ -67,7 +70,7 @@ For full pipeline execution:
 
 For each stage to execute:
 
-1. **Log start:** Update flow.json stage status to `"running"`, add `started_at` timestamp. Append `STAGE_STARTED` entry to `harvest/[run-id]-progress.txt`. Write updated `harvest/[run-id]-tasks.json` atomically.
+1. **Log start:** Update flow.json stage status to `"running"`, add `started_at` timestamp. Append `STAGE_STARTED` entry to `harvest/[run-id]-progress.txt` and `.cocoplus/session/steps.jsonl`. Write updated `harvest/[run-id]-tasks.json` atomically.
 2. **Run setup commands** (if stage has setup commands in flow.json)
 3. **Read prompt file** from `.cocoplus/prompts/[stage-id]-prompt.md`
 4. **Create worktree** if `context: "isolated"` or `isolated: true`: `git worktree add .git/worktrees/[stage-id] -b agent/[stage-id]`
@@ -75,7 +78,7 @@ For each stage to execute:
 6. **Invoke persona subagent** with the prompt file content and stage context
 7. **Wait for completion**
 8. **Intermediate result persistence** (for evaluation stages with `isolated: true`): if the subagent is a Data Scientist running evaluation work, require detailed results to be written to `.cocoplus/harvest/intermediate/[agent-id]-results.json`; only a summary (accuracy score, pass/fail, function name, anomalies) returns to orchestrator context
-9. **Validate checkpoints:** for each glob pattern in `checkpoints`, verify at least one matching file exists
+9. **Validate checkpoints:** for each glob pattern in `checkpoints`, verify at least one matching file exists. If `[evidence_gate] enabled = true`, read at least one qualifying evidence artifact before marking the stage completed, unless the stage declares `evidence_exempt: true`.
 10. **Handle result:**
     - If all checkpoints pass: update flow.json stage to `"completed"`, add `completed_at`. Append `STAGE_COMPLETED` to progress.txt. Reset `consecutive_failure_count` to 0 in tasks.json.
     - If any checkpoint fails: increment `consecutive_failure_count` in tasks.json. Append `STAGE_FAILED` to progress.txt. Apply `on_failure` action. If `consecutive_failure_count` reaches `maxConsecutiveFailures`, append `ESCALATED` and halt with full escalation message.
@@ -92,6 +95,7 @@ For each stage to execute:
     - Execution stages (SQL execution, test runs, file writes) do NOT have a fallback — they fail hard by design.
 12. **HITL pause** (if `hitl: true`): after successful completion, output the stage results and ask developer to confirm before spawning downstream stages
 13. **No-op workflow check** (if `handler: "noop-check"`): run `node scripts/noop-check.js --state <state-file>`. If it returns `noop: true`, mark the stage `skipped` with the recorded reason and append `NOOP_SKIPPED` to progress. This is a successful no-op, not an error.
+14. **Retained proposal model** (if `writes_via_proposal: true`): write Snowflake DDL, SQL file changes, or pipeline configuration output under `.cocoplus/proposals/[stage-id]/[timestamp]/` and stop before live application. Surface: `Proposal retained. Run $flow settle --accept [stage-id] or $flow settle --discard [stage-id].`
 
 ## Adaptive Checkpoint Typing
 

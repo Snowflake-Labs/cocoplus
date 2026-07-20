@@ -19,6 +19,7 @@ Last Phase Completed: None
 - CocoPilot: off
 - CocoForge: off
 - Leviathan/Ronin: off
+- CocoSession: initialized
 
 ## Active Personas
 (None yet — use $de, $ae, $ds, $da, $bi, $dpm, $dst, $cdo)
@@ -45,3 +46,12 @@ Active only after explicit covenant acceptance and `.cocoplus/modes/leviathan.on
 
 ### Dynamic Personas
 Dynamic personas live in `.cocoplus/personas/`. A persona must cite evidence from at least three distinct sessions or committed artifacts before activation. Dissolved personas retain `history.md`.
+
+### CocoSession
+CocoSession is always available for continuity and operator control. Read `.cocoplus/session/PROGRESS.md` before resuming long-running work. Treat `.cocoplus/session/CONTEXT.md` as predicate state: cite lines verbatim instead of paraphrasing. `.cocoplus/AGENT_STOP` blocks tool use until resumed. `.cocoplus/STEER.md` is injected once and then cleared.
+
+### Evidence and Proposal Gates
+If `[evidence_gate] enabled = true`, CocoFlow stages start from default-fail and cannot complete until a qualifying evidence artifact has been read. Stages with `writes_via_proposal = true` must retain Snowflake writes or pipeline changes under `.cocoplus/proposals/` until `$flow settle --accept` or `$flow settle --discard`.
+
+### Retrospective and Hygiene
+Use `$retrospective run`, `$hygiene --model-upgrade`, and `$meter benchmark --flow <template>` before changing recurring rules, hooks, skills, or flow templates. Prefer the cheapest sufficient actuator: hook, then skill, then structural rule, then standing context.

@@ -135,11 +135,13 @@ $pilot off
 <p><strong><code>$forge</code></strong> — Start or manage CocoForge</p>
 <pre><code>
 $forge "prepare this project for release"
+$forge "prepare this project for release" --ladder
 $forge goal "keep this warehouse migration moving until ready"
 $forge status
+$forge resolve-dispute
 $forge stop
 </code></pre>
-<p>Starts the expert-team meta-loop. Task Mode is bounded to a goal; Goal Mode persists across sessions. Forge uses Team Lead, Quality Critic, Learning Curator, and specialist roles. Forge has priority over CocoPilot while active.</p>
+<p>Starts the expert-team meta-loop. Task Mode is bounded to a goal; Goal Mode persists across sessions. Forge uses Team Lead, Quality Critic, Learning Curator, and specialist roles. Forge has priority over CocoPilot while active. The optional <code>--ladder</code> flag enables rung-based quality floors; <code>$forge resolve-dispute</code> exits a ladder deadlock and asks for developer judgment.</p>
 <hr>
 <p><strong><code>$leviathan</code></strong> — Manage Leviathan Mode and Ronin</p>
 <pre><code>
@@ -151,6 +153,40 @@ $leviathan off
 </code></pre>
 <p><code>$leviathan on</code> is the activation command. It presents the covenant first, then creates <code>.cocoplus/modes/leviathan.on</code>, initializes <code>.cocoplus/lifecycle/leviathan-state.json</code>, and calibrates Ronin for the session. Ronin provides the personal assistant return briefing for autonomy state, hard stops, and active workstreams. <code>$leviathan off</code> exits the mode and checkpoints state.</p>
 <p><code>$leviathan learn</code> ingests synthesized history artifacts into <code>lifecycle/leviathan-state.json</code> without reading raw session transcripts.</p>
+<hr>
+<p><strong><code>$session</code></strong> — Manage CocoSession continuity and operator controls</p>
+<pre><code>
+$session status
+$session progress
+$session steer "pause after this stage and summarize risk"
+$session stop
+$session resume
+</code></pre>
+<p>Reads and manages the file-based handoff layer for long-running work: <code>.cocoplus/session/PROGRESS.md</code>, predicate <code>CONTEXT.md</code>, queued work, <code>AGENT_STOP</code>, and one-shot <code>STEER.md</code>. The kill-switch blocks tool use until resumed; steering is injected once and then cleared.</p>
+<hr>
+<p><strong><code>$flow settle</code></strong> — Accept or discard retained proposals</p>
+<pre><code>
+$flow settle --list
+$flow settle --accept &lt;stage-id&gt;
+$flow settle --discard &lt;stage-id&gt;
+</code></pre>
+<p>Settles proposal-enabled Snowflake-write or pipeline-write stages. Proposal directories remain traceable under <code>.cocoplus/proposals/</code>; nothing touches the live environment until an explicit accept path runs through the underlying feature gates.</p>
+<hr>
+<p><strong><code>$flow research</code></strong> — Run a multi-source research pipeline</p>
+<pre><code>
+$flow research "why did this metric change?"
+$flow research --deep "what changed across these schemas?"
+</code></pre>
+<p>Runs Planner, parallel Crawlers, Aggregator, Publisher, independent Reviewer, and Revisor. The retrieval plan is approved before crawler launch, and local document sources may be configured in <code>cocoplus.toml</code>.</p>
+<hr>
+<p><strong><code>$retrospective</code>, <code>$hygiene</code>, and <code>$meter benchmark</code></strong> — Measure and simplify the system</p>
+<pre><code>
+$retrospective status
+$retrospective run
+$hygiene --model-upgrade
+$meter benchmark --flow &lt;template&gt;
+</code></pre>
+<p>These commands form the quality-improvement loop: retrospectives classify failures and propose the cheapest sufficient actuator, hygiene audits whether rules are still load-bearing after model changes, and benchmarks establish p-hat baselines before flow or skill iteration.</p>
 <hr>
 <p><strong><code>$personas discover</code></strong> — Manage Dynamic Personas</p>
 <pre><code>
@@ -1394,7 +1430,7 @@ $sketch deps --reduce off
 <tr>
   <td style="text-align:left"><strong>PreToolUse</strong></td>
   <td style="text-align:left">Before any tool call</td>
-  <td style="text-align:left">Safety Gate — two layers: (1) unconditionally blocks SnowflakeSqlExecute during spec/plan phases regardless of safety mode; (2) blocks or warns on destructive SQL patterns from build phase onward per strict/normal setting</td>
+  <td style="text-align:left">Safety Gate, ReviewerLockout, CocoSession kill-switch, opt-in stage evidence gate, retained-proposal direct-write protection, and destructive SQL warnings or blocks</td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>PostToolUse</strong></td>
@@ -1404,7 +1440,7 @@ $sketch deps --reduce off
 <tr>
   <td style="text-align:left"><strong>UserPromptSubmit</strong></td>
   <td style="text-align:left">Developer submits a prompt</td>
-  <td style="text-align:left">Intercepts <code>$&lt;persona&gt;</code> shorthand for persona routing; intercepts <code>$cocoplus on</code> and <code>$cocoplus off</code>; applies three-tier latency contract: Tier 1 (&lt;50ms) inline blocking, Tier 2 async fire-and-forget advisory, Tier 3 deferred to background</td>
+  <td style="text-align:left">Intercepts persona shorthand, V2 mode commands, Forge priority over Pilot, one-shot CocoSession steering, task queue capture, contract gate requests, and three-tier context/advisory routing</td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>SubagentStop</strong></td>
@@ -1414,7 +1450,7 @@ $sketch deps --reduce off
 <tr>
   <td style="text-align:left"><strong>Stop</strong></td>
   <td style="text-align:left">Main session ends</td>
-  <td style="text-align:left">Final state capture</td>
+  <td style="text-align:left">Final state capture, CocoSession handoff checkpoint, active mode checkpointing, CocoRecall consolidation request, retrospective cadence request, and background CocoCupper scheduling</td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>PreCompact</strong></td>
@@ -1445,12 +1481,16 @@ $sketch deps --reduce off
   <td style="text-align:left"><code>$cocoplus on</code> · <code>$cocoplus off</code></td>
 </tr>
 <tr>
+  <td style="text-align:left"><strong>Operating Layer</strong></td>
+  <td style="text-align:left"><code>$cocoplus console</code> · <code>$pilot on|off</code> · <code>$forge "goal" [--ladder]</code> · <code>$forge resolve-dispute</code> · <code>$leviathan on|off|status|learn</code> · <code>$session status|progress|steer|stop|resume</code> · <code>$retrospective run</code> · <code>$hygiene --model-upgrade</code></td>
+</tr>
+<tr>
   <td style="text-align:left"><strong>Lifecycle</strong></td>
   <td style="text-align:left"><code>$bloom</code> · <code>$bloom --skip</code> · <code>$bloom crystallize</code> · <code>$spec --quick</code> · <code>$spec --full</code> · <code>$discuss</code> · <code>$discuss --red-team</code> · <code>$cocoplus plan</code> · <code>$cocoplus build</code> · <code>$cocoplus test</code> · <code>$cocoplus review</code> · <code>$cocoplus ship</code> · <code>$rewind [--tag]</code> · <code>$fork</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Pipeline</strong></td>
-  <td style="text-align:left"><code>$flow run [--concurrency]</code> · <code>$flow status</code> · <code>$flow pause</code> · <code>$flow resume</code> · <code>$flow view</code></td>
+  <td style="text-align:left"><code>$flow run [--concurrency]</code> · <code>$flow research</code> · <code>$flow settle --list|--accept|--discard</code> · <code>$flow status</code> · <code>$flow pause</code> · <code>$flow resume</code> · <code>$flow view</code> · <code>$flow template</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Recipes</strong></td>
@@ -1482,7 +1522,7 @@ $sketch deps --reduce off
 </tr>
 <tr>
   <td style="text-align:left"><strong>Meter</strong></td>
-  <td style="text-align:left"><code>$meter on</code> · <code>$meter off</code> · <code>$meter</code> · <code>$meter estimate</code> · <code>$meter history</code> · <code>$meter accuracy</code> · <code>$meter view</code> · <code>$meter sync</code> · <code>$meter refresh</code> · <code>$meter invoice</code> · <code>$meter status</code></td>
+  <td style="text-align:left"><code>$meter on</code> · <code>$meter off</code> · <code>$meter</code> · <code>$meter estimate</code> · <code>$meter history</code> · <code>$meter accuracy</code> · <code>$meter benchmark --flow</code> · <code>$meter view</code> · <code>$meter sync</code> · <code>$meter refresh</code> · <code>$meter invoice</code> · <code>$meter status</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Cupper</strong></td>

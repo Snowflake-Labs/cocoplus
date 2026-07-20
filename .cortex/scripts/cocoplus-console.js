@@ -14,7 +14,7 @@ const {
   writeJson,
 } = require('../hooks/_v2-state.js');
 
-const PANELS = ['home', 'flow', 'cost', 'quality', 'health', 'safety', 'memory', 'sessions', 'settings', 'forge'];
+const PANELS = ['home', 'flow', 'cost', 'quality', 'health', 'safety', 'memory', 'sessions', 'replay', 'settings', 'forge'];
 
 function readText(filePath, fallback = '') {
   try {
@@ -38,6 +38,11 @@ function collectState() {
     pilot: safeJson(path.join(lifecycle, 'pilot-session.json'), {}),
     forge: safeJson(path.join(lifecycle, 'forge-state.json'), {}),
     leviathan: safeJson(path.join(lifecycle, 'leviathan-state.json'), {}),
+    sessionProgress: readText(path.join(COCOPLUS_DIR, 'session', 'PROGRESS.md'), 'No CocoSession handoff recorded.'),
+    sessionContext: readText(path.join(COCOPLUS_DIR, 'session', 'CONTEXT.md'), 'No predicate context recorded.'),
+    stageEvidence: safeJson(path.join(COCOPLUS_DIR, 'session', 'stage-evidence.json'), {}),
+    proposals: readText(path.join(COCOPLUS_DIR, 'proposals', 'proposal-log.jsonl'), 'No retained proposals recorded.'),
+    retrospective: readText(path.join(lifecycle, 'retrospective-ledger.jsonl'), 'No retrospective ledger recorded.'),
     findings: readText(path.join(lifecycle, 'FINDINGS.md'), 'No findings recorded.'),
     audit: readText(path.join(lifecycle, 'audit.md'), 'No audit trail recorded.'),
     health: safeJson(path.join(lifecycle, 'health-grade.json'), {}),
@@ -65,10 +70,12 @@ function renderPanel(panel, state) {
     home: [
       panelCard('Project', `<pre>${esc(state.project.slice(0, 2200))}</pre>`),
       panelCard('Lifecycle', `<p>Phase: <strong>${esc(state.meta.current_phase || 'not started')}</strong></p><p>Spec gate and advisory drift are read from lifecycle artifacts when present.</p>`),
+      panelCard('Skill Surface Budget', `<p>Profile: <strong>${esc((state.config.session && state.config.session.skill_surface_budget) || 'standard')}</strong></p><p>Use the smallest profile that covers the session so context does not rot under unnecessary standing skills.</p>`),
       panelCard('Pilot', `<p>${state.pilot.active ? 'CocoPilot is active for this session.' : 'CocoPilot is inactive.'}</p>`),
     ],
     flow: [
       panelCard('Pipeline', `<p>${flowStages.length} stages found.</p><pre>${esc(JSON.stringify(state.flow, null, 2).slice(0, 4000))}</pre>`),
+      panelCard('Stage Evidence', `<pre>${esc(JSON.stringify(state.stageEvidence, null, 2).slice(0, 3000))}</pre>`),
       panelCard('HITL Gate Queue', '<p>HITL gates remain terminal-first; approve or resume from the CLI.</p>'),
     ],
     cost: [
@@ -86,18 +93,26 @@ function renderPanel(panel, state) {
     safety: [
       panelCard('Sentinel', `<pre>${esc(JSON.stringify(state.sentinel, null, 2))}</pre>`),
       panelCard('Governance', `<pre>${esc(JSON.stringify(state.config.governance || {}, null, 2))}</pre>`),
+      panelCard('Retrospective', `<pre>${esc(state.retrospective.slice(-4000))}</pre>`),
     ],
     memory: [
       panelCard('Wisdom and Recall', '<p>CocoWisdom, CocoRefine, CocoGrove, and CocoRecall artifacts are surfaced here without mutation.</p>'),
     ],
     sessions: [
       panelCard('Session Patterns', '<p>CocoOps, CocoHealth, and CocoCupper session metadata appears here as it is produced.</p>'),
+      panelCard('CocoSession Handoff', `<pre>${esc(state.sessionProgress.slice(-4000))}</pre>`),
+      panelCard('Retained Proposals Queue', `<pre>${esc(state.proposals.slice(-4000))}</pre>`),
+    ],
+    replay: [
+      panelCard('Predicate Context', `<pre>${esc(state.sessionContext.slice(-4000))}</pre>`),
+      panelCard('Steps Timeline', `<pre>${esc(readText(path.join(COCOPLUS_DIR, 'session', 'steps.jsonl'), 'No steps timeline recorded.').slice(-5000))}</pre>`),
     ],
     settings: [
       panelCard('Configuration', `<pre>${esc(JSON.stringify(state.config, null, 2).slice(0, 5000))}</pre>`),
     ],
     forge: [
       panelCard('Forge State', `<pre>${esc(JSON.stringify(state.forge, null, 2))}</pre>`),
+      panelCard('Refinement Ladder', `<pre>${esc(JSON.stringify(state.forge.refinement_ladder || { enabled: false }, null, 2))}</pre>`),
       panelCard('Activity', `<pre>${esc(readText(lifecyclePath('forge-activity.jsonl'), 'No forge activity yet.').slice(-5000))}</pre>`),
     ],
   };
