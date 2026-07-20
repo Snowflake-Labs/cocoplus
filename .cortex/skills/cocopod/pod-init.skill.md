@@ -36,6 +36,7 @@ Create the following directories (create them even if empty — they are require
 .cocoplus/meter/
 .cocoplus/snapshots/
 .cocoplus/modes/
+.cocoplus/config/
 .cocoplus/fleet/
 .cocoplus/scripts/
 .cocoplus/pull/
@@ -80,14 +81,19 @@ Copy template files from the plugin templates directory to `.cocoplus/`:
 
 5. Copy `templates/safety-config.json.template` → `.cocoplus/safety-config.json`
 
-6. Copy `templates/monitors/narrator.monitor.json` → `.cocoplus/monitors/narrator.monitor.json`
-7. Copy `templates/monitors/cost-tracker.monitor.json` → `.cocoplus/monitors/cost-tracker.monitor.json`
-8. Copy `templates/monitors/quality-advisor.monitor.json` → `.cocoplus/monitors/quality-advisor.monitor.json`
-9. Copy `templates/monitors/memory-capture.monitor.json` → `.cocoplus/monitors/memory-capture.monitor.json`
-10. Copy `templates/scripts/rollback.js` → `.cocoplus/scripts/rollback.js`
-11. Copy `templates/scripts/scope-classify.js` → `.cocoplus/scripts/scope-classify.js`
-12. Copy `templates/scripts/spec-validator.js` → `.cocoplus/scripts/spec-validator.js`
-13. Copy `templates/scripts/alignment-check.js` → `.cocoplus/scripts/alignment-check.js`
+6. Copy `templates/cocoplus.toml.template` → `cocoplus.toml` at the project root
+   - Replace the `[project]` `name` field with the collected project name
+   - Leave empty Snowflake database/schema fields unless the developer provides them
+   - This file is committed and becomes the source of truth for operator-configurable settings
+
+7. Copy `templates/monitors/narrator.monitor.json` → `.cocoplus/monitors/narrator.monitor.json`
+8. Copy `templates/monitors/cost-tracker.monitor.json` → `.cocoplus/monitors/cost-tracker.monitor.json`
+9. Copy `templates/monitors/quality-advisor.monitor.json` → `.cocoplus/monitors/quality-advisor.monitor.json`
+10. Copy `templates/monitors/memory-capture.monitor.json` → `.cocoplus/monitors/memory-capture.monitor.json`
+11. Copy `templates/scripts/rollback.js` → `.cocoplus/scripts/rollback.js`
+12. Copy `templates/scripts/scope-classify.js` → `.cocoplus/scripts/scope-classify.js`
+13. Copy `templates/scripts/spec-validator.js` → `.cocoplus/scripts/spec-validator.js`
+14. Copy `templates/scripts/alignment-check.js` → `.cocoplus/scripts/alignment-check.js`
 
 ## Initialize Mode Flags
 
@@ -336,7 +342,7 @@ This check is advisory, not blocking — solo-pod workflows never require `exclu
 
 Stage all new files and create commit:
 ```
-git add .cocoplus/ AGENTS.md
+git add .cocoplus/ AGENTS.md cocoplus.toml
 git commit -m "chore(cocopod): initialize CocoPlus project structure"
 ```
 
@@ -358,6 +364,7 @@ CocoPlus initialized successfully.
 ├── memory/            ← cross-session decisions and patterns
 ├── grove/             ← CocoGrove pattern library
 ├── meter/             ← CocoMeter token tracking
+├── config/            ← generated config from cocoplus.toml sync
 ├── flows/templates/   ← reusable execution plan templates
 ├── proposals/         ← retained CocoFlow stage proposals pending settlement
 ├── session/           ← CocoSession handoff, predicate state, evidence, and task queue
@@ -369,6 +376,7 @@ CocoPlus initialized successfully.
 └── modes/             ← feature flags (safety.normal active)
 
 AGENTS.md              ← project root shim → .cocoplus/AGENTS.md
+cocoplus.toml          ← committed plugin configuration source of truth
 
 Next steps:
   $spec       — capture project requirements (start here)
@@ -386,7 +394,7 @@ Next steps:
 
 ## Exit Criteria
 
-- [ ] `.cocoplus/` directory exists with all required subdirectories (`lifecycle/`, `memory/`, `prompts/`, `monitors/`, `grove/`, `grove/patterns/`, `meter/`, `snapshots/`, `modes/`, `fleet/`, `scripts/`, `pull/`, `harvest/`, `seeds/`, `map/`)
+- [ ] `.cocoplus/` directory exists with all required subdirectories (`lifecycle/`, `memory/`, `prompts/`, `monitors/`, `grove/`, `grove/patterns/`, `meter/`, `snapshots/`, `modes/`, `config/`, `fleet/`, `scripts/`, `pull/`, `harvest/`, `seeds/`, `map/`)
 - [ ] `.cocoplus/modes/safety.normal` flag file exists; no other safety flags exist
 - [ ] `.cocoplus/modes/memory.on` flag file exists
 - [ ] `.cocoplus/AGENTS.md`, `.cocoplus/project.md`, `.cocoplus/flow.json`, and all four monitor JSON files exist
@@ -395,6 +403,7 @@ Next steps:
 - [ ] `.cocoplus/scripts/rollback.js`, `scope-classify.js`, `spec-validator.js`, and `alignment-check.js` exist
 - [ ] `.cocoplus/.gitignore` exists excluding transient session files
 - [ ] Root `AGENTS.md` shim exists at project root with `cocoplus-agents-redirect` directive
+- [ ] Root `cocoplus.toml` exists and includes the current 2.0 sections
 - [ ] `.cocoplus/personas.json` exists with 8 default shorthand entries (`$de` through `$cdo`)
 - [ ] `.cocoplus/subagents.json` exists as empty `{}`
 - [ ] `.cocoplus/personas/dynamic-registry.json`, `.cocoplus/flows/templates/`, `.cocoplus/proposals/`, `.cocoplus/session/`, `.cocoplus/v2-runtime-requests.jsonl`, `.cocoplus/.last-consolidation`, and `.cocoplus/.last-retrospective` exist
