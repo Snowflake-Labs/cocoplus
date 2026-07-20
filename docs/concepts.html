@@ -77,6 +77,10 @@
 <p>The useful distinction is companion versus executor. CocoPilot can suggest, route, summarize, and keep session state coherent. It cannot make an irreversible operation safe by saying it is safe, cannot approve its own hard gates, and cannot erase the developer's role in the lifecycle. This is why CocoForge can supersede Pilot while a goal loop is active: orchestration changes, but the boundaries do not.</p>
 <p><strong>Leviathan Mode</strong> is the explicit-autonomy extension of this concept. It requires covenant acceptance before activation, carries hard stops forward, and treats autonomy as coordinated execution under declared limits. <strong>Ronin</strong> is the personal assistant companion for that mode: the voice that returns the briefing, summarizes workstreams, and makes the state understandable when the developer comes back.</p>
 <hr>
+<h2 id="cocosession-and-operator-control">CocoSession and Operator Control</h2>
+<p>CocoSession is the answer to long-running work across context windows. It does not ask the next session to remember what the previous session knew. It writes the handoff down in <code>.cocoplus/session/PROGRESS.md</code>, keeps machine-checkable predicates in <code>.cocoplus/session/CONTEXT.md</code>, queues mid-session requests, and gives the operator two explicit controls: <code>AGENT_STOP</code> to halt tool use and <code>STEER.md</code> to inject one redirect exactly once.</p>
+<p>This is the same principle as CocoRecall, but hotter and stricter. CocoRecall retrieves history. CocoSession preserves current operational state. The difference matters when a migration, backfill, or multi-stage analysis spans multiple sessions: continuity must come from files, not from hoping a transcript survives in context.</p>
+<hr>
 <h2 id="memory">Memory</h2>
 <p>Three layers. Each layer serves a different time horizon.</p>
 <p>The <strong>hot layer</strong> is AGENTS.md. 200 lines, always loaded, always current. This is what Coco sees at the start of every session. It knows the current phase, the active modes, the three most recent key decisions. It is a summary, not an archive.</p>
@@ -105,7 +109,11 @@
 <p>Every tool invocation, every loaded file, every active monitor, every character in AGENTS.md — it all costs context window space.</p>
 <p>CocoPlus takes this seriously in a way most AI plugins don't. The AGENTS.md hard limit of 200 lines is not a convention — it is enforced. Skills are loaded on demand, not always active. Monitors run per-stage, not globally. The background analyst uses Haiku. The CDO uses Opus. These choices are made deliberately and documented explicitly.</p>
 <p>Why does this matter? Because context explosion is a slow, invisible failure mode. A system that works perfectly at session five begins to degrade at session twenty as accumulated context starts crowding out useful reasoning. CocoPlus is designed to remain useful at session two hundred.</p>
-<p>The principle it embodies: <strong>the right model for the right task, with the minimum context required to do that task well</strong>. Surgical, not comprehensive. The temptation is always to add more context "just in case." CocoPlus resists that temptation architecturally.</p>
+<p>The principle it embodies: <strong>the right model for the right task, with the minimum context required to do that task well</strong>. Surgical, not comprehensive. The temptation is always to add more context "just in case." CocoPlus resists that temptation architecturally through skill surface budgets, predicate state, and fresh-context maker/checker separation.</p>
+<hr>
+<h2 id="proposals-before-commits">Proposals Before Commits</h2>
+<p>For high-impact Snowflake writes, CocoPlus can hold a stage output as a retained proposal instead of applying it immediately. The proposal lives under <code>.cocoplus/proposals/</code> until the operator accepts or discards it with <code>$flow settle</code>.</p>
+<p>This changes the safety shape of the workflow. Undo after commit is not the same as review before commit. Proposal settlement keeps irreversible operations outside the live environment until the developer makes a deliberate decision.</p>
 <hr>
 <h2 id="cocopod">CocoPod</h2>
 <p>CocoPod is the container that holds everything together.</p>

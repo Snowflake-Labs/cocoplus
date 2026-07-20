@@ -37,9 +37,9 @@ Inspect the existing project before planning changes:
 
 For `--dry-run`, inspect and report without writing:
 
-1. Missing current directories: `.cocoplus/flows/templates/`, `.cocoplus/flows/templates/archive/`, `.cocoplus/personas/`, `.cocoplus/personas/archive/`, `.cocoplus/governance/`, `.cocoplus/migration/`, `.cocoplus/migration/archive/`.
-2. Missing current files: `.cocoplus/personas/dynamic-registry.json`, `.cocoplus/v2-runtime-requests.jsonl`, `.cocoplus/.last-consolidation`.
-3. Missing `cocoplus.toml` sections: `[cocoplus]`, `[cocopilot]`, `[cocoforge]`, `[leviathan]`, `[dynamic_personas]`, `[governance]`.
+1. Missing current directories: `.cocoplus/flows/templates/`, `.cocoplus/flows/templates/archive/`, `.cocoplus/proposals/`, `.cocoplus/proposals/archive/`, `.cocoplus/session/`, `.cocoplus/personas/`, `.cocoplus/personas/archive/`, `.cocoplus/skills/`, `.cocoplus/governance/`, `.cocoplus/migration/`, `.cocoplus/migration/archive/`.
+2. Missing current files: `.cocoplus/personas/dynamic-registry.json`, `.cocoplus/v2-runtime-requests.jsonl`, `.cocoplus/.last-consolidation`, `.cocoplus/.last-retrospective`, `.cocoplus/session/PROGRESS.md`, `.cocoplus/session/CONTEXT.md`, `.cocoplus/session/task-queue.jsonl`, `.cocoplus/session/stage-evidence.json`, `.cocoplus/proposals/proposal-log.jsonl`.
+3. Missing `cocoplus.toml` sections: `[cocoplus]`, `[cocopilot]`, `[cocoforge]`, `[leviathan]`, `[dynamic_personas]`, `[governance]`, `[session]`, `[evidence_gate]`, `[proposals]`, `[research]`, `[retrospective]`, `[model_roles]`.
 4. Legacy configuration that needs conversion: `safety-config.json`, older monitor templates, missing `.cocoplus/.gitignore` entries, older AGENTS activation blocks.
 5. Testing and validation commands that will run after migration.
 6. Post-migration cleanup actions that will archive legacy config files and remove obsolete generated scratch state.
@@ -63,13 +63,15 @@ When not in dry-run mode:
 ```
 
 3. Create `.cocoplus/v2-runtime-requests.jsonl` if absent.
-4. Create `.cocoplus/.last-consolidation` with current epoch milliseconds if absent.
-5. Convert `safety-config.json` into `cocoplus.toml` when `cocoplus.toml` is absent. Preserve the original file until post-migration cleanup.
-6. Append missing current config sections to `cocoplus.toml` or `.cocoplus/cocoplus.toml`, preserving existing values.
-7. Append current activation blocks to `.cocoplus/AGENTS.md` if missing.
-8. Update `.cocoplus/.gitignore` with current transient runtime files: `v2-runtime-requests.jsonl`, `subagent-spawn-requests.jsonl`, `ui-notifications.jsonl`, `recall.db`, `lifecycle/findings-state.json`, `pod-status.json`, `.last-consolidation`, runtime state JSON files, archive scratch directories, and generated dashboard HTML.
-9. Preserve existing lifecycle artifacts, memory files, meter history, grove patterns, recall indexes, findings, audit logs, and persona mappings.
-10. Write `.cocoplus/migration/v2-migration-report.md` with exact changes made.
+4. Create `.cocoplus/.last-consolidation` and `.cocoplus/.last-retrospective` with current epoch milliseconds if absent.
+5. Create CocoSession files if absent: `session/PROGRESS.md`, `session/CONTEXT.md`, `session/task-queue.jsonl`, and `session/stage-evidence.json`.
+6. Create retained-proposal log `.cocoplus/proposals/proposal-log.jsonl` if absent.
+7. Convert `safety-config.json` into `cocoplus.toml` when `cocoplus.toml` is absent. Preserve the original file until post-migration cleanup.
+8. Append missing current config sections to `cocoplus.toml` or `.cocoplus/cocoplus.toml`, preserving existing values.
+9. Append current activation blocks to `.cocoplus/AGENTS.md` if missing, including CocoSession, evidence gates, proposal settlement, retrospective, hygiene, and benchmarking.
+10. Update `.cocoplus/.gitignore` with current transient runtime files: `v2-runtime-requests.jsonl`, `subagent-spawn-requests.jsonl`, `ui-notifications.jsonl`, `recall.db`, `lifecycle/findings-state.json`, `pod-status.json`, `.last-consolidation`, `.last-retrospective`, `AGENT_STOP`, `STEER.md`, runtime state JSON files, archive scratch directories, proposal scratch directories, and generated dashboard HTML.
+11. Preserve existing lifecycle artifacts, memory files, meter history, grove patterns, recall indexes, findings, audit logs, and persona mappings.
+12. Write `.cocoplus/migration/v2-migration-report.md` with exact changes made.
 
 ## Migration Testing
 
@@ -84,8 +86,10 @@ After applying file changes, run these checks before cleanup:
 2. Verify required directories and files exist.
 3. Verify `cocoplus.toml` contains all required sections without duplicate section headers.
 4. Verify `.cocoplus/AGENTS.md` contains current operating-mode blocks.
-5. Run `$pod status` if available; otherwise record that runtime validation is pending until Coco reloads the plugin.
-6. Run `$governance status` if available; otherwise verify the governance config sections and log path exist.
+5. Verify CocoSession files exist and `CONTEXT.md` contains predicate-style `CLASS.key=value` lines.
+6. Verify proposal and evidence logs exist and parse where JSON is expected.
+7. Run `$pod status` if available; otherwise record that runtime validation is pending until Coco reloads the plugin.
+8. Run `$governance status` if available; otherwise verify the governance config sections and log path exist.
 
 Record every command/check and result in `.cocoplus/migration/v2-migration-report.md`.
 
@@ -98,6 +102,7 @@ The migration is valid only when:
 - No migrated JSON file fails parsing.
 - No legacy `safety-config.json` remains active when `cocoplus.toml` is present.
 - No active mode was enabled by the migration itself.
+- No kill-switch or steering file was created by migration.
 - `git diff -- .cocoplus/` shows only migration-related changes.
 - The migration report includes version inference, applied changes, test results, cleanup actions, and residual risks.
 

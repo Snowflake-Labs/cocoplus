@@ -22,6 +22,9 @@ The current operating layer includes:
 - **Governance hooks**: ReviewerLockout and PII governance with observe/enforce rollout.
 - **Feature-owned runtime**: hooks enqueue deterministic work through feature-owned skill contracts; CocoConsole is the only registered local runtime script.
 - **CocoFlow orchestration**: tiered planning, dependency-group dispatch, synthesis passes, and `$flow template` reuse.
+- **CocoSession continuity**: PROGRESS handoff, predicate context, operator kill-switch, and one-shot steering for long-running work.
+- **Evidence and proposal gates**: opt-in stage evidence checks and retained Snowflake-write proposals settled with `$flow settle`.
+- **Research, retrospective, and hygiene loops**: `$flow research`, `$retrospective run`, `$hygiene --model-upgrade`, and `$meter benchmark` make quality improvement measurable.
 - **Console-aware visual commands**: `$flow view` and `$meter view` redirect into CocoConsole when it is running.
 
 The root plugin implements the current runtime and documentation surface while preserving older project state through explicit migration skills.
@@ -63,6 +66,7 @@ $pod init       — initialize CocoPlus in your project
 $cocoplus on    — activate all features
 $cocoplus console — open the read-only dashboard
 $pilot on       — activate CocoPilot for the current session
+$session status — inspect multi-session handoff and operator controls
 $spec           — start the requirements phase
 ```
 

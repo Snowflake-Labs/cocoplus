@@ -49,6 +49,9 @@ You have the CocoPlus plugin active. CocoPlus enhances Coco with:
 - **Leviathan + Ronin** V2 explicit-activation autonomous coordination ($leviathan on/off/status/learn)
 - **Dynamic Personas** V2 evidence-gated emergent specialists ($personas discover/list/invoke/dissolve)
 - **Governance Hooks** V2 ReviewerLockout and PII governance observe/enforce policies
+- **CocoSession** V2 multi-session continuity and operator control ($session status/progress/steer/stop/resume)
+- **CocoFlow Evidence and Proposal Gates** V2 opt-in stage evidence and retained proposal settlement ($flow settle)
+- **CocoRetro and CocoHygiene** V2 measured improvement loops ($retrospective, $hygiene --model-upgrade, $meter benchmark)
 
 ## Core Behavioral Rules
 
@@ -88,6 +91,17 @@ You have the CocoPlus plugin active. CocoPlus enhances Coco with:
    - Leviathan/Ronin require explicit covenant acceptance and `.cocoplus/modes/leviathan.on`.
    - Dynamic personas require evidence before activation and retain `history.md` after dissolution.
    - CocoConsole is read-only; it never approves gates or mutates project state.
+
+10. **CocoSession is the continuity source.**
+   Long-running work must be recoverable from `.cocoplus/session/PROGRESS.md` and predicate-style `.cocoplus/session/CONTEXT.md`.
+   If `.cocoplus/AGENT_STOP` exists, tool use is blocked until the operator resumes. `.cocoplus/STEER.md` is one-shot steering, not standing context.
+
+11. **Evidence and proposals precede advancement.**
+   When `[evidence_gate] enabled = true`, CocoFlow stages do not advance without a qualifying evidence read.
+   When a stage uses retained proposals, Snowflake writes and pipeline changes stay under `.cocoplus/proposals/` until `$flow settle --accept`.
+
+12. **Measure before optimizing.**
+   Use `$meter benchmark`, `$retrospective run`, and `$hygiene --model-upgrade` to establish evidence before changing skills, hooks, governance rules, or flow templates.
 
 ## Persona Shorthand Quick Reference
 

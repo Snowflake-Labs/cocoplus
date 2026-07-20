@@ -173,6 +173,9 @@
 │   └── sessions.db        ← SQLite FTS index of session archives (gitignored)
 ├── snapshots/             ← Environment Inspector scan results
 ├── modes/                 ← mode flag files (inspector.on, memory.on, etc.)
+├── session/               ← CocoSession PROGRESS.md, CONTEXT.md, task queue, stage evidence
+├── proposals/             ← retained CocoFlow proposals awaiting settlement
+├── flows/templates/       ← reusable execution plan templates
 └── notifications.json     ← notification routing configuration
 cocoplus.toml              ← single source of truth for all plugin configuration (committed)
 </code></pre>
@@ -187,6 +190,7 @@ cocoplus.toml              ← single source of truth for all plugin configurati
 <p><strong>Tier 4 — Runtime Flag.</strong> The <code>--model</code> flag on any persona invocation or flow command overrides everything else for that specific call. It does not persist to <code>flow.json</code>.</p>
 <p>This hierarchy exists because model selection is a meaningful engineering decision. The CDO's model choice was made for a reason. Overriding it at the pipeline level for a specific execution context is a legitimate decision. Overriding it at runtime for a single call is also legitimate. The hierarchy makes these decisions explicit and traceable.</p>
 <p>CocoCupper's model is not in this hierarchy. It cannot be overridden. This is an intentional exception, not an oversight.</p>
+<p>The current configuration also supports role-based model allocation. Orchestration, synthesis, facilitator, and evaluator roles default to judgment tiers; worker stages default to execution tiers. That keeps high-stakes decisions on stronger models without paying that cost for every mechanical step.</p>
 <hr>
 <h2 id="cocofleet-a-different-kind-of-parallelism">CocoFleet — A Different Kind of Parallelism</h2>
 <p>CocoHarvest runs parallel subagents within a single Coco session — these are Coco's native subagents, coordinated by the parent session.</p>
