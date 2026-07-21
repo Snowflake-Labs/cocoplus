@@ -65,6 +65,7 @@ All notable changes to CocoPlus are documented here.
 - `templates/cocoplus.toml.template` adds `[cocoplus]`, `[cocopilot]`, `[cocoforge]`, `[leviathan]`, `[dynamic_personas]`, `[governance]`, `[session]`, `[harness]`, `[evidence_gate]`, `[proposals]`, `[research]`, `[retrospective]`, `[routine]`, `[meter]`, `[flow.planning]`, `[flow.planning.frames]`, `[flow.tiers]`, and role-based model allocation sections.
 - `templates/AGENTS.md.template` adds V2 activation blocks so new pods understand CocoPilot, CocoForge, Leviathan Mode/Ronin, and Dynamic Personas.
 - Root `README.md`, `AGENTS.md`, installation guidance, and the HTML documentation site now present CocoPlus as a V2.0.0 release.
+- `docs/principles.html` now reflects the complete 33-principle catalog, including durable records, untestable-here verification, session understanding capture, context isolation, stated-vs-enforced labeling, and consolidation-vs-capture.
 
 ### Compatibility
 
@@ -683,7 +684,7 @@ All notable changes to CocoPlus are documented here.
 - `workflows.html` — nine real-world scenarios
 - `command-reference.html` — full command reference with flags and hooks table
 - `data-context.html` — data engineering context and Snowflake-specific design
-- `principles.html` — twelve design principles
+- `principles.html` — complete design principle catalog
 - `manifesto.html` — vision and motivation
 - Shared `style.css` with nav, cards, lens-grid, summary-box, code blocks
 
