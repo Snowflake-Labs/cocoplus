@@ -26,11 +26,11 @@
 <div class="page-header">
   <div class="label">Design Principles</div>
   <h1>The Design Principles</h1>
-  <p class="subtitle">These are the twenty-seven ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
+  <p class="subtitle">These are the thirty-three ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
 </div>
 
 <div class="content">
-<p>These are the twenty-seven ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
+<p>These are the thirty-three ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
 <p>A principle without a reason is just a constraint. With a reason, it becomes a compass.</p>
 <hr>
 <h2 id="1-native-first-always">1. Native First, Always</h2>
@@ -158,31 +158,55 @@
 <p>This principle is why CocoPilot records session intent instead of hiding it, why CocoForge supersedes Pilot visibly while a goal loop is active, and why Leviathan Mode requires explicit covenant acceptance before autonomy expands. Ronin follows the same rule: the personal assistant briefing is not decoration, it is the human-readable surface that keeps autonomous coordination accountable.</p>
 <p>Orchestration should make the right path easier to follow. It should never turn a gated system into a black box.</p>
 <hr>
-<h2 id="21-context-rot-is-an-architecture-problem">21. Context Rot Is an Architecture Problem</h2>
+<h2 id="21-durable-records-outlive-session-memory">21. Durable Records Outlive Session Memory</h2>
+<p>Consequential decisions, approvals, evaluations, and audit claims must survive beyond the context window that produced them. A claim that exists only in private session memory cannot be verified by a future operator.</p>
+<p>CocoPlus writes durable records for lifecycle events, approvals, quality gates, cost reports, and session handoffs so the next agent can verify what happened without trusting a transcript summary.</p>
+<hr>
+<h2 id="22-verification-must-name-what-was-untestable">22. Verification Must Name What Was Untestable</h2>
+<p>A quality system must distinguish between verified, refuted, and untestable-here. Treating unavailable evidence as either a silent pass or a generic failure hides the actual state of knowledge.</p>
+<p>CocoContract, CocoSentinel, CocoMeter, and related review surfaces carry confidence context and known-gap records when the current environment cannot prove a claim.</p>
+<hr>
+<h2 id="23-understanding-is-the-work-not-its-residue">23. Understanding Is the Work, Not Its Residue</h2>
+<p>A session produces artifacts and understanding. The artifacts survive in git; the reasoning, risk discoveries, operator decisions, and changed mental model disappear unless captured before the session ends.</p>
+<p>CocoDiary, CocoWisdom, audit summaries, and session handoffs follow the never-invent rule: a shorter true record is better than a longer plausible one. Documentation captures what was learned, not what the agent wishes had been learned.</p>
+<hr>
+<h2 id="24-context-isolation-is-a-governance-property-not-a-configuration-option">24. Context Isolation Is a Governance Property, Not a Configuration Option</h2>
+<p>An evaluator that can see or alter the work it reviews is no longer independent. Isolation is not a strict-mode preference; it is the condition that makes review meaningful.</p>
+<p>ReviewerLockout, CocoReview, CocoContract, CocoSentinel, CocoForge critic passes, Leviathan coordination channels, and PII governance all depend on explicit, auditable channels rather than ambient context bleed.</p>
+<hr>
+<h2 id="25-stated-is-not-enforced">25. Stated Is Not Enforced</h2>
+<p>A rule in documentation is an aspiration until a deterministic check, hook, or structural gate enforces it. Operators must be able to tell whether a constraint is machine-enforced, hook-guarded, or guidance-only.</p>
+<p>CocoSentinel findings, governance hooks, shadow rollouts, and coding-agent instructions label enforcement tier explicitly so the gap between statement and enforcement stays visible.</p>
+<hr>
+<h2 id="26-consolidation-is-not-capture">26. Consolidation Is Not Capture</h2>
+<p>Capturing knowledge records an observation. Consolidating knowledge maintains the record by merging duplicates, resolving contradictions, pruning stale entries, and indexing the result for retrieval.</p>
+<p>CocoRecall, CocoDream, Memory, and hygiene loops treat consolidation as a scheduled maintenance obligation. A system that captures forever and consolidates never is an accumulator, not a memory.</p>
+<hr>
+<h2 id="27-context-rot-is-an-architecture-problem">27. Context Rot Is an Architecture Problem</h2>
 <p>Context rot is the quiet degradation where accumulated tokens reduce the effective weight of earlier instructions. It is not solved by telling the agent to pay more attention. It is solved by architecture: fresh context windows for independent checks, predicate-style persistent state, and skill surface budgets that avoid loading unnecessary instructions.</p>
 <p>If the system needs to remember something important, it must write it in a form that survives context accumulation. CocoSession's <code>CONTEXT.md</code> predicates and CocoConsole's Skill Surface Budget make this visible and enforceable.</p>
 <hr>
-<h2 id="22-proposals-before-commits">22. Proposals Before Commits</h2>
+<h2 id="28-proposals-before-commits">28. Proposals Before Commits</h2>
 <p>Agent work that can affect Snowflake objects, committed SQL, or pipeline configuration is safest as a retained proposal until the operator settles it. Reversibility before commit is categorically safer than undo after commit.</p>
 <p>This principle does not slow every workflow. It applies where the stage opts into proposal mode because its output crosses a meaningful boundary. Autonomy may prepare the change; it may not convert the proposal into a live effect without settlement.</p>
 <hr>
-<h2 id="23-actuator-cost-is-monotonic">23. Actuator Cost Is Monotonic</h2>
+<h2 id="29-actuator-cost-is-monotonic">29. Actuator Cost Is Monotonic</h2>
 <p>Every rule has a cheapest sufficient actuator. A hook fires only when the guarded action fires. A skill loads only when invoked. A structural agent rule loads for a session class. Standing context loads every time, whether relevant or not.</p>
 <p>The cheapest actuator sufficient for the job is the right actuator. CocoRetro and CocoHygiene exist to keep the system honest: they classify failures, measure wasted effort, and propose fixes at the lowest layer that can actually prevent the recurrence.</p>
 <hr>
-<h2 id="24-the-permission-floor-is-not-the-permission-ceiling">24. The Permission Floor Is Not the Permission Ceiling</h2>
+<h2 id="30-the-permission-floor-is-not-the-permission-ceiling">30. The Permission Floor Is Not the Permission Ceiling</h2>
 <p>A permission level observed at session start is not a guarantee for the rest of the session. Governance must check the live permission state at the point of enforcement.</p>
 <p>This is why CocoSentinel logs bypass-safeguard state after tool use, why RBAC escalation to <code>ACCOUNTADMIN</code> is blocked by a PreToolUse hook by default, and why CocoConsole displays current governance posture rather than assuming the launch state still holds.</p>
 <hr>
-<h2 id="25-divergence-requires-isolation">25. Divergence Requires Isolation</h2>
+<h2 id="31-divergence-requires-isolation">31. Divergence Requires Isolation</h2>
 <p>A single context window anchors on its own previous text. Asking one model call to produce and evaluate multiple options does not create real independence; the options have already contaminated one another.</p>
 <p>CocoFlow's diverge-then-focus path uses isolated planning branches and a separate critic pass. The output must surface shortlist, named traps, design-space clusters, and a labeled non-obvious viable option so the developer can see more than the familiar first answer.</p>
 <hr>
-<h2 id="26-the-harness-is-the-optimization-surface">26. The Harness Is the Optimization Surface</h2>
+<h2 id="32-the-harness-is-the-optimization-surface">32. The Harness Is the Optimization Surface</h2>
 <p>For complex agent workflows, the separable control layer around the model is where optimization is most attributable: context assembly, tool exposure, generation settings, orchestration topology, memory behavior, and output processing.</p>
 <p>CocoPod configuration now names those dimensions explicitly in <code>cocoplus.toml [harness]</code>. If accuracy improves across harness iterations, keep tuning the harness. If it plateaus immediately, the bottleneck is probably model capability, evaluation quality, or task framing.</p>
 <hr>
-<h2 id="27-deterministic-computation-belongs-in-code-not-in-tokens">27. Deterministic Computation Belongs in Code, Not in Tokens</h2>
+<h2 id="33-deterministic-computation-belongs-in-code-not-in-tokens">33. Deterministic Computation Belongs in Code, Not in Tokens</h2>
 <p>If a task has a correct answer computable from available data, it belongs in a script. SQL validation, schema parsing, function signature extraction, scope classification, and artifact existence checks should not be narrated into being by a model.</p>
 <p>SKILL.md routes the workflow, scripts compute deterministic facts, and references load only when needed. CocoBrew's distribution gate and observer loop enforce that separation for project-local skills and marketplace candidates.</p>
 <blockquote><p><em>Principles are only principles when they are applied in the cases where violating them would be convenient.</em></p></blockquote>
