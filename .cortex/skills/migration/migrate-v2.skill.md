@@ -37,9 +37,9 @@ Inspect the existing project before planning changes:
 
 For `--dry-run`, inspect and report without writing:
 
-1. Missing current directories: `.cocoplus/flows/templates/`, `.cocoplus/flows/templates/archive/`, `.cocoplus/proposals/`, `.cocoplus/proposals/archive/`, `.cocoplus/session/`, `.cocoplus/personas/`, `.cocoplus/personas/archive/`, `.cocoplus/skills/`, `.cocoplus/governance/`, `.cocoplus/migration/`, `.cocoplus/migration/archive/`.
-2. Missing current files: `.cocoplus/personas/dynamic-registry.json`, `.cocoplus/v2-runtime-requests.jsonl`, `.cocoplus/.last-consolidation`, `.cocoplus/.last-retrospective`, `.cocoplus/session/PROGRESS.md`, `.cocoplus/session/CONTEXT.md`, `.cocoplus/session/task-queue.jsonl`, `.cocoplus/session/stage-evidence.json`, `.cocoplus/proposals/proposal-log.jsonl`.
-3. Missing `cocoplus.toml` sections: `[cocoplus]`, `[cocopilot]`, `[cocoforge]`, `[leviathan]`, `[dynamic_personas]`, `[governance]`, `[session]`, `[evidence_gate]`, `[proposals]`, `[research]`, `[retrospective]`, `[model_roles]`.
+1. Missing current directories: `.cocoplus/flows/templates/`, `.cocoplus/flows/templates/archive/`, `.cocoplus/flow/artifacts/`, `.cocoplus/proposals/`, `.cocoplus/proposals/archive/`, `.cocoplus/session/`, `.cocoplus/personas/`, `.cocoplus/personas/archive/`, `.cocoplus/skills/`, `.cocoplus/governance/`, `.cocoplus/routines/`, `.cocoplus/sentinel/`, `.cocoplus/brew/`, `.cocoplus/migration/`, `.cocoplus/migration/archive/`.
+2. Missing current files: `.cocoplus/personas/dynamic-registry.json`, `.cocoplus/v2-runtime-requests.jsonl`, `.cocoplus/.last-consolidation`, `.cocoplus/.last-retrospective`, `.cocoplus/session/PROGRESS.md`, `.cocoplus/session/CONTEXT.md`, `.cocoplus/session/task-queue.jsonl`, `.cocoplus/session/stage-evidence.json`, `.cocoplus/session/iteration-budget.json`, `.cocoplus/session/discoveries.jsonl`, `.cocoplus/proposals/proposal-log.jsonl`, `.cocoplus/routines/registry.json`.
+3. Missing `cocoplus.toml` sections: `[cocoplus]`, `[cocopilot]`, `[cocoforge]`, `[leviathan]`, `[dynamic_personas]`, `[governance]`, `[session]`, `[harness]`, `[evidence_gate]`, `[proposals]`, `[research]`, `[retrospective]`, `[routine]`, `[meter]`, `[flow.planning]`, `[flow.planning.frames]`, `[flow.tiers]`, `[model_roles]`.
 4. Legacy configuration that needs conversion: `safety-config.json`, older monitor templates, missing `.cocoplus/.gitignore` entries, older AGENTS activation blocks.
 5. Testing and validation commands that will run after migration.
 6. Post-migration cleanup actions that will archive legacy config files and remove obsolete generated scratch state.
@@ -64,14 +64,16 @@ When not in dry-run mode:
 
 3. Create `.cocoplus/v2-runtime-requests.jsonl` if absent.
 4. Create `.cocoplus/.last-consolidation` and `.cocoplus/.last-retrospective` with current epoch milliseconds if absent.
-5. Create CocoSession files if absent: `session/PROGRESS.md`, `session/CONTEXT.md`, `session/task-queue.jsonl`, and `session/stage-evidence.json`.
+5. Create CocoSession files if absent: `session/PROGRESS.md`, `session/CONTEXT.md`, `session/task-queue.jsonl`, `session/stage-evidence.json`, `session/iteration-budget.json`, and `session/discoveries.jsonl`.
 6. Create retained-proposal log `.cocoplus/proposals/proposal-log.jsonl` if absent.
-7. Convert `safety-config.json` into `cocoplus.toml` when `cocoplus.toml` is absent. Preserve the original file until post-migration cleanup.
-8. Append missing current config sections to `cocoplus.toml` or `.cocoplus/cocoplus.toml`, preserving existing values.
-9. Append current activation blocks to `.cocoplus/AGENTS.md` if missing, including CocoSession, evidence gates, proposal settlement, retrospective, hygiene, and benchmarking.
-10. Update `.cocoplus/.gitignore` with current transient runtime files: `v2-runtime-requests.jsonl`, `subagent-spawn-requests.jsonl`, `ui-notifications.jsonl`, `recall.db`, `lifecycle/findings-state.json`, `pod-status.json`, `.last-consolidation`, `.last-retrospective`, `AGENT_STOP`, `STEER.md`, runtime state JSON files, archive scratch directories, proposal scratch directories, and generated dashboard HTML.
-11. Preserve existing lifecycle artifacts, memory files, meter history, grove patterns, recall indexes, findings, audit logs, and persona mappings.
-12. Write `.cocoplus/migration/v2-migration-report.md` with exact changes made.
+7. Create CocoRoutine registry `.cocoplus/routines/registry.json` if absent.
+8. Ensure `.cocoplus/flow/artifacts/`, `.cocoplus/sentinel/`, and `.cocoplus/brew/` exist for named artifact handoffs, coach queues, and distribution gate reports.
+9. Convert `safety-config.json` into `cocoplus.toml` when `cocoplus.toml` is absent. Preserve the original file until post-migration cleanup.
+10. Append missing current config sections to `cocoplus.toml` or `.cocoplus/cocoplus.toml`, preserving existing values.
+11. Append current activation blocks to `.cocoplus/AGENTS.md` if missing, including CocoSession, evidence gates, proposal settlement, named artifacts, CocoRoutine, stage coaching, retrospective, hygiene, and benchmarking.
+12. Update `.cocoplus/.gitignore` with current transient runtime files: `v2-runtime-requests.jsonl`, `subagent-spawn-requests.jsonl`, `ui-notifications.jsonl`, `recall.db`, `lifecycle/findings-state.json`, `pod-status.json`, `.last-consolidation`, `.last-retrospective`, `AGENT_STOP`, `STEER.md`, runtime state JSON files, archive scratch directories, proposal scratch directories, coach queues, session budget/discovery files, and generated dashboard HTML.
+13. Preserve existing lifecycle artifacts, memory files, meter history, grove patterns, recall indexes, findings, audit logs, and persona mappings.
+14. Write `.cocoplus/migration/v2-migration-report.md` with exact changes made.
 
 ## Migration Testing
 
@@ -87,7 +89,7 @@ After applying file changes, run these checks before cleanup:
 3. Verify `cocoplus.toml` contains all required sections without duplicate section headers.
 4. Verify `.cocoplus/AGENTS.md` contains current operating-mode blocks.
 5. Verify CocoSession files exist and `CONTEXT.md` contains predicate-style `CLASS.key=value` lines.
-6. Verify proposal and evidence logs exist and parse where JSON is expected.
+6. Verify proposal, evidence, iteration budget, routine registry, and coach queue paths exist and parse where JSON is expected.
 7. Run `$pod status` if available; otherwise record that runtime validation is pending until Coco reloads the plugin.
 8. Run `$governance status` if available; otherwise verify the governance config sections and log path exist.
 

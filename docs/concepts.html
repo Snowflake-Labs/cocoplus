@@ -194,6 +194,15 @@
 <p>These tiers are not soft guidance encoded in AGENTS.md prose. They are operational configuration, expressed in <code>cocoplus.toml</code> under the <code>[security]</code> section. The Safety Gate's PreToolUse interceptor reads this configuration before every tool call. If a tool call's classification is HUMAN REQUIRED and no explicit developer approval token is present in the current session context, the interceptor blocks the call. The classification is structural: it cannot be reasoned around, argued against, or overridden by clever prompting.</p>
 <p>The framework provides a shared vocabulary for a question that every developer working with an autonomous system eventually confronts: "I know I approved this pipeline — but did I understand what it was going to do?" The answer CocoPlus gives is: "You saw the classification. You saw what required your explicit sign-off. The rest was under the ALWAYS or ASK FIRST tier — which you configured, not the agent."</p>
 <hr>
+<h2 id="harness-artifacts-and-correctness-first-optimization">Harness, Artifacts, and Correctness-First Optimization</h2>
+<p>The model is not the only thing being tuned. CocoPlus treats the harness around the model as an explicit optimization surface: context assembly, tool exposure, generation parameters, orchestration topology, memory persistence, and output validation all live in <code>cocoplus.toml</code> where they can be reviewed separately.</p>
+<p>CocoFlow stages can also declare named artifacts. A stage that says it reads <code>analysis/schema-assessment.json</code> must find that file before it starts. A stage that says it writes <code>design/sql-draft.sql</code> must produce it before completion. The handoff is a filesystem contract, not a narrative promise.</p>
+<p>CocoMeter follows the same discipline for optimization. Accuracy is the primary result; token and credit cost are secondary unless the project explicitly acknowledges cost-first mode. A cheaper run that is less correct is not called an improvement.</p>
+<hr>
+<h2 id="scheduled-work-with-cocoroutine">Scheduled Work With CocoRoutine</h2>
+<p>Some successful workflows should recur without depending on the developer's laptop. CocoRoutine turns a completed, self-contained CocoFlow workflow into a Snowflake TASK-backed routine only after explicit operator choice.</p>
+<p>The self-contained boundary is the feature: routines cannot reference local paths, local MCPs, or local-only credentials. If a workflow cannot run inside Snowflake's boundary, it is not a routine candidate. CocoConsole can display routine status, but it never schedules or changes routines from the browser.</p>
+<hr>
 <blockquote><p><em>A system is only as good as what it remembers and what it refuses to forget.</em></p></blockquote>
 </div>
 

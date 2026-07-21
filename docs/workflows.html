@@ -835,7 +835,36 @@ $audit timeline
 </code></pre>
 <p>The manual event is appended to the same audit source with an explicit Manual Entry label. <code>$audit timeline</code> renders the chronological view without rewriting the source. This keeps external approvals visible while preserving the append-only audit model.</p>
 <hr>
-<h2 id="scenario-31-running-a-guided-session-with-cocopilot">Scenario 31: Running a Guided Session With CocoPilot</h2>
+<h2 id="scenario-31-scheduling-a-self-contained-flow-cocoroutine">Scenario 31: Scheduling a Self-Contained Flow — CocoRoutine</h2>
+<p><strong>The situation:</strong> A data quality flow runs successfully and should repeat every weekday without relying on the developer's machine.</p>
+<pre><code>
+$routine schedule data_quality_check --cadence daily
+$routine list
+</code></pre>
+<p>CocoRoutine checks that the workflow is self-contained: no local filesystem paths, no local MCPs, no local-only credentials, and no unstaged runtime assumptions. If the workflow qualifies and routine scheduling is enabled in <code>cocoplus.toml</code>, TASK SQL is proposed or explicitly confirmed before Snowflake is touched.</p>
+<p>CocoConsole's Flow panel shows the routine registry, but the browser remains read-only. Disable or delete routines from the terminal:</p>
+<pre><code>
+$routine disable data_quality_check
+$routine delete data_quality_check
+</code></pre>
+<hr>
+<h2 id="scenario-32-using-named-artifacts-to-debug-a-flow">Scenario 32: Using Named Artifacts to Debug a Flow</h2>
+<p><strong>The situation:</strong> A downstream design stage keeps failing because its input analysis is incomplete.</p>
+<p>Add explicit artifact declarations to the stage contract:</p>
+<pre><code>
+artifacts.reads = ["analysis/schema-assessment.json"]
+artifacts.writes = ["design/sql-draft.sql"]
+</code></pre>
+<p>Before the stage starts, the hook checks the declared read files under <code>.cocoplus/flow/artifacts/</code>. If a file is missing, the stage stops with a deterministic diagnostic. The developer sees which handoff failed without waiting for a model to infer the problem from downstream symptoms.</p>
+<hr>
+<h2 id="scenario-33-comparing-harness-changes-correctness-first">Scenario 33: Comparing Harness Changes Correctness-First</h2>
+<p><strong>The situation:</strong> A new harness configuration uses fewer tokens, but the team needs to know whether it preserved quality.</p>
+<pre><code>
+$meter compare before.json after.json
+</code></pre>
+<p>The comparison leads with accuracy. If accuracy improves, higher cost may be acceptable. If accuracy is equivalent within the configured band, lower cost wins. If cost falls while accuracy regresses, the report names it as a regression rather than a savings victory.</p>
+<hr>
+<h2 id="scenario-34-running-a-guided-session-with-cocopilot">Scenario 34: Running a Guided Session With CocoPilot</h2>
 <p><strong>The situation:</strong> You are working across several CocoPlus features and want one companion to keep the session organized without surrendering approvals or hard gates.</p>
 <pre><code>
 $pilot on

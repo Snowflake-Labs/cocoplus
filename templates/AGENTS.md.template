@@ -53,5 +53,8 @@ CocoSession is always available for continuity and operator control. Read `.coco
 ### Evidence and Proposal Gates
 If `[evidence_gate] enabled = true`, CocoFlow stages start from default-fail and cannot complete until a qualifying evidence artifact has been read. Stages with `writes_via_proposal = true` must retain Snowflake writes or pipeline changes under `.cocoplus/proposals/` until `$flow settle --accept` or `$flow settle --discard`.
 
+### Named Artifacts, Routines, and Stage Coaching
+CocoFlow stages may declare `artifacts.reads` and `artifacts.writes`; missing handoff files are deterministic gate failures. CocoRoutine schedules only self-contained flows and never references local paths or local-only credentials. If `[harness] coach_model` is configured, per-stage external coaching must use a different model than the executor.
+
 ### Retrospective and Hygiene
 Use `$retrospective run`, `$hygiene --model-upgrade`, and `$meter benchmark --flow <template>` before changing recurring rules, hooks, skills, or flow templates. Prefer the cheapest sufficient actuator: hook, then skill, then structural rule, then standing context.

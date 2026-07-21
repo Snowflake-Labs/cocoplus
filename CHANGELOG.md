@@ -49,10 +49,20 @@ All notable changes to CocoPlus are documented here.
 - CocoSpec now produces a shape document contract with observable criteria, rollout/rollback decision, harness ladder, and inspection surface requirements.
 - CocoConsole now surfaces Stage Evidence, Skill Surface Budget, Retained Proposals, CocoSession handoff, Replay predicate context, retrospective ledger, and Forge refinement ladder state.
 
+#### Late-Cycle 2.0 Additions
+- `cocoroutine/routine.skill.md` adds opt-in CocoRoutine scheduling contracts for self-contained Snowflake TASK-backed workflows.
+- `PreToolUse` adds an always-on RBAC escalation guard for `USE ROLE ACCOUNTADMIN` and optional named artifact read enforcement for CocoFlow stages.
+- `PostToolUse` adds CocoSession iteration budget accounting, live bypass/private-mode governance logging, and per-stage external coach request queuing.
+- `execution-engine/flow-run.skill.md` now documents thinking-effort stage config, diverge-then-focus branch planning, named artifacts, advisor-at-commitment-boundaries, and coach queue behavior.
+- `cocometer/meter-compare.skill.md` makes correctness-first comparison ordering explicit; accuracy leads cost unless cost-first mode is explicitly acknowledged.
+- `cocobrew/distribute.skill.md` adds the five-criterion marketplace distribution gate for CocoPod skills.
+- `templates/scripts/artifact-check.js` adds deterministic artifact read/write validation for project CocoPods.
+- CocoConsole now surfaces scheduled routines, iteration budget, recommendation signals, live governance events, and per-stage quality scores.
+
 ### Changed
 
 - `$flow view` and `$meter view` are now CocoConsole-aware: when CocoConsole is running, they redirect to the Flow or Cost panel; otherwise they preserve the existing standalone HTML behavior.
-- `templates/cocoplus.toml.template` adds `[cocoplus]`, `[cocopilot]`, `[cocoforge]`, `[leviathan]`, `[dynamic_personas]`, `[governance]`, `[session]`, `[evidence_gate]`, `[proposals]`, `[research]`, `[retrospective]`, and role-based model allocation sections.
+- `templates/cocoplus.toml.template` adds `[cocoplus]`, `[cocopilot]`, `[cocoforge]`, `[leviathan]`, `[dynamic_personas]`, `[governance]`, `[session]`, `[harness]`, `[evidence_gate]`, `[proposals]`, `[research]`, `[retrospective]`, `[routine]`, `[meter]`, `[flow.planning]`, `[flow.planning.frames]`, `[flow.tiers]`, and role-based model allocation sections.
 - `templates/AGENTS.md.template` adds V2 activation blocks so new pods understand CocoPilot, CocoForge, Leviathan Mode/Ronin, and Dynamic Personas.
 - Root `README.md`, `AGENTS.md`, installation guidance, and the HTML documentation site now present CocoPlus as a V2.0.0 release.
 

@@ -52,6 +52,8 @@ You have the CocoPlus plugin active. CocoPlus enhances Coco with:
 - **CocoSession** V2 multi-session continuity and operator control ($session status/progress/steer/stop/resume)
 - **CocoFlow Evidence and Proposal Gates** V2 opt-in stage evidence and retained proposal settlement ($flow settle)
 - **CocoRetro and CocoHygiene** V2 measured improvement loops ($retrospective, $hygiene --model-upgrade, $meter benchmark)
+- **CocoRoutine** V2 opt-in Snowflake TASK scheduling for self-contained completed workflows ($routine)
+- **Late-Cycle Governance and Quality Gates** V2 RBAC escalation guard, bypass safeguard logging, named artifacts, stage coach, correctness-first metering, and CocoBrew distribution gate
 
 ## Core Behavioral Rules
 
@@ -102,6 +104,15 @@ You have the CocoPlus plugin active. CocoPlus enhances Coco with:
 
 12. **Measure before optimizing.**
    Use `$meter benchmark`, `$retrospective run`, and `$hygiene --model-upgrade` to establish evidence before changing skills, hooks, governance rules, or flow templates.
+
+13. **Runtime permission posture is live, not assumed.**
+   Governance that depends on permission level must check at enforcement time. RBAC escalation to `ACCOUNTADMIN` is blocked by default; bypass safeguard states are logged and may trigger the CocoSession kill-switch by policy.
+
+14. **Artifacts are contracts.**
+   CocoFlow stages that declare `artifacts.reads` and `artifacts.writes` must satisfy those files structurally. Missing handoff files are deterministic failures, not model-interpretation questions.
+
+15. **Correctness leads cost.**
+   CocoMeter comparisons report accuracy before token or credit deltas unless cost-first mode is explicitly configured and acknowledged. Cost reduction with accuracy regression is not an improvement.
 
 ## Persona Shorthand Quick Reference
 
