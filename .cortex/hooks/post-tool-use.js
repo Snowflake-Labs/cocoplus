@@ -23,6 +23,8 @@ const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const SPAWN_QUEUE  = path.join(COCOPLUS_DIR, 'subagent-spawn-requests.jsonl');
 const GOVERNANCE_LOG = path.join(COCOPLUS_DIR, 'lifecycle', 'governance-log.json');
+const SESSION_DIR = path.join(COCOPLUS_DIR, 'session');
+const COACH_QUEUE = path.join(COCOPLUS_DIR, 'sentinel', 'coach-requests.jsonl');
 
 const PII_PATTERNS = [
   { type: 'EMAIL', re: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi },
@@ -37,6 +39,84 @@ function countPii(value) {
   return PII_PATTERNS
     .map(({ type, re }) => ({ type, count: (text.match(re) || []).length }))
     .filter((entry) => entry.count > 0);
+}
+
+function ensureDir(dirPath) {
+  if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+}
+
+function readJson(filePath, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (_) {
+    return fallback;
+  }
+}
+
+function writeJson(filePath, value) {
+  ensureDir(path.dirname(filePath));
+  fs.writeFileSync(filePath, JSON.stringify(value, null, 2), 'utf8');
+}
+
+function appendProgressBudget(progressPath, budget) {
+  const block = [
+    '## Iteration Budget',
+    `Cap: ${budget.cap}`,
+    `Consumed: ${budget.consumed}`,
+    `Warn At: ${budget.warn_at}`,
+  ].join('\n');
+  let text = '';
+  try { text = fs.readFileSync(progressPath, 'utf8'); } catch (_) { /* created below */ }
+  if (!text) text = '# CocoSession Progress\n\n## Done\n\n## In Progress\n\n## Next\n\n## Notes\n';
+  if (/## Iteration Budget[\s\S]*?(?=\n## |\s*$)/.test(text)) {
+    text = text.replace(/## Iteration Budget[\s\S]*?(?=\n## |\s*$)/, block + '\n');
+  } else {
+    text = `${text.trim()}\n\n${block}\n`;
+  }
+  fs.writeFileSync(progressPath, text, 'utf8');
+}
+
+function recordIterationBudget(config, ts) {
+  const sessionConfig = config.session || {};
+  const cap = Number(sessionConfig.max_iterations) || 200;
+  const warnAt = Number(sessionConfig.iteration_warn_at) || Math.floor(cap * 0.8);
+  const budgetPath = path.join(SESSION_DIR, 'iteration-budget.json');
+  const budget = readJson(budgetPath, {
+    cap,
+    warn_at: warnAt,
+    consumed: 0,
+    warned: false,
+    stopped: false,
+  });
+  budget.cap = Number(budget.cap) || cap;
+  budget.warn_at = Number(budget.warn_at) || warnAt;
+  budget.consumed = Number(budget.consumed) + 1;
+  budget.updated_at = ts;
+  writeJson(budgetPath, budget);
+  appendProgressBudget(path.join(SESSION_DIR, 'PROGRESS.md'), budget);
+
+  if (budget.consumed >= budget.warn_at && !budget.warned) {
+    budget.warned = true;
+    budget.warned_at = ts;
+    writeJson(budgetPath, budget);
+    appendJsonLine(path.join(SESSION_DIR, 'steps.jsonl'), {
+      ts,
+      event_type: 'iteration_budget_warning',
+      message: 'Proactive session checkpoint scheduled because CocoSession is approaching the iteration limit.',
+    });
+  }
+
+  if (budget.consumed >= budget.cap && !budget.stopped) {
+    budget.stopped = true;
+    budget.stopped_at = ts;
+    writeJson(budgetPath, budget);
+    fs.writeFileSync(path.join(COCOPLUS_DIR, 'AGENT_STOP'), 'CocoSession iteration budget reached.\n', 'utf8');
+    appendJsonLine(path.join(SESSION_DIR, 'steps.jsonl'), {
+      ts,
+      event_type: 'iteration_budget_cap_reached',
+      message: 'AGENT_STOP created because CocoSession reached its iteration cap.',
+    });
+  }
 }
 
 function queueAndAttemptBackgroundSpawn(request, ts) {
@@ -83,9 +163,47 @@ function main() {
 
   appendJsonLine(HOOK_LOG, { hook: 'post-tool-use', tool: toolName, ts });
 
+  // CocoSession iteration budget: every completed turn advances the budget.
+  try {
+    ensureDir(SESSION_DIR);
+    recordIterationBudget(config, ts);
+  } catch (err) {
+    logError('post-tool-use', `iteration budget update failed: ${err.message}`);
+  }
+
   // V2 Governance Policy 2: PII Governance. This hook records redaction
   // decisions and emits warning metadata; original values are never persisted.
   const governance = config.governance || {};
+
+  // CocoSentinel live bypass/private-mode governance. The hook records live
+  // permission posture every turn when visible in event metadata or env vars.
+  const permissionLevel = event.permissionLevel || event.permission_level ||
+    result.permissionLevel || result.permission_level ||
+    process.env.COCO_PERMISSION_LEVEL ||
+    process.env.CORTEX_PERMISSION_LEVEL ||
+    '';
+  if (String(permissionLevel).toLowerCase() === 'bypass_safeguards') {
+    const policy = governance.bypass_safeguards_policy || 'allow';
+    appendJsonLine(GOVERNANCE_LOG, {
+      ts,
+      policy: 'bypass_safeguards',
+      tool: toolName,
+      action: policy === 'block' ? 'BLOCK_NEXT_TOOL' : policy === 'warn' ? 'WARN' : 'LOG',
+      session_id: event.session_id || process.env.COCO_SESSION_ID || null,
+    });
+    if (policy === 'block') {
+      fs.writeFileSync(path.join(COCOPLUS_DIR, 'AGENT_STOP'), 'Bypass safeguards policy set to block.\n', 'utf8');
+    }
+  }
+  if (process.env.CORTEX_CODE_NO_HISTORY_MODE === 'true' || process.env.COCO_NO_HISTORY_MODE === 'true') {
+    appendJsonLine(GOVERNANCE_LOG, {
+      ts,
+      policy: 'session_history',
+      tool: toolName,
+      action: governance.require_session_history ? 'PRIVATE_MODE_DETECTED' : 'PRIVATE_MODE_OBSERVED',
+    });
+  }
+
   const piiMode = governance.pii_filtering === undefined ? false : governance.pii_filtering;
   if (toolName === 'SnowflakeSqlExecute' && piiMode !== false && piiMode !== 'false') {
     const piiCounts = countPii(result);
@@ -293,6 +411,35 @@ function main() {
       } catch (err) {
         logError('post-tool-use', `request_id capture failed: ${err.message}`);
       }
+    }
+  }
+
+  // 8. CocoSentinel per-stage external coach. This is queue-only here; the
+  // coach skill consumes the request asynchronously so hook latency stays low.
+  const harness = config.harness || {};
+  const coachModel = harness.coach_model || null;
+  const stageId = process.env.COCOPLUS_STAGE_ID || params.stage_id || params.stage || null;
+  if (succeeded && coachModel && stageId) {
+    const executorModel = process.env.COCOPLUS_EXECUTOR_MODEL || params.model || result.model || null;
+    if (executorModel && String(executorModel).toLowerCase() === String(coachModel).toLowerCase()) {
+      appendJsonLine(path.join(COCOPLUS_DIR, 'sentinel', 'known-gaps.jsonl'), {
+        ts,
+        policy: 'coach_model_separation',
+        stage_id: stageId,
+        executor_model: executorModel,
+        coach_model: coachModel,
+        message: 'Coach model must differ from executor model; coach request not queued.',
+      });
+    } else {
+      appendJsonLine(COACH_QUEUE, {
+        ts,
+        stage_id: stageId,
+        tool: toolName,
+        artifact: filePath || result.output_path || null,
+        coach_model: coachModel,
+        executor_model: executorModel,
+        status: 'queued',
+      });
     }
   }
 }

@@ -75,6 +75,12 @@ $pod checkpoint
 <p>Confirms: "Checkpoint saved. Run <code>$clear</code> to reset context, then <code>$pod resume</code> to continue from this point."</p>
 <p><strong>Output:</strong> Committed <code>lifecycle/checkpoint.md</code>. Run before <code>$clear</code> to enable clean recovery.</p>
 <hr>
+<p><strong><code>$brew distribute</code></strong> — Run the CocoBrew distribution quality gate</p>
+<pre><code>
+$brew distribute .cocoplus/skills/my-skill
+</code></pre>
+<p>Evaluates a CocoPod skill before marketplace distribution or recommendation. The gate checks explicit permissions, non-empty evals, failure behavior, no install-time execution, and justified network use. Clear proceeds, Advisory requires acknowledgment, and Block halts distribution with no bypass flag.</p>
+<hr>
 <p><strong><code>$cocoplus sync</code></strong> — Propagate <code>cocoplus.toml</code> changes to all generated artifacts</p>
 <pre><code>
 $cocoplus sync
@@ -178,6 +184,15 @@ $flow research "why did this metric change?"
 $flow research --deep "what changed across these schemas?"
 </code></pre>
 <p>Runs Planner, parallel Crawlers, Aggregator, Publisher, independent Reviewer, and Revisor. The retrieval plan is approved before crawler launch, and local document sources may be configured in <code>cocoplus.toml</code>.</p>
+<hr>
+<p><strong><code>$routine</code></strong> — Manage CocoRoutine Snowflake-native schedules</p>
+<pre><code>
+$routine list
+$routine schedule &lt;flow&gt; --cadence daily
+$routine disable &lt;name&gt;
+$routine delete &lt;name&gt;
+</code></pre>
+<p>Lists or manages Snowflake TASK-backed routines for completed, self-contained CocoFlow workflows. Scheduling rejects local filesystem paths, local MCPs, local-only credentials, and user-specific runtime state. TASK SQL is proposed or explicitly confirmed before execution, and the Flow panel shows registered routines from <code>.cocoplus/routines/registry.json</code>.</p>
 <hr>
 <p><strong><code>$retrospective</code>, <code>$hygiene</code>, and <code>$meter benchmark</code></strong> — Measure and simplify the system</p>
 <pre><code>
@@ -596,6 +611,12 @@ $meter accuracy
 <p>Displays the estimation accuracy history accumulated via the Accuracy Learning Feedback Loop. CocoMeter compares pre-flight estimates against actual session consumption (drawn from <code>request-map.jsonl</code>) and stores session ratios in <code>meter/accuracy-history.jsonl</code>. The current calibration adjustment factor — the rolling median of the last 10 session ratios — is stored in <code>meter/adjustment-factor.json</code> and automatically applied to future pre-flight estimates.</p>
 <p><code>$meter accuracy</code> shows: the current adjustment factor and its sample size, the trend over the last five sessions (stable / rising / falling), and the raw per-session history (estimated tokens, actual tokens, ratio). When the adjustment factor is active, <code>$meter estimate</code> output includes a calibration note: "Estimated 45,000 tokens (baseline: 30,000, calibration factor: 1.5x from 8 prior sessions)."</p>
 <p><strong>Output:</strong> Accuracy history table + current calibration factor + trend indicator.</p>
+<hr>
+<p><strong><code>$meter compare</code></strong> — Compare accuracy and cost with correctness-first ordering</p>
+<pre><code>
+$meter compare before.json after.json
+</code></pre>
+<p>Compares benchmark or harness result files. Accuracy delta leads by default; token or credit cost is a secondary signal unless <code>cocoplus.toml [meter]</code> explicitly sets and acknowledges cost-first mode. A cheaper result with lower accuracy is reported as a regression under correctness-first rules.</p>
 <hr>
 <p><strong><code>$meter refresh</code></strong> — Refresh FinOps chargeback facts <em>(CocoMeter Enhanced)</em></p>
 <pre><code>$meter refresh
@@ -1430,17 +1451,17 @@ $sketch deps --reduce off
 <tr>
   <td style="text-align:left"><strong>PreToolUse</strong></td>
   <td style="text-align:left">Before any tool call</td>
-  <td style="text-align:left">Safety Gate, ReviewerLockout, CocoSession kill-switch, opt-in stage evidence gate, retained-proposal direct-write protection, and destructive SQL warnings or blocks</td>
+  <td style="text-align:left">Safety Gate, ReviewerLockout, RBAC escalation guard, CocoSession kill-switch, named artifact read checks, opt-in stage evidence gate, retained-proposal direct-write protection, and destructive SQL warnings or blocks</td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>PostToolUse</strong></td>
   <td style="text-align:left">After any tool call</td>
-  <td style="text-align:left">Memory Engine capture layer — records significant tool use events to warm memory layer; CocoHealth samples context utilization and fires threshold warnings when applicable; CocoAudit appends tool call event to <code>lifecycle/audit.md</code></td>
+  <td style="text-align:left">Memory Engine capture, CocoHealth sampling, CocoAudit append, CocoSession iteration budget accounting, bypass/private-mode governance logging, PII governance, and per-stage coach request queuing</td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>UserPromptSubmit</strong></td>
   <td style="text-align:left">Developer submits a prompt</td>
-  <td style="text-align:left">Intercepts persona shorthand, V2 mode commands, Forge priority over Pilot, one-shot CocoSession steering, task queue capture, contract gate requests, and three-tier context/advisory routing</td>
+  <td style="text-align:left">Intercepts persona shorthand, V2 mode commands, routine requests, Forge priority over Pilot, one-shot CocoSession steering, task queue capture, skill discovery/convergence signals, contract gate requests, and three-tier context/advisory routing</td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>SubagentStop</strong></td>
@@ -1482,7 +1503,7 @@ $sketch deps --reduce off
 </tr>
 <tr>
   <td style="text-align:left"><strong>Operating Layer</strong></td>
-  <td style="text-align:left"><code>$cocoplus console</code> · <code>$pilot on|off</code> · <code>$forge "goal" [--ladder]</code> · <code>$forge resolve-dispute</code> · <code>$leviathan on|off|status|learn</code> · <code>$session status|progress|steer|stop|resume</code> · <code>$retrospective run</code> · <code>$hygiene --model-upgrade</code></td>
+  <td style="text-align:left"><code>$cocoplus console</code> · <code>$pilot on|off</code> · <code>$forge "goal" [--ladder]</code> · <code>$forge resolve-dispute</code> · <code>$leviathan on|off|status|learn</code> · <code>$session status|progress|steer|stop|resume</code> · <code>$routine list|schedule|disable|delete</code> · <code>$retrospective run</code> · <code>$hygiene --model-upgrade</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Lifecycle</strong></td>
@@ -1522,7 +1543,7 @@ $sketch deps --reduce off
 </tr>
 <tr>
   <td style="text-align:left"><strong>Meter</strong></td>
-  <td style="text-align:left"><code>$meter on</code> · <code>$meter off</code> · <code>$meter</code> · <code>$meter estimate</code> · <code>$meter history</code> · <code>$meter accuracy</code> · <code>$meter benchmark --flow</code> · <code>$meter view</code> · <code>$meter sync</code> · <code>$meter refresh</code> · <code>$meter invoice</code> · <code>$meter status</code></td>
+  <td style="text-align:left"><code>$meter on</code> · <code>$meter off</code> · <code>$meter</code> · <code>$meter estimate</code> · <code>$meter history</code> · <code>$meter accuracy</code> · <code>$meter benchmark --flow</code> · <code>$meter compare</code> · <code>$meter view</code> · <code>$meter sync</code> · <code>$meter refresh</code> · <code>$meter invoice</code> · <code>$meter status</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Cupper</strong></td>

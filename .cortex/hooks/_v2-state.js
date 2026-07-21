@@ -57,7 +57,9 @@ function setFlag(flagName, enabled) {
 }
 
 function loadConfig() {
-  const tomlPath = path.join(COCOPLUS_DIR, 'cocoplus.toml');
+  const rootTomlPath = 'cocoplus.toml';
+  const podTomlPath = path.join(COCOPLUS_DIR, 'cocoplus.toml');
+  const tomlPath = fs.existsSync(rootTomlPath) ? rootTomlPath : podTomlPath;
   const config = {};
   if (!fs.existsSync(tomlPath)) return config;
   let section = null;
@@ -76,7 +78,15 @@ function loadConfig() {
       let value = rawValue.replace(/^"|"$/g, '');
       if (rawValue === 'true') value = true;
       else if (rawValue === 'false') value = false;
+      else if (/^\[[^\]]*\]$/.test(rawValue)) {
+        value = rawValue
+          .slice(1, -1)
+          .split(',')
+          .map((item) => item.trim().replace(/^"|"$/g, ''))
+          .filter(Boolean);
+      }
       else if (/^\d+$/.test(rawValue)) value = Number(rawValue);
+      else if (/^\d+\.\d+$/.test(rawValue)) value = Number(rawValue);
       config[section][kv[1]] = value;
     }
   }

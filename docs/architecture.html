@@ -137,6 +137,7 @@
 ├── context/               ← CocoContext: six organizational standards files
 ├── prompts/               ← per-stage prompt files generated at Plan phase
 ├── monitors/              ← narrator, memory capture, cost tracker, and quality advisor configs
+├── brew/                  ← CocoBrew distribution gate reports and local validation state
 ├── grove/                 ← CocoGrove: curated pattern library + cupper findings
 │   ├── patterns/          ← promoted patterns (individual markdown files)
 │   ├── language/          ← ubiquitous language glossary
@@ -147,6 +148,8 @@
 │   ├── coco-map.json      ← committed knowledge graph (structural + domain views)
 │   └── intermediate/      ← gitignored scratch files from analysis agents
 ├── seeds/                 ← CocoSeed deferred idea files
+├── flow/                  ← flow-local deterministic handoff state
+│   └── artifacts/         ← named artifact protocol read/write handoffs
 ├── pull/                  ← CocoPull distillation manifest and pull artifacts
 │   └── manifest.json      ← records all pull files, compression ratios, validation scores
 ├── harvest/               ← CocoHarvest execution state
@@ -170,7 +173,9 @@
 │   └── [function]/contract.md ← pre-generation success contract
 ├── sentinel/              ← CocoSentinel artifact quality gate results
 │   ├── &lt;artifact-sha&gt;.json    ← evaluation result per artifact (SHA-bound)
-│   └── approvals.jsonl    ← SHA-bound approval records (append-only)
+│   ├── approvals.jsonl    ← SHA-bound approval records (append-only)
+│   ├── stage-quality.jsonl ← per-stage external coach scores
+│   └── coach-requests.jsonl ← queued stage coach requests (gitignored)
 ├── wisdom/                ← CocoWisdom institutional rejection memory
 │   ├── rejections.jsonl   ← append-only structured rejection records (committed)
 │   ├── must-keep.md       ← protected wisdom entries
@@ -190,6 +195,8 @@
 │   └── sessions.db        ← SQLite FTS index of session archives (gitignored)
 ├── cupper/                ← CocoCupper captured observations and local scratch
 ├── governance/            ← governance policy receipts and generated enforcement state
+├── routines/              ← CocoRoutine registry for Snowflake TASK-backed schedules
+│   └── registry.json      ← routine name, cadence, task, status, last run, next run
 ├── personas/              ← dynamic persona registry, histories, and archive
 ├── skills/                ← project-local skill overlays and promoted local contracts
 ├── snapshots/             ← Environment Inspector scan results
@@ -198,7 +205,9 @@
 │   ├── PROGRESS.md        ← durable handoff for long-running work (gitignored)
 │   ├── CONTEXT.md         ← predicate state for resumption (gitignored)
 │   ├── task-queue.jsonl   ← queued mid-session requests (gitignored)
-│   └── stage-evidence.json ← evidence-gate observations (gitignored)
+│   ├── stage-evidence.json ← evidence-gate observations (gitignored)
+│   ├── iteration-budget.json ← turn budget state for long-running work (gitignored)
+│   └── discoveries.jsonl  ← skill discovery and convergence signals (gitignored)
 ├── proposals/             ← retained CocoFlow proposals awaiting settlement
 │   ├── proposal-log.jsonl ← proposal index (gitignored)
 │   └── archive/           ← discarded or superseded proposals

@@ -31,6 +31,7 @@ Create the following directories (create them even if empty — they are require
 .cocoplus/memory/
 .cocoplus/prompts/
 .cocoplus/monitors/
+.cocoplus/brew/
 .cocoplus/grove/
 .cocoplus/grove/patterns/
 .cocoplus/meter/
@@ -45,11 +46,14 @@ Create the following directories (create them even if empty — they are require
 .cocoplus/map/
 .cocoplus/map/intermediate/
 .cocoplus/map/archive/
+.cocoplus/flow/
+.cocoplus/flow/artifacts/
 .cocoplus/flows/
 .cocoplus/flows/templates/
 .cocoplus/flows/templates/archive/
 .cocoplus/proposals/
 .cocoplus/proposals/archive/
+.cocoplus/routines/
 .cocoplus/session/
 .cocoplus/personas/
 .cocoplus/personas/archive/
@@ -57,6 +61,7 @@ Create the following directories (create them even if empty — they are require
 .cocoplus/cupper/
 .cocoplus/recall/
 .cocoplus/governance/
+.cocoplus/sentinel/
 ```
 
 ## Copy Template Files
@@ -94,6 +99,7 @@ Copy template files from the plugin templates directory to `.cocoplus/`:
 12. Copy `templates/scripts/scope-classify.js` → `.cocoplus/scripts/scope-classify.js`
 13. Copy `templates/scripts/spec-validator.js` → `.cocoplus/scripts/spec-validator.js`
 14. Copy `templates/scripts/alignment-check.js` → `.cocoplus/scripts/alignment-check.js`
+15. Copy `templates/scripts/artifact-check.js` → `.cocoplus/scripts/artifact-check.js`
 
 ## Initialize Mode Flags
 
@@ -209,11 +215,18 @@ lifecycle/leviathan-state.json
 lifecycle/consolidation-log.json
 lifecycle/governance-log.json
 lifecycle/retrospective-ledger.jsonl
+brew/distribution-gate-*.json
 session/PROGRESS.md
 session/CONTEXT.md
 session/task-queue.jsonl
 session/stage-evidence.json
+session/iteration-budget.json
+session/discoveries.jsonl
 proposals/proposal-log.jsonl
+routines/registry.json.tmp
+sentinel/coach-requests.jsonl
+sentinel/coach-requests.processed.jsonl
+sentinel/known-gaps.jsonl
 .last-consolidation
 .last-retrospective
 AGENT_STOP
@@ -302,7 +315,28 @@ SESSION.status=initialized
 SESSION.skill_surface_budget=standard
 ```
 
-Create empty `.cocoplus/session/task-queue.jsonl`, `.cocoplus/session/stage-evidence.json`, and `.cocoplus/proposals/proposal-log.jsonl`.
+Create empty `.cocoplus/session/task-queue.jsonl`, `.cocoplus/session/stage-evidence.json`, `.cocoplus/session/discoveries.jsonl`, and `.cocoplus/proposals/proposal-log.jsonl`.
+
+Create `.cocoplus/session/iteration-budget.json`:
+
+```json
+{
+  "cap": 200,
+  "warn_at": 160,
+  "consumed": 0,
+  "warned": false,
+  "stopped": false
+}
+```
+
+Create `.cocoplus/routines/registry.json`:
+
+```json
+{
+  "version": 1,
+  "routines": []
+}
+```
 
 ## CocoAudit Setup (Feature 40)
 
@@ -365,11 +399,14 @@ CocoPlus initialized successfully.
 ├── grove/             ← CocoGrove pattern library
 ├── meter/             ← CocoMeter token tracking
 ├── config/            ← generated config from cocoplus.toml sync
+├── brew/              ← CocoBrew distribution quality gate reports
+├── flow/artifacts/    ← named artifact protocol handoff files
 ├── flows/templates/   ← reusable execution plan templates
 ├── proposals/         ← retained CocoFlow stage proposals pending settlement
+├── routines/          ← CocoRoutine registry
 ├── session/           ← CocoSession handoff, predicate state, evidence, and task queue
 ├── personas/          ← dynamic persona registry and history files
-├── scripts/           ← compatibility utility scripts copied into CocoPods
+├── scripts/           ← compatibility and deterministic validation scripts copied into CocoPods
 ├── pull/              ← CocoPull manifest and distillation registry
 ├── harvest/           ← pipeline recovery scratch state
 ├── snapshots/         ← Environment Inspector results
@@ -394,17 +431,17 @@ Next steps:
 
 ## Exit Criteria
 
-- [ ] `.cocoplus/` directory exists with all required subdirectories (`lifecycle/`, `memory/`, `prompts/`, `monitors/`, `grove/`, `grove/patterns/`, `meter/`, `snapshots/`, `modes/`, `config/`, `fleet/`, `scripts/`, `pull/`, `harvest/`, `seeds/`, `map/`)
+- [ ] `.cocoplus/` directory exists with all required subdirectories (`lifecycle/`, `memory/`, `prompts/`, `monitors/`, `brew/`, `grove/`, `grove/patterns/`, `meter/`, `snapshots/`, `modes/`, `config/`, `fleet/`, `scripts/`, `pull/`, `harvest/`, `seeds/`, `map/`, `flow/artifacts/`, `routines/`, `sentinel/`)
 - [ ] `.cocoplus/modes/safety.normal` flag file exists; no other safety flags exist
 - [ ] `.cocoplus/modes/memory.on` flag file exists
 - [ ] `.cocoplus/AGENTS.md`, `.cocoplus/project.md`, `.cocoplus/flow.json`, and all four monitor JSON files exist
 - [ ] `.cocoplus/lifecycle/meta.json` exists with `"current_phase": "not_started"` and empty `phases_completed`
 - [ ] `.cocoplus/lifecycle/cocoplus-context.md` exists
-- [ ] `.cocoplus/scripts/rollback.js`, `scope-classify.js`, `spec-validator.js`, and `alignment-check.js` exist
+- [ ] `.cocoplus/scripts/rollback.js`, `scope-classify.js`, `spec-validator.js`, `alignment-check.js`, and `artifact-check.js` exist
 - [ ] `.cocoplus/.gitignore` exists excluding transient session files
 - [ ] Root `AGENTS.md` shim exists at project root with `cocoplus-agents-redirect` directive
 - [ ] Root `cocoplus.toml` exists and includes the current 2.0 sections
 - [ ] `.cocoplus/personas.json` exists with 8 default shorthand entries (`$de` through `$cdo`)
 - [ ] `.cocoplus/subagents.json` exists as empty `{}`
-- [ ] `.cocoplus/personas/dynamic-registry.json`, `.cocoplus/flows/templates/`, `.cocoplus/proposals/`, `.cocoplus/session/`, `.cocoplus/v2-runtime-requests.jsonl`, `.cocoplus/.last-consolidation`, and `.cocoplus/.last-retrospective` exist
+- [ ] `.cocoplus/personas/dynamic-registry.json`, `.cocoplus/flows/templates/`, `.cocoplus/proposals/`, `.cocoplus/session/`, `.cocoplus/session/iteration-budget.json`, `.cocoplus/routines/registry.json`, `.cocoplus/v2-runtime-requests.jsonl`, `.cocoplus/.last-consolidation`, and `.cocoplus/.last-retrospective` exist
 - [ ] Git commit with message `chore(cocopod): initialize CocoPlus project structure` exists in log

@@ -47,6 +47,27 @@ evaluator = "smart"
 # Skill Surface Budget protects context from unnecessary standing instructions.
 skill_surface_budget = "standard" # "core" | "standard" | "full"
 context_predicates = true
+max_iterations = 200
+iteration_warn_at = 160
+default_thinking_effort = "medium" # "low" | "medium" | "high"
+skill_discovery = true
+convergence_detection = true
+
+[harness]
+# Six-dimensional harness taxonomy for CocoPod tuning.
+context_assembly = "structured"
+context_compression_threshold = 8000
+tool_exposure = ["snowflake_sql", "cortex_functions", "file_read"]
+retrieval_top_k = 5
+max_tokens_per_call = 4096
+temperature = 0.2
+candidate_samples = 1
+orchestration_model = "planner-executor"
+state_persistence = "session"
+stale_context_eviction = true
+output_extraction = "structured_json"
+output_validation = "schema"
+coach_model = "" # Optional; when set, PostToolUse queues per-stage external coach reviews
 
 [trace]
 show_grade = true            # Set false to hide CocoTrace A-F grade while keeping metrics visible
@@ -106,6 +127,9 @@ retain_history_on_dissolve = true
 reviewer_lockout = true
 pii_filtering = false
 pii_log_redactions = true
+bypass_safeguards_policy = "allow" # "allow" | "warn" | "block"
+allow_accountadmin_escalation = false
+require_session_history = false
 
 [evidence_gate]
 # CocoFlow stage advancement remains opt-in for existing projects.
@@ -127,3 +151,26 @@ local_doc_paths = []
 [retrospective]
 cadence_days = 30
 enabled = true
+
+[routine]
+enabled = true
+allow_snowflake_tasks = false
+
+[meter]
+optimization_objective = "correctness-first" # correctness-first | balanced | cost-first
+accuracy_equivalence_band = 0.02
+cost_first_acknowledged = false
+
+[flow.planning]
+diverge_on_branch_points = true
+diverge_frames = 4
+diverge_top_k = 2
+
+[flow.planning.frames]
+snowflake_domain_pack = true
+base_adhd_frames = ["hardware_engineer", "regulator", "competitor", "3am_on_call", "inversion"]
+
+[flow.tiers]
+advisor_budget = 5
+worker_budget = 20
+mandatory_advisor_calls = ["plan-critique", "final-quality-review"]

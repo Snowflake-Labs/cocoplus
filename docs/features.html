@@ -26,11 +26,11 @@
 <div class="page-header">
   <div class="label">Feature Catalog</div>
   <h1>The Features</h1>
-  <p class="subtitle">CocoPlus has forty-nine counted product features, with CocoPilot and CocoSession documented as orchestration companions. They are not independent capabilities you can pick from a menu. They are expressions of the same underlying design — a system where each piece reinforces the others.</p>
+  <p class="subtitle">CocoPlus has fifty counted product features, with CocoPilot, CocoSession, and CocoRoutine documented as orchestration companions. They are not independent capabilities you can pick from a menu. They are expressions of the same underlying design — a system where each piece reinforces the others.</p>
 </div>
 
 <div class="content">
-<p>CocoPlus has forty-nine counted product features, with CocoPilot and CocoSession documented as orchestration companions. Migration skills remain separate upgrade tooling rather than part of the product feature count. The features are not independent capabilities you can pick from a menu. They are expressions of the same underlying design — a system where each piece reinforces the others.</p>
+<p>CocoPlus has fifty counted product features, with CocoPilot, CocoSession, and CocoRoutine documented as orchestration companions. Migration skills remain separate upgrade tooling rather than part of the product feature count. The features are not independent capabilities you can pick from a menu. They are expressions of the same underlying design — a system where each piece reinforces the others.</p>
 <p>Some features are always active. Some are toggled on by choice. Some run invisibly in the background. Some you will use every day. Some you will reach for only when the work demands it.</p>
 <p>Here they are, in the order they matter.</p>
 <hr>
@@ -536,13 +536,22 @@
 <p>CocoSession is the continuity layer for long-running CocoPlus work. It keeps a durable <code>PROGRESS.md</code> handoff, a predicate-style <code>CONTEXT.md</code> state file, a queued-work log, a kill-switch sentinel, and a one-shot steering file so a future session can resume without relying on transcript memory.</p>
 <p><strong>Operator control:</strong> Creating <code>.cocoplus/AGENT_STOP</code> halts tool use through the PreToolUse hook until the operator removes or resumes it. Writing <code>.cocoplus/STEER.md</code> injects one instruction, then clears the file so redirection does not become permanent ambient context.</p>
 <p><strong>Integrated V2 gates:</strong> CocoSession works with the default-fail evidence gate, retained proposal model, CocoConsole Replay panel, and retrospective ledger. It gives autonomy a file-based handoff surface that stays legible to the developer.</p>
+<p><strong>Iteration budget:</strong> CocoSession tracks cap, consumed turns, and warning threshold in <code>session/iteration-budget.json</code>. At the warning threshold it records a proactive checkpoint; at the cap it creates <code>AGENT_STOP</code> so the session ends with a usable handoff rather than an exhausted context window.</p>
+<p><strong>ctx supplement:</strong> When ctx is available, CocoSession can cross-reference ctx tasks, ready steps, and discoveries with <code>PROGRESS.md</code>. CocoFlow remains authoritative if ctx and flow state disagree, and CocoFlow stages set <code>CTX_STEP_ENFORCEMENT=false</code> to avoid competing gates.</p>
+<hr>
+<h2 id="feature-50-cocoroutine-snowflake-native-workflow-scheduling">Feature 50: CocoRoutine — Snowflake-Native Workflow Scheduling</h2>
+<p><strong>Commands:</strong> <code>$routine list</code>, <code>$routine schedule</code>, <code>$routine disable</code>, <code>$routine delete</code></p>
+<p>CocoRoutine schedules completed, self-contained CocoFlow workflows as Snowflake TASK-backed routines. It is for recurring checks, reports, governance audits, and pipeline health workflows that should run in Snowflake rather than on a developer laptop.</p>
+<p><strong>Self-contained by design:</strong> A routine cannot depend on local files, local MCP servers, local environment variables, or user-specific runtime state. The prompt and inputs must be portable into Snowflake's execution boundary.</p>
+<p><strong>Opt-in scheduling:</strong> CocoPilot may offer scheduling after a successful flow, but it never schedules automatically. Organizations can disable the surface through <code>cocoplus.toml [routine]</code>. TASK SQL is proposed or explicitly confirmed before execution, and all Snowflake operations still pass through Safety Gate, RBAC escalation guard, and retained-proposal policy.</p>
+<p><strong>Console visibility:</strong> CocoConsole's Flow panel reads <code>.cocoplus/routines/registry.json</code> and shows routine name, cadence, status, last run, and next run. The console remains read-only.</p>
 <hr>
 <h2 id="migration-skills">Migration Skills</h2>
 <p><strong>Commands:</strong> <code>$migrate v2 --dry-run</code>, <code>$migrate v2</code>, <code>$migrate v2 --from 1.x</code></p>
 <p>Migration skills are the upgrade path for older CocoPods. They inspect an existing <code>.cocoplus/</code> directory, report missing runtime directories, config sections, queue files, Dynamic Persona registry files, and AGENTS activation blocks, then apply the upgrade when requested.</p>
 <p>The migration path is intentionally conservative: legacy artifacts are archived rather than deleted, active modes are not enabled automatically, and a migration report is written so the operator can see exactly what changed. New CocoPods start directly in the current architecture through <code>$pod init</code>; migration skills exist only for projects that already carry earlier state.</p>
 <hr>
-<p><em>Forty-nine core features, one idea: give the developer a system that works as hard to be right as it works to be fast.</em></p>
+<p><em>Fifty core features, one idea: give the developer a system that works as hard to be right as it works to be fast.</em></p>
 </div>
 
 <footer>
