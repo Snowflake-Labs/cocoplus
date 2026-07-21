@@ -141,6 +141,7 @@ function main() {
     'scope-classify.js',
     'spec-validator.js',
     'alignment-check.js',
+    'artifact-check.js',
   ];
 
   for (const agentId of plugin.agents || []) {

@@ -117,7 +117,7 @@ $spec
 
 `$cocoplus console` opens the read-only local dashboard. Optional operating modes are activated per session with `$pilot on`, `$forge "goal"`, or `$leviathan on`.
 
-`$session status` verifies the CocoSession handoff surface, predicate context, operator kill-switch state, and queued work. Existing projects that enable the new 2.0 gates should add the optional `[session]`, `[evidence_gate]`, `[proposals]`, `[research]`, and `[retrospective]` configuration blocks through `$migrate v2` rather than hand-editing partial state.
+`$session status` verifies the CocoSession handoff surface, predicate context, iteration budget, operator kill-switch state, and queued work. Existing projects that enable the new 2.0 gates should add the optional `[session]`, `[harness]`, `[evidence_gate]`, `[proposals]`, `[research]`, `[retrospective]`, `[routine]`, `[meter]`, and `[flow.*]` configuration blocks through `$migrate v2` rather than hand-editing partial state.
 
 ## Validation
 

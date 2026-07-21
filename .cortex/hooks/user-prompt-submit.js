@@ -31,6 +31,7 @@ const {
   flagExists,
   initPilotSession,
   lifecyclePath,
+  loadConfig,
   readJson,
   setFlag,
   writeJson,
@@ -86,6 +87,7 @@ function main() {
 
   const message   = event.message   || process.env.COCO_USER_MESSAGE || '';
   const sessionId = event.session_id || process.env.COCO_SESSION_ID  || 'unknown';
+  const config    = loadConfig();
 
   appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', ts });
 
@@ -228,6 +230,24 @@ function main() {
       return;
     }
   }
+  if (message.startsWith('$routine')) {
+    const routineConfig = config.routine || {};
+    if (routineConfig.enabled === false || routineConfig.enabled === 'false') {
+      appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'routine_disabled', tier: 1, ts });
+      return;
+    }
+    const parts = message.trim().split(/\s+/);
+    const action = parts[1] || 'list';
+    appendJsonLine(V2_QUEUE, {
+      skill: 'cocoroutine/routine',
+      action,
+      command: message.slice(0, 500),
+      requested_at: ts,
+      source: 'hook.user-prompt-submit',
+    });
+    appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'routine_requested', routine_action: action, tier: 1, ts });
+    return;
+  }
 
   // Forge Team Lead has priority over CocoPilot while active.
   if (flagExists('cocoforge.on')) {
@@ -310,6 +330,32 @@ function main() {
     source: 'hook.user-prompt-submit',
   });
   appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'cupper_capture_requested', tier: 1, ts });
+
+  // CocoBrew observation signals: skill discovery and convergence detection
+  // are emitted as records for CocoPilot/ctx consumers, not direct suggestions.
+  const lowerMessage = message.toLowerCase();
+  const skillDiscoveryEnabled = !(config.session && (config.session.skill_discovery === false || config.session.skill_discovery === 'false'));
+  const convergenceEnabled = !(config.session && (config.session.convergence_detection === false || config.session.convergence_detection === 'false'));
+  if (skillDiscoveryEnabled && /(review sql|sql review|architecture diagram|research|synthesis|schedule|routine|dbt|airflow)/i.test(message)) {
+    appendJsonLine(path.join(SESSION_DIR, 'discoveries.jsonl'), {
+      ts,
+      kind: 'skill_match',
+      message: message.slice(0, 240),
+      category: lowerMessage.includes('schedule') || lowerMessage.includes('routine') ? 'CocoRoutine' :
+        lowerMessage.includes('review') ? 'CocoReview' :
+        lowerMessage.includes('research') || lowerMessage.includes('synthesis') ? 'CocoFlow Research' :
+        lowerMessage.includes('diagram') ? 'CocoMap/CocoTrace' :
+        'CocoPlus skill',
+    });
+  }
+  if (convergenceEnabled && /(again|retry|same approach|still failing|did not work|try another|stuck)/i.test(message)) {
+    appendJsonLine(path.join(SESSION_DIR, 'discoveries.jsonl'), {
+      ts,
+      kind: 'convergence',
+      message: message.slice(0, 240),
+      recommendation: 'Diverge-then-focus frame shift before another iteration.',
+    });
+  }
 
   // 3. Context Mode overlay — prepend phase context to normal messages
   if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'context-mode.on'))) {

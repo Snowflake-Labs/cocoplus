@@ -26,11 +26,11 @@
 <div class="page-header">
   <div class="label">Design Principles</div>
   <h1>The Design Principles</h1>
-  <p class="subtitle">These are the twenty-three ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
+  <p class="subtitle">These are the twenty-seven ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
 </div>
 
 <div class="content">
-<p>These are the twenty-three ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
+<p>These are the twenty-seven ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
 <p>A principle without a reason is just a constraint. With a reason, it becomes a compass.</p>
 <hr>
 <h2 id="1-native-first-always">1. Native First, Always</h2>
@@ -169,6 +169,22 @@
 <h2 id="23-actuator-cost-is-monotonic">23. Actuator Cost Is Monotonic</h2>
 <p>Every rule has a cheapest sufficient actuator. A hook fires only when the guarded action fires. A skill loads only when invoked. A structural agent rule loads for a session class. Standing context loads every time, whether relevant or not.</p>
 <p>The cheapest actuator sufficient for the job is the right actuator. CocoRetro and CocoHygiene exist to keep the system honest: they classify failures, measure wasted effort, and propose fixes at the lowest layer that can actually prevent the recurrence.</p>
+<hr>
+<h2 id="24-the-permission-floor-is-not-the-permission-ceiling">24. The Permission Floor Is Not the Permission Ceiling</h2>
+<p>A permission level observed at session start is not a guarantee for the rest of the session. Governance must check the live permission state at the point of enforcement.</p>
+<p>This is why CocoSentinel logs bypass-safeguard state after tool use, why RBAC escalation to <code>ACCOUNTADMIN</code> is blocked by a PreToolUse hook by default, and why CocoConsole displays current governance posture rather than assuming the launch state still holds.</p>
+<hr>
+<h2 id="25-divergence-requires-isolation">25. Divergence Requires Isolation</h2>
+<p>A single context window anchors on its own previous text. Asking one model call to produce and evaluate multiple options does not create real independence; the options have already contaminated one another.</p>
+<p>CocoFlow's diverge-then-focus path uses isolated planning branches and a separate critic pass. The output must surface shortlist, named traps, design-space clusters, and a labeled non-obvious viable option so the developer can see more than the familiar first answer.</p>
+<hr>
+<h2 id="26-the-harness-is-the-optimization-surface">26. The Harness Is the Optimization Surface</h2>
+<p>For complex agent workflows, the separable control layer around the model is where optimization is most attributable: context assembly, tool exposure, generation settings, orchestration topology, memory behavior, and output processing.</p>
+<p>CocoPod configuration now names those dimensions explicitly in <code>cocoplus.toml [harness]</code>. If accuracy improves across harness iterations, keep tuning the harness. If it plateaus immediately, the bottleneck is probably model capability, evaluation quality, or task framing.</p>
+<hr>
+<h2 id="27-deterministic-computation-belongs-in-code-not-in-tokens">27. Deterministic Computation Belongs in Code, Not in Tokens</h2>
+<p>If a task has a correct answer computable from available data, it belongs in a script. SQL validation, schema parsing, function signature extraction, scope classification, and artifact existence checks should not be narrated into being by a model.</p>
+<p>SKILL.md routes the workflow, scripts compute deterministic facts, and references load only when needed. CocoBrew's distribution gate and observer loop enforce that separation for project-local skills and marketplace candidates.</p>
 <blockquote><p><em>Principles are only principles when they are applied in the cases where violating them would be convenient.</em></p></blockquote>
 </div>
 

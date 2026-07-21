@@ -40,9 +40,14 @@ function collectState() {
     leviathan: safeJson(path.join(lifecycle, 'leviathan-state.json'), {}),
     sessionProgress: readText(path.join(COCOPLUS_DIR, 'session', 'PROGRESS.md'), 'No CocoSession handoff recorded.'),
     sessionContext: readText(path.join(COCOPLUS_DIR, 'session', 'CONTEXT.md'), 'No predicate context recorded.'),
+    sessionBudget: safeJson(path.join(COCOPLUS_DIR, 'session', 'iteration-budget.json'), {}),
+    discoveries: readText(path.join(COCOPLUS_DIR, 'session', 'discoveries.jsonl'), 'No session discoveries recorded.'),
     stageEvidence: safeJson(path.join(COCOPLUS_DIR, 'session', 'stage-evidence.json'), {}),
     proposals: readText(path.join(COCOPLUS_DIR, 'proposals', 'proposal-log.jsonl'), 'No retained proposals recorded.'),
+    routines: safeJson(path.join(COCOPLUS_DIR, 'routines', 'registry.json'), { routines: [] }),
     retrospective: readText(path.join(lifecycle, 'retrospective-ledger.jsonl'), 'No retrospective ledger recorded.'),
+    governanceLog: readText(path.join(lifecycle, 'governance-log.json'), 'No governance events recorded.'),
+    stageQuality: readText(path.join(COCOPLUS_DIR, 'sentinel', 'stage-quality.jsonl'), 'No stage quality scores recorded.'),
     findings: readText(path.join(lifecycle, 'FINDINGS.md'), 'No findings recorded.'),
     audit: readText(path.join(lifecycle, 'audit.md'), 'No audit trail recorded.'),
     health: safeJson(path.join(lifecycle, 'health-grade.json'), {}),
@@ -76,6 +81,8 @@ function renderPanel(panel, state) {
     flow: [
       panelCard('Pipeline', `<p>${flowStages.length} stages found.</p><pre>${esc(JSON.stringify(state.flow, null, 2).slice(0, 4000))}</pre>`),
       panelCard('Stage Evidence', `<pre>${esc(JSON.stringify(state.stageEvidence, null, 2).slice(0, 3000))}</pre>`),
+      panelCard('Stage Quality Scores', `<pre>${esc(state.stageQuality.slice(-4000))}</pre>`),
+      panelCard('Scheduled Routines', `<pre>${esc(JSON.stringify(state.routines, null, 2).slice(0, 3000))}</pre>`),
       panelCard('HITL Gate Queue', '<p>HITL gates remain terminal-first; approve or resume from the CLI.</p>'),
     ],
     cost: [
@@ -85,6 +92,7 @@ function renderPanel(panel, state) {
     quality: [
       panelCard('Findings', `<pre>${esc(state.findings.slice(0, 5000))}</pre>`),
       panelCard('Contracts', '<p>Outcome contracts and evidence freshness are read from <code>outcomes/</code>.</p>'),
+      panelCard('External Coach', `<pre>${esc(state.stageQuality.slice(-4000))}</pre>`),
     ],
     health: [
       panelCard('Health Grade', `<pre>${esc(JSON.stringify(state.health, null, 2))}</pre>`),
@@ -93,6 +101,8 @@ function renderPanel(panel, state) {
     safety: [
       panelCard('Sentinel', `<pre>${esc(JSON.stringify(state.sentinel, null, 2))}</pre>`),
       panelCard('Governance', `<pre>${esc(JSON.stringify(state.config.governance || {}, null, 2))}</pre>`),
+      panelCard('Live Governance Events', `<pre>${esc(state.governanceLog.slice(-5000))}</pre>`),
+      panelCard('Session History Mode', `<p>${process.env.CORTEX_CODE_NO_HISTORY_MODE === 'true' || process.env.COCO_NO_HISTORY_MODE === 'true' ? 'Session history appears suppressed for this process.' : 'No private/no-history flag visible to this console process.'}</p>`),
       panelCard('Retrospective', `<pre>${esc(state.retrospective.slice(-4000))}</pre>`),
     ],
     memory: [
@@ -101,6 +111,8 @@ function renderPanel(panel, state) {
     sessions: [
       panelCard('Session Patterns', '<p>CocoOps, CocoHealth, and CocoCupper session metadata appears here as it is produced.</p>'),
       panelCard('CocoSession Handoff', `<pre>${esc(state.sessionProgress.slice(-4000))}</pre>`),
+      panelCard('Iteration Budget', `<pre>${esc(JSON.stringify(state.sessionBudget, null, 2))}</pre>`),
+      panelCard('Recommendation Signals', `<pre>${esc(state.discoveries.slice(-4000))}</pre>`),
       panelCard('Retained Proposals Queue', `<pre>${esc(state.proposals.slice(-4000))}</pre>`),
     ],
     replay: [

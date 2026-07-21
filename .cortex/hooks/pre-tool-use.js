@@ -35,6 +35,7 @@ const SAFETY_AUDIT  = path.join(COCOPLUS_DIR, 'safety-audit.jsonl');
 const GOVERNANCE_LOG = path.join(COCOPLUS_DIR, 'lifecycle', 'governance-log.json');
 const STAGE_EVIDENCE = path.join(COCOPLUS_DIR, 'session', 'stage-evidence.json');
 const PROPOSAL_LOG = path.join(COCOPLUS_DIR, 'proposals', 'proposal-log.jsonl');
+const FLOW_ARTIFACT_ROOT = path.join(COCOPLUS_DIR, 'flow', 'artifacts');
 
 /** Planning artifacts that are scanned for prompt injection */
 const PLANNING_ARTIFACTS = [
@@ -180,6 +181,43 @@ function extractsCompletedStage(params) {
   return idMatch[1];
 }
 
+function currentStageId(params) {
+  return process.env.COCOPLUS_STAGE_ID ||
+    params.stage_id ||
+    params.stage ||
+    params.stageId ||
+    null;
+}
+
+function activeFlow() {
+  return readJsonFile(path.join(COCOPLUS_DIR, 'flow.json'), readJsonFile(path.join(COCOPLUS_DIR, 'lifecycle', 'flow.json'), {}));
+}
+
+function findStage(stageId) {
+  if (!stageId) return null;
+  const flow = activeFlow();
+  const stages = Array.isArray(flow.stages) ? flow.stages : [];
+  return stages.find((item) => item.id === stageId || item.name === stageId) || null;
+}
+
+function stageReadArtifacts(stage) {
+  if (!stage || !stage.artifacts) return [];
+  const reads = stage.artifacts.reads || stage.artifacts_read || [];
+  return Array.isArray(reads) ? reads : [];
+}
+
+function artifactPath(runId, artifactName) {
+  const safeRunId = runId || process.env.COCOPLUS_RUN_ID || 'current';
+  return path.join(FLOW_ARTIFACT_ROOT, safeRunId, artifactName);
+}
+
+function shouldCheckArtifactReads(params) {
+  return process.env.COCOPLUS_STAGE_START === 'true' ||
+    params.stage_start === true ||
+    params.action === 'stage_start' ||
+    params.cocoplus_action === 'stage_start';
+}
+
 function main() {
   // No-op if CocoPlus not initialized
   if (!fs.existsSync(COCOPLUS_DIR)) { allow(); return; }
@@ -199,6 +237,28 @@ function main() {
     appendJsonLine(HOOK_LOG, { hook: 'pre-tool-use', action: 'agent_stop_blocked', tool: toolName, ts });
     block('CocoSession kill-switch is active: .cocoplus/AGENT_STOP exists. Remove it to resume tool use.');
     return;
+  }
+
+  // CocoFlow Named Artifact Protocol: optional declared reads/writes become a
+  // structural handoff contract. If a stage declares artifacts.reads, it cannot
+  // start until those files exist under the flow artifact root.
+  if (shouldCheckArtifactReads(params)) {
+    const stageId = currentStageId(params);
+    const stage = findStage(stageId);
+    const reads = stageReadArtifacts(stage);
+    const runId = params.run_id || process.env.COCOPLUS_RUN_ID || 'current';
+    const missing = reads.filter((name) => !fs.existsSync(artifactPath(runId, name)));
+    if (missing.length > 0) {
+      appendJsonLine(HOOK_LOG, {
+        hook: 'pre-tool-use',
+        action: 'artifact_reads_blocked',
+        stage_id: stageId,
+        missing,
+        ts,
+      });
+      block(`CocoFlow artifact protocol: stage "${stageId}" cannot start. Missing declared read artifacts: ${missing.join(', ')}.`);
+      return;
+    }
   }
 
   // V2 Governance Policy 1: ReviewerLockout. Review/evaluation agents cannot
@@ -270,6 +330,26 @@ function main() {
 
   // Extract SQL from parameters.sql (spec-defined path)
   const sql = params.sql || params.query || params.statement || '';
+
+  // CocoSentinel RBAC Escalation Guard: structural protection independent of
+  // session env vars. ACCOUNTADMIN escalation requires explicit pod opt-in.
+  const governance = config.governance || {};
+  const allowAccountAdmin = governance.allow_accountadmin_escalation === true ||
+    governance.allow_accountadmin_escalation === 'true';
+  if (/\bUSE\s+ROLE\s+ACCOUNTADMIN\b/i.test(sql)) {
+    appendJsonLine(GOVERNANCE_LOG, {
+      ts,
+      policy: 'rbac_escalation_guard',
+      tool: toolName,
+      action: allowAccountAdmin ? 'ALLOWED' : 'BLOCKED',
+      stage_id: currentStageId(params),
+      summary: sql.slice(0, 160),
+    });
+    if (!allowAccountAdmin) {
+      block('[CocoSentinel] RBAC Escalation Blocked\nDetected: USE ROLE ACCOUNTADMIN in SQL tool call.\nTo allow: set [governance] allow_accountadmin_escalation = true in cocoplus.toml.');
+      return;
+    }
+  }
 
   // Retained Proposal Model: proposal-enabled flow stages must not write
   // directly to Snowflake. The proposal is settled later with $flow settle.
