@@ -59,13 +59,22 @@ All notable changes to CocoPlus are documented here.
 - `templates/scripts/artifact-check.js` adds deterministic artifact read/write validation for project CocoPods.
 - CocoConsole now surfaces scheduled routines, iteration budget, recommendation signals, live governance events, and per-stage quality scores.
 
+#### Twenty-Second-Cycle 2.0 Additions
+- `templates/scripts/status-healer.js` adds deterministic startup reconciliation for CocoPod, CocoSession, and CocoConsole status files.
+- `PreToolUse` adds stage-boundary cost-budget dispatch enforcement with a reserve window for session landing.
+- `PostToolUse` separates session cost into `execution_cost`, `coordination_cost`, and `landing_cost`, with `coordination_fraction` warnings and `LANDING_INCOMPLETE` tracking.
+- CocoFlow documentation now defines dotted branch topology: branch names encode parent/child pod relationships, per-pod commits are preserved, downward merges are no-ff, and upward merges squash handoff output.
+- CocoSession, CocoFlow, CocoPod state, and CocoConsole now share the canonical status vocabulary: `running`, `paused`, `completed`, `exited`, `failed`, `idle`, and `retired`.
+- `templates/cocoplus.toml.template` adds `[session]` cost budget defaults and `[meter]` coordination-cost thresholds.
+- Public documentation now reflects fifty-five core features and thirty-five design principles, including budget-seam enforcement and shared status vocabulary.
+
 ### Changed
 
 - `$flow view` and `$meter view` are now CocoConsole-aware: when CocoConsole is running, they redirect to the Flow or Cost panel; otherwise they preserve the existing standalone HTML behavior.
 - `templates/cocoplus.toml.template` adds `[cocoplus]`, `[cocopilot]`, `[cocoforge]`, `[leviathan]`, `[dynamic_personas]`, `[governance]`, `[session]`, `[harness]`, `[evidence_gate]`, `[proposals]`, `[research]`, `[retrospective]`, `[routine]`, `[meter]`, `[flow.planning]`, `[flow.planning.frames]`, `[flow.tiers]`, and role-based model allocation sections.
 - `templates/AGENTS.md.template` adds V2 activation blocks so new pods understand CocoPilot, CocoForge, Leviathan Mode/Ronin, and Dynamic Personas.
 - Root `README.md`, `AGENTS.md`, installation guidance, and the HTML documentation site now present CocoPlus as a V2.0.0 release.
-- `docs/principles.html` now reflects the complete 33-principle catalog, including durable records, untestable-here verification, session understanding capture, context isolation, stated-vs-enforced labeling, and consolidation-vs-capture.
+- `docs/principles.html` now reflects the complete 35-principle catalog, including durable records, untestable-here verification, session understanding capture, context isolation, stated-vs-enforced labeling, consolidation-vs-capture, budget-seam enforcement, and shared status vocabulary.
 
 ### Compatibility
 

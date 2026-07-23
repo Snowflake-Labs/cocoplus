@@ -1,6 +1,6 @@
 ---
 name: "session"
-description: "Manage CocoSession multi-session continuity, iteration budget, operator kill-switch state, one-shot steering, and predicate context. Supports `$session status`, `$session progress`, `$session steer`, `$session stop`, and `$session resume`."
+description: "Manage CocoSession multi-session continuity, iteration and cost budgets, terminal status, operator kill-switch state, one-shot steering, and predicate context. Supports `$session status`, `$session progress`, `$session steer`, `$session stop`, and `$session resume`."
 version: "2.0.0"
 author: "CocoPlus"
 tags:
@@ -13,7 +13,7 @@ Your objective is to manage CocoSession, the continuity and operator-control lay
 
 ## Commands
 
-- `$session status`: read `.cocoplus/session/PROGRESS.md`, `.cocoplus/session/CONTEXT.md`, `.cocoplus/session/iteration-budget.json`, `.cocoplus/AGENT_STOP`, and `.cocoplus/STEER.md`; report handoff freshness, active predicate state, queued work count, iteration budget, kill-switch state, and pending steering.
+- `$session status`: read `.cocoplus/session/PROGRESS.md`, `.cocoplus/session/CONTEXT.md`, `.cocoplus/session/iteration-budget.json`, `.cocoplus/session/budget-state.json`, `.cocoplus/session/status.json`, `.cocoplus/pod-state.json`, `.cocoplus/AGENT_STOP`, and `.cocoplus/STEER.md`; report handoff freshness, active predicate state, queued work count, iteration budget, cost-budget state, terminal status, kill-switch state, and pending steering.
 - `$session progress`: show the four handoff sections from `.cocoplus/session/PROGRESS.md`: Done, In Progress, Next, Notes.
 - `$session steer "<instruction>"`: write the instruction to `.cocoplus/STEER.md`. The UserPromptSubmit hook injects it once, appends a session event, then clears the file.
 - `$session stop`: create `.cocoplus/AGENT_STOP` with timestamp, operator, and reason. The PreToolUse hook blocks tool use while the sentinel exists.
@@ -28,6 +28,8 @@ Every CocoFlow or long-running operator session must be recoverable from files a
 3. `.cocoplus/session/task-queue.jsonl` records mid-session requests without replacing the active item.
 4. New work is queued under Next unless the operator explicitly changes the current item.
 5. `.cocoplus/session/iteration-budget.json` tracks cap, consumed turns, warning threshold, and stop state.
+6. `.cocoplus/session/budget-state.json` tracks `normal`, `reserve`, or `exhausted` cost-budget state. Budget checks happen at stage boundaries only; in-flight stages are never interrupted.
+7. `.cocoplus/session/status.json` and `.cocoplus/pod-state.json` use the canonical status vocabulary: `running`, `paused`, `completed`, `exited`, `failed`, `idle`, `retired`.
 
 Read `PROGRESS.md` before resuming any long-running work. Cite `CONTEXT.md` predicates verbatim; do not paraphrase them into new state.
 
@@ -38,9 +40,14 @@ Read `PROGRESS.md` before resuming any long-running work. Cite `CONTEXT.md` pred
 ```toml
 max_iterations = 200
 iteration_warn_at = 160
+budget_limit = 0.0
+budget_reserve_fraction = 0.10
+budget_enforcement = "stage-boundary"
 ```
 
 The PostToolUse hook increments the consumed counter. At `warn_at`, CocoSession records a proactive checkpoint request in `session/steps.jsonl`. At `cap`, it creates `.cocoplus/AGENT_STOP` and writes the final budget state so the operator gets a clean handoff instead of an exhausted context window.
+
+When `budget_limit` is set and `budget_enforcement = "stage-boundary"`, cost enforcement is seam-based. The reserve fraction is protected for landing work: final quality review, console state update, and handoff notes. A budget stop is `exited`, not `failed`, unless an execution error caused it.
 
 `PROGRESS.md` must include:
 
@@ -69,5 +76,7 @@ Hard constraints:
 
 - [ ] `PROGRESS.md` has Done / In Progress / Next / Notes sections.
 - [ ] `PROGRESS.md` includes Iteration Budget when long-running work is active.
+- [ ] Cost-budget state distinguishes `normal`, `reserve`, and `exhausted`.
+- [ ] Terminal status uses the canonical vocabulary and does not collapse `exited` into `failed`.
 - [ ] `CONTEXT.md` uses one predicate per line.
 - [ ] Kill-switch and steering files are treated as operator controls, not permanent instructions.

@@ -21,11 +21,11 @@ The current operating layer includes:
 - **Dynamic Personas**: evidence-gated emergent specialists with retained history.
 - **Governance hooks**: ReviewerLockout and PII governance with observe/enforce rollout.
 - **Feature-owned runtime**: hooks enqueue deterministic work through feature-owned skill contracts; CocoConsole is the only registered local runtime script.
-- **CocoFlow orchestration**: tiered planning, dependency-group dispatch, named artifacts, thinking-effort tuning, divergence at branch points, synthesis passes, and `$flow template` reuse.
-- **CocoSession continuity**: PROGRESS handoff, predicate context, iteration budget, operator kill-switch, and one-shot steering for long-running work.
+- **CocoFlow orchestration**: tiered planning, dependency-group dispatch, dotted branch topology, named artifacts, thinking-effort tuning, divergence at branch points, synthesis passes, and `$flow template` reuse.
+- **CocoSession continuity**: PROGRESS handoff, predicate context, iteration and cost budgets with reserve landing, operator kill-switch, canonical terminal statuses, and one-shot steering for long-running work.
 - **Evidence and proposal gates**: opt-in stage evidence checks and retained Snowflake-write proposals settled with `$flow settle`.
 - **CocoRoutine**: opt-in Snowflake TASK scheduling for completed self-contained flows with `$routine`.
-- **Research, retrospective, hygiene, and correctness loops**: `$flow research`, `$retrospective run`, `$hygiene --model-upgrade`, `$meter benchmark`, and `$meter compare` make quality improvement measurable.
+- **Research, retrospective, hygiene, and correctness loops**: `$flow research`, `$retrospective run`, `$hygiene --model-upgrade`, `$meter benchmark`, and `$meter compare` make quality and coordination cost measurable.
 - **Console-aware visual commands**: `$flow view` and `$meter view` redirect into CocoConsole when it is running.
 
 The root plugin implements the current runtime and documentation surface while preserving older project state through explicit migration skills.

@@ -142,6 +142,7 @@ function main() {
     'spec-validator.js',
     'alignment-check.js',
     'artifact-check.js',
+    'status-healer.js',
   ];
 
   for (const agentId of plugin.agents || []) {
@@ -227,6 +228,17 @@ function main() {
     if (!fs.existsSync(filePath)) {
       failures.push(`Required project script template is missing: ${path.relative(repoRoot, filePath)}`);
     }
+  }
+
+  const configTemplate = readFile(path.join(templatesDir, 'cocoplus.toml.template'));
+  for (const expected of [
+    'budget_limit',
+    'budget_reserve_fraction',
+    'budget_enforcement',
+    'track_coordination_cost',
+    'coordination_warning_threshold',
+  ]) {
+    requireIncludes(configTemplate, expected, failures, 'cocoplus.toml.template');
   }
 
   const stalePatterns = [

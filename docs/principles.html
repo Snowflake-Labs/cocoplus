@@ -26,11 +26,11 @@
 <div class="page-header">
   <div class="label">Design Principles</div>
   <h1>The Design Principles</h1>
-  <p class="subtitle">These are the thirty-three ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
+  <p class="subtitle">These are the thirty-five ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
 </div>
 
 <div class="content">
-<p>These are the thirty-three ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
+<p>These are the thirty-five ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
 <p>A principle without a reason is just a constraint. With a reason, it becomes a compass.</p>
 <hr>
 <h2 id="1-native-first-always">1. Native First, Always</h2>
@@ -209,6 +209,16 @@
 <h2 id="33-deterministic-computation-belongs-in-code-not-in-tokens">33. Deterministic Computation Belongs in Code, Not in Tokens</h2>
 <p>If a task has a correct answer computable from available data, it belongs in a script. SQL validation, schema parsing, function signature extraction, scope classification, and artifact existence checks should not be narrated into being by a model.</p>
 <p>SKILL.md routes the workflow, scripts compute deterministic facts, and references load only when needed. CocoBrew's distribution gate and observer loop enforce that separation for project-local skills and marketplace candidates.</p>
+<hr>
+<h2 id="34-enforce-budgets-at-natural-seams-not-mid-step">34. Enforce Budgets at Natural Seams, Not Mid-Step</h2>
+<p>Cost is recorded when usage data lands. Mid-call, the system does not yet know the final spend. Killing an in-flight stage at an estimated boundary risks losing both the compute already spent and the deliverable that would have justified it.</p>
+<p>CocoPlus enforces cost budgets at natural boundaries: between iterations, after stage completion, and before dispatching new work. A reserve window is held back for landing work such as final evaluation, commits, PROGRESS.md updates, and handoff notes. Reserve is not slack; it is the budget for ending cleanly.</p>
+<p>Applied to CocoPlus: CocoSession budget checks stop new CocoFlow stages once the reserve window is entered, but they never interrupt a stage already running. The final billable item should be a completed deliverable, not a half-written trace.</p>
+<hr>
+<h2 id="35-one-vocabulary-two-homes">35. One Vocabulary, Two Homes</h2>
+<p>When two stores describe the same state, they should share one vocabulary. A local CocoPod state file and a CocoConsole row should not need translation between "done," "complete," and "finished." Translation turns recovery into interpretation.</p>
+<p>The distinction between <code>completed</code>, <code>exited</code>, and <code>failed</code> is load-bearing. <code>completed</code> means the goal was met. <code>exited</code> means the system stopped structurally, such as budget, timeout, or operator stop. <code>failed</code> means something broke and needs investigation.</p>
+<p>Applied to CocoPlus: CocoSession, CocoFlow, CocoPod state, and CocoConsole share one canonical status vocabulary: <code>running</code>, <code>paused</code>, <code>completed</code>, <code>exited</code>, <code>failed</code>, <code>idle</code>, and <code>retired</code>. Healer logic can stamp the more terminal status across stores without guessing what a synonym meant.</p>
 <blockquote><p><em>Principles are only principles when they are applied in the cases where violating them would be convenient.</em></p></blockquote>
 </div>
 

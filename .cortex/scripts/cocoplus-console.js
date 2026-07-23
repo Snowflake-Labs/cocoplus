@@ -4,6 +4,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 const {
   COCOPLUS_DIR,
   ensureDir,
@@ -15,6 +16,11 @@ const {
 } = require('../hooks/_v2-state.js');
 
 const PANELS = ['home', 'flow', 'cost', 'quality', 'health', 'safety', 'memory', 'sessions', 'replay', 'settings', 'forge'];
+const STATUS_CLASS = {
+  completed: 'status-ok',
+  exited: 'status-warn',
+  failed: 'status-fail',
+};
 
 function readText(filePath, fallback = '') {
   try {
@@ -26,6 +32,26 @@ function readText(filePath, fallback = '') {
 
 function safeJson(filePath, fallback = null) {
   return readJson(filePath, fallback);
+}
+
+function flowBranchTopology(flow) {
+  const runId = flow.run_id || flow.runtime && flow.runtime.harvest_id || '';
+  if (!runId) return { run_id: null, branches: [] };
+  try {
+    const output = execFileSync('git', ['branch', '--list', `${runId}.*`], { encoding: 'utf8', timeout: 1500 });
+    return {
+      run_id: runId,
+      branches: output.split(/\r?\n/)
+        .map((line) => line.replace(/^\*\s*/, '').trim())
+        .filter(Boolean)
+        .map((branch) => ({
+          branch,
+          parent: branch.includes('.') ? branch.replace(/\.[^.]+$/, '') : null,
+        })),
+    };
+  } catch (_) {
+    return { run_id: runId, branches: [], degraded: true };
+  }
 }
 
 function collectState() {
@@ -41,6 +67,9 @@ function collectState() {
     sessionProgress: readText(path.join(COCOPLUS_DIR, 'session', 'PROGRESS.md'), 'No CocoSession handoff recorded.'),
     sessionContext: readText(path.join(COCOPLUS_DIR, 'session', 'CONTEXT.md'), 'No predicate context recorded.'),
     sessionBudget: safeJson(path.join(COCOPLUS_DIR, 'session', 'iteration-budget.json'), {}),
+    sessionCostBudget: safeJson(path.join(COCOPLUS_DIR, 'session', 'budget-state.json'), {}),
+    sessionStatus: safeJson(path.join(COCOPLUS_DIR, 'session', 'status.json'), {}),
+    podState: safeJson(path.join(COCOPLUS_DIR, 'pod-state.json'), {}),
     discoveries: readText(path.join(COCOPLUS_DIR, 'session', 'discoveries.jsonl'), 'No session discoveries recorded.'),
     stageEvidence: safeJson(path.join(COCOPLUS_DIR, 'session', 'stage-evidence.json'), {}),
     proposals: readText(path.join(COCOPLUS_DIR, 'proposals', 'proposal-log.jsonl'), 'No retained proposals recorded.'),
@@ -55,6 +84,8 @@ function collectState() {
     meter: safeJson(path.join(COCOPLUS_DIR, 'meter', 'current-session.json'), {}),
     config: loadConfig(),
   };
+  state.branchTopology = flowBranchTopology(state.flow);
+  return state;
 }
 
 function esc(value) {
@@ -69,6 +100,11 @@ function panelCard(title, body) {
   return `<section class="panel-card"><h2>${esc(title)}</h2>${body}</section>`;
 }
 
+function statusBadge(status) {
+  const value = status || 'idle';
+  return `<span class="status ${STATUS_CLASS[value] || ''}">${esc(value)}</span>`;
+}
+
 function renderPanel(panel, state) {
   const flowStages = Array.isArray(state.flow.stages) ? state.flow.stages : [];
   const cards = {
@@ -80,6 +116,7 @@ function renderPanel(panel, state) {
     ],
     flow: [
       panelCard('Pipeline', `<p>${flowStages.length} stages found.</p><pre>${esc(JSON.stringify(state.flow, null, 2).slice(0, 4000))}</pre>`),
+      panelCard('Branch Topology', `<pre>${esc(JSON.stringify(state.branchTopology, null, 2).slice(0, 3000))}</pre>`),
       panelCard('Stage Evidence', `<pre>${esc(JSON.stringify(state.stageEvidence, null, 2).slice(0, 3000))}</pre>`),
       panelCard('Stage Quality Scores', `<pre>${esc(state.stageQuality.slice(-4000))}</pre>`),
       panelCard('Scheduled Routines', `<pre>${esc(JSON.stringify(state.routines, null, 2).slice(0, 3000))}</pre>`),
@@ -87,6 +124,7 @@ function renderPanel(panel, state) {
     ],
     cost: [
       panelCard('Meter', `<pre>${esc(JSON.stringify(state.meter, null, 2))}</pre>`),
+      panelCard('Session Cost Categories', `<p>Execution: <strong>${esc(state.meter.execution_cost || 0)}</strong></p><p>Coordination: <strong>${esc(state.meter.coordination_cost || 0)}</strong></p><p>Landing: <strong>${esc(state.meter.landing_cost || 0)}</strong></p><p>Coordination Fraction: <strong>${esc(state.meter.coordination_fraction || 0)}</strong></p>`),
       panelCard('Chargeback', '<p>Generate invoice artifacts with <code>$meter invoice</code>; this panel reads generated status.</p>'),
     ],
     quality: [
@@ -110,8 +148,10 @@ function renderPanel(panel, state) {
     ],
     sessions: [
       panelCard('Session Patterns', '<p>CocoOps, CocoHealth, and CocoCupper session metadata appears here as it is produced.</p>'),
+      panelCard('Terminal Status', `<p>CocoPod: ${statusBadge(state.podState.status)}</p><p>CocoSession: ${statusBadge(state.sessionStatus.status)}</p>`),
       panelCard('CocoSession Handoff', `<pre>${esc(state.sessionProgress.slice(-4000))}</pre>`),
       panelCard('Iteration Budget', `<pre>${esc(JSON.stringify(state.sessionBudget, null, 2))}</pre>`),
+      panelCard('Cost Budget', `<pre>${esc(JSON.stringify(state.sessionCostBudget, null, 2))}</pre>`),
       panelCard('Recommendation Signals', `<pre>${esc(state.discoveries.slice(-4000))}</pre>`),
       panelCard('Retained Proposals Queue', `<pre>${esc(state.proposals.slice(-4000))}</pre>`),
     ],
@@ -153,6 +193,10 @@ function renderHtml(panel, state) {
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
     .panel-card{border:1px solid #2b3744;background:#151b21;border-radius:8px;padding:16px;min-width:0}
     .panel-card h2{font-size:16px;margin:0 0 10px}
+    .status{display:inline-block;border:1px solid #3d4a57;border-radius:999px;padding:2px 8px;background:#202832;color:#d6e2ee}
+    .status-ok{border-color:#2f8f5b;color:#9be7c4}
+    .status-warn{border-color:#a87321;color:#ffd48a}
+    .status-fail{border-color:#a94442;color:#ffaaa5}
     pre{white-space:pre-wrap;word-break:break-word;margin:0;color:#d6e2ee}
     code{color:#9be7c4}
   </style>

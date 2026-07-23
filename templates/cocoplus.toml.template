@@ -52,6 +52,9 @@ iteration_warn_at = 160
 default_thinking_effort = "medium" # "low" | "medium" | "high"
 skill_discovery = true
 convergence_detection = true
+budget_limit = 0.0 # USD ceiling; 0 disables cost-budget enforcement
+budget_reserve_fraction = 0.10
+budget_enforcement = "stage-boundary" # "stage-boundary" | "none"
 
 [harness]
 # Six-dimensional harness taxonomy for CocoPod tuning.
@@ -160,6 +163,8 @@ allow_snowflake_tasks = false
 optimization_objective = "correctness-first" # correctness-first | balanced | cost-first
 accuracy_equivalence_band = 0.02
 cost_first_acknowledged = false
+track_coordination_cost = true
+coordination_warning_threshold = 0.25
 
 [flow.planning]
 diverge_on_branch_points = true
