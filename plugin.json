@@ -31,7 +31,8 @@
     "templates/scripts/scope-classify.js",
     "templates/scripts/spec-validator.js",
     "templates/scripts/alignment-check.js",
-    "templates/scripts/artifact-check.js"
+    "templates/scripts/artifact-check.js",
+    "templates/scripts/status-healer.js"
   ],
   "recipes": [
     "recipes/cortex-add-classifier.json.template",

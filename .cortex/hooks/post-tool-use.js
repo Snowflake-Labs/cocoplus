@@ -25,6 +25,7 @@ const SPAWN_QUEUE  = path.join(COCOPLUS_DIR, 'subagent-spawn-requests.jsonl');
 const GOVERNANCE_LOG = path.join(COCOPLUS_DIR, 'lifecycle', 'governance-log.json');
 const SESSION_DIR = path.join(COCOPLUS_DIR, 'session');
 const COACH_QUEUE = path.join(COCOPLUS_DIR, 'sentinel', 'coach-requests.jsonl');
+const SESSION_BUDGET_STATE = path.join(SESSION_DIR, 'budget-state.json');
 
 const PII_PATTERNS = [
   { type: 'EMAIL', re: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi },
@@ -117,6 +118,77 @@ function recordIterationBudget(config, ts) {
       message: 'AGENT_STOP created because CocoSession reached its iteration cap.',
     });
   }
+}
+
+function resultCost(result, tokensUsed) {
+  const direct = Number(result.cost || result.cost_usd || result.credits || result.credit_cost);
+  if (Number.isFinite(direct) && direct > 0) return direct;
+  const tokenEstimate = Number(tokensUsed) * 0.000003;
+  return Number.isFinite(tokenEstimate) ? tokenEstimate : 0;
+}
+
+function costCategory(toolName, params, result, budgetState) {
+  const explicit = params.cost_category || result.cost_category || process.env.COCOPLUS_COST_CATEGORY;
+  if (explicit) return String(explicit);
+  if (budgetState === 'reserve') return 'landing';
+  if (params.coordination === true || result.coordination === true || /sync|handoff|advisor|coordination/i.test(String(params.action || params.reason || ''))) {
+    return 'coordination';
+  }
+  if (toolName === 'Read' && /flow[\\/]artifacts|session[\\/]CONTEXT|session[\\/]PROGRESS/i.test(String(params.file_path || params.path || ''))) {
+    return 'coordination';
+  }
+  return 'execution';
+}
+
+function updateSessionCostBudget(config, toolName, params, result, tokensUsed, ts) {
+  const sessionConfig = config.session || {};
+  const limit = Number(sessionConfig.budget_limit) || 0;
+  if (limit <= 0 || (sessionConfig.budget_enforcement || 'stage-boundary') === 'none') return null;
+
+  const reserveFraction = Number(sessionConfig.budget_reserve_fraction);
+  const reserve = Math.max(0, limit * (Number.isFinite(reserveFraction) ? reserveFraction : 0.10));
+  const cost = resultCost(result, tokensUsed);
+  const previous = readJson(SESSION_BUDGET_STATE, {
+    budget_limit: limit,
+    reserve_fraction: reserveFraction || 0.10,
+    reserve_amount: reserve,
+    spent: 0,
+    budget_state: 'normal',
+    execution_cost: 0,
+    coordination_cost: 0,
+    landing_cost: 0,
+    landing_incomplete: false,
+  });
+  const previousState = previous.budget_state || 'normal';
+  const category = costCategory(toolName, params, result, previousState);
+  previous.budget_limit = limit;
+  previous.reserve_fraction = Number.isFinite(reserveFraction) ? reserveFraction : 0.10;
+  previous.reserve_amount = reserve;
+  previous.spent = Number(previous.spent || 0) + cost;
+  previous[`${category}_cost`] = Number(previous[`${category}_cost`] || 0) + cost;
+  previous.remaining = Math.max(0, limit - previous.spent);
+  previous.updated_at = ts;
+  previous.budget_state = previous.spent >= limit
+    ? 'exhausted'
+    : previous.remaining <= reserve
+      ? 'reserve'
+      : 'normal';
+  previous.landing_incomplete = previous.budget_state === 'exhausted' && !previous.handoff_written_at;
+  writeJson(SESSION_BUDGET_STATE, previous);
+
+  if (previousState !== previous.budget_state) {
+    appendJsonLine(path.join(SESSION_DIR, 'steps.jsonl'), {
+      ts,
+      event_type: 'cost_budget_state_changed',
+      from: previousState,
+      to: previous.budget_state,
+      remaining: previous.remaining,
+      message: previous.budget_state === 'reserve'
+        ? 'CocoSession entered budget reserve; new stage dispatch should stop and landing work should begin.'
+        : 'CocoSession budget exhausted; only recorded handoff or operator action should continue.',
+    });
+  }
+  return { cost, category, state: previous };
 }
 
 function queueAndAttemptBackgroundSpawn(request, ts) {
@@ -224,6 +296,8 @@ function main() {
     }
   }
 
+  const costBudget = updateSessionCostBudget(config, toolName, params, result, tokensUsed, ts);
+
   // 1. CocoMeter — increment counters and add actual tokens
   if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'cocometer.on'))) {
     const meterFile = path.join(COCOPLUS_DIR, 'meter', 'current-session.json');
@@ -235,9 +309,19 @@ function main() {
       let tokens = readJsonNumber(meterFile, 'tokens_consumed') + tokensUsed;
       let sql    = readJsonNumber(meterFile, 'sql_statements');
       let writes = readJsonNumber(meterFile, 'writes_performed');
+      let executionCost = readJsonNumber(meterFile, 'execution_cost');
+      let coordinationCost = readJsonNumber(meterFile, 'coordination_cost');
+      let landingCost = readJsonNumber(meterFile, 'landing_cost');
+      let totalCost = readJsonNumber(meterFile, 'total_cost');
 
       if (toolName === 'SnowflakeSqlExecute') sql++;
       if (toolName === 'Write' || toolName === 'Edit') writes++;
+      if (costBudget) {
+        totalCost += costBudget.cost;
+        if (costBudget.category === 'coordination') coordinationCost += costBudget.cost;
+        else if (costBudget.category === 'landing') landingCost += costBudget.cost;
+        else executionCost += costBudget.cost;
+      }
 
       atomicWrite(meterFile, JSON.stringify({
         session_id:       sessionId,
@@ -247,6 +331,12 @@ function main() {
         tokens_consumed:  tokens,
         sql_statements:   sql,
         writes_performed: writes,
+        total_cost:       totalCost,
+        execution_cost:   executionCost,
+        coordination_cost: coordinationCost,
+        landing_cost:     landingCost,
+        coordination_fraction: totalCost > 0 ? coordinationCost / totalCost : 0,
+        landing_incomplete: Boolean(costBudget && costBudget.state && costBudget.state.landing_incomplete),
       }, null, 2));
     }
   }
