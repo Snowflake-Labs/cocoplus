@@ -26,11 +26,11 @@
 <div class="page-header">
   <div class="label">Feature Catalog</div>
   <h1>The Features</h1>
-  <p class="subtitle">CocoPlus has fifty counted product features, with CocoPilot, CocoSession, and CocoRoutine documented as orchestration companions. They are not independent capabilities you can pick from a menu. They are expressions of the same underlying design — a system where each piece reinforces the others.</p>
+  <p class="subtitle">CocoPlus has fifty-five counted product features, plus the CocoPilot operating layer that coordinates the current experience. They are not independent capabilities you can pick from a menu. They are expressions of the same underlying design — a system where each piece reinforces the others.</p>
 </div>
 
 <div class="content">
-<p>CocoPlus has fifty counted product features, with CocoPilot, CocoSession, and CocoRoutine documented as orchestration companions. Migration skills remain separate upgrade tooling rather than part of the product feature count. The features are not independent capabilities you can pick from a menu. They are expressions of the same underlying design — a system where each piece reinforces the others.</p>
+<p>CocoPlus has fifty-five counted product features, plus the CocoPilot operating layer that coordinates the current experience. Migration skills remain separate upgrade tooling rather than part of the product feature count. The features are not independent capabilities you can pick from a menu. They are expressions of the same underlying design — a system where each piece reinforces the others.</p>
 <p>Some features are always active. Some are toggled on by choice. Some run invisibly in the background. Some you will use every day. Some you will reach for only when the work demands it.</p>
 <p>Here they are, in the order they matter.</p>
 <hr>
@@ -516,30 +516,56 @@
 <p><strong>Honesty about coverage:</strong> When a contributing pod reported PARTIAL status, <code>FINDINGS.md</code>'s header carries an explicit Coverage Note naming the pod and what it skipped — a PARTIAL pod's zero findings are never presented as equivalent to a COMPLETE pod's zero findings. CocoPivot also validates every finding's concern class against the emitting pod's declared <code>excludes:</code> boundary; a finding that falls inside a pod's own exclusion list is a scope anomaly, excluded from <code>FINDINGS.md</code> and recorded for review rather than silently accepted.</p>
 <p><strong>Integration with CocoFlow:</strong> CocoPivot is the canonical handler for the new <code>converge:</code> step type — when a flow definition includes <code>handler: cococonverge</code> after a <code>parallel:</code> step, <code>$pivot run</code> is invoked automatically once every pod reaches terminal status. Manual invocation remains available for ad-hoc multi-pod audits outside a defined flow.</p>
 <hr>
-<h2 id="feature-48-cocopilot-orchestration-companion">Feature 48: CocoPilot — Orchestration Companion</h2>
+<h2 id="feature-48-cocostyle-per-project-convention-learning-engine">Feature 48: CocoStyle — Per-Project Convention Learning Engine</h2>
+<p><strong>Commands:</strong> <code>$style init</code>, <code>$style refresh</code>, <code>$style show</code>, <code>$style mode</code>, <code>$style diff</code>, <code>$style status</code></p>
+<p>CocoStyle infers project conventions from the production branch and maintains a committed convention profile. CocoReview can run it in shadow mode, enforce mode, or off mode so convention drift is visible without treating every style mismatch as a blocking defect.</p>
+<hr>
+<h2 id="feature-49-cocolex-project-vocabulary-and-precision-anchor-system">Feature 49: CocoLex — Project Vocabulary and Precision Anchor System</h2>
+<p><strong>Commands:</strong> <code>$lex define</code>, <code>$lex list</code>, <code>$lex show</code>, <code>$lex extract</code>, <code>$lex validate</code>, <code>$lex status</code></p>
+<p>CocoLex maintains a project lexicon and validates vocabulary coherence before specs proceed. It catches undefined project terms and terms used against their agreed meaning, then routes the operator to define, justify, or replace the term.</p>
+<hr>
+<h2 id="feature-50-cocostall-sub-agent-execution-health-monitor">Feature 50: CocoStall — Sub-Agent Execution Health Monitor</h2>
+<p><strong>Commands:</strong> <code>$stall status</code>, <code>$stall thresholds</code>, <code>$stall reset</code>, <code>$stall log</code></p>
+<p>CocoStall monitors specialist output rates in CocoFlow and CocoForge. A once-productive specialist that goes silent is classified as stalled, surfaced to the operator, and routed through wait, restart, reassign, skip, or abort decisions instead of burning an invisible loop.</p>
+<hr>
+<h2 id="feature-51-cocopulse-terminal-status-line-for-ambient-observability">Feature 51: CocoPulse — Terminal Status Line for Ambient Observability</h2>
+<p><strong>Commands:</strong> <code>$pulse on</code>, <code>$pulse off</code>, <code>$pulse status</code>, <code>$pulse configure</code></p>
+<p>CocoPulse provides a read-only terminal status line for developers who prefer not to keep CocoConsole open. It shows phase, quality, flow progress, budget consumption, and forge state, degrading gracefully to a log when the terminal cannot render an in-place line.</p>
+<hr>
+<h2 id="feature-52-cocoadversary-deterministic-adversarial-testing-layer">Feature 52: CocoAdversary — Deterministic Adversarial Testing Layer</h2>
+<p><strong>Commands:</strong> <code>$adversary enable</code>, <code>$adversary disable</code>, <code>$adversary run</code>, <code>$adversary show</code>, <code>$adversary audit</code>, <code>$adversary status</code></p>
+<p>CocoAdversary is an explicit-consent verification layer that injects bounded, deterministic test flaws to prove gates actually catch what they claim to catch. It never touches production, irreversible operations, security/auth paths, active incidents, or pre-ship artifacts.</p>
+<hr>
+<h2 id="feature-53-cocodiary-end-of-session-narrative-documentation">Feature 53: CocoDiary — End-of-Session Narrative Documentation</h2>
+<p><strong>Commands:</strong> <code>$diary view</code>, <code>$diary list</code>, <code>$diary search</code></p>
+<p>CocoDiary writes a factual, human-readable session narrative at close: what changed, what failed, what was learned, and what the operator needs to know when returning cold. It is zero-operator-input and never-invent: claims are sourced from git, audit events, or concrete session state.</p>
+<hr>
+<h2 id="feature-54-cocohygiene-context-debt-management">Feature 54: CocoHygiene — Context Debt Management</h2>
+<p><strong>Commands:</strong> <code>$hygiene preview</code>, <code>$hygiene run</code>, <code>$hygiene status</code>, <code>$hygiene archive list</code>, <code>$hygiene --model-upgrade</code></p>
+<p>CocoHygiene manages knowledge lifecycle debt. It compresses, prunes, archives, records rationale, and re-simplifies older governance rules when model capability changes, so memory becomes denser and more useful rather than merely larger.</p>
+<hr>
+<h2 id="feature-55-cocosession-multi-session-continuity-and-operator-control">Feature 55: CocoSession — Multi-Session Continuity and Operator Control</h2>
+<p><strong>Commands:</strong> <code>$session status</code>, <code>$session progress</code>, <code>$session steer</code>, <code>$session stop</code>, <code>$session resume</code></p>
+<p>CocoSession is the continuity layer for long-running CocoPlus work. It keeps a durable <code>PROGRESS.md</code> handoff, predicate-style <code>CONTEXT.md</code>, queued work, a kill-switch sentinel, and a one-shot steering file so future sessions resume from files instead of transcript memory.</p>
+<p><strong>Iteration and cost budgets:</strong> CocoSession tracks turn budgets and cost budgets separately. Cost enforcement happens at stage boundaries, with a reserve window for landing work: final evaluation, result commit, handoff notes, and CocoConsole updates. A run that reaches reserve stops dispatching new stages; a run that exits structurally is marked <code>exited</code>, not <code>failed</code>.</p>
+<p><strong>Unified status vocabulary:</strong> CocoSession, CocoFlow, CocoPod state, and CocoConsole use <code>running</code>, <code>paused</code>, <code>completed</code>, <code>exited</code>, <code>failed</code>, <code>idle</code>, and <code>retired</code>. Session-start healer logic reconciles local files and console state by stamping the more terminal status everywhere.</p>
+<p><strong>ctx supplement:</strong> When ctx is available, CocoSession can cross-reference ctx tasks, ready steps, and discoveries with <code>PROGRESS.md</code>. CocoFlow remains authoritative if ctx and flow state disagree, and CocoFlow stages set <code>CTX_STEP_ENFORCEMENT=false</code> to avoid competing gates.</p>
+<hr>
+<h2 id="cocopilot-operating-layer">CocoPilot Operating Layer</h2>
 <p><strong>Commands:</strong> <code>$cocoplus console</code>, <code>$pilot on</code>, <code>$pilot off</code>, <code>$forge</code>, <code>$leviathan on</code>, <code>$personas discover</code>, <code>$governance status</code></p>
-<p>CocoPilot is the counted orchestration companion for the full CocoPlus feature set. It brings together the local read surface, natural-language routing, goal-mode execution, explicit autonomy, evidence-gated specialist emergence, feature-owned runtime queues, and governance policies without replacing the underlying feature gates.</p>
+<p>CocoPilot coordinates the full CocoPlus feature set without becoming a bypass around it. It brings together the local read surface, natural-language routing, goal-mode execution, explicit autonomy, evidence-gated specialist emergence, feature-owned runtime queues, and governance policies while preserving the underlying feature gates.</p>
 <p><strong>CocoConsole</strong> is the local browser control plane. It reads lifecycle artifacts and shows Home, Flow, Cost, Quality, Health, Safety, Memory, Sessions, Settings, and Forge panels. It is intentionally read-only: gates are approved in the terminal, not in the browser.</p>
-<p><strong>CocoPilot</strong> is an opt-in session mode. When <code>$pilot on</code> is active, UserPromptSubmit records session intent, routes natural-language requests toward existing CocoPlus capabilities, and preserves the V1 approval boundaries. <code>$pilot off</code> restores manual behavior.</p>
+<p><strong>CocoPilot</strong> is an opt-in session mode. When <code>$pilot on</code> is active, UserPromptSubmit records session intent, routes natural-language requests toward existing CocoPlus capabilities, and preserves approval boundaries. <code>$pilot off</code> restores manual behavior.</p>
 <section class="summary-box">
   <h3>Highlighted: Leviathan Mode and Ronin</h3>
   <p><strong>Leviathan Mode</strong> is the explicit-autonomy extension of CocoPilot. It is activated only after covenant acceptance, inherits CocoPlus hard stops, and coordinates longer-running work without treating autonomy as permission to bypass gates.</p>
   <p><strong>Ronin</strong> is the personal assistant companion for Leviathan Mode. Ronin gives the developer-facing return briefing, summarizes active workstreams, calls out hard stops, and keeps the handoff human-readable instead of burying autonomy state in raw logs.</p>
 </section>
 <p><strong>CocoForge</strong> is the Meta Loop Expert Team Engine. <code>$forge "goal"</code> starts Task Mode; <code>$forge goal "goal"</code> starts persistent Goal Mode. A Team Lead coordinates specialists, a Quality Critic evaluates evidence from a default-REJECT stance, and a Learning Curator captures reusable knowledge. Forge supersedes Pilot while active.</p>
-<p><strong>Leviathan Mode + Ronin</strong> is explicit-activation autonomous coordination. The covenant model requires informed consent, hard stops remain configured in CocoPlus, and Ronin provides the developer-facing return briefing. Session archive ingestion reads synthesized artifacts only, never raw transcripts.</p>
 <p><strong>Dynamic Personas</strong> supersede fixed-roster-only thinking without deleting the fixed roster. Specialists emerge from evidence, require thresholded support before activation, and retain <code>history.md</code> after dissolution.</p>
 <p><strong>Governance hooks</strong> add ReviewerLockout and PII governance. Both support observe-mode rollout so teams can see what would be blocked or redacted before enforcing the policy.</p>
 <hr>
-<h2 id="feature-49-cocosession-multi-session-continuity-and-operator-control">Feature 49: CocoSession — Multi-Session Continuity and Operator Control</h2>
-<p><strong>Commands:</strong> <code>$session status</code>, <code>$session progress</code>, <code>$session steer</code>, <code>$session stop</code>, <code>$session resume</code></p>
-<p>CocoSession is the continuity layer for long-running CocoPlus work. It keeps a durable <code>PROGRESS.md</code> handoff, a predicate-style <code>CONTEXT.md</code> state file, a queued-work log, a kill-switch sentinel, and a one-shot steering file so a future session can resume without relying on transcript memory.</p>
-<p><strong>Operator control:</strong> Creating <code>.cocoplus/AGENT_STOP</code> halts tool use through the PreToolUse hook until the operator removes or resumes it. Writing <code>.cocoplus/STEER.md</code> injects one instruction, then clears the file so redirection does not become permanent ambient context.</p>
-<p><strong>Integrated V2 gates:</strong> CocoSession works with the default-fail evidence gate, retained proposal model, CocoConsole Replay panel, and retrospective ledger. It gives autonomy a file-based handoff surface that stays legible to the developer.</p>
-<p><strong>Iteration budget:</strong> CocoSession tracks cap, consumed turns, and warning threshold in <code>session/iteration-budget.json</code>. At the warning threshold it records a proactive checkpoint; at the cap it creates <code>AGENT_STOP</code> so the session ends with a usable handoff rather than an exhausted context window.</p>
-<p><strong>ctx supplement:</strong> When ctx is available, CocoSession can cross-reference ctx tasks, ready steps, and discoveries with <code>PROGRESS.md</code>. CocoFlow remains authoritative if ctx and flow state disagree, and CocoFlow stages set <code>CTX_STEP_ENFORCEMENT=false</code> to avoid competing gates.</p>
-<hr>
-<h2 id="feature-50-cocoroutine-snowflake-native-workflow-scheduling">Feature 50: CocoRoutine — Snowflake-Native Workflow Scheduling</h2>
+<h2 id="cocoroutine-snowflake-native-workflow-scheduling">CocoRoutine — Snowflake-Native Workflow Scheduling</h2>
 <p><strong>Commands:</strong> <code>$routine list</code>, <code>$routine schedule</code>, <code>$routine disable</code>, <code>$routine delete</code></p>
 <p>CocoRoutine schedules completed, self-contained CocoFlow workflows as Snowflake TASK-backed routines. It is for recurring checks, reports, governance audits, and pipeline health workflows that should run in Snowflake rather than on a developer laptop.</p>
 <p><strong>Self-contained by design:</strong> A routine cannot depend on local files, local MCP servers, local environment variables, or user-specific runtime state. The prompt and inputs must be portable into Snowflake's execution boundary.</p>
@@ -551,7 +577,7 @@
 <p>Migration skills are the upgrade path for older CocoPods. They inspect an existing <code>.cocoplus/</code> directory, report missing runtime directories, config sections, queue files, Dynamic Persona registry files, and AGENTS activation blocks, then apply the upgrade when requested.</p>
 <p>The migration path is intentionally conservative: legacy artifacts are archived rather than deleted, active modes are not enabled automatically, and a migration report is written so the operator can see exactly what changed. New CocoPods start directly in the current architecture through <code>$pod init</code>; migration skills exist only for projects that already carry earlier state.</p>
 <hr>
-<p><em>Fifty core features, one idea: give the developer a system that works as hard to be right as it works to be fast.</em></p>
+<p><em>Fifty-five core features, one idea: give the developer a system that works as hard to be right as it works to be fast.</em></p>
 </div>
 
 <footer>

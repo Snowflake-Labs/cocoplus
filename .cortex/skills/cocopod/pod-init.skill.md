@@ -100,6 +100,7 @@ Copy template files from the plugin templates directory to `.cocoplus/`:
 13. Copy `templates/scripts/spec-validator.js` → `.cocoplus/scripts/spec-validator.js`
 14. Copy `templates/scripts/alignment-check.js` → `.cocoplus/scripts/alignment-check.js`
 15. Copy `templates/scripts/artifact-check.js` → `.cocoplus/scripts/artifact-check.js`
+16. Copy `templates/scripts/status-healer.js` → `.cocoplus/scripts/status-healer.js`
 
 ## Initialize Mode Flags
 
@@ -221,6 +222,8 @@ session/CONTEXT.md
 session/task-queue.jsonl
 session/stage-evidence.json
 session/iteration-budget.json
+session/budget-state.json
+session/status.json
 session/discoveries.jsonl
 proposals/proposal-log.jsonl
 routines/registry.json.tmp
@@ -326,6 +329,41 @@ Create `.cocoplus/session/iteration-budget.json`:
   "consumed": 0,
   "warned": false,
   "stopped": false
+}
+```
+
+Create `.cocoplus/session/budget-state.json`:
+
+```json
+{
+  "budget_limit": 0,
+  "reserve_fraction": 0.1,
+  "reserve_amount": 0,
+  "spent": 0,
+  "remaining": 0,
+  "budget_state": "normal",
+  "execution_cost": 0,
+  "coordination_cost": 0,
+  "landing_cost": 0,
+  "landing_incomplete": false
+}
+```
+
+Create `.cocoplus/session/status.json`:
+
+```json
+{
+  "status": "idle",
+  "updated_at": "{{TIMESTAMP}}"
+}
+```
+
+Create `.cocoplus/pod-state.json`:
+
+```json
+{
+  "status": "idle",
+  "updated_at": "{{TIMESTAMP}}"
 }
 ```
 
@@ -437,11 +475,11 @@ Next steps:
 - [ ] `.cocoplus/AGENTS.md`, `.cocoplus/project.md`, `.cocoplus/flow.json`, and all four monitor JSON files exist
 - [ ] `.cocoplus/lifecycle/meta.json` exists with `"current_phase": "not_started"` and empty `phases_completed`
 - [ ] `.cocoplus/lifecycle/cocoplus-context.md` exists
-- [ ] `.cocoplus/scripts/rollback.js`, `scope-classify.js`, `spec-validator.js`, `alignment-check.js`, and `artifact-check.js` exist
+- [ ] `.cocoplus/scripts/rollback.js`, `scope-classify.js`, `spec-validator.js`, `alignment-check.js`, `artifact-check.js`, and `status-healer.js` exist
 - [ ] `.cocoplus/.gitignore` exists excluding transient session files
 - [ ] Root `AGENTS.md` shim exists at project root with `cocoplus-agents-redirect` directive
 - [ ] Root `cocoplus.toml` exists and includes the current 2.0 sections
 - [ ] `.cocoplus/personas.json` exists with 8 default shorthand entries (`$de` through `$cdo`)
 - [ ] `.cocoplus/subagents.json` exists as empty `{}`
-- [ ] `.cocoplus/personas/dynamic-registry.json`, `.cocoplus/flows/templates/`, `.cocoplus/proposals/`, `.cocoplus/session/`, `.cocoplus/session/iteration-budget.json`, `.cocoplus/routines/registry.json`, `.cocoplus/v2-runtime-requests.jsonl`, `.cocoplus/.last-consolidation`, and `.cocoplus/.last-retrospective` exist
+- [ ] `.cocoplus/personas/dynamic-registry.json`, `.cocoplus/flows/templates/`, `.cocoplus/proposals/`, `.cocoplus/session/`, `.cocoplus/session/iteration-budget.json`, `.cocoplus/session/budget-state.json`, `.cocoplus/session/status.json`, `.cocoplus/pod-state.json`, `.cocoplus/routines/registry.json`, `.cocoplus/v2-runtime-requests.jsonl`, `.cocoplus/.last-consolidation`, and `.cocoplus/.last-retrospective` exist
 - [ ] Git commit with message `chore(cocopod): initialize CocoPlus project structure` exists in log

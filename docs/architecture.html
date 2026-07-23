@@ -67,10 +67,10 @@
 <p>Hooks are shell scripts that fire when Coco lifecycle events occur. They are invisible to the developer during normal operation. They are what keeps CocoPlus coherent across time.</p>
 <p>CocoPlus registers nine hooks:</p>
 <ul>
-  <li><strong>SessionStart</strong> — reads current state, initializes CocoMeter tracking, triggers the Environment Inspector if auto-mode is active, evaluates CocoSeed trigger conditions, and surfaces newly triggered seeds in the startup summary.</li>
+  <li><strong>SessionStart</strong> — reads current state, initializes CocoMeter tracking, heals canonical session and pod statuses, triggers the Environment Inspector if auto-mode is active, evaluates CocoSeed trigger conditions, and surfaces newly triggered seeds in the startup summary.</li>
   <li><strong>SessionEnd</strong> — writes CocoMeter session data, updates AGENTS.md with the session summary, optionally triggers CocoCupper, and writes a final CocoHealth checkpoint to <code>lifecycle/checkpoint.md</code>.</li>
-  <li><strong>PreToolUse</strong> — enforces Safety Gate phase and pattern rules, ReviewerLockout, CocoSession kill-switch state, opt-in CocoFlow evidence gates, retained-proposal protection for proposal-enabled writes, and configured governance policies.</li>
-  <li><strong>PostToolUse</strong> — records significant tool events into warm memory when enabled, samples CocoHealth context utilization, and feeds read-observation signals used by stage evidence and quality telemetry.</li>
+  <li><strong>PreToolUse</strong> — enforces Safety Gate phase and pattern rules, ReviewerLockout, CocoSession kill-switch state, stage-boundary cost-budget dispatch limits, opt-in CocoFlow evidence gates, retained-proposal protection for proposal-enabled writes, and configured governance policies.</li>
+  <li><strong>PostToolUse</strong> — records significant tool events into warm memory when enabled, samples CocoHealth context utilization, updates execution, coordination, and landing cost ledgers, and feeds read-observation signals used by stage evidence and quality telemetry.</li>
   <li><strong>UserPromptSubmit</strong> — intercepts <code>$&lt;persona&gt;</code> shorthand, Assist Mode commands, V2 mode commands, CocoForge priority over CocoPilot, one-shot steering, queued mid-session work, and contract-gate requests.</li>
   <li><strong>SubagentStop</strong> — fires when a subagent completes. Validates checkpoints, updates flow.json stage status, triggers the next stage if dependencies are satisfied.</li>
   <li><strong>Stop</strong> — checkpoints CocoSession <code>PROGRESS.md</code> and predicate <code>CONTEXT.md</code>, schedules retrospective cadence work, queues background consolidation, and captures final session state.</li>
@@ -100,6 +100,8 @@
   <li>Next session starts. AGENTS.md and CocoSession handoff files are loaded. The developer sees exactly where they left off.</li>
 </ol>
 <p>This sequence is not exceptional — it is the ordinary experience of working with CocoPlus. Every session is a conversation between the pillars, mediated by files.</p>
+<p>For multi-pod flow execution, branch topology is encoded directly in branch names. A branch named <code>&lt;flow-run-id&gt;.&lt;pod-role&gt;.&lt;child-role&gt;</code> has a parent that can be derived by removing the final dotted segment. The branch namespace is authoritative and registry files are caches, so crash recovery can reconstruct topology from git even if a runtime index is stale.</p>
+<p>Status reconciliation uses one vocabulary across local files and CocoConsole state: <code>running</code>, <code>paused</code>, <code>completed</code>, <code>exited</code>, <code>failed</code>, <code>idle</code>, and <code>retired</code>. SessionStart healer logic stamps the more terminal status across stores, which keeps a budget stop (<code>exited</code>) distinct from a broken stage (<code>failed</code>) and a finished goal (<code>completed</code>).</p>
 <hr>
 <h2 id="the-cocopod-directory">The CocoPod Directory</h2>
 <p>The <code>.cocoplus/</code> directory is the physical manifestation of a CocoPlus project. It contains everything the system needs to be stateful:</p>
@@ -113,6 +115,7 @@
 ├── safety-config.json     ← compatibility safety defaults; cocoplus.toml is canonical
 ├── personas.json          ← fixed persona shorthand map
 ├── subagents.json         ← active subagent registry
+├── pod-state.json         ← canonical CocoPod status using shared vocabulary
 ├── v2-runtime-requests.jsonl ← local queue for hook-scheduled V2 work (gitignored)
 ├── flow/                  ← no-op workflow logs and flow-local execution evidence
 │   └── noop-log.jsonl     ← verified no-op stage records
@@ -160,6 +163,7 @@
 │   ├── accuracy-history.jsonl ← per-session estimation accuracy records
 │   ├── adjustment-factor.json ← rolling calibration factor for pre-flight estimates
 │   ├── benchmark-results.jsonl ← p-hat baselines for flow/template iteration
+│   ├── current-session.json ← execution, coordination, and landing cost ledger
 │   └── chargeback/        ← cost-center facts, onboarding state, and invoice exports
 ├── config/                ← generated config from cocoplus.toml sync
 │   ├── security-rules.json    ← generated boundary-tier rules
@@ -207,6 +211,8 @@
 │   ├── task-queue.jsonl   ← queued mid-session requests (gitignored)
 │   ├── stage-evidence.json ← evidence-gate observations (gitignored)
 │   ├── iteration-budget.json ← turn budget state for long-running work (gitignored)
+│   ├── budget-state.json  ← cost reserve state and landing completeness (gitignored)
+│   ├── status.json        ← canonical session status for healer reconciliation
 │   └── discoveries.jsonl  ← skill discovery and convergence signals (gitignored)
 ├── proposals/             ← retained CocoFlow proposals awaiting settlement
 │   ├── proposal-log.jsonl ← proposal index (gitignored)

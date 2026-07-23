@@ -18,10 +18,12 @@ Read `.cocoplus/flow.json`. Count stages by status:
 - completed: status == "completed"
 - running: status == "running"
 - failed: status == "failed"
+- exited: status == "exited"
 - skipped: status == "skipped"
 - pending: status == "pending" or no status field
 
 Read `flow.json` `runtime.concurrency_mode` (default: `normal` if not set). Read `runtime.harvest_id` to find the dual-file state files in `harvest/`.
+Use the canonical status vocabulary for sessions and stages: `running`, `paused`, `completed`, `exited`, `failed`, `idle`, `retired`. Render `completed`, `exited`, and `failed` distinctly; `exited` means structural stop, not pipeline error.
 
 Output:
 
@@ -73,4 +75,5 @@ For any stage with `"type": "parallel"`, add a per-pod completion table sourced 
 - [ ] Concurrency Mode field with current mode and last transition trigger is shown
 - [ ] Pause status (checked via `.cocoplus/flow.pause` existence) and Next Action are shown
 - [ ] `## Failures` section present for any failed stages with checkpoint details and retry command
+- [ ] `exited` stages are shown as structural stops with rerun/resume guidance, not as failures
 - [ ] `parallel:` stages show a per-pod completion table with `PARTIAL` rendered distinctly from `COMPLETE`

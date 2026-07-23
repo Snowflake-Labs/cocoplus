@@ -36,6 +36,7 @@ const GOVERNANCE_LOG = path.join(COCOPLUS_DIR, 'lifecycle', 'governance-log.json
 const STAGE_EVIDENCE = path.join(COCOPLUS_DIR, 'session', 'stage-evidence.json');
 const PROPOSAL_LOG = path.join(COCOPLUS_DIR, 'proposals', 'proposal-log.jsonl');
 const FLOW_ARTIFACT_ROOT = path.join(COCOPLUS_DIR, 'flow', 'artifacts');
+const SESSION_BUDGET_STATE = path.join(COCOPLUS_DIR, 'session', 'budget-state.json');
 
 /** Planning artifacts that are scanned for prompt injection */
 const PLANNING_ARTIFACTS = [
@@ -218,6 +219,36 @@ function shouldCheckArtifactReads(params) {
     params.cocoplus_action === 'stage_start';
 }
 
+function isStageBoundaryDispatch(params) {
+  return shouldCheckArtifactReads(params) ||
+    params.action === 'dispatch_stage' ||
+    params.cocoplus_action === 'dispatch_stage' ||
+    process.env.COCOPLUS_STAGE_DISPATCH === 'true';
+}
+
+function budgetEnforcementEnabled(config) {
+  const session = config.session || {};
+  const limit = Number(session.budget_limit) || 0;
+  return limit > 0 && (session.budget_enforcement || 'stage-boundary') !== 'none';
+}
+
+function checkBudgetBoundary(config, params, ts) {
+  if (!budgetEnforcementEnabled(config) || !isStageBoundaryDispatch(params)) return null;
+  const state = readJsonFile(SESSION_BUDGET_STATE, { budget_state: 'normal' });
+  const budgetState = state.budget_state || 'normal';
+  if (budgetState === 'reserve' || budgetState === 'exhausted') {
+    appendJsonLine(HOOK_LOG, {
+      hook: 'pre-tool-use',
+      action: 'budget_boundary_blocked',
+      budget_state: budgetState,
+      stage_id: currentStageId(params),
+      ts,
+    });
+    return `CocoSession budget is in ${budgetState} state. New CocoFlow stages cannot start; use the remaining budget for landing work, handoff, or a larger-budget rerun.`;
+  }
+  return null;
+}
+
 function main() {
   // No-op if CocoPlus not initialized
   if (!fs.existsSync(COCOPLUS_DIR)) { allow(); return; }
@@ -229,6 +260,12 @@ function main() {
   const toolName = event.tool || process.env.COCO_TOOL_NAME || 'unknown';
   const params   = event.parameters || {};
   const config   = loadConfig();
+
+  const budgetBlock = checkBudgetBoundary(config, params, ts);
+  if (budgetBlock) {
+    block(budgetBlock);
+    return;
+  }
 
   // CocoSession kill-switch: operator-created sentinel halts all tool calls.
   // Removing .cocoplus/AGENT_STOP from outside the agent restores execution.

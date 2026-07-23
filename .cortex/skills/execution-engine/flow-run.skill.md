@@ -47,6 +47,20 @@ Advisor-tier calls are reserved for commitment boundaries. Do not call the advis
 
 Read `[flow.planning]` before the orchestration pass. If `diverge_on_branch_points = true`, invoke diverge-then-focus only at high-consequence branch points: multiple structural options, no dominant choice, and downstream impact. Use isolated branches, then a separate critic pass that produces shortlist, `nonObviousPick`, named traps, and design-space clusters.
 
+## Multi-Pod Branch Topology
+
+For multi-pod CocoFlow runs, derive branch names from the flow tree using dotted topology tokens:
+
+```text
+<flow-run-id>.<pod-role>
+<flow-run-id>.<pod-role>.<sub-task>
+<flow-run-id>.<pod-role>.<sub-task>.<iteration-label>
+```
+
+The parent is always the branch name with the final dotted segment removed. Treat the branch namespace as authoritative and registries as caches. Use per-pod commits during execution, no-fast-forward downward integration to preserve pod seams, and upward squash when a sub-pod reports a concise result to its parent.
+
+Before dispatching a new stage, respect CocoSession cost-budget state. If `.cocoplus/session/budget-state.json` is `reserve` or `exhausted`, stop new stage dispatch and spend remaining work on landing artifacts and handoff.
+
 ## Check Dual-File State for Recovery
 
 Read `flow.json` `runtime.harvest_id` (if present). If a `harvest/[harvest-id]-tasks.json` file exists, read it:
@@ -266,6 +280,8 @@ Time: [duration]
 - [ ] Every `thinking_effort` resolves from stage config or `[session] default_thinking_effort`
 - [ ] Every declared `artifacts.reads` exists before stage start and every declared `artifacts.writes` exists before stage completion
 - [ ] Advisor-tier calls stay within `[flow.tiers] advisor_budget` and occur only at commitment boundaries or documented escalation triggers
+- [ ] Multi-pod branches use dotted topology naming and parent derivation is visible from branch names
+- [ ] New stage dispatch does not start inside CocoSession reserve or exhausted budget state
 - [ ] No-op stages write `noop-log.jsonl` before being marked skipped
 - [ ] Strategic assessment, orchestration pass, dependency-group dispatch, and synthesis pass are recorded unless a validated execution plan template was reused
 - [ ] Every worker context brief is 200 words or fewer

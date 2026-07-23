@@ -15,6 +15,11 @@ Use this skill for `$meter compare`.
 
 Compare two CocoMeter or harness benchmark result files while respecting the configured optimization objective. The default is correctness-first: accuracy delta is the primary signal and token/cost delta is secondary.
 
+CocoMeter session summaries may include three named cost rows:
+- `execution_cost`: functional stage work.
+- `coordination_cost`: advisor calls, handoff context assembly, artifact transfer, and status sync.
+- `landing_cost`: reserve-window spend for final evaluation, console update, and handoff.
+
 ## Workflow
 
 1. Parse `$meter compare <before.json> <after.json>`.
@@ -51,3 +56,4 @@ WARNING: cost reduction accompanied by accuracy regression.
 - [ ] Cost reduction is never labeled as improvement when accuracy regresses.
 - [ ] Equivalent accuracy uses the configured band.
 - [ ] Missing or malformed input files fail with a clear diagnostic.
+- [ ] Coordination and landing costs remain separate from execution cost when present.
