@@ -56,5 +56,8 @@ If `[evidence_gate] enabled = true`, CocoFlow stages start from default-fail and
 ### Named Artifacts, Routines, and Stage Coaching
 CocoFlow stages may declare `artifacts.reads` and `artifacts.writes`; missing handoff files are deterministic gate failures. CocoRoutine schedules only self-contained flows and never references local paths or local-only credentials. If `[harness] coach_model` is configured, per-stage external coaching must use a different model than the executor.
 
+### Complexity and ACRR
+If `[flow] complexity_estimation = true`, run descriptions are scored before dispatch and recorded in `.cocoplus/lifecycle/cocoflow/<run-id>/complexity.json`. Complexity sets model and thinking-effort floors; budget state caps only parallelism and retry budget. CocoMeter ACRR is a calibration diagnostic, not an accuracy score.
+
 ### Retrospective and Hygiene
 Use `$retrospective run`, `$hygiene --model-upgrade`, and `$meter benchmark --flow <template>` before changing recurring rules, hooks, skills, or flow templates. Prefer the cheapest sufficient actuator: hook, then skill, then structural rule, then standing context.

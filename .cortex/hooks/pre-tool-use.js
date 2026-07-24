@@ -37,6 +37,7 @@ const STAGE_EVIDENCE = path.join(COCOPLUS_DIR, 'session', 'stage-evidence.json')
 const PROPOSAL_LOG = path.join(COCOPLUS_DIR, 'proposals', 'proposal-log.jsonl');
 const FLOW_ARTIFACT_ROOT = path.join(COCOPLUS_DIR, 'flow', 'artifacts');
 const SESSION_BUDGET_STATE = path.join(COCOPLUS_DIR, 'session', 'budget-state.json');
+const COMPLEXITY_SCRIPT = path.join(COCOPLUS_DIR, 'scripts', 'complexity-estimate.js');
 
 /** Planning artifacts that are scanned for prompt injection */
 const PLANNING_ARTIFACTS = [
@@ -249,6 +250,80 @@ function checkBudgetBoundary(config, params, ts) {
   return null;
 }
 
+function complexityEnabled(config) {
+  const flowConfig = config.flow || {};
+  const harnessConfig = config.harness || {};
+  return flowConfig.complexity_estimation === true ||
+    flowConfig.complexity_estimation === 'true' ||
+    harnessConfig.trivial_floor_invariant === true ||
+    harnessConfig.trivial_floor_invariant === 'true';
+}
+
+function taskDescription(params) {
+  return params.description ||
+    params.task ||
+    params.prompt ||
+    params.objective ||
+    params.outcome ||
+    params.query ||
+    process.env.COCOPLUS_TASK_DESCRIPTION ||
+    '';
+}
+
+function flowRunId(params) {
+  const flow = activeFlow();
+  return params.run_id ||
+    params.flow_run_id ||
+    process.env.COCOPLUS_RUN_ID ||
+    flow.run_id ||
+    flow.id ||
+    `run-${Date.now()}`;
+}
+
+function budgetState() {
+  const state = readJsonFile(SESSION_BUDGET_STATE, { budget_state: 'normal' });
+  return state.budget_state || 'normal';
+}
+
+function recordComplexityEstimate(config, params, ts) {
+  if (!complexityEnabled(config) || !isStageBoundaryDispatch(params) || !fs.existsSync(COMPLEXITY_SCRIPT)) return;
+  const runId = flowRunId(params);
+  const outputPath = path.join(COCOPLUS_DIR, 'lifecycle', 'cocoflow', runId, 'complexity.json');
+  if (fs.existsSync(outputPath)) return;
+
+  const description = taskDescription(params);
+  if (!description) return;
+
+  try {
+    const estimator = require(path.resolve(COMPLEXITY_SCRIPT));
+    const estimate = estimator.scoreDescription(description);
+    const configuredHarness = config.harness || {};
+    const applied = estimator.harnessFor(estimate, budgetState(), {
+      parallelism: configuredHarness.parallelism || configuredHarness.max_parallelism,
+      retry_budget: configuredHarness.retry_budget || configuredHarness.max_retries,
+    });
+    writeJsonFile(outputPath, {
+      run_id: runId,
+      estimated_at: ts,
+      description,
+      ...estimate,
+      applied_harness: applied,
+    });
+    appendJsonLine(HOOK_LOG, {
+      hook: 'pre-tool-use',
+      action: 'complexity_estimated',
+      run_id: runId,
+      tier: estimate.tier,
+      score: estimate.score,
+      ambiguity_score: estimate.ambiguity_score,
+      has_acceptance_check: estimate.has_acceptance_check,
+      ts,
+    });
+  } catch (err) {
+    logError('pre-tool-use', `complexity estimation failed: ${err.message}`);
+  }
+}
+
 function main() {
   // No-op if CocoPlus not initialized
   if (!fs.existsSync(COCOPLUS_DIR)) { allow(); return; }
@@ -266,6 +341,8 @@ function main() {
     block(budgetBlock);
     return;
   }
+
+  recordComplexityEstimate(config, params, ts);
 
   // CocoSession kill-switch: operator-created sentinel halts all tool calls.
   // Removing .cocoplus/AGENT_STOP from outside the agent restores execution.
