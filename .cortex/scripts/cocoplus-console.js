@@ -56,7 +56,7 @@ function flowBranchTopology(flow) {
 
 function collectState() {
   const lifecycle = path.join(COCOPLUS_DIR, 'lifecycle');
-  return {
+  const state = {
     generated_at: isoUtc(),
     project: readText(path.join(COCOPLUS_DIR, 'project.md'), 'Project not initialized.'),
     meta: safeJson(path.join(lifecycle, 'meta.json'), {}),
@@ -72,6 +72,7 @@ function collectState() {
     podState: safeJson(path.join(COCOPLUS_DIR, 'pod-state.json'), {}),
     discoveries: readText(path.join(COCOPLUS_DIR, 'session', 'discoveries.jsonl'), 'No session discoveries recorded.'),
     stageEvidence: safeJson(path.join(COCOPLUS_DIR, 'session', 'stage-evidence.json'), {}),
+    complexity: latestComplexity(),
     proposals: readText(path.join(COCOPLUS_DIR, 'proposals', 'proposal-log.jsonl'), 'No retained proposals recorded.'),
     routines: safeJson(path.join(COCOPLUS_DIR, 'routines', 'registry.json'), { routines: [] }),
     retrospective: readText(path.join(lifecycle, 'retrospective-ledger.jsonl'), 'No retrospective ledger recorded.'),
@@ -86,6 +87,21 @@ function collectState() {
   };
   state.branchTopology = flowBranchTopology(state.flow);
   return state;
+}
+
+function latestComplexity() {
+  const root = path.join(COCOPLUS_DIR, 'lifecycle', 'cocoflow');
+  try {
+    const files = fs.readdirSync(root, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => path.join(root, entry.name, 'complexity.json'))
+      .filter((filePath) => fs.existsSync(filePath))
+      .map((filePath) => ({ filePath, mtime: fs.statSync(filePath).mtimeMs }))
+      .sort((a, b) => b.mtime - a.mtime);
+    return files.length ? safeJson(files[0].filePath, {}) : {};
+  } catch (_) {
+    return {};
+  }
 }
 
 function esc(value) {
@@ -116,6 +132,7 @@ function renderPanel(panel, state) {
     ],
     flow: [
       panelCard('Pipeline', `<p>${flowStages.length} stages found.</p><pre>${esc(JSON.stringify(state.flow, null, 2).slice(0, 4000))}</pre>`),
+      panelCard('Prompt Quality', `${promptQualityWidget()}<pre>${esc(JSON.stringify(state.complexity, null, 2).slice(0, 2500))}</pre>`),
       panelCard('Branch Topology', `<pre>${esc(JSON.stringify(state.branchTopology, null, 2).slice(0, 3000))}</pre>`),
       panelCard('Stage Evidence', `<pre>${esc(JSON.stringify(state.stageEvidence, null, 2).slice(0, 3000))}</pre>`),
       panelCard('Stage Quality Scores', `<pre>${esc(state.stageQuality.slice(-4000))}</pre>`),
@@ -125,6 +142,7 @@ function renderPanel(panel, state) {
     cost: [
       panelCard('Meter', `<pre>${esc(JSON.stringify(state.meter, null, 2))}</pre>`),
       panelCard('Session Cost Categories', `<p>Execution: <strong>${esc(state.meter.execution_cost || 0)}</strong></p><p>Coordination: <strong>${esc(state.meter.coordination_cost || 0)}</strong></p><p>Landing: <strong>${esc(state.meter.landing_cost || 0)}</strong></p><p>Coordination Fraction: <strong>${esc(state.meter.coordination_fraction || 0)}</strong></p>`),
+      panelCard('ACRR Trend', `<p>Session average: <strong>${esc(state.meter.acrr_this_session || 0)}</strong></p><pre>${esc(JSON.stringify((state.meter.acrr_runs || []).slice(-20), null, 2))}</pre><p>ACRR near 1.0 means complexity estimates are calibrated; consistently high values mean the first tier is too low for this task class.</p>`),
       panelCard('Chargeback', '<p>Generate invoice artifacts with <code>$meter invoice</code>; this panel reads generated status.</p>'),
     ],
     quality: [
@@ -171,6 +189,43 @@ function renderPanel(panel, state) {
   return (cards[panel] || cards.home).join('\n');
 }
 
+function promptQualityWidget() {
+  return `<label for="task-quality-input">Task description</label>
+<textarea id="task-quality-input" rows="4" placeholder="Describe a CocoFlow run to preview complexity before launch."></textarea>
+<div id="task-quality-output" class="advisory"></div>
+<script>
+(() => {
+  const input = document.getElementById('task-quality-input');
+  const output = document.getElementById('task-quality-output');
+  if (!input || !output) return;
+  const tierFor = (score) => score <= 20 ? 'trivial' : score <= 40 ? 'simple' : score <= 60 ? 'moderate' : score <= 80 ? 'hard' : 'open-ended';
+  const score = (text) => {
+    const words = text.trim() ? text.trim().split(/\\s+/).length : 0;
+    const signals = {
+      length: words > 80 ? 18 : words > 40 ? 10 : words > 18 ? 5 : 0,
+      low: /\\b(typo|rename|format|lint|bump|comment|copy|fix spelling)\\b/i.test(text) ? -12 : 0,
+      high: /\\b(refactor|migrate|architect|rewrite|debug|investigate|redesign|implement|integrate)\\b/i.test(text) ? 18 : 0,
+      scope: /\\b(the whole|entire|every|all of|across|multi[-\\s]?schema|end[-\\s]?to[-\\s]?end)\\b/i.test(text) ? 16 : 0,
+      acceptance: /\\b(run (the )?(tests?|validation)|so .* passes|done when|verify|confirm|acceptance|success criteria)\\b/i.test(text) ? -6 : 0,
+      ambiguity: /\\b(figure out|somehow|explore|investigate why|find out|unclear|unknown|maybe|probably|what is wrong|why .* failing)\\b/i.test(text) ? 60 : 0
+    };
+    const raw = Math.max(0, Math.min(100, text.trim() ? 24 + Object.values(signals).reduce((a,b)=>a+b,0) : 50));
+    return { tier: tierFor(raw), raw, signals };
+  };
+  let timer = null;
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      const result = score(input.value);
+      const ambiguity = result.signals.ambiguity > 30 ? '<p class="warn">High ambiguity detected. Add a constraint or acceptance criterion to reduce exploration cost.</p>' : '';
+      const acceptance = result.signals.acceptance >= 0 ? '<p class="note">No completion criterion found. Define what done means before launch to compress the execution space.</p>' : '';
+      output.innerHTML = '<p><span class="chip">' + result.tier + '</span> Score: ' + result.raw + '</p>' + ambiguity + acceptance;
+    }, 300);
+  });
+})();
+</script>`;
+}
+
 function renderHtml(panel, state) {
   const nav = PANELS.map((name) => `<a class="${name === panel ? 'active' : ''}" href="/${name === 'home' ? '' : name}">${esc(name)}</a>`).join('');
   return `<!doctype html>
@@ -197,6 +252,10 @@ function renderHtml(panel, state) {
     .status-ok{border-color:#2f8f5b;color:#9be7c4}
     .status-warn{border-color:#a87321;color:#ffd48a}
     .status-fail{border-color:#a94442;color:#ffaaa5}
+    textarea{width:100%;box-sizing:border-box;border:1px solid #334252;border-radius:6px;background:#0f1419;color:#edf2f7;padding:10px;margin:6px 0 10px}
+    .chip{display:inline-block;border:1px solid #5a6d82;border-radius:999px;padding:2px 8px;margin-right:8px;color:#9be7c4}
+    .warn{border-left:3px solid #a87321;padding-left:10px;color:#ffd48a}
+    .note{border-left:3px solid #477aa6;padding-left:10px;color:#b8dcff}
     pre{white-space:pre-wrap;word-break:break-word;margin:0;color:#d6e2ee}
     code{color:#9be7c4}
   </style>

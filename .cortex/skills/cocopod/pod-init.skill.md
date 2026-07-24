@@ -101,6 +101,7 @@ Copy template files from the plugin templates directory to `.cocoplus/`:
 14. Copy `templates/scripts/alignment-check.js` → `.cocoplus/scripts/alignment-check.js`
 15. Copy `templates/scripts/artifact-check.js` → `.cocoplus/scripts/artifact-check.js`
 16. Copy `templates/scripts/status-healer.js` → `.cocoplus/scripts/status-healer.js`
+17. Copy `templates/scripts/complexity-estimate.js` → `.cocoplus/scripts/complexity-estimate.js`
 
 ## Initialize Mode Flags
 
@@ -475,7 +476,7 @@ Next steps:
 - [ ] `.cocoplus/AGENTS.md`, `.cocoplus/project.md`, `.cocoplus/flow.json`, and all four monitor JSON files exist
 - [ ] `.cocoplus/lifecycle/meta.json` exists with `"current_phase": "not_started"` and empty `phases_completed`
 - [ ] `.cocoplus/lifecycle/cocoplus-context.md` exists
-- [ ] `.cocoplus/scripts/rollback.js`, `scope-classify.js`, `spec-validator.js`, `alignment-check.js`, `artifact-check.js`, and `status-healer.js` exist
+- [ ] `.cocoplus/scripts/rollback.js`, `scope-classify.js`, `spec-validator.js`, `alignment-check.js`, `artifact-check.js`, `status-healer.js`, and `complexity-estimate.js` exist
 - [ ] `.cocoplus/.gitignore` exists excluding transient session files
 - [ ] Root `AGENTS.md` shim exists at project root with `cocoplus-agents-redirect` directive
 - [ ] Root `cocoplus.toml` exists and includes the current 2.0 sections

@@ -143,6 +143,7 @@ function main() {
     'alignment-check.js',
     'artifact-check.js',
     'status-healer.js',
+    'complexity-estimate.js',
   ];
 
   for (const agentId of plugin.agents || []) {
@@ -237,6 +238,9 @@ function main() {
     'budget_enforcement',
     'track_coordination_cost',
     'coordination_warning_threshold',
+    'track_acrr',
+    'complexity_estimation',
+    'trivial_floor_invariant',
   ]) {
     requireIncludes(configTemplate, expected, failures, 'cocoplus.toml.template');
   }

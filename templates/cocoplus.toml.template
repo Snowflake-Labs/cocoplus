@@ -71,6 +71,7 @@ stale_context_eviction = true
 output_extraction = "structured_json"
 output_validation = "schema"
 coach_model = "" # Optional; when set, PostToolUse queues per-stage external coach reviews
+trivial_floor_invariant = true # Complexity sets model/effort floor; quota caps parallelism/retry
 
 [trace]
 show_grade = true            # Set false to hide CocoTrace A-F grade while keeping metrics visible
@@ -165,6 +166,10 @@ accuracy_equivalence_band = 0.02
 cost_first_acknowledged = false
 track_coordination_cost = true
 coordination_warning_threshold = 0.25
+track_acrr = true
+
+[flow]
+complexity_estimation = true
 
 [flow.planning]
 diverge_on_branch_points = true
