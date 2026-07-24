@@ -119,7 +119,7 @@ $spec
 
 `$session status` verifies the CocoSession handoff surface, predicate context, iteration budget, cost-budget reserve state, canonical terminal status, operator kill-switch state, and queued work. Existing projects that enable the current gates should add the optional `[session]`, `[harness]`, `[evidence_gate]`, `[proposals]`, `[research]`, `[retrospective]`, `[routine]`, `[meter]`, and `[flow.*]` configuration blocks through `$migrate v2` rather than hand-editing partial state.
 
-The migration adds the cost and status defaults used by current CocoSession and CocoMeter behavior:
+The migration adds the cost, status, complexity, and calibration defaults used by current CocoSession, CocoFlow, and CocoMeter behavior:
 
 ```toml
 [session]
@@ -127,9 +127,16 @@ budget_limit = 0.0
 budget_reserve_fraction = 0.10
 budget_enforcement = "stage-boundary"
 
+[harness]
+trivial_floor_invariant = true
+
+[flow]
+complexity_estimation = true
+
 [meter]
 track_coordination_cost = true
 coordination_warning_threshold = 0.25
+track_acrr = true
 ```
 
 ## Validation

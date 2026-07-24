@@ -129,7 +129,7 @@ $cocoplus console
 $cocoplus console status
 $cocoplus console stop
 </code></pre>
-<p>Starts a local Node.js server on the configured port (default <code>7779</code>) and writes <code>.cocoplus/lifecycle/console-state.json</code>. If already running, reuses the recorded instance. The dashboard is read-only and never approves gates or mutates project state.</p>
+<p>Starts a local Node.js server on the configured port (default <code>7779</code>) and writes <code>.cocoplus/lifecycle/console-state.json</code>. If already running, reuses the recorded instance. The dashboard is read-only and never approves gates or mutates project state. The Flow panel includes Prompt Quality complexity preview; the Cost panel includes ACRR trend and session calibration records.</p>
 <hr>
 <p><strong><code>$pilot on</code> / <code>$pilot off</code></strong> — Toggle CocoPilot for the current session</p>
 <pre><code>
@@ -299,8 +299,9 @@ $flow run --model &lt;haiku|sonnet|opus&gt;
 $flow run --model &lt;value&gt; --stage &lt;stage-id&gt;
 $flow run --concurrency &lt;normal|caution|single-track&gt;
 </code></pre>
-<p>Reads <code>flow.json</code>, checks stage-boundary budget state, spawns stage subagents, and monitors completion via SubagentStop hook integration. Stage status written back to <code>flow.json</code> in real time uses the shared vocabulary: <code>running</code>, <code>paused</code>, <code>completed</code>, <code>exited</code>, <code>failed</code>, <code>idle</code>, and <code>retired</code>. <code>--model</code> without <code>--stage</code> applies a Tier 2 pipeline default. <code>--model</code> with <code>--stage</code> applies a Tier 3 stage-level override. Neither form modifies <code>flow.json</code> on disk.</p>
+<p>Reads <code>flow.json</code>, checks stage-boundary budget state, optionally writes a pre-dispatch complexity estimate to <code>.cocoplus/lifecycle/cocoflow/&lt;run-id&gt;/complexity.json</code>, spawns stage subagents, and monitors completion via SubagentStop hook integration. Stage status written back to <code>flow.json</code> in real time uses the shared vocabulary: <code>running</code>, <code>paused</code>, <code>completed</code>, <code>exited</code>, <code>failed</code>, <code>idle</code>, and <code>retired</code>. <code>--model</code> without <code>--stage</code> applies a Tier 2 pipeline default. <code>--model</code> with <code>--stage</code> applies a Tier 3 stage-level override. Neither form modifies <code>flow.json</code> on disk.</p>
 <p><code>--concurrency</code> controls CocoHarvest's adaptive parallelism mode. In normal operation, the mode is managed automatically: the pipeline starts in <strong>Normal</strong> mode (full parallelism), steps down to <strong>Caution</strong> (reduced parallelism) on any stage failure, and drops to <strong>Single-track</strong> (serial execution) if more than 50% of stages have failed. Pass <code>--concurrency normal</code> to override back to full parallelism when you have investigated failures and want to retry at full speed. The current concurrency mode is visible in <code>$flow status</code>.</p>
+<p>When <code>[flow] complexity_estimation = true</code>, complexity tier sets the model and thinking-effort floor. CocoSession budget state caps only parallelism and retry budget. High ambiguity and missing acceptance checks are non-blocking advisories surfaced before launch and in CocoConsole's Flow panel.</p>
 <p>Multi-pod flows encode topology in dotted branch names such as <code>&lt;flow-run-id&gt;.&lt;pod-role&gt;.&lt;child-role&gt;</code>. Parentage is derived by removing the final dotted segment, so git remains the authoritative topology source even if runtime registry files need healing.</p>
 <p>Stages with <code>"isolated": true</code> in their <code>flow.json</code> definition receive only checkpoint-validated deliverables from prior stages — not the full execution context. Use this field for deployment stages, post-evaluation steps, or any stage that should operate on declared outputs rather than ambient session state.</p>
 <p><strong>Output:</strong> Stage execution progress. Final status in <code>flow.json</code>.</p>
@@ -569,7 +570,7 @@ $meter off
 <pre><code>
 $meter
 </code></pre>
-<p>Shows token consumption and estimated Snowflake credit cost for the current session, broken down by feature, operation, and cost category. The cost ledger separates <code>execution_cost</code>, <code>coordination_cost</code>, and <code>landing_cost</code>; <code>coordination_fraction</code> warns when coordination overhead exceeds the configured threshold.</p>
+<p>Shows token consumption and estimated Snowflake credit cost for the current session, broken down by feature, operation, and cost category. The cost ledger separates <code>execution_cost</code>, <code>coordination_cost</code>, and <code>landing_cost</code>; <code>coordination_fraction</code> warns when coordination overhead exceeds the configured threshold. When ACRR tracking is enabled, the session summary also reports <code>acrr_this_session</code> and the last completed run records.</p>
 <p><strong>Output:</strong> Session cost summary. No state changes.</p>
 <hr>
 <p><strong><code>$meter estimate [description]</code></strong> — Pre-flight cost estimation</p>
@@ -617,7 +618,7 @@ $meter accuracy
 <pre><code>
 $meter compare before.json after.json
 </code></pre>
-<p>Compares benchmark or harness result files. Accuracy delta leads by default; token or credit cost is a secondary signal unless <code>cocoplus.toml [meter]</code> explicitly sets and acknowledges cost-first mode. A cheaper result with lower accuracy is reported as a regression under correctness-first rules. When present, execution, coordination, and landing cost rows are preserved separately rather than collapsed into one total.</p>
+<p>Compares benchmark or harness result files. Accuracy delta leads by default; token or credit cost is a secondary signal unless <code>cocoplus.toml [meter]</code> explicitly sets and acknowledges cost-first mode. A cheaper result with lower accuracy is reported as a regression under correctness-first rules. When present, execution, coordination, landing, and ACRR rows are preserved separately rather than collapsed into one total. ACRR is reported as a calibration diagnostic, not as a replacement for accuracy.</p>
 <hr>
 <p><strong><code>$meter refresh</code></strong> — Refresh FinOps chargeback facts <em>(CocoMeter Enhanced)</em></p>
 <pre><code>$meter refresh
@@ -1452,12 +1453,12 @@ $sketch deps --reduce off
 <tr>
   <td style="text-align:left"><strong>PreToolUse</strong></td>
   <td style="text-align:left">Before any tool call</td>
-  <td style="text-align:left">Safety Gate, ReviewerLockout, RBAC escalation guard, CocoSession kill-switch, stage-boundary cost-budget dispatch limits, named artifact read checks, opt-in stage evidence gate, retained-proposal direct-write protection, and destructive SQL warnings or blocks</td>
+  <td style="text-align:left">Safety Gate, ReviewerLockout, RBAC escalation guard, CocoSession kill-switch, stage-boundary cost-budget dispatch limits, pre-dispatch complexity estimation, named artifact read checks, opt-in stage evidence gate, retained-proposal direct-write protection, and destructive SQL warnings or blocks</td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>PostToolUse</strong></td>
   <td style="text-align:left">After any tool call</td>
-  <td style="text-align:left">Memory Engine capture, CocoHealth sampling, CocoAudit append, CocoSession iteration and cost-budget accounting, execution/coordination/landing cost attribution, bypass/private-mode governance logging, PII governance, and per-stage coach request queuing</td>
+  <td style="text-align:left">Memory Engine capture, CocoHealth sampling, CocoAudit append, CocoSession iteration and cost-budget accounting, execution/coordination/landing cost attribution, ACRR aggregation, bypass/private-mode governance logging, PII governance, and per-stage coach request queuing</td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>UserPromptSubmit</strong></td>

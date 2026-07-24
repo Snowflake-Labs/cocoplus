@@ -32,7 +32,8 @@
     "templates/scripts/spec-validator.js",
     "templates/scripts/alignment-check.js",
     "templates/scripts/artifact-check.js",
-    "templates/scripts/status-healer.js"
+    "templates/scripts/status-healer.js",
+    "templates/scripts/complexity-estimate.js"
   ],
   "recipes": [
     "recipes/cortex-add-classifier.json.template",

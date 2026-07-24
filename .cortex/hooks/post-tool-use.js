@@ -191,6 +191,49 @@ function updateSessionCostBudget(config, toolName, params, result, tokensUsed, t
   return { cost, category, state: previous };
 }
 
+function flowCompleted(params, result) {
+  return params.action === 'flow_completed' ||
+    params.cocoplus_action === 'flow_completed' ||
+    params.flow_completed === true ||
+    result.flow_completed === true ||
+    result.status === 'completed' && (params.flow_run_id || params.run_id || result.flow_run_id || result.run_id);
+}
+
+function latestComplexityRecord(runId) {
+  const root = path.join(COCOPLUS_DIR, 'lifecycle', 'cocoflow');
+  if (!fs.existsSync(root)) return null;
+  const candidates = runId
+    ? [path.join(root, runId, 'complexity.json')]
+    : fs.readdirSync(root, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => path.join(root, entry.name, 'complexity.json'));
+  const existing = candidates
+    .filter((filePath) => fs.existsSync(filePath))
+    .map((filePath) => ({ filePath, mtime: fs.statSync(filePath).mtimeMs }))
+    .sort((a, b) => b.mtime - a.mtime);
+  return existing.length ? readJson(existing[0].filePath, null) : null;
+}
+
+function acrrRecord(config, params, result, ts) {
+  const meterConfig = config.meter || {};
+  if (!(meterConfig.track_acrr === true || meterConfig.track_acrr === 'true')) return null;
+  if (!flowCompleted(params, result)) return null;
+
+  const runId = params.flow_run_id || params.run_id || result.flow_run_id || result.run_id || null;
+  const complexity = latestComplexityRecord(runId);
+  if (!complexity) return null;
+  const escalations = Number(result.escalations_taken || params.escalations_taken || 0);
+  const record = {
+    run_id: runId || complexity.run_id || null,
+    completed_at: ts,
+    complexity_tier_estimated: complexity.tier,
+    model_tier_used: result.model_tier_used || params.model_tier_used || complexity.applied_harness && complexity.applied_harness.complexity_floor && complexity.applied_harness.complexity_floor.model || null,
+    escalations_taken: Number.isFinite(escalations) ? escalations : 0,
+  };
+  record.acrr = 1 + Math.max(0, record.escalations_taken);
+  return record;
+}
+
 function queueAndAttemptBackgroundSpawn(request, ts) {
   appendJsonLine(SPAWN_QUEUE, request);
   appendJsonLine(HOOK_LOG, {
@@ -302,6 +345,7 @@ function main() {
   if (fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'cocometer.on'))) {
     const meterFile = path.join(COCOPLUS_DIR, 'meter', 'current-session.json');
     if (fs.existsSync(meterFile)) {
+      const existingMeter = readJson(meterFile, {});
       const sessionId = readJsonString(meterFile, 'session_id');
       const startedAt = readJsonString(meterFile, 'started_at');
       const phase     = readJsonString(meterFile, 'phase');
@@ -322,8 +366,15 @@ function main() {
         else if (costBudget.category === 'landing') landingCost += costBudget.cost;
         else executionCost += costBudget.cost;
       }
+      const acrrRuns = Array.isArray(existingMeter.acrr_runs) ? existingMeter.acrr_runs : [];
+      const nextAcrr = acrrRecord(config, params, result, ts);
+      if (nextAcrr) acrrRuns.push(nextAcrr);
+      const acrrThisSession = acrrRuns.length
+        ? acrrRuns.reduce((sum, item) => sum + Number(item.acrr || 0), 0) / acrrRuns.length
+        : existingMeter.acrr_this_session || 0;
 
       atomicWrite(meterFile, JSON.stringify({
+        ...existingMeter,
         session_id:       sessionId,
         started_at:       startedAt,
         phase:            phase,
@@ -337,6 +388,8 @@ function main() {
         landing_cost:     landingCost,
         coordination_fraction: totalCost > 0 ? coordinationCost / totalCost : 0,
         landing_incomplete: Boolean(costBudget && costBudget.state && costBudget.state.landing_incomplete),
+        acrr_this_session: acrrThisSession,
+        acrr_runs: acrrRuns.slice(-20),
       }, null, 2));
     }
   }

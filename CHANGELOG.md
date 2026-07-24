@@ -66,7 +66,16 @@ All notable changes to CocoPlus are documented here.
 - CocoFlow documentation now defines dotted branch topology: branch names encode parent/child pod relationships, per-pod commits are preserved, downward merges are no-ff, and upward merges squash handoff output.
 - CocoSession, CocoFlow, CocoPod state, and CocoConsole now share the canonical status vocabulary: `running`, `paused`, `completed`, `exited`, `failed`, `idle`, and `retired`.
 - `templates/cocoplus.toml.template` adds `[session]` cost budget defaults and `[meter]` coordination-cost thresholds.
-- Public documentation now reflects fifty-five core features and thirty-five design principles, including budget-seam enforcement and shared status vocabulary.
+- Public documentation added budget-seam enforcement and shared status vocabulary coverage across the release docs.
+
+#### Twenty-Third-Cycle 2.0 Additions
+- `templates/scripts/complexity-estimate.js` adds deterministic lexical task complexity scoring with five tiers, ambiguity detection, and acceptance-check detection.
+- `PreToolUse` records pre-dispatch CocoFlow complexity estimates to `.cocoplus/lifecycle/cocoflow/<run-id>/complexity.json` when complexity estimation is enabled.
+- `PostToolUse` aggregates ACRR records into CocoMeter session summaries for completed CocoFlow runs.
+- CocoConsole Flow panel now includes a Prompt Quality preview with complexity chip, ambiguity advisory, and missing-acceptance advisory.
+- CocoConsole Cost panel now surfaces ACRR session average and recent run records.
+- `templates/cocoplus.toml.template` adds `[flow] complexity_estimation`, `[harness] trivial_floor_invariant`, and `[meter] track_acrr`.
+- Public documentation now reflects thirty-seven design principles, including task complexity as the independent floor and ambiguity as a pre-payable cost.
 
 ### Changed
 
@@ -74,7 +83,7 @@ All notable changes to CocoPlus are documented here.
 - `templates/cocoplus.toml.template` adds `[cocoplus]`, `[cocopilot]`, `[cocoforge]`, `[leviathan]`, `[dynamic_personas]`, `[governance]`, `[session]`, `[harness]`, `[evidence_gate]`, `[proposals]`, `[research]`, `[retrospective]`, `[routine]`, `[meter]`, `[flow.planning]`, `[flow.planning.frames]`, `[flow.tiers]`, and role-based model allocation sections.
 - `templates/AGENTS.md.template` adds V2 activation blocks so new pods understand CocoPilot, CocoForge, Leviathan Mode/Ronin, and Dynamic Personas.
 - Root `README.md`, `AGENTS.md`, installation guidance, and the HTML documentation site now present CocoPlus as a V2.0.0 release.
-- `docs/principles.html` now reflects the complete 35-principle catalog, including durable records, untestable-here verification, session understanding capture, context isolation, stated-vs-enforced labeling, consolidation-vs-capture, budget-seam enforcement, and shared status vocabulary.
+- `docs/principles.html` now reflects the complete 37-principle catalog, including durable records, untestable-here verification, session understanding capture, context isolation, stated-vs-enforced labeling, consolidation-vs-capture, budget-seam enforcement, shared status vocabulary, complexity-floor dispatch, and ambiguity prepayment.
 
 ### Compatibility
 

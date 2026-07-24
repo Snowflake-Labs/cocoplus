@@ -26,11 +26,11 @@
 <div class="page-header">
   <div class="label">Design Principles</div>
   <h1>The Design Principles</h1>
-  <p class="subtitle">These are the thirty-five ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
+  <p class="subtitle">These are the thirty-seven ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
 </div>
 
 <div class="content">
-<p>These are the thirty-five ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
+<p>These are the thirty-seven ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
 <p>A principle without a reason is just a constraint. With a reason, it becomes a compass.</p>
 <hr>
 <h2 id="1-native-first-always">1. Native First, Always</h2>
@@ -219,6 +219,16 @@
 <p>When two stores describe the same state, they should share one vocabulary. A local CocoPod state file and a CocoConsole row should not need translation between "done," "complete," and "finished." Translation turns recovery into interpretation.</p>
 <p>The distinction between <code>completed</code>, <code>exited</code>, and <code>failed</code> is load-bearing. <code>completed</code> means the goal was met. <code>exited</code> means the system stopped structurally, such as budget, timeout, or operator stop. <code>failed</code> means something broke and needs investigation.</p>
 <p>Applied to CocoPlus: CocoSession, CocoFlow, CocoPod state, and CocoConsole share one canonical status vocabulary: <code>running</code>, <code>paused</code>, <code>completed</code>, <code>exited</code>, <code>failed</code>, <code>idle</code>, and <code>retired</code>. Healer logic can stamp the more terminal status across stores without guessing what a synonym meant.</p>
+<hr>
+<h2 id="36-task-complexity-is-the-independent-floor">36. Task Complexity Is the Independent Floor</h2>
+<p>Complexity and quota govern different execution dimensions. Complexity sets the minimum model and thinking effort required by the task. Quota governs the dimensions where headroom matters: parallelism and retry budget.</p>
+<p>Conflating the two creates bad behavior in both directions. Abundant budget should not make a trivial rename run through maximum reasoning. Budget pressure should not lower a hard diagnostic below the capacity it needs to succeed.</p>
+<p>Applied to CocoPlus: pre-dispatch complexity estimation records a tier for each enabled CocoFlow run, the harness compositing rule preserves the complexity floor, and CocoMeter ACRR trends show when a task class is systematically over-expanded or underestimated.</p>
+<hr>
+<h2 id="37-ambiguity-is-pre-payable">37. Ambiguity Is Pre-Payable</h2>
+<p>Every ambiguity in a task description is a cost that will be paid. Resolve it before dispatch and the cost is essentially zero. Leave it for the agent to discover during execution and the cost becomes model tokens, inspected files, and exploratory turns.</p>
+<p>Acceptance checks are the companion discipline. A task that says what done means costs less because the agent knows when to stop. A task without a completion criterion forces the agent to infer the finish line.</p>
+<p>Applied to CocoPlus: CocoConsole's prompt-quality surface scores task descriptions before launch, warns on high ambiguity, and surfaces missing acceptance checks without blocking the developer from proceeding.</p>
 <blockquote><p><em>Principles are only principles when they are applied in the cases where violating them would be convenient.</em></p></blockquote>
 </div>
 

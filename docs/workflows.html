@@ -110,6 +110,15 @@ $meter
 <p>CocoSession tracks actual spend after tool results land. When remaining budget enters the reserve window, CocoFlow does not dispatch new stages. Running stages are allowed to finish; the reserve is spent on landing work such as the final coach pass, result commit, PROGRESS.md update, and CocoConsole handoff.</p>
 <p><code>$session status</code> reports whether the session is <code>normal</code>, in reserve wind-down, or exhausted. A budget-stopped session is marked <code>exited</code>, not <code>failed</code>, because the system landed by design. <code>$meter</code> separates <code>execution_cost</code>, <code>coordination_cost</code>, and <code>landing_cost</code> so you can see whether the run spent most of its budget building, coordinating, or closing out.</p>
 <hr>
+<h2 id="scenario-prepay-ambiguity-before-flow-run">Scenario: Prepay Ambiguity Before a Flow Run</h2>
+<p><strong>The situation:</strong> You are about to launch a CocoFlow run, but the task description is vague enough that the agent would spend its first turns discovering scope.</p>
+<pre><code>
+$cocoplus console
+$flow run --outcome "renamed billing status column and validation tests pass"
+</code></pre>
+<p>In CocoConsole's Flow panel, type the proposed task description into Prompt Quality before launch. A phrase like "figure out why billing is wrong" shows an open-ended complexity chip and ambiguity advisory. A description like "rename column <code>status_cd</code> to <code>billing_status</code> and run validation tests to confirm" drops the tier and removes the missing-acceptance advisory.</p>
+<p>When complexity estimation is enabled, the launched run writes <code>.cocoplus/lifecycle/cocoflow/[run-id]/complexity.json</code>. After completion, <code>$meter</code> and the Cost panel show ACRR. If ACRR keeps rising for the same task class, tune the task framing or complexity baseline before changing model tiers.</p>
+<hr>
 <h2 id="scenario-multi-source-research">Scenario: Multi-Source Research Before Acting</h2>
 <p><strong>The situation:</strong> You need to explain a metric anomaly or schema drift, and the answer depends on Snowflake metadata, project files, and runbooks.</p>
 <pre><code>

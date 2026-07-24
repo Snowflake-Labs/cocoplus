@@ -47,6 +47,20 @@ Advisor-tier calls are reserved for commitment boundaries. Do not call the advis
 
 Read `[flow.planning]` before the orchestration pass. If `diverge_on_branch_points = true`, invoke diverge-then-focus only at high-consequence branch points: multiple structural options, no dominant choice, and downstream impact. Use isolated branches, then a separate critic pass that produces shortlist, `nonObviousPick`, named traps, and design-space clusters.
 
+## Pre-Dispatch Complexity Gate
+
+If `[flow] complexity_estimation = true`, run the local lexical estimator before first stage dispatch:
+
+```text
+node .cocoplus/scripts/complexity-estimate.js "<task description>"
+```
+
+Write the result to `.cocoplus/lifecycle/cocoflow/<run-id>/complexity.json` with `tier`, `score`, `signals`, `ambiguity_score`, `has_acceptance_check`, and the applied harness floor.
+
+Complexity sets the floor for `model_tier` and `thinking_effort`; budget state caps only parallelism and retry budget. Do not use abundant budget to raise a trivial task above its complexity floor. Do not use reserve pressure to lower a hard or open-ended task below its model/effort floor. When `[harness] trivial_floor_invariant = true`, preserve this invariant even if raw harness defaults are more expensive.
+
+If the description has high ambiguity or no acceptance check, surface a non-blocking advisory before launch. The developer may proceed, but record the advisory in `.cocoplus/session/PROGRESS.md` Notes when the run starts.
+
 ## Multi-Pod Branch Topology
 
 For multi-pod CocoFlow runs, derive branch names from the flow tree using dotted topology tokens:
@@ -80,16 +94,17 @@ If no argument: execute all stages with status != "completed" in dependency orde
 
 For full pipeline execution:
 1. Attempt an execution plan template match from `.cocoplus/flows/templates/`. A validated match may skip the strategic assessment and orchestration pass; record the reuse in `.cocoplus/meter/template-benchmarks.jsonl`.
-2. Run the conditional strategic assessment unless a valid template match exists or the workflow is trivially single-stage. Capture objective, risk, quality bar, and escalation boundaries.
-3. Run the mandatory orchestration pass. Produce `dependency_graph`, `dependency_groups`, `tier_assignments`, `expected_outputs`, and one context brief per step. Each `context_briefs[*].text` must be 200 words or fewer.
-4. Read `runtime.concurrency_mode` from `flow.json` (or apply `--concurrency` override)
-5. Dispatch dependency groups, not isolated stages. All stages in the same ready group are submitted in one batch when their dependencies are satisfied.
-6. Apply concurrency mode:
+2. Run the complexity estimator if enabled and store `complexity.json` before any model-backed planning call.
+3. Run the conditional strategic assessment unless a valid template match exists or the workflow is trivially single-stage. Capture objective, risk, quality bar, and escalation boundaries.
+4. Run the mandatory orchestration pass. Produce `dependency_graph`, `dependency_groups`, `tier_assignments`, `expected_outputs`, and one context brief per step. Each `context_briefs[*].text` must be 200 words or fewer.
+5. Read `runtime.concurrency_mode` from `flow.json` (or apply `--concurrency` override)
+6. Dispatch dependency groups, not isolated stages. All stages in the same ready group are submitted in one batch when their dependencies are satisfied.
+7. Apply concurrency mode:
    - **normal**: spawn all ready stages simultaneously
    - **caution**: spawn at most 2 stages simultaneously; wait for at least 1 to complete before spawning another
    - **single-track**: spawn 1 stage at a time; wait for completion and checkpoint validation before spawning next
-7. After each dependency group completes, run a synthesis pass to reconcile contradictions before unblocking downstream groups.
-8. Repeat until all stages complete or one fails with on_failure: stop
+8. After each dependency group completes, run a synthesis pass to reconcile contradictions before unblocking downstream groups.
+9. Repeat until all stages complete or one fails with on_failure: stop
 
 ## Execute Each Stage
 
@@ -278,6 +293,9 @@ Time: [duration]
 - [ ] A `parallel:` step without a subsequent `converge:` step triggers a validator warning
 - [ ] Every `model_tier` resolves from `cocoplus.toml` without silent fallback
 - [ ] Every `thinking_effort` resolves from stage config or `[session] default_thinking_effort`
+- [ ] `complexity.json` exists for enabled complexity-estimation runs before first model-backed dispatch
+- [ ] Model and thinking-effort floors come from complexity tier; budget state caps only parallelism and retry budget
+- [ ] High ambiguity or missing acceptance check is surfaced as a non-blocking pre-launch advisory
 - [ ] Every declared `artifacts.reads` exists before stage start and every declared `artifacts.writes` exists before stage completion
 - [ ] Advisor-tier calls stay within `[flow.tiers] advisor_budget` and occur only at commitment boundaries or documented escalation triggers
 - [ ] Multi-pod branches use dotted topology naming and parent derivation is visible from branch names
