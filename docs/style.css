@@ -405,6 +405,39 @@ tr:hover td { background: rgba(43, 183, 255, 0.05); }
   color: var(--accent-2);
 }
 
+.principle-block {
+  display: grid;
+  gap: 1rem;
+  margin: 1rem 0 1.35rem;
+}
+
+.principle-core,
+.principle-applied {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.1rem;
+  background: rgba(15, 22, 35, 0.72);
+}
+
+.principle-applied {
+  border-color: rgba(43, 183, 255, 0.42);
+  border-left: 4px solid var(--accent);
+  background: linear-gradient(180deg, rgba(43, 183, 255, 0.13), rgba(15, 22, 35, 0.78));
+}
+
+.principle-label {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.55rem;
+}
+
+.principle-applied .principle-label {
+  color: var(--accent-2);
+}
+
 .tag {
   display: inline-block;
   background: var(--tag-bg);

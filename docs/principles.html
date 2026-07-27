@@ -34,211 +34,556 @@
 <p>A principle without a reason is just a constraint. With a reason, it becomes a compass.</p>
 <hr>
 <h2 id="1-native-first-always">1. Native First, Always</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>CocoPlus uses only what Coco already provides: skills, subagents, hooks, slash commands, and AGENTS.md. Nothing external. No third-party services bolted on, no external databases, no runtime dependencies beyond the Snowflake connection Coco already manages.</p>
 <p>The reason for this is not purity — it is reliability. Every external dependency is a failure vector that lies outside your control. A cloud service rate-limits under load. A database pool exhausts at midnight. An API changes its response format without notice. When any of these happen inside CocoPlus, the developer has to debug a distributed system problem to understand why their AI plugin failed.</p>
 <p>Native constructs fail in ways you can read and understand. A hook script that fails leaves an error message in a format you recognize. A skill file that has a logic error is a file you can open and read. The failure modes are local, legible, and fixable without calling anyone.</p>
 <p>If a feature requires breaking this principle, the feature does not belong in CocoPlus.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoPlus ships as Coco-native skills, agents, hooks, commands, templates, and AGENTS.md rules. Runtime behavior stays local and file-based so failures are legible inside the project instead of depending on outside services.</p>
+  </div>
+</div>
 <hr>
 <h2 id="2-structure-enables-flow">2. Structure Enables Flow</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>The CocoBrew phases feel like overhead — until the moment you realize you haven't written a spec for your last three AI sessions and the outputs are inconsistent in ways you can't trace.</p>
 <p>Structure is not the opposite of speed. Unstructured development feels faster at first because you're skipping steps. Then you spend twice as long on the steps you skipped — debugging misaligned expectations, re-running tests you didn't design, shipping code that doesn't match what the stakeholder asked for.</p>
 <p>The phases in CocoBrew are cognitive handrails. Each phase enforces a mental discipline that the next phase depends on. You can't write a good test if you don't have a spec defining success. You can't do a meaningful review if you don't have tested code. You can't ship responsibly if your review is open.</p>
 <p>This sequencing is not bureaucratic. It is the shape that good development naturally takes when you're paying attention.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoBrew turns work into Spec, Plan, Build, Test, Review, and Ship phases. Each phase writes durable artifacts that the next phase reads, so speed comes from clear handoffs rather than skipped thinking.</p>
+  </div>
+</div>
 <hr>
 <h2 id="3-inspect-before-act">3. Inspect Before Act</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>Acting on stale context is one of the most reliable ways to produce wrong outputs.</p>
 <p>Before any agent executes SQL, it should understand the schema it's operating on. Before any deployment, it should understand the target environment. Before any migration, it should understand the current state of what it's migrating from.</p>
 <p>The Environment Inspector embodies this as a feature. But the principle applies everywhere in the system. CocoHarvest reads the approved plan before decomposing it. The Safety Gate reads the SQL before allowing it to execute. Skills read the current state from <code>.cocoplus/</code> before taking action.</p>
 <p>Inspection has a cost. A 30-second environment scan uses tokens and time. But the cost of inspection is fixed. The cost of acting on wrong assumptions is variable — and the upper end of that variable is "you dropped the wrong table."</p>
 <p>The inspection habit is cheap discipline that prevents expensive mistakes.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>Environment Inspector, Safety Gate, CocoHarvest, and project skills read the current schema, plan, flow state, or lifecycle files before acting. The plugin treats inspection as the required precondition for Snowflake and project mutations.</p>
+  </div>
+</div>
 <hr>
 <h2 id="4-evidence-over-assertion">4. Evidence Over Assertion</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>A subagent that reports completion is not done. A subagent whose checkpoint files exist and contain valid data — that one is done.</p>
 <p>This distinction matters because language models are very good at describing what they intended to do and somewhat less reliable about verifying that they actually did it. The CocoFlow checkpoint system is designed to make completion measurable rather than reportable.</p>
 <p>Stages emit specific files as their completion evidence. Downstream stages read from those files, not from the previous stage's session context. The Safety Gate re-validates before allowing Ship. The Review phase signs off on concrete artifacts.</p>
 <p>The system is designed to make assertions costly and evidence cheap. Not because any individual agent is untrustworthy — but because the incentive structure of a well-designed system should reward producing evidence, not reporting claims.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoFlow checkpoints, Safety Gate checks, CocoSentinel approvals, CocoContract evidence, and review artifacts turn completion into observable files and validation results instead of accepting agent narration as proof.</p>
+  </div>
+</div>
 <hr>
 <h2 id="5-hard-gates-for-irreversible-operations">5. Hard Gates for Irreversible Operations</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>Some mistakes cannot be undone. Dropped tables. Truncated schemas. Deleted rows without a WHERE clause.</p>
 <p>For these operations, a warning is insufficient. A language model that is prompted carefully follows its instructions most of the time. Most of the time is not acceptable for irreversible operations on production data.</p>
 <p>Hard gates are technical enforcements that operate before any reasoning happens. The Safety Gate's PreToolUse interceptor fires before the SQL reaches Snowflake. It does not ask the language model for permission. It reads the SQL, recognizes the pattern, and blocks the call. This cannot be bypassed with a clever prompt.</p>
 <p>For recoverable mistakes — wrong logic, suboptimal queries, missing edge cases — advisory guidance is appropriate. Soft guidance informs, does not block.</p>
 <p>The distinction between hard and soft is architectural. Confusing them — making hard things soft, or making soft things hard — degrades the system in both directions. Soft gates on irreversible operations give false confidence. Hard gates on recoverable mistakes create friction that serves nobody.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>Safety Gate blocks or confirms destructive SQL before execution, while advisory systems such as Code Quality Advisor and Context Mode stay non-blocking. CocoPlus separates irreversible boundaries from recoverable guidance.</p>
+  </div>
+</div>
 <hr>
 <h2 id="6-progressive-disclosure">6. Progressive Disclosure</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>Load the minimum context needed for the current task. Not slightly less. Not roughly the right amount. Exactly the minimum.</p>
 <p>AGENTS.md is capped at 200 lines because every character in it is loaded into every session. Skills are loaded on demand because they contain detailed implementation logic that most sessions don't need. Monitors run per-stage because global monitors create context overhead that accumulates across every stage.</p>
 <p>The temptation is always to add more "just in case." Just-in-case context becomes noise. Noise makes it harder for the agent to reason about the signal. A skill that loads 600 lines of context to execute a 30-line workflow is a skill whose design should be questioned.</p>
 <p>The hard limit is a forcing function for clear boundaries. If AGENTS.md can only hold 200 lines, you have to decide what belongs there and what belongs in the warm layer. That decision-making process is valuable in itself — it forces you to articulate what the ambient context of a session actually needs to contain.</p>
 <p>Progressive disclosure is how the system scales. At session 10, it works. At session 200, it still works, because the context budget is managed rather than exhausted.</p>
 <p>Brevity in skill files turns out to be more than an aesthetic preference — it's measurable. Internal evaluation found that a skill file padded with explanatory methodology prose raised output regression rates from roughly 6% to roughly 10% compared to a compressed version carrying the same active instructions. Longer prompts dilute the weight of each instruction; a model can partially follow a long explanation in a way it can't partially follow a short directive. The test when compressing a skill file isn't "does this feel succinct" — it's "if I cut this explanation in half, does output quality improve or degrade."</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>AGENTS.md is kept compact, skills load only when invoked, monitors run at targeted lifecycle points, and CocoPull/CocoSession preserve dense handoffs so context budget is spent on the current task.</p>
+  </div>
+</div>
 <hr>
 <h2 id="7-classify-failure-before-retry">7. Classify Failure Before Retry</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>When a stage fails, the failure must be understood before it is addressed.</p>
 <p>Blind retry is not a strategy — it is an absence of strategy dressed up as action. Running the same failing stage again without understanding why it failed produces the same failure, or a different failure, unpredictably. Either way, you learn nothing.</p>
 <p>Failure classification is the first step. Did the checkpoint file not get created? Did it get created with invalid content? Did the SQL error? Did the test fail? Each of these failure types has a different root cause and a different repair.</p>
 <p>The CocoFlow loop construct exists for structured retry after classification. A loop that retries up to three times is appropriate after you've identified that the failure is transient — a timeout, a connection issue. A loop that retries three times on a logic error produces three documented failures instead of one.</p>
 <p>Logging the classification is what makes the Memory Engine valuable. CocoCupper can identify patterns in failure classifications across sessions. "Stages that involve NotebookExecute fail on checkpoint validation 40% of the time due to notebook output formatting" is a pattern worth knowing. Unclassified retries produce no learning.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoFlow retries are tied to classified failure modes, not hope. Stage status, checkpoint validation, hook logs, and CocoCupper observations preserve why something failed so repair can target the cause.</p>
+  </div>
+</div>
 <hr>
 <h2 id="8-institutional-memory-over-rediscovery">8. Institutional Memory Over Rediscovery</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>Every session should leave the project in a better-documented state than it found it.</p>
 <p>This is not a nice-to-have. It is the difference between a project that gets smarter with time and one that resets with every new session.</p>
 <p>The Memory Engine captures decisions as they happen. CocoCupper identifies patterns after sessions complete. CocoGrove stores the patterns worth keeping permanently. The three-layer memory architecture exists because different knowledge has different durability: some decisions are relevant for today's session, some for the next month of sessions, and some indefinitely.</p>
 <p>An error that was encountered and resolved is worth recording — not because you are proud of the error, but because the next developer (or the next AI agent, or you in six months) should not have to rediscover the same solution. A schema pattern that worked well is worth promoting to CocoGrove so it becomes the default approach, not the hard-won exception.</p>
 <p>The cost of documentation is paid once. The benefit of not re-discovering something is paid every time it would have been re-discovered.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>Memory Engine, CocoCupper, CocoGrove, CocoWisdom, CocoRecall, and CocoDiary capture decisions, rejected approaches, reusable patterns, and session understanding so future work starts from what the project already learned.</p>
+  </div>
+</div>
 <hr>
 <h2 id="9-token-economics-as-architecture">9. Token Economics as Architecture</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>Token budgets are not constraints to work around. They are parameters that shape the system's design.</p>
 <p>CocoPlus makes explicit model assignments across the system: Haiku for pattern recognition (CocoCupper), Haiku with Sonnet escalation for analytical tasks (Data Analyst, BI Analyst), Sonnet for execution and reasoning (most personas), Opus for strategic decisions (CDO). These are not preferences — they are architectural decisions about where depth is required and where efficiency is sufficient.</p>
 <p>The AGENTS.md limit, the on-demand skill loading, the per-stage monitor activation — all of these are token economics expressed as design constraints. They ensure that the system is as useful at session 200 as it is at session 1, because context budget is managed at every layer.</p>
 <p>When designing a new feature, the first question is not "what should it do" — it is "what does it cost to do that, and is the cost justified at scale?" A feature that works beautifully for the first twenty iterations and breaks the context budget by iteration thirty is not a well-designed feature.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoMeter, role-based model tiers, ACRR calibration, cost categories, and skill surface budgets make token and credit cost visible design inputs. CocoPlus treats model depth and context size as architecture, not afterthoughts.</p>
+  </div>
+</div>
 <hr>
 <h2 id="10-isolation-prevents-contamination">10. Isolation Prevents Contamination</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>CocoHarvest agents run in isolated git worktrees. CocoFlow stages marked as isolated start with clean context. Unverified output from one stage does not become assumed truth in the next.</p>
 <p>Isolation is not just about parallelism. It is about correctness.</p>
 <p>When one stage contaminates the next with incomplete or incorrect assumptions, the error propagates. By the time you notice it — at Stage 4, or Stage 6, or during Review — the contamination has compound interest. Debugging requires tracing back through multiple stages to find where the wrong assumption was introduced.</p>
 <p>Isolated stages prevent this. Each stage has explicit inputs (the files and checkpoints from prior stages) and explicit outputs (the checkpoint files it produces). The interface is clear. A failure is localized — it is in this stage, not diffused through the system.</p>
 <p>The cost of isolation is real: more explicit file-passing, more checkpoint definitions, more deliberate context management. It is always lower than the cost of debugging a contaminated failure.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoHarvest worktrees, isolated CocoFlow stages, explicit checkpoint files, retained proposals, and evaluator lockout keep work products from contaminating independent review or downstream execution.</p>
+  </div>
+</div>
 <hr>
 <h2 id="11-personas-are-contracts">11. Personas Are Contracts</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>A persona is not a suggestion for how to approach a task. It is a specification of who handles the task, what tools they have, how they operate, and what model reasons on their behalf.</p>
 <p>These specifications are locked. The Data Steward operates in plan mode because autonomous execution defeats the purpose of governance review — someone who can take action without prompting is not a check, they are a participant. The CDO uses Opus because the cost of Opus is appropriate for decisions at the level of strategic architecture.</p>
 <p>Persona contracts matter because CocoPlus is a team system. When you assign a task to a persona, you know exactly what will happen: which tools will be available, which model will reason, which output format to expect. That predictability is the value of the contract.</p>
 <p>A persona whose contracts can be arbitrarily overridden is a persona without identity. Identity in a specialist agent is not a personality quirk — it is the source of the specialist's value. Override the contract, and you have a generalist again.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>The fixed persona roster and dynamic personas declare tools, model expectations, scope, and handoff behavior. Routing honors those contracts so a Data Steward, CDO, or Data Engineer means a predictable operational boundary.</p>
+  </div>
+</div>
 <hr>
 <h2 id="12-the-plugin-serves-the-developer">12. The Plugin Serves the Developer</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>Every feature must produce visible, direct value to the developer working in the terminal.</p>
 <p>This sounds obvious. It is often violated.</p>
 <p>Features that add process overhead without developer benefit are not features — they are compliance theater. A feature that ensures the AI's session is auditable but provides the developer nothing concrete is a feature that serves a process, not a person.</p>
 <p>Before any feature is built, the test is: does the developer experience value directly? Does it save them time? Does it prevent an error they would have made? Does it produce an artifact they actually want? If the answer is "it helps governance" or "it satisfies the audit trail," the next question is: does the developer experience that help, or does it happen invisibly behind them?</p>
 <p>CocoPlus is not a governance layer. It is a productivity layer. The difference is where the value lands. Governance lands in reports. Productivity lands in the developer's experience of doing the work.</p>
 <p>If CocoPlus ever starts to feel like something to work around rather than something to work with, this principle has been violated.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>Every feature is expected to give the developer a visible benefit: safer SQL, better handoffs, clearer costs, stronger review, faster retrieval, or less repeated work. Governance features surface actionable state rather than hiding in reports.</p>
+  </div>
+</div>
 <hr>
 <h2 id="13-look-up-before-inferring">13. Look Up Before Inferring</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>When an authoritative source exists — a catalog of valid values, a documented API contract, a structured reference file — query it before guessing. Inference is the fallback for what can't be looked up, not the default path that happens to work most of the time.</p>
 <p>Snowflake function signatures, Cortex API parameters, supported data types, and the draw.io shape catalog are all lookable. When CocoSketch needs the correct <code>shape=mxgraph.*</code> string for an AWS service icon, it queries the shape index rather than guessing from the service name. A wrong shape string renders as a blank box — the visual output silently lies. A correct one renders the intended icon.</p>
 <p>Before asking a model to produce a specific technical value — a function name, a parameter, a type identifier, a command flag — ask whether that value exists somewhere readable. If it does, read it. This ordering is the difference between output that's reliable and output that's merely plausible.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoSketch shape lookup, Snowflake inspection, Cortex function references, validation scripts, and command specs prefer structured sources over model inference whenever a correct value can be read directly.</p>
+  </div>
+</div>
 <hr>
 <h2 id="14-scope-boundary-as-feature">14. Scope Boundary as Feature</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>Every CocoPlus capability defines what it is not for, with a clear redirect to what should be used instead. This isn't a disclaimer — it's a precision affordance.</p>
 <p>A tool that claims to do everything signals it understands nothing about tradeoffs. CocoSketch is the commit-grade visual artifact tool: quick whiteboard diagrams go to Mermaid, interactive exploration goes to CocoMap, complex developer-authored diagrams go to CocoSketch. Each boundary routes the developer to the better tool for their actual need.</p>
 <p>The same discipline applies system-wide. CocoAudit is for regulated compliance trails, not general session logging. CocoTrace is for requirements coverage, not general file-change tracking. CocoReview is for code artifacts, not specification documents. A "when NOT to use" section in a skill's frontmatter carries as much weight as the "when to use" section — scope boundaries are what stop a feature from drifting into adjacent responsibilities it was never designed for.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>Skills and feature docs define when not to use a capability and point to the better tool. CocoSketch, CocoAudit, CocoTrace, CocoReview, and related features keep their responsibility boundaries explicit.</p>
+  </div>
+</div>
 <hr>
 <h2 id="15-two-consumers-two-output-modes">15. Two Consumers, Two Output Modes</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>When an output will be read by both a machine agent and a human developer, one format optimized for neither is a false economy. The two have structurally different requirements.</p>
 <p>Machine-optimized output maximizes information density — no section headers, no prose transitions, no narrative framing. Every token carries information. This is what CocoHarvest loads as stage input and what CocoFlow passes between pipeline steps; formatting prose in that path spends token budget on structure the consuming model gets no value from.</p>
 <p>Human-optimized output prioritizes comprehension — a summary at the top, section headers for navigation, prose transitions between dense sections. This is what a developer reads to verify a distillation or review a report at a glance.</p>
 <p>CocoPull's two modes (compact default, <code>--human</code> flag) embody this directly, as does CocoSketch's preview PNG versus final PNG. The distillation logic stays shared; only the formatting layer branches at the last step based on who's reading. Never optimize for the more forgiving consumer — the human — and hand the result to the less forgiving one, the LLM context window.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoPull compact and human modes, dashboard views, checkpoint JSON, markdown reports, and review outputs use separate presentation paths for machines and people while preserving the same underlying facts.</p>
+  </div>
+</div>
 <hr>
 <h2 id="16-minimum-viable-surface">16. Minimum Viable Surface</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>Every Cortex function, CocoFlow stage, and plugin construct should be the minimum surface area that credibly solves the stated problem — sufficient, and no larger than sufficient.</p>
 <p>This counters a real bias: the path of least resistance for a language model is to generate. Asked to solve a simple problem, a model often produces a complex solution, because complexity is more available in its training distribution and looks more like effort. CocoLean makes the countermeasure explicit — the six-rung decision ladder (deterministic rule → native built-in → existing UDF → single AI_COMPLETE call → minimum-line function → full Cortex function) runs before any new function gets written, and stops at the first rung that answers the need.</p>
 <p>The same logic applies to CocoFlow stages (a single well-scoped LLM call beats three chained synthesis steps that produce the same output quality) and to plugin constructs themselves (a skill loading in 150 tokens beats an equivalent one loading in 300). The constraint is equivalence, not degradation — minimum surface never means less capability, only no excess.</p>
 <p>This principle never applies to trust boundaries, data loss prevention, security controls, regulatory compliance, or error handling that prevents silent data corruption. Those aren't excess — they're the safety surface everything else sits on. The question is whether a stage needs four synthesis steps, never whether a trust boundary check is YAGNI.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoLean, CocoBehavior, and CocoReview complexity audit enforce the smallest sufficient function, stage, or skill surface. Safety, compliance, and data-loss boundaries remain protected carve-outs rather than YAGNI targets.</p>
+  </div>
+</div>
 <hr>
 <h2 id="17-outcome-before-evidence">17. Outcome Before Evidence</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>Declare what correct behavior looks like before the generator begins. The outcome contract must exist as an independent, committed artifact before any spec, plan, or build activity produces the function it will evaluate.</p>
 <p>This addresses a failure mode invisible from inside the system that produces it: when an agent generates a function and then evaluates it against criteria the same agent authored, the evaluation is self-confirming by construction. The generator's intentions were present the whole time — evaluation criteria derived after the fact cannot be independent of the output they're judging. A more rigorous self-authored evaluation just produces a more rigorous tautology. The question was never the quality of the evaluation — it's the independence of the oracle.</p>
 <p>"Before" means structurally before: the contract is declared before <code>$spec</code> or <code>$build</code> runs, committed to version control ahead of generation, and authored by the developer or a designated oracle-author who is not the generating agent. The commit timestamp is what proves independence. Evidence is then classified by epistemic strength — real-endpoint execution with an externally verifiable result is the only tier sufficient for production certification; evaluation that shares session context with the generator is explicitly insufficient, no matter how thorough it reads.</p>
 <p>This principle is a close relative of Evidence Over Assertion (4) — that one says don't assert what you haven't measured, this one says don't measure against criteria you invented after building the thing you're measuring. CocoContract is the operational instrument: <code>$contract init</code> is how the oracle gets declared and committed before generation begins, and the stop hook on <code>$ship</code> is what makes this an architectural invariant instead of a suggestion.</p>
 <hr>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoContract requires outcome criteria and evidence hierarchy before generation and gates Ship on independent proof. The evaluator cannot quietly invent the success standard after seeing the generated artifact.</p>
+  </div>
+</div>
 <hr>
 <h2 id="18-declarative-agency-boundary">18. Declarative Agency Boundary</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>A pod's authority is fully defined by what it explicitly declares it will do and what it explicitly declares it will not do. Undeclared territory does not default to "available" — it defaults to "not my concern." Explicit exclusion is as architecturally load-bearing as explicit inclusion.</p>
 <p>In a single-pod system, scope is defined by what the pod includes. In a multi-pod system, scope is defined by the intersection of every pod's inclusions and exclusions. Two undeclared territories facing each other produce overlap by default — both pods may reasonably conclude a concern is theirs, and both fire, producing duplicate or contradictory guidance on the same issue. Two explicit exclusions facing each other produce a clean boundary by design, with no ambiguity for either pod to resolve at runtime.</p>
 <p>Every CocoPod definition carries an <code>excludes:</code> field alongside its capability description, naming the concern classes it does not own. CocoPivot's scope anomaly detection depends entirely on this — a pod without a declared exclusion boundary cannot be evaluated for scope discipline, because there is nothing to check its output against. This is why the field is required for any pod running in a parallel workflow: without it, the convergence step has no way to tell a legitimate finding from scope creep.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoHarvest pods and dynamic personas declare owned and excluded concern classes. CocoPivot uses those declarations to detect overlap, gaps, and scope drift during convergence.</p>
+  </div>
+</div>
 <hr>
 <h2 id="19-metering-as-governance">19. Metering as Governance</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>Cost visibility is not just a dashboard concern. In an AI development system, metering is a governance boundary: it explains who used which model, which workflow caused the spend, which cost center owns it, and whether a change shifted cost from tokens to warehouse compute.</p>
 <p>CocoMeter therefore treats chargeback facts as evidence. It separates token and warehouse credits, preserves attribution to stages and users, exposes unmapped cost centers instead of hiding them, and strips infrastructure-only system reminders before prompt persistence. A cost report that cannot explain its provenance is not governance — it is decoration.</p>
 <p>This principle also applies to model tier declarations. A stage that asks for <code>ultra</code> must not silently fall back to <code>regular</code>, because that changes both cost and quality semantics. The developer should see the unavailable tier and decide what to do.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoMeter Enhanced, chargeback scripts, request maps, model tier resolution, and reconciliation artifacts make token spend, warehouse credits, cost centers, and actual served models explainable.</p>
+  </div>
+</div>
 <hr>
 <h2 id="20-orchestration-must-remain-legible">20. Orchestration Must Remain Legible</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>CocoPilot can reduce friction, but it must not make the system mysterious. A companion that routes intent, suggests commands, or summarizes state is valuable only while the developer can still see what is happening, why it is happening, and which boundary applies next.</p>
 <p>This principle is why CocoPilot records session intent instead of hiding it, why CocoForge supersedes Pilot visibly while a goal loop is active, and why Leviathan Mode requires explicit covenant acceptance before autonomy expands. Ronin follows the same rule: the personal assistant briefing is not decoration, it is the human-readable surface that keeps autonomous coordination accountable.</p>
 <p>Orchestration should make the right path easier to follow. It should never turn a gated system into a black box.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoPilot, CocoForge, Leviathan Mode, and Ronin expose active mode, routing, hard stops, and next boundaries. Orchestration is allowed to help, but not to hide who is acting or what gate applies.</p>
+  </div>
+</div>
 <hr>
 <h2 id="21-durable-records-outlive-session-memory">21. Durable Records Outlive Session Memory</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>Consequential decisions, approvals, evaluations, and audit claims must survive beyond the context window that produced them. A claim that exists only in private session memory cannot be verified by a future operator.</p>
 <p>CocoPlus writes durable records for lifecycle events, approvals, quality gates, cost reports, and session handoffs so the next agent can verify what happened without trusting a transcript summary.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoAudit, CocoSession, CocoDiary, CocoWisdom, CocoMeter history, Sentinel approvals, and lifecycle artifacts persist consequential claims so a later session can verify them without trusting memory.</p>
+  </div>
+</div>
 <hr>
 <h2 id="22-verification-must-name-what-was-untestable">22. Verification Must Name What Was Untestable</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>A quality system must distinguish between verified, refuted, and untestable-here. Treating unavailable evidence as either a silent pass or a generic failure hides the actual state of knowledge.</p>
 <p>CocoContract, CocoSentinel, CocoMeter, and related review surfaces carry confidence context and known-gap records when the current environment cannot prove a claim.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoContract, CocoSentinel, CocoMeter, and review reports record verified, refuted, and untestable-here states. Known gaps remain visible instead of being collapsed into pass/fail theater.</p>
+  </div>
+</div>
 <hr>
 <h2 id="23-understanding-is-the-work-not-its-residue">23. Understanding Is the Work, Not Its Residue</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>A session produces artifacts and understanding. The artifacts survive in git; the reasoning, risk discoveries, operator decisions, and changed mental model disappear unless captured before the session ends.</p>
 <p>CocoDiary, CocoWisdom, audit summaries, and session handoffs follow the never-invent rule: a shorter true record is better than a longer plausible one. Documentation captures what was learned, not what the agent wishes had been learned.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoDiary, session handoffs, audit summaries, and wisdom records capture decisions, risks, operator choices, and learned context using the never-invent rule, so continuity preserves understanding as well as files.</p>
+  </div>
+</div>
 <hr>
 <h2 id="24-context-isolation-is-a-governance-property-not-a-configuration-option">24. Context Isolation Is a Governance Property, Not a Configuration Option</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>An evaluator that can see or alter the work it reviews is no longer independent. Isolation is not a strict-mode preference; it is the condition that makes review meaningful.</p>
 <p>ReviewerLockout, CocoReview, CocoContract, CocoSentinel, CocoForge critic passes, Leviathan coordination channels, and PII governance all depend on explicit, auditable channels rather than ambient context bleed.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>ReviewerLockout, isolated critic passes, proposal settlement, PII governance, and CocoForge critic boundaries keep generators, reviewers, and operators separated through auditable channels.</p>
+  </div>
+</div>
 <hr>
 <h2 id="25-stated-is-not-enforced">25. Stated Is Not Enforced</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>A rule in documentation is an aspiration until a deterministic check, hook, or structural gate enforces it. Operators must be able to tell whether a constraint is machine-enforced, hook-guarded, or guidance-only.</p>
 <p>CocoSentinel findings, governance hooks, shadow rollouts, and coding-agent instructions label enforcement tier explicitly so the gap between statement and enforcement stays visible.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>Validation scripts, hooks, gate metadata, shadow policies, and documentation label whether a rule is enforced structurally, observed by hooks, invoked by skills, or only documented guidance.</p>
+  </div>
+</div>
 <hr>
 <h2 id="26-consolidation-is-not-capture">26. Consolidation Is Not Capture</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>Capturing knowledge records an observation. Consolidating knowledge maintains the record by merging duplicates, resolving contradictions, pruning stale entries, and indexing the result for retrieval.</p>
 <p>CocoRecall, CocoDream, Memory, and hygiene loops treat consolidation as a scheduled maintenance obligation. A system that captures forever and consolidates never is an accumulator, not a memory.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoRecall indexing, CocoDream consolidation, CocoHygiene archives, wisdom routing, and memory maintenance distinguish fresh capture from later cleanup, deduplication, and stale-record handling.</p>
+  </div>
+</div>
 <hr>
 <h2 id="27-context-rot-is-an-architecture-problem">27. Context Rot Is an Architecture Problem</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>Context rot is the quiet degradation where accumulated tokens reduce the effective weight of earlier instructions. It is not solved by telling the agent to pay more attention. It is solved by architecture: fresh context windows for independent checks, predicate-style persistent state, and skill surface budgets that avoid loading unnecessary instructions.</p>
 <p>If the system needs to remember something important, it must write it in a form that survives context accumulation. CocoSession's <code>CONTEXT.md</code> predicates and CocoConsole's Skill Surface Budget make this visible and enforceable.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoSession writes predicate CONTEXT.md, PROGRESS.md, task queues, budget state, and status files so important state survives context growth and can be read cold by a future session.</p>
+  </div>
+</div>
 <hr>
 <h2 id="28-proposals-before-commits">28. Proposals Before Commits</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>Agent work that can affect Snowflake objects, committed SQL, or pipeline configuration is safest as a retained proposal until the operator settles it. Reversibility before commit is categorically safer than undo after commit.</p>
 <p>This principle does not slow every workflow. It applies where the stage opts into proposal mode because its output crosses a meaningful boundary. Autonomy may prepare the change; it may not convert the proposal into a live effect without settlement.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoFlow retained proposal mode stores Snowflake writes and pipeline changes under .cocoplus/proposals until the operator explicitly accepts or discards them with flow settlement.</p>
+  </div>
+</div>
 <hr>
 <h2 id="29-actuator-cost-is-monotonic">29. Actuator Cost Is Monotonic</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>Every rule has a cheapest sufficient actuator. A hook fires only when the guarded action fires. A skill loads only when invoked. A structural agent rule loads for a session class. Standing context loads every time, whether relevant or not.</p>
 <p>The cheapest actuator sufficient for the job is the right actuator. CocoRetro and CocoHygiene exist to keep the system honest: they classify failures, measure wasted effort, and propose fixes at the lowest layer that can actually prevent the recurrence.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoRetro and CocoHygiene push recurring fixes toward the cheapest sufficient actuator: a hook when a structural guard is needed, a skill when invocation is enough, and standing context only when it truly must be ambient.</p>
+  </div>
+</div>
 <hr>
 <h2 id="30-the-permission-floor-is-not-the-permission-ceiling">30. The Permission Floor Is Not the Permission Ceiling</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>A permission level observed at session start is not a guarantee for the rest of the session. Governance must check the live permission state at the point of enforcement.</p>
 <p>This is why CocoSentinel logs bypass-safeguard state after tool use, why RBAC escalation to <code>ACCOUNTADMIN</code> is blocked by a PreToolUse hook by default, and why CocoConsole displays current governance posture rather than assuming the launch state still holds.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>PreToolUse and PostToolUse governance checks inspect live permission posture, RBAC escalation, bypass safeguards, and private-history state at enforcement time rather than trusting a session-start assumption.</p>
+  </div>
+</div>
 <hr>
 <h2 id="31-divergence-requires-isolation">31. Divergence Requires Isolation</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>A single context window anchors on its own previous text. Asking one model call to produce and evaluate multiple options does not create real independence; the options have already contaminated one another.</p>
 <p>CocoFlow's diverge-then-focus path uses isolated planning branches and a separate critic pass. The output must surface shortlist, named traps, design-space clusters, and a labeled non-obvious viable option so the developer can see more than the familiar first answer.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoFlow branch planning, isolated generation calls, separate critic passes, and CocoKlatch participants create real divergence by separating context at the API and artifact boundary.</p>
+  </div>
+</div>
 <hr>
 <h2 id="32-the-harness-is-the-optimization-surface">32. The Harness Is the Optimization Surface</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>For complex agent workflows, the separable control layer around the model is where optimization is most attributable: context assembly, tool exposure, generation settings, orchestration topology, memory behavior, and output processing.</p>
 <p>CocoPod configuration now names those dimensions explicitly in <code>cocoplus.toml [harness]</code>. If accuracy improves across harness iterations, keep tuning the harness. If it plateaus immediately, the bottleneck is probably model capability, evaluation quality, or task framing.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>cocoplus.toml names harness dimensions such as context assembly, model roles, tool exposure, generation controls, state persistence, and output extraction so tuning can be attributed to the right surface.</p>
+  </div>
+</div>
 <hr>
 <h2 id="33-deterministic-computation-belongs-in-code-not-in-tokens">33. Deterministic Computation Belongs in Code, Not in Tokens</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>If a task has a correct answer computable from available data, it belongs in a script. SQL validation, schema parsing, function signature extraction, scope classification, and artifact existence checks should not be narrated into being by a model.</p>
 <p>SKILL.md routes the workflow, scripts compute deterministic facts, and references load only when needed. CocoBrew's distribution gate and observer loop enforce that separation for project-local skills and marketplace candidates.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>Project scripts such as validators, complexity estimators, artifact checks, status healers, chargeback helpers, and flow readers compute deterministic facts outside the model context.</p>
+  </div>
+</div>
 <hr>
 <h2 id="34-enforce-budgets-at-natural-seams-not-mid-step">34. Enforce Budgets at Natural Seams, Not Mid-Step</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>Cost is recorded when usage data lands. Mid-call, the system does not yet know the final spend. Killing an in-flight stage at an estimated boundary risks losing both the compute already spent and the deliverable that would have justified it.</p>
 <p>CocoPlus enforces cost budgets at natural boundaries: between iterations, after stage completion, and before dispatching new work. A reserve window is held back for landing work such as final evaluation, commits, PROGRESS.md updates, and handoff notes. Reserve is not slack; it is the budget for ending cleanly.</p>
-<p>Applied to CocoPlus: CocoSession budget checks stop new CocoFlow stages once the reserve window is entered, but they never interrupt a stage already running. The final billable item should be a completed deliverable, not a half-written trace.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoSession cost budgets stop new dispatch at stage boundaries, reserve landing budget for handoff and final checks, and record execution, coordination, and landing spend separately.</p>
+  </div>
+</div>
 <hr>
 <h2 id="35-one-vocabulary-two-homes">35. One Vocabulary, Two Homes</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>When two stores describe the same state, they should share one vocabulary. A local CocoPod state file and a CocoConsole row should not need translation between "done," "complete," and "finished." Translation turns recovery into interpretation.</p>
 <p>The distinction between <code>completed</code>, <code>exited</code>, and <code>failed</code> is load-bearing. <code>completed</code> means the goal was met. <code>exited</code> means the system stopped structurally, such as budget, timeout, or operator stop. <code>failed</code> means something broke and needs investigation.</p>
-<p>Applied to CocoPlus: CocoSession, CocoFlow, CocoPod state, and CocoConsole share one canonical status vocabulary: <code>running</code>, <code>paused</code>, <code>completed</code>, <code>exited</code>, <code>failed</code>, <code>idle</code>, and <code>retired</code>. Healer logic can stamp the more terminal status across stores without guessing what a synonym meant.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoSession, CocoFlow, CocoPod state, and CocoConsole use the same terminal status vocabulary. Healer logic can reconcile files and console rows without translating synonyms.</p>
+  </div>
+</div>
 <hr>
 <h2 id="36-task-complexity-is-the-independent-floor">36. Task Complexity Is the Independent Floor</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>Complexity and quota govern different execution dimensions. Complexity sets the minimum model and thinking effort required by the task. Quota governs the dimensions where headroom matters: parallelism and retry budget.</p>
 <p>Conflating the two creates bad behavior in both directions. Abundant budget should not make a trivial rename run through maximum reasoning. Budget pressure should not lower a hard diagnostic below the capacity it needs to succeed.</p>
-<p>Applied to CocoPlus: pre-dispatch complexity estimation records a tier for each enabled CocoFlow run, the harness compositing rule preserves the complexity floor, and CocoMeter ACRR trends show when a task class is systematically over-expanded or underestimated.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>Pre-dispatch complexity estimation writes a run tier, harness compositing preserves model and effort floors, and CocoMeter ACRR shows whether task classes are being under- or over-provisioned.</p>
+  </div>
+</div>
 <hr>
 <h2 id="37-ambiguity-is-pre-payable">37. Ambiguity Is Pre-Payable</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>Every ambiguity in a task description is a cost that will be paid. Resolve it before dispatch and the cost is essentially zero. Leave it for the agent to discover during execution and the cost becomes model tokens, inspected files, and exploratory turns.</p>
 <p>Acceptance checks are the companion discipline. A task that says what done means costs less because the agent knows when to stop. A task without a completion criterion forces the agent to infer the finish line.</p>
-<p>Applied to CocoPlus: CocoConsole's prompt-quality surface scores task descriptions before launch, warns on high ambiguity, and surfaces missing acceptance checks without blocking the developer from proceeding.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoConsole prompt-quality checks score ambiguity and missing acceptance criteria before dispatch. The warning is non-blocking, but it gives the developer a zero-cost chance to narrow the execution space.</p>
+  </div>
+</div>
 <hr>
 <h2 id="38-the-transcript-is-the-source-of-truth">38. The Transcript Is the Source of Truth</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>Runtime counters are useful, but they are derived state. The JSONL transcript is the durable event record for what the session actually did: assistant responses, token usage, served model identity, tool activity, and background-agent events.</p>
 <p>When billing, ACRR attribution, or model-tier analysis depends on correctness, CocoPlus reconciles against the transcript. Duplicate assistant messages are deduplicated by stable message ID, with a usage fingerprint fallback, before token totals become authoritative.</p>
-<p>Applied to CocoPlus: CocoMeter's session-end reconciliation writes <code>meter/reconciliation-[session-id].json</code>, corrects material token gaps, and records transcript-derived actual model identity so proxy or platform drift is visible instead of hidden.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoMeter reconciliation reads the JSONL transcript, deduplicates assistant responses, writes reconciliation-[session-id].json, corrects material token gaps, and records transcript-derived actual model identity.</p>
+  </div>
+</div>
 <hr>
 <h2 id="39-timestamps-have-provenance">39. Timestamps Have Provenance</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
 <p>A timestamp must say what moment it marks. Record-write time, dispatch time, start time, and completion time are not interchangeable, especially for background work that may finish long after it was launched.</p>
 <p>For background CocoPods, a <code>tool_result</code> timestamp may describe dispatch rather than completion. CocoPlus prefers completion records from queue events when available and labels fallback timestamps explicitly when the authoritative event is missing.</p>
-<p>Applied to CocoPlus: CocoFlow pod records carry <code>completion_source</code> and <code>completion_timestamp_reliable</code>, allowing flow graphs, duration calculations, and cost attribution to distinguish proven completion time from fallback timing.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoFlow flow-state pod records include completion_source and completion_timestamp_reliable so dashboards, duration calculations, and cost attribution can distinguish queue-derived completion from fallback timestamps.</p>
+  </div>
+</div>
 <blockquote><p><em>Principles are only principles when they are applied in the cases where violating them would be convenient.</em></p></blockquote>
 </div>
 
