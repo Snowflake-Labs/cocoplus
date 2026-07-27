@@ -75,7 +75,17 @@ All notable changes to CocoPlus are documented here.
 - CocoConsole Flow panel now includes a Prompt Quality preview with complexity chip, ambiguity advisory, and missing-acceptance advisory.
 - CocoConsole Cost panel now surfaces ACRR session average and recent run records.
 - `templates/cocoplus.toml.template` adds `[flow] complexity_estimation`, `[harness] trivial_floor_invariant`, and `[meter] track_acrr`.
-- Public documentation now reflects thirty-seven design principles, including task complexity as the independent floor and ambiguity as a pre-payable cost.
+- Public documentation added task complexity as the independent floor and ambiguity as a pre-payable cost.
+
+#### Twenty-Fourth-Cycle 2.0 Additions
+- `templates/scripts/meter-reconcile.js` adds transcript-authoritative CocoMeter reconciliation with message-ID deduplication, fingerprint fallback, metering-gap output, and actual-model extraction.
+- `templates/scripts/flow-event-reader.js` adds background CocoPod completion timestamp correction with `completion_source` and `completion_timestamp_reliable` provenance fields.
+- `SessionEnd` runs meter reconciliation when enabled and a transcript path is available, then writes authoritative token totals, gap fraction, and model-drift metadata into meter history.
+- `SubagentStop` applies transcript-derived background completion timestamp correction to `.cocoplus/lifecycle/flow-state.json` when transcript records are available.
+- `PostToolUse` ACRR records now preserve `model_tier_configured`, `model_tier_actual`, and `model_drift` in addition to `model_tier_used`.
+- CocoConsole Flow and Cost panels now surface completion provenance, transcript reconciliation, metering gaps, duplicate counts, and model drift.
+- `templates/cocoplus.toml.template` adds `[meter] track_actual_model`, `meter_reconciliation_enabled`, and `meter_reconciliation_threshold`.
+- Public documentation now reflects thirty-nine design principles, including transcript authority and timestamp provenance.
 
 ### Changed
 
@@ -83,7 +93,7 @@ All notable changes to CocoPlus are documented here.
 - `templates/cocoplus.toml.template` adds `[cocoplus]`, `[cocopilot]`, `[cocoforge]`, `[leviathan]`, `[dynamic_personas]`, `[governance]`, `[session]`, `[harness]`, `[evidence_gate]`, `[proposals]`, `[research]`, `[retrospective]`, `[routine]`, `[meter]`, `[flow.planning]`, `[flow.planning.frames]`, `[flow.tiers]`, and role-based model allocation sections.
 - `templates/AGENTS.md.template` adds V2 activation blocks so new pods understand CocoPilot, CocoForge, Leviathan Mode/Ronin, and Dynamic Personas.
 - Root `README.md`, `AGENTS.md`, installation guidance, and the HTML documentation site now present CocoPlus as a V2.0.0 release.
-- `docs/principles.html` now reflects the complete 37-principle catalog, including durable records, untestable-here verification, session understanding capture, context isolation, stated-vs-enforced labeling, consolidation-vs-capture, budget-seam enforcement, shared status vocabulary, complexity-floor dispatch, and ambiguity prepayment.
+- `docs/principles.html` now reflects the complete 39-principle catalog, including durable records, untestable-here verification, session understanding capture, context isolation, stated-vs-enforced labeling, consolidation-vs-capture, budget-seam enforcement, shared status vocabulary, complexity-floor dispatch, ambiguity prepayment, transcript authority, and timestamp provenance.
 
 ### Compatibility
 

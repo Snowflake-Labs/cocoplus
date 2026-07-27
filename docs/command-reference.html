@@ -129,7 +129,7 @@ $cocoplus console
 $cocoplus console status
 $cocoplus console stop
 </code></pre>
-<p>Starts a local Node.js server on the configured port (default <code>7779</code>) and writes <code>.cocoplus/lifecycle/console-state.json</code>. If already running, reuses the recorded instance. The dashboard is read-only and never approves gates or mutates project state. The Flow panel includes Prompt Quality complexity preview; the Cost panel includes ACRR trend and session calibration records.</p>
+<p>Starts a local Node.js server on the configured port (default <code>7779</code>) and writes <code>.cocoplus/lifecycle/console-state.json</code>. If already running, reuses the recorded instance. The dashboard is read-only and never approves gates or mutates project state. The Flow panel includes Prompt Quality complexity preview and completion-source provenance; the Cost panel includes ACRR trend, metering-gap advisories, model-drift indicators, and session calibration records.</p>
 <hr>
 <p><strong><code>$pilot on</code> / <code>$pilot off</code></strong> — Toggle CocoPilot for the current session</p>
 <pre><code>
@@ -570,7 +570,7 @@ $meter off
 <pre><code>
 $meter
 </code></pre>
-<p>Shows token consumption and estimated Snowflake credit cost for the current session, broken down by feature, operation, and cost category. The cost ledger separates <code>execution_cost</code>, <code>coordination_cost</code>, and <code>landing_cost</code>; <code>coordination_fraction</code> warns when coordination overhead exceeds the configured threshold. When ACRR tracking is enabled, the session summary also reports <code>acrr_this_session</code> and the last completed run records.</p>
+<p>Shows token consumption and estimated Snowflake credit cost for the current session, broken down by feature, operation, and cost category. The cost ledger separates <code>execution_cost</code>, <code>coordination_cost</code>, and <code>landing_cost</code>; <code>coordination_fraction</code> warns when coordination overhead exceeds the configured threshold. When ACRR tracking is enabled, the session summary also reports <code>acrr_this_session</code> and the last completed run records. When transcript reconciliation has run, the summary shows the authoritative token total, gap fraction, duplicate count, and any model drift.</p>
 <p><strong>Output:</strong> Session cost summary. No state changes.</p>
 <hr>
 <p><strong><code>$meter estimate [description]</code></strong> — Pre-flight cost estimation</p>
@@ -1448,7 +1448,7 @@ $sketch deps --reduce off
 <tr>
   <td style="text-align:left"><strong>SessionEnd</strong></td>
   <td style="text-align:left">Coco session ends</td>
-  <td style="text-align:left">Writes CocoMeter data, updates AGENTS.md with session summary, queues CocoCupper if needed, writes final CocoHealth checkpoint</td>
+  <td style="text-align:left">Finalizes CocoMeter history, reconciles transcript-derived token totals when enabled, writes metering-gap and model-drift metadata, queues recall indexing, and refreshes AGENTS.md session state</td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>PreToolUse</strong></td>
@@ -1458,7 +1458,7 @@ $sketch deps --reduce off
 <tr>
   <td style="text-align:left"><strong>PostToolUse</strong></td>
   <td style="text-align:left">After any tool call</td>
-  <td style="text-align:left">Memory Engine capture, CocoHealth sampling, CocoAudit append, CocoSession iteration and cost-budget accounting, execution/coordination/landing cost attribution, ACRR aggregation, bypass/private-mode governance logging, PII governance, and per-stage coach request queuing</td>
+  <td style="text-align:left">Memory Engine capture, CocoHealth sampling, CocoAudit append, CocoSession iteration and cost-budget accounting, execution/coordination/landing cost attribution, configured-vs-actual ACRR aggregation, bypass/private-mode governance logging, PII governance, and per-stage coach request queuing</td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>UserPromptSubmit</strong></td>
@@ -1468,7 +1468,7 @@ $sketch deps --reduce off
 <tr>
   <td style="text-align:left"><strong>SubagentStop</strong></td>
   <td style="text-align:left">A subagent completes</td>
-  <td style="text-align:left">Validates checkpoints, updates <code>flow.json</code> stage status, triggers next stage if dependencies met</td>
+  <td style="text-align:left">Validates checkpoints, updates <code>flow.json</code> stage status, triggers next stage if dependencies met, and applies transcript-derived completion timestamp provenance to background CocoPod flow records</td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Stop</strong></td>

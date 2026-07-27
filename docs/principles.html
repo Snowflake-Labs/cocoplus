@@ -26,11 +26,11 @@
 <div class="page-header">
   <div class="label">Design Principles</div>
   <h1>The Design Principles</h1>
-  <p class="subtitle">These are the thirty-seven ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
+  <p class="subtitle">These are the thirty-nine ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
 </div>
 
 <div class="content">
-<p>These are the thirty-seven ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
+<p>These are the thirty-nine ideas that govern every decision in CocoPlus. They are worth understanding not just as rules — but as the reasoning behind them.</p>
 <p>A principle without a reason is just a constraint. With a reason, it becomes a compass.</p>
 <hr>
 <h2 id="1-native-first-always">1. Native First, Always</h2>
@@ -229,6 +229,16 @@
 <p>Every ambiguity in a task description is a cost that will be paid. Resolve it before dispatch and the cost is essentially zero. Leave it for the agent to discover during execution and the cost becomes model tokens, inspected files, and exploratory turns.</p>
 <p>Acceptance checks are the companion discipline. A task that says what done means costs less because the agent knows when to stop. A task without a completion criterion forces the agent to infer the finish line.</p>
 <p>Applied to CocoPlus: CocoConsole's prompt-quality surface scores task descriptions before launch, warns on high ambiguity, and surfaces missing acceptance checks without blocking the developer from proceeding.</p>
+<hr>
+<h2 id="38-the-transcript-is-the-source-of-truth">38. The Transcript Is the Source of Truth</h2>
+<p>Runtime counters are useful, but they are derived state. The JSONL transcript is the durable event record for what the session actually did: assistant responses, token usage, served model identity, tool activity, and background-agent events.</p>
+<p>When billing, ACRR attribution, or model-tier analysis depends on correctness, CocoPlus reconciles against the transcript. Duplicate assistant messages are deduplicated by stable message ID, with a usage fingerprint fallback, before token totals become authoritative.</p>
+<p>Applied to CocoPlus: CocoMeter's session-end reconciliation writes <code>meter/reconciliation-[session-id].json</code>, corrects material token gaps, and records transcript-derived actual model identity so proxy or platform drift is visible instead of hidden.</p>
+<hr>
+<h2 id="39-timestamps-have-provenance">39. Timestamps Have Provenance</h2>
+<p>A timestamp must say what moment it marks. Record-write time, dispatch time, start time, and completion time are not interchangeable, especially for background work that may finish long after it was launched.</p>
+<p>For background CocoPods, a <code>tool_result</code> timestamp may describe dispatch rather than completion. CocoPlus prefers completion records from queue events when available and labels fallback timestamps explicitly when the authoritative event is missing.</p>
+<p>Applied to CocoPlus: CocoFlow pod records carry <code>completion_source</code> and <code>completion_timestamp_reliable</code>, allowing flow graphs, duration calculations, and cost attribution to distinguish proven completion time from fallback timing.</p>
 <blockquote><p><em>Principles are only principles when they are applied in the cases where violating them would be convenient.</em></p></blockquote>
 </div>
 
