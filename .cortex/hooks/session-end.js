@@ -8,18 +8,71 @@
 
 const fs   = require('fs');
 const path = require('path');
-const { isoUtc, appendJsonLine, logError, readJsonString, readJsonNumber } = require('./_common.js');
+const { execFileSync } = require('child_process');
+const { isoUtc, appendJsonLine, logError, readJsonString, readJsonNumber, readStdinJson } = require('./_common.js');
 const { updateAgentsMd, readActiveModes, readRecentDecisions } = require('./lib/agents-update.js');
+const { loadConfig } = require('./_v2-state.js');
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const V2_QUEUE     = path.join(COCOPLUS_DIR, 'v2-runtime-requests.jsonl');
 
+function readJson(filePath, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (_) {
+    return fallback;
+  }
+}
+
+function reconcileMeterIfAvailable(config, sessionId, meterFile, ts, event) {
+  const meterConfig = config.meter || {};
+  const enabled = meterConfig.meter_reconciliation_enabled === undefined ||
+    meterConfig.meter_reconciliation_enabled === true ||
+    meterConfig.meter_reconciliation_enabled === 'true';
+  if (!enabled) return null;
+
+  const transcriptPath = event.transcript_path || event.transcriptPath ||
+    process.env.COCO_TRANSCRIPT_PATH || process.env.CLAUDE_TRANSCRIPT_PATH || '';
+  if (!transcriptPath || !fs.existsSync(transcriptPath)) return null;
+
+  const scriptPath = path.join(COCOPLUS_DIR, 'scripts', 'meter-reconcile.js');
+  if (!fs.existsSync(scriptPath)) return null;
+
+  const outPath = path.join(COCOPLUS_DIR, 'meter', `reconciliation-${sessionId}.json`);
+  const threshold = String(meterConfig.meter_reconciliation_threshold === undefined ? 0.05 : meterConfig.meter_reconciliation_threshold);
+  try {
+    const stdout = execFileSync(process.execPath, [
+      scriptPath,
+      '--transcript', transcriptPath,
+      '--session-file', meterFile,
+      '--out', outPath,
+      '--threshold', threshold,
+      '--session-id', sessionId,
+    ], { encoding: 'utf8', timeout: 30000, windowsHide: true });
+    const result = readJson(outPath, null) || JSON.parse(stdout);
+    appendJsonLine(HOOK_LOG, {
+      hook: 'session-end',
+      action: 'meter_reconciled',
+      session: sessionId,
+      status: result.reconciliation_status,
+      gap_fraction: result.gap_fraction,
+      ts,
+    });
+    return result;
+  } catch (err) {
+    logError('session-end', `meter reconciliation failed: ${err.message}`);
+    return null;
+  }
+}
+
 function main() {
   if (!fs.existsSync(COCOPLUS_DIR)) return;
 
   const ts        = isoUtc();
+  const event     = readStdinJson();
   const sessionId = process.env.COCO_SESSION_ID || 'unknown';
+  const config    = loadConfig();
 
   appendJsonLine(HOOK_LOG, { hook: 'session-end', session: sessionId, ts });
 
@@ -37,6 +90,10 @@ function main() {
       const tokens    = readJsonNumber(meterFile, 'tokens_consumed');
       const sql       = readJsonNumber(meterFile, 'sql_statements');
       const writes    = readJsonNumber(meterFile, 'writes_performed');
+      const reconciliation = reconcileMeterIfAvailable(config, sessionId, meterFile, ts, event);
+      const authoritativeTokens = reconciliation && Number(reconciliation.authoritative_tokens) ||
+        reconciliation && Number(reconciliation.transcript_derived_tokens) ||
+        tokens;
 
       // Capture for step 3 before file is deleted
       meterStartedAt   = startedAt;
@@ -51,8 +108,13 @@ function main() {
       const record = {
         session_id: sessionId, started_at: startedAt, ended_at: ts,
         duration_seconds: durationSeconds,
-        phase, tools_called: tools, tokens_consumed: tokens,
+        phase, tools_called: tools, tokens_consumed: authoritativeTokens,
         sql_statements: sql, writes_performed: writes,
+        reconciliation_status: reconciliation && reconciliation.reconciliation_status || 'not_run',
+        metering_gap_fraction: reconciliation && reconciliation.gap_fraction || 0,
+        model_tier_configured: reconciliation && reconciliation.model_tier_configured || null,
+        model_tier_actual: reconciliation && reconciliation.model_tier_actual || null,
+        model_drift: Boolean(reconciliation && reconciliation.model_drift),
       };
 
       // Deduplicate before appending

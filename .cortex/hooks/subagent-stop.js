@@ -13,13 +13,39 @@
 
 const fs   = require('fs');
 const path = require('path');
-const { spawn } = require('child_process');
+const { spawn, execFileSync } = require('child_process');
 const { isoUtc, appendJsonLine, logError, readStdinJson } = require('./_common.js');
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const SPAWN_QUEUE  = path.join(COCOPLUS_DIR, 'subagent-spawn-requests.jsonl');
 const V2_QUEUE     = path.join(COCOPLUS_DIR, 'v2-runtime-requests.jsonl');
+
+function correctFlowTimestampsIfAvailable(event, ts) {
+  const transcriptPath = event.transcript_path || event.transcriptPath ||
+    process.env.COCO_TRANSCRIPT_PATH || process.env.CLAUDE_TRANSCRIPT_PATH || '';
+  if (!transcriptPath || !fs.existsSync(transcriptPath)) return;
+
+  const scriptPath = path.join(COCOPLUS_DIR, 'scripts', 'flow-event-reader.js');
+  if (!fs.existsSync(scriptPath)) return;
+
+  const flowStatePath = path.join(COCOPLUS_DIR, 'lifecycle', 'flow-state.json');
+  try {
+    execFileSync(process.execPath, [
+      scriptPath,
+      '--transcript', transcriptPath,
+      '--flow-state', flowStatePath,
+    ], { encoding: 'utf8', timeout: 30000, windowsHide: true });
+    appendJsonLine(HOOK_LOG, {
+      hook: 'subagent-stop',
+      action: 'flow_timestamp_correction_applied',
+      transcript_path: transcriptPath,
+      ts,
+    });
+  } catch (err) {
+    logError('subagent-stop', `flow timestamp correction failed: ${err.message}`);
+  }
+}
 
 function readJson(filePath, fallback) {
   try {
@@ -75,6 +101,7 @@ function main() {
   const worktreeBranch = event.worktree_branch || '';
 
   appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', subagent_id: subagentId, status, ts });
+  correctFlowTimestampsIfAvailable(event, ts);
 
   // 0. CocoPivot status envelope validation (Feature 47, Tier 1, <200ms) —
   // runs for every subagent completion, independent of type. Never blocks:
