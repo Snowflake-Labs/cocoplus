@@ -22,7 +22,9 @@ CocoMeter session summaries may include three named cost rows:
 
 When `[meter] track_acrr = true`, session summaries may also include:
 - `acrr_this_session`: average Agent Cognitive Redundancy Ratio across completed CocoFlow runs in the session.
-- `acrr_runs[]`: the last run-level records with `complexity_tier_estimated`, `model_tier_used`, `escalations_taken`, and `acrr`.
+- `acrr_runs[]`: the last run-level records with `complexity_tier_estimated`, `model_tier_configured`, `model_tier_actual`, `model_tier_used`, `model_drift`, `escalations_taken`, and `acrr`.
+
+When `[meter] meter_reconciliation_enabled = true`, finalized session summaries may include `reconciliation_status`, `metering_gap_fraction`, `duplicates_found`, `model_tier_configured`, `model_tier_actual`, and `model_drift`. Treat transcript-derived totals as authoritative for billing comparisons when `reconciliation_status` is `gap_corrected`.
 
 Treat ACRR as a calibration diagnostic, not an accuracy score. ACRR near 1.0 indicates that the initial complexity tier was sufficient. Consistently high ACRR indicates the task class is being underestimated before dispatch.
 
@@ -38,6 +40,7 @@ Treat ACRR as a calibration diagnostic, not an accuracy score. ACRR near 1.0 ind
 4. Compute accuracy delta before cost delta.
 5. If objective is `cost-first` but `cost_first_acknowledged` is not true, treat the run as correctness-first and warn.
 6. If both files include ACRR, report ACRR trend after accuracy and before detailed cost rows. A lower ACRR with unchanged accuracy means the harness is better calibrated; a higher ACRR with unchanged accuracy means the run succeeded but over-expanded.
+7. If either file includes reconciliation or model-drift metadata, report it after ACRR and before cost rows.
 
 ## Output Order
 
@@ -67,3 +70,4 @@ WARNING: cost reduction accompanied by accuracy regression.
 - [ ] Missing or malformed input files fail with a clear diagnostic.
 - [ ] Coordination and landing costs remain separate from execution cost when present.
 - [ ] ACRR appears as a calibration diagnostic when present and is not treated as a replacement for accuracy.
+- [ ] Transcript reconciliation and model drift appear when present, and corrected transcript totals lead runtime estimates for billing comparison.

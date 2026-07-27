@@ -61,6 +61,17 @@ Complexity sets the floor for `model_tier` and `thinking_effort`; budget state c
 
 If the description has high ambiguity or no acceptance check, surface a non-blocking advisory before launch. The developer may proceed, but record the advisory in `.cocoplus/session/PROGRESS.md` Notes when the run starts.
 
+## Completion Timestamp Provenance
+
+When stages run as background CocoPods, completion time must come from authoritative transcript queue records when available. The SubagentStop hook runs `.cocoplus/scripts/flow-event-reader.js` when it can see the transcript path and writes pod records to `.cocoplus/lifecycle/flow-state.json`.
+
+Each pod record should include:
+
+- `completion_source`: `enqueue_record` when corrected from the transcript, otherwise `tool_result_fallback`.
+- `completion_timestamp_reliable`: boolean provenance flag for duration and cost attribution consumers.
+
+Do not compute pod duration from `tool_result` timestamps alone when a transcript queue completion record is available.
+
 ## Multi-Pod Branch Topology
 
 For multi-pod CocoFlow runs, derive branch names from the flow tree using dotted topology tokens:
