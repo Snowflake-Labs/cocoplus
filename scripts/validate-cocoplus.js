@@ -144,6 +144,8 @@ function main() {
     'artifact-check.js',
     'status-healer.js',
     'complexity-estimate.js',
+    'meter-reconcile.js',
+    'flow-event-reader.js',
   ];
 
   for (const agentId of plugin.agents || []) {
@@ -239,11 +241,22 @@ function main() {
     'track_coordination_cost',
     'coordination_warning_threshold',
     'track_acrr',
+    'track_actual_model',
+    'meter_reconciliation_enabled',
+    'meter_reconciliation_threshold',
     'complexity_estimation',
     'trivial_floor_invariant',
   ]) {
     requireIncludes(configTemplate, expected, failures, 'cocoplus.toml.template');
   }
+
+  const principlesHtml = readFile(path.join(repoRoot, 'docs', 'principles.html'));
+  const principleCount = (principlesHtml.match(/<h2 id="[0-9]/g) || []).length;
+  if (principleCount !== 39) {
+    failures.push(`docs/principles.html must contain 39 principle headings; found ${principleCount}`);
+  }
+  requireIncludes(principlesHtml, 'The Transcript Is the Source of Truth', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Timestamps Have Provenance', failures, 'docs/principles.html');
 
   const stalePatterns = [
     /All 32 Features/i,

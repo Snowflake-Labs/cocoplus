@@ -223,11 +223,20 @@ function acrrRecord(config, params, result, ts) {
   const complexity = latestComplexityRecord(runId);
   if (!complexity) return null;
   const escalations = Number(result.escalations_taken || params.escalations_taken || 0);
+  const configuredModel = result.model_tier_configured || params.model_tier_configured ||
+    result.configured_model_tier || params.configured_model_tier ||
+    complexity.applied_harness && complexity.applied_harness.complexity_floor && complexity.applied_harness.complexity_floor.model || null;
+  const actualModel = result.model_tier_actual || params.model_tier_actual ||
+    result.actual_model_tier || params.actual_model_tier ||
+    result.model_tier_used || params.model_tier_used || configuredModel;
   const record = {
     run_id: runId || complexity.run_id || null,
     completed_at: ts,
     complexity_tier_estimated: complexity.tier,
-    model_tier_used: result.model_tier_used || params.model_tier_used || complexity.applied_harness && complexity.applied_harness.complexity_floor && complexity.applied_harness.complexity_floor.model || null,
+    model_tier_configured: configuredModel,
+    model_tier_actual: actualModel,
+    model_tier_used: actualModel,
+    model_drift: Boolean(configuredModel && actualModel && configuredModel !== actualModel),
     escalations_taken: Number.isFinite(escalations) ? escalations : 0,
   };
   record.acrr = 1 + Math.max(0, record.escalations_taken);

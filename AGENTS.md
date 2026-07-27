@@ -53,7 +53,7 @@ You have the CocoPlus plugin active. CocoPlus enhances Coco with:
 - **CocoFlow Evidence and Proposal Gates** V2 opt-in stage evidence and retained proposal settlement ($flow settle)
 - **CocoRetro and CocoHygiene** V2 measured improvement loops ($retrospective, $hygiene --model-upgrade, $meter benchmark)
 - **CocoRoutine** V2 opt-in Snowflake TASK scheduling for self-contained completed workflows ($routine)
-- **Late-Cycle Governance and Quality Gates** V2 RBAC escalation guard, bypass safeguard logging, named artifacts, stage coach, correctness-first metering, complexity-aware dispatch, ACRR calibration, and CocoBrew distribution gate
+- **Late-Cycle Governance and Quality Gates** V2 RBAC escalation guard, bypass safeguard logging, named artifacts, stage coach, correctness-first metering, transcript reconciliation, timestamp provenance, complexity-aware dispatch, ACRR calibration, and CocoBrew distribution gate
 
 ## Core Behavioral Rules
 
@@ -112,7 +112,7 @@ You have the CocoPlus plugin active. CocoPlus enhances Coco with:
    CocoFlow stages that declare `artifacts.reads` and `artifacts.writes` must satisfy those files structurally. Missing handoff files are deterministic failures, not model-interpretation questions.
 
 15. **Correctness leads cost.**
-   CocoMeter comparisons report accuracy before token, credit, or ACRR deltas unless cost-first mode is explicitly configured and acknowledged. Cost reduction with accuracy regression is not an improvement; high ACRR with stable accuracy is a calibration issue, not a quality win.
+   CocoMeter comparisons report accuracy before token, credit, or ACRR deltas unless cost-first mode is explicitly configured and acknowledged. Cost reduction with accuracy regression is not an improvement; high ACRR with stable accuracy is a calibration issue, not a quality win. Billing-significant token totals and actual model identity must prefer transcript-derived reconciliation over runtime estimates when reconciliation data exists; background completion timestamps must carry provenance.
 
 ## Persona Shorthand Quick Reference
 

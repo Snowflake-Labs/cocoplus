@@ -167,6 +167,9 @@ cost_first_acknowledged = false
 track_coordination_cost = true
 coordination_warning_threshold = 0.25
 track_acrr = true
+track_actual_model = true
+meter_reconciliation_enabled = true
+meter_reconciliation_threshold = 0.05
 
 [flow]
 complexity_estimation = true
