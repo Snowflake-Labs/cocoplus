@@ -34,6 +34,11 @@ File Writes: [writes_performed]
 Estimated tokens consumed: [tokens_consumed]
 (Note: exact counts require Coco's native token reporting)
 
+## Transcript Reconciliation
+Status: [reconciliation_status if present]
+Gap fraction: [metering_gap_fraction if present]
+Model drift: [model_drift if present]
+
 ## Snowflake Credit Estimate
 SQL operations × 0.00001 credits/statement = [estimate] credits
 (rough estimate — actual credits depend on compute size and query complexity)
@@ -50,3 +55,4 @@ SQL operations × 0.00001 credits/statement = [estimate] credits
 - [ ] Report shows Session ID, Started timestamp, and Phase from current-session.json
 - [ ] Tool Usage section shows tools called, SQL statements, and file writes
 - [ ] Token Estimate and Snowflake Credit Estimate sections are shown with appropriate caveats
+- [ ] If reconciliation metadata exists, show status, gap fraction, and model-drift state without hiding the original session counters

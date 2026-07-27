@@ -72,6 +72,7 @@ function collectState() {
     podState: safeJson(path.join(COCOPLUS_DIR, 'pod-state.json'), {}),
     discoveries: readText(path.join(COCOPLUS_DIR, 'session', 'discoveries.jsonl'), 'No session discoveries recorded.'),
     stageEvidence: safeJson(path.join(COCOPLUS_DIR, 'session', 'stage-evidence.json'), {}),
+    flowState: safeJson(path.join(lifecycle, 'flow-state.json'), {}),
     complexity: latestComplexity(),
     proposals: readText(path.join(COCOPLUS_DIR, 'proposals', 'proposal-log.jsonl'), 'No retained proposals recorded.'),
     routines: safeJson(path.join(COCOPLUS_DIR, 'routines', 'registry.json'), { routines: [] }),
@@ -83,10 +84,25 @@ function collectState() {
     health: safeJson(path.join(lifecycle, 'health-grade.json'), {}),
     sentinel: safeJson(path.join(lifecycle, 'sentinel-scores.json'), {}),
     meter: safeJson(path.join(COCOPLUS_DIR, 'meter', 'current-session.json'), {}),
+    reconciliation: latestMeterReconciliation(),
     config: loadConfig(),
   };
   state.branchTopology = flowBranchTopology(state.flow);
   return state;
+}
+
+function latestMeterReconciliation() {
+  const root = path.join(COCOPLUS_DIR, 'meter');
+  try {
+    const files = fs.readdirSync(root, { withFileTypes: true })
+      .filter((entry) => entry.isFile() && /^reconciliation-.+\.json$/.test(entry.name))
+      .map((entry) => path.join(root, entry.name))
+      .map((filePath) => ({ filePath, mtime: fs.statSync(filePath).mtimeMs }))
+      .sort((a, b) => b.mtime - a.mtime);
+    return files.length ? safeJson(files[0].filePath, {}) : {};
+  } catch (_) {
+    return {};
+  }
 }
 
 function latestComplexity() {
@@ -133,6 +149,7 @@ function renderPanel(panel, state) {
     flow: [
       panelCard('Pipeline', `<p>${flowStages.length} stages found.</p><pre>${esc(JSON.stringify(state.flow, null, 2).slice(0, 4000))}</pre>`),
       panelCard('Prompt Quality', `${promptQualityWidget()}<pre>${esc(JSON.stringify(state.complexity, null, 2).slice(0, 2500))}</pre>`),
+      panelCard('Completion Provenance', `<pre>${esc(JSON.stringify((state.flowState.pods || []).slice(-20), null, 2).slice(0, 3000))}</pre>`),
       panelCard('Branch Topology', `<pre>${esc(JSON.stringify(state.branchTopology, null, 2).slice(0, 3000))}</pre>`),
       panelCard('Stage Evidence', `<pre>${esc(JSON.stringify(state.stageEvidence, null, 2).slice(0, 3000))}</pre>`),
       panelCard('Stage Quality Scores', `<pre>${esc(state.stageQuality.slice(-4000))}</pre>`),
@@ -143,6 +160,7 @@ function renderPanel(panel, state) {
       panelCard('Meter', `<pre>${esc(JSON.stringify(state.meter, null, 2))}</pre>`),
       panelCard('Session Cost Categories', `<p>Execution: <strong>${esc(state.meter.execution_cost || 0)}</strong></p><p>Coordination: <strong>${esc(state.meter.coordination_cost || 0)}</strong></p><p>Landing: <strong>${esc(state.meter.landing_cost || 0)}</strong></p><p>Coordination Fraction: <strong>${esc(state.meter.coordination_fraction || 0)}</strong></p>`),
       panelCard('ACRR Trend', `<p>Session average: <strong>${esc(state.meter.acrr_this_session || 0)}</strong></p><pre>${esc(JSON.stringify((state.meter.acrr_runs || []).slice(-20), null, 2))}</pre><p>ACRR near 1.0 means complexity estimates are calibrated; consistently high values mean the first tier is too low for this task class.</p>`),
+      panelCard('Transcript Reconciliation', `<p>Status: <strong>${esc(state.reconciliation.reconciliation_status || 'not run')}</strong></p><p>Gap: <strong>${esc(state.reconciliation.gap_fraction || 0)}</strong></p><p>Duplicates: <strong>${esc(state.reconciliation.duplicates_found || 0)}</strong></p><p>Model drift: <strong>${esc(state.reconciliation.model_drift || false)}</strong></p><pre>${esc(JSON.stringify(state.reconciliation, null, 2).slice(0, 2500))}</pre>`),
       panelCard('Chargeback', '<p>Generate invoice artifacts with <code>$meter invoice</code>; this panel reads generated status.</p>'),
     ],
     quality: [
