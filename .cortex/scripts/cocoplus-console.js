@@ -4,6 +4,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const { execFileSync } = require('child_process');
 const {
   COCOPLUS_DIR,
@@ -15,7 +16,7 @@ const {
   writeJson,
 } = require('../hooks/_v2-state.js');
 
-const PANELS = ['home', 'flow', 'cost', 'quality', 'health', 'safety', 'memory', 'sessions', 'replay', 'settings', 'forge'];
+const PANELS = ['home', 'flow', 'cost', 'quality', 'health', 'safety', 'memory', 'sessions', 'replay', 'settings', 'forge', 'comms'];
 const STATUS_CLASS = {
   completed: 'status-ok',
   exited: 'status-warn',
@@ -54,6 +55,40 @@ function flowBranchTopology(flow) {
   }
 }
 
+function newestDir(root) {
+  try {
+    return fs.readdirSync(root, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => {
+        const fullPath = path.join(root, entry.name);
+        return { name: entry.name, path: fullPath, mtime: fs.statSync(fullPath).mtimeMs };
+      })
+      .sort((a, b) => b.mtime - a.mtime)[0] || null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function latestPolicySnapshot() {
+  const latest = newestDir(path.join(COCOPLUS_DIR, 'lifecycle', 'cocoflow'));
+  if (!latest) return {};
+  return safeJson(path.join(latest.path, 'policy-snapshot.json'), {});
+}
+
+function latestFleetDir() {
+  return newestDir(path.join(COCOPLUS_DIR, 'fleet'));
+}
+
+function latestFleetState() {
+  const latest = latestFleetDir();
+  return latest ? safeJson(path.join(latest.path, 'state.json'), {}) : {};
+}
+
+function latestFleetComms() {
+  const latest = latestFleetDir();
+  return latest ? readText(path.join(latest.path, 'comms.log'), '') : '';
+}
+
 function collectState() {
   const lifecycle = path.join(COCOPLUS_DIR, 'lifecycle');
   const state = {
@@ -73,6 +108,8 @@ function collectState() {
     discoveries: readText(path.join(COCOPLUS_DIR, 'session', 'discoveries.jsonl'), 'No session discoveries recorded.'),
     stageEvidence: safeJson(path.join(COCOPLUS_DIR, 'session', 'stage-evidence.json'), {}),
     flowState: safeJson(path.join(lifecycle, 'flow-state.json'), {}),
+    runPolicy: latestPolicySnapshot(),
+    adapterSelfTest: safeJson(path.join(COCOPLUS_DIR, 'meter', 'adapter-self-test.json'), {}),
     complexity: latestComplexity(),
     proposals: readText(path.join(COCOPLUS_DIR, 'proposals', 'proposal-log.jsonl'), 'No retained proposals recorded.'),
     routines: safeJson(path.join(COCOPLUS_DIR, 'routines', 'registry.json'), { routines: [] }),
@@ -85,6 +122,9 @@ function collectState() {
     sentinel: safeJson(path.join(lifecycle, 'sentinel-scores.json'), {}),
     meter: safeJson(path.join(COCOPLUS_DIR, 'meter', 'current-session.json'), {}),
     reconciliation: latestMeterReconciliation(),
+    fleetState: latestFleetState(),
+    fleetComms: latestFleetComms(),
+    fleetRegistry: safeJson(path.join(os.homedir(), '.cocoplus', 'fleet', 'projects.json'), {}),
     config: loadConfig(),
   };
   state.branchTopology = flowBranchTopology(state.flow);
@@ -148,6 +188,9 @@ function renderPanel(panel, state) {
     ],
     flow: [
       panelCard('Pipeline', `<p>${flowStages.length} stages found.</p><pre>${esc(JSON.stringify(state.flow, null, 2).slice(0, 4000))}</pre>`),
+      panelCard('Arc Reactor', `<p>${Object.keys(state.fleetState || {}).length ? 'Fleet topology is available for the orchestration view.' : 'Arc-reactor mode appears when a fleet run writes state.json and comms.log.'}</p><pre>${esc(JSON.stringify(state.fleetState, null, 2).slice(0, 3000))}</pre>`),
+      panelCard('Active Run Policy', `<pre>${esc(JSON.stringify(state.runPolicy, null, 2).slice(0, 2500))}</pre>`),
+      panelCard('Gate-Weakening Refusals', `<p>Refused: <strong>${esc(state.flowState.gate_weakening_refusals || 0)}</strong></p><p>Last: <strong>${esc(state.flowState.last_gate_weakening_refusal_at || 'none')}</strong></p>`),
       panelCard('Prompt Quality', `${promptQualityWidget()}<pre>${esc(JSON.stringify(state.complexity, null, 2).slice(0, 2500))}</pre>`),
       panelCard('Completion Provenance', `<pre>${esc(JSON.stringify((state.flowState.pods || []).slice(-20), null, 2).slice(0, 3000))}</pre>`),
       panelCard('Branch Topology', `<pre>${esc(JSON.stringify(state.branchTopology, null, 2).slice(0, 3000))}</pre>`),
@@ -157,6 +200,7 @@ function renderPanel(panel, state) {
       panelCard('HITL Gate Queue', '<p>HITL gates remain terminal-first; approve or resume from the CLI.</p>'),
     ],
     cost: [
+      panelCard('Schema Canary', `${state.adapterSelfTest.schema_canary ? '<p class="warn">Transcript adapter schema canary fired. Run adapter-self-test.js against the latest transcript before trusting token attribution.</p>' : '<p>Transcript adapter canary is clear or has not been run.</p>'}<pre>${esc(JSON.stringify(state.adapterSelfTest, null, 2).slice(0, 2000))}</pre>`),
       panelCard('Meter', `<pre>${esc(JSON.stringify(state.meter, null, 2))}</pre>`),
       panelCard('Session Cost Categories', `<p>Execution: <strong>${esc(state.meter.execution_cost || 0)}</strong></p><p>Coordination: <strong>${esc(state.meter.coordination_cost || 0)}</strong></p><p>Landing: <strong>${esc(state.meter.landing_cost || 0)}</strong></p><p>Coordination Fraction: <strong>${esc(state.meter.coordination_fraction || 0)}</strong></p>`),
       panelCard('ACRR Trend', `<p>Session average: <strong>${esc(state.meter.acrr_this_session || 0)}</strong></p><pre>${esc(JSON.stringify((state.meter.acrr_runs || []).slice(-20), null, 2))}</pre><p>ACRR near 1.0 means complexity estimates are calibrated; consistently high values mean the first tier is too low for this task class.</p>`),
@@ -194,6 +238,7 @@ function renderPanel(panel, state) {
     replay: [
       panelCard('Predicate Context', `<pre>${esc(state.sessionContext.slice(-4000))}</pre>`),
       panelCard('Steps Timeline', `<pre>${esc(readText(path.join(COCOPLUS_DIR, 'session', 'steps.jsonl'), 'No steps timeline recorded.').slice(-5000))}</pre>`),
+      panelCard('Cross-Run History', `<pre>${esc(JSON.stringify(state.fleetRegistry, null, 2).slice(0, 5000))}</pre>`),
     ],
     settings: [
       panelCard('Configuration', `<pre>${esc(JSON.stringify(state.config, null, 2).slice(0, 5000))}</pre>`),
@@ -202,6 +247,11 @@ function renderPanel(panel, state) {
       panelCard('Forge State', `<pre>${esc(JSON.stringify(state.forge, null, 2))}</pre>`),
       panelCard('Refinement Ladder', `<pre>${esc(JSON.stringify(state.forge.refinement_ladder || { enabled: false }, null, 2))}</pre>`),
       panelCard('Activity', `<pre>${esc(readText(lifecyclePath('forge-activity.jsonl'), 'No forge activity yet.').slice(-5000))}</pre>`),
+    ],
+    comms: [
+      panelCard('Fleet Comms Feed', `<pre>${esc(state.fleetComms.slice(-8000) || 'No fleet comms events recorded.')}</pre>`),
+      panelCard('Fleet State', `<pre>${esc(JSON.stringify(state.fleetState, null, 2).slice(0, 5000))}</pre>`),
+      panelCard('Filters', '<p>Use run ids, role labels, and event type fields in comms.log to filter this read-only feed from the CLI or browser search.</p>'),
     ],
   };
   return (cards[panel] || cards.home).join('\n');

@@ -145,6 +145,12 @@ qualifying_reads = ["test", "query-output", "schema-diff", "screenshot", "report
 default_for_snowflake_writes = false
 retain_discarded = true
 
+[run_policy]
+# Declared before a CocoFlow run starts and snapshotted under lifecycle/cocoflow/<run-id>/.
+merge_policy = "none" # "none" | "auto_on_signoff"
+allow_irreversible_actions = false
+stop_after = [] # Stage ids where the run pauses before dispatching the next stage
+
 [research]
 default_mode = "linear" # "linear" | "deep"
 require_plan_approval = true
@@ -168,6 +174,7 @@ track_coordination_cost = true
 coordination_warning_threshold = 0.25
 track_acrr = true
 track_actual_model = true
+transcript_adapter_strict = true
 meter_reconciliation_enabled = true
 meter_reconciliation_threshold = 0.05
 

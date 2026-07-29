@@ -584,6 +584,32 @@
     <p>CocoFlow flow-state pod records include completion_source and completion_timestamp_reliable so dashboards, duration calculations, and cost attribution can distinguish queue-derived completion from fallback timestamps.</p>
   </div>
 </div>
+<hr>
+<h2 id="40-producers-never-grade-themselves">40. Producers Never Grade Themselves</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
+<p>An evaluator can only be trusted when it cannot silently rewrite the thing it evaluates. Separate context windows help, but they are incomplete if the critic still has write access to the artifact under review.</p>
+<p>Quality judgment requires structural separation: producer roles generate, critic roles inspect, and any required signoff is recorded as evidence rather than implied by the producer's confidence.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoFleet goal-decomposition mode requires critic tasks to declare <code>tool_set: "read_only"</code>, records producer and critic roles separately, and treats required critic PASS signoff as a completion condition.</p>
+  </div>
+</div>
+<hr>
+<h2 id="41-gate-weakening-requires-a-new-run">41. Gate Weakening Requires a New Run</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
+<p>A governance gate declared before a run starts is not a negotiable mid-run preference. Weakening it through an inbox message bypasses the deliberate risk decision that made the gate meaningful.</p>
+<p>If the operator wants a different risk posture, that change belongs in committed run policy and a new run. The audit trail should show that a policy changed before execution, not that a running system was talked around its own guardrails.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoFlow snapshots <code>[run_policy]</code> before dispatch, drains <code>STEER.md</code> before stage transitions, refuses gate-weakening steer messages at the processing layer, and logs refusals to CocoAudit.</p>
+  </div>
+</div>
 <blockquote><p><em>Principles are only principles when they are applied in the cases where violating them would be convenient.</em></p></blockquote>
 </div>
 

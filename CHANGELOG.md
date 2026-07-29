@@ -16,7 +16,7 @@ All notable changes to CocoPlus are documented here.
 - `.cortex/scripts/cocoplus-console.js` — local read-only browser control plane launched by `$cocoplus console`.
 - `.cortex/hooks/_v2-state.js` — hook-local V2 lifecycle state helper for JSON state files, mode flags, and append-only activity logs.
 - `assist-mode/cocoplus-console.skill.md` — `$cocoplus console`, `$cocoplus console status`, and `$cocoplus console stop` command contract.
-- CocoConsole reads `.cocoplus/` lifecycle artifacts and exposes Home, Flow, Cost, Quality, Health, Safety, Memory, Sessions, Settings, and Forge panels without mutating project state.
+- CocoConsole reads `.cocoplus/` lifecycle artifacts and exposes Home, Flow, Cost, Quality, Health, Safety, Memory, Sessions, Replay, Settings, Forge, and Comms panels without mutating project state.
 
 #### CocoPilot, CocoForge, Leviathan Mode/Ronin, and Dynamic Personas
 - `cocopilot/pilot-on.skill.md` and `cocopilot/pilot-off.skill.md` — opt-in session-scoped CocoPilot mode.
@@ -85,7 +85,7 @@ All notable changes to CocoPlus are documented here.
 - `PostToolUse` ACRR records now preserve `model_tier_configured`, `model_tier_actual`, and `model_drift` in addition to `model_tier_used`.
 - CocoConsole Flow and Cost panels now surface completion provenance, transcript reconciliation, metering gaps, duplicate counts, and model drift.
 - `templates/cocoplus.toml.template` adds `[meter] track_actual_model`, `meter_reconciliation_enabled`, and `meter_reconciliation_threshold`.
-- Public documentation now reflects thirty-nine design principles, including transcript authority and timestamp provenance.
+- Public documentation now reflects forty-one design principles, including transcript authority, timestamp provenance, producer/critic separation, and run-policy gate integrity.
 
 ### Changed
 
@@ -93,7 +93,17 @@ All notable changes to CocoPlus are documented here.
 - `templates/cocoplus.toml.template` adds `[cocoplus]`, `[cocopilot]`, `[cocoforge]`, `[leviathan]`, `[dynamic_personas]`, `[governance]`, `[session]`, `[harness]`, `[evidence_gate]`, `[proposals]`, `[research]`, `[retrospective]`, `[routine]`, `[meter]`, `[flow.planning]`, `[flow.planning.frames]`, `[flow.tiers]`, and role-based model allocation sections.
 - `templates/AGENTS.md.template` adds V2 activation blocks so new pods understand CocoPilot, CocoForge, Leviathan Mode/Ronin, and Dynamic Personas.
 - Root `README.md`, `AGENTS.md`, installation guidance, and the HTML documentation site now present CocoPlus as a V2.0.0 release.
-- `docs/principles.html` now reflects the complete 39-principle catalog, including durable records, untestable-here verification, session understanding capture, context isolation, stated-vs-enforced labeling, consolidation-vs-capture, budget-seam enforcement, shared status vocabulary, complexity-floor dispatch, ambiguity prepayment, transcript authority, and timestamp provenance.
+- `docs/principles.html` now reflects the complete 41-principle catalog, including durable records, untestable-here verification, session understanding capture, context isolation, stated-vs-enforced labeling, consolidation-vs-capture, budget-seam enforcement, shared status vocabulary, complexity-floor dispatch, ambiguity prepayment, transcript authority, timestamp provenance, producer/critic separation, and gate weakening as a new-run operation.
+
+#### Twenty-Fifth-Cycle 2.0 Additions
+- `templates/scripts/transcript-adapter.js` adds a named-field allowlist adapter for JSONL transcript reads. `templates/scripts/adapter-self-test.js` adds a schema-drift canary for agent dispatch events.
+- `templates/scripts/meter-reconcile.js` and `templates/scripts/flow-event-reader.js` now route transcript parsing through the adapter before deriving token totals, actual model identity, and background completion provenance.
+- `templates/cocoplus.toml.template` adds `[run_policy]` with `merge_policy`, `allow_irreversible_actions`, and `stop_after`, plus `[meter] transcript_adapter_strict`.
+- `PreToolUse` now drains `STEER.md` at stage-transition top, snapshots run policy before dispatch, refuses gate-weakening steer messages, blocks irreversible SQL unless run policy allows it, and logs refusals to CocoAudit.
+- `UserPromptSubmit` applies the same gate-weakening refusal rules before injecting one-shot steering.
+- CocoFleet adds goal-decomposition guidance with planner, producer, and read-only critic roles; disjoint concurrent file scopes; critic PASS signoff requirements; role-grouped status; and `$fleet comms`.
+- CocoConsole adds run-policy visibility, gate-weakening refusal advisory, transcript adapter canary display, cross-run fleet history, and a Comms panel.
+- README, command reference, concepts, workflows, architecture, feature docs, principles, migration skill, and coding-agent guidance now document the run-policy, adapter, fleet-comms, and producer/critic separation behavior.
 
 ### Compatibility
 
