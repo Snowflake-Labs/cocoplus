@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const transcriptAdapter = require('./transcript-adapter.js');
 
 const SEEN_LIMIT = 4096;
 
@@ -25,23 +26,8 @@ function atomicWriteJson(filePath, value) {
   fs.renameSync(tmp, filePath);
 }
 
-function usageFromRecord(record) {
-  const message = record.message || {};
-  const usage = record.usage || message.usage || record.message_usage || {};
-  return {
-    input_tokens: Number(usage.input_tokens || usage.prompt_tokens || 0),
-    output_tokens: Number(usage.output_tokens || usage.completion_tokens || 0),
-    cache_creation_tokens: Number(usage.cache_creation_input_tokens || usage.cache_creation_tokens || 0),
-    cache_read_tokens: Number(usage.cache_read_input_tokens || usage.cache_read_tokens || 0),
-  };
-}
-
 function tokenTotal(usage) {
   return usage.input_tokens + usage.output_tokens + usage.cache_creation_tokens + usage.cache_read_tokens;
-}
-
-function messageId(record) {
-  return record.message && record.message.id || record.message_id || record.id || null;
 }
 
 function usageFingerprint(usage) {
@@ -62,11 +48,6 @@ function rememberBounded(set, queue, key) {
   }
 }
 
-function transcriptModel(record) {
-  const message = record.message || {};
-  return message.model || record.model || null;
-}
-
 function reconcileTranscript(transcriptText) {
   const seenIds = new Set();
   const seenIdQueue = [];
@@ -77,27 +58,17 @@ function reconcileTranscript(transcriptText) {
   let assistantMessages = 0;
   let lastAssistantModel = null;
 
-  for (const line of String(transcriptText || '').split(/\r?\n/)) {
-    if (!line.trim()) continue;
-    let record;
-    try {
-      record = JSON.parse(line);
-    } catch (_) {
-      continue;
-    }
-
-    const type = record.type || record.role || record.message && record.message.role || '';
-    if (type !== 'assistant') continue;
-
-    const usage = usageFromRecord(record);
+  for (const event of transcriptAdapter.parseText(transcriptText)) {
+    if (!event || event.kind !== 'assistant') continue;
+    const usage = event.usage;
     const total = tokenTotal(usage);
     if (total <= 0) continue;
 
     assistantMessages++;
-    const model = transcriptModel(record);
+    const model = event.model;
     if (model) lastAssistantModel = model;
 
-    const id = messageId(record);
+    const id = event.id;
     const key = id ? `id:${id}` : `fp:${usageFingerprint(usage)}`;
     const seenSet = id ? seenIds : seenFingerprints;
     const seenQueue = id ? seenIdQueue : seenFingerprintQueue;

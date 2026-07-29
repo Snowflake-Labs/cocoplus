@@ -299,7 +299,7 @@ $flow run --model &lt;haiku|sonnet|opus&gt;
 $flow run --model &lt;value&gt; --stage &lt;stage-id&gt;
 $flow run --concurrency &lt;normal|caution|single-track&gt;
 </code></pre>
-<p>Reads <code>flow.json</code>, checks stage-boundary budget state, optionally writes a pre-dispatch complexity estimate to <code>.cocoplus/lifecycle/cocoflow/&lt;run-id&gt;/complexity.json</code>, spawns stage subagents, and monitors completion via SubagentStop hook integration. Stage status written back to <code>flow.json</code> in real time uses the shared vocabulary: <code>running</code>, <code>paused</code>, <code>completed</code>, <code>exited</code>, <code>failed</code>, <code>idle</code>, and <code>retired</code>. <code>--model</code> without <code>--stage</code> applies a Tier 2 pipeline default. <code>--model</code> with <code>--stage</code> applies a Tier 3 stage-level override. Neither form modifies <code>flow.json</code> on disk.</p>
+<p>Reads <code>flow.json</code>, drains <code>STEER.md</code> at stage-transition top, snapshots <code>[run_policy]</code> to <code>.cocoplus/lifecycle/cocoflow/&lt;run-id&gt;/policy-snapshot.json</code>, checks stage-boundary budget state, optionally writes a pre-dispatch complexity estimate to <code>.cocoplus/lifecycle/cocoflow/&lt;run-id&gt;/complexity.json</code>, spawns stage subagents, and monitors completion via SubagentStop hook integration. Stage status written back to <code>flow.json</code> in real time uses the shared vocabulary: <code>running</code>, <code>paused</code>, <code>completed</code>, <code>exited</code>, <code>failed</code>, <code>idle</code>, and <code>retired</code>. <code>--model</code> without <code>--stage</code> applies a Tier 2 pipeline default. <code>--model</code> with <code>--stage</code> applies a Tier 3 stage-level override. Neither form modifies <code>flow.json</code> on disk.</p>
 <p><code>--concurrency</code> controls CocoHarvest's adaptive parallelism mode. In normal operation, the mode is managed automatically: the pipeline starts in <strong>Normal</strong> mode (full parallelism), steps down to <strong>Caution</strong> (reduced parallelism) on any stage failure, and drops to <strong>Single-track</strong> (serial execution) if more than 50% of stages have failed. Pass <code>--concurrency normal</code> to override back to full parallelism when you have investigated failures and want to retry at full speed. The current concurrency mode is visible in <code>$flow status</code>.</p>
 <p>When <code>[flow] complexity_estimation = true</code>, complexity tier sets the model and thinking-effort floor. CocoSession budget state caps only parallelism and retry budget. High ambiguity and missing acceptance checks are non-blocking advisories surfaced before launch and in CocoConsole's Flow panel.</p>
 <p>Multi-pod flows encode topology in dotted branch names such as <code>&lt;flow-run-id&gt;.&lt;pod-role&gt;.&lt;child-role&gt;</code>. Parentage is derived by removing the final dotted segment, so git remains the authoritative topology source even if runtime registry files need healing.</p>
@@ -854,15 +854,23 @@ $fleet init data-platform
 <pre><code>
 $fleet run .cocoplus/fleet/data-platform-manifest.json
 </code></pre>
-<p>Requires an initialized CocoPod, a valid manifest path, no more than ten instances, and the <code>coco</code> CLI available in PATH. Resolves the dependency graph, creates instance directories, and launches the initial set of instances whose dependencies are already satisfied. Process IDs are recorded in the state file, then the command returns control immediately. Use <code>$fleet status</code> to monitor completion and launch or diagnose subsequent dependency-ready work.</p>
-<p><strong>Output:</strong> Fleet state file at <code>.cocoplus/fleet/[fleet-id]-state.json</code>.</p>
+<p>Requires an initialized CocoPod, a valid manifest path, no more than ten instances, and the <code>coco</code> CLI available in PATH. Resolves the dependency graph, creates instance directories, and launches the initial set of instances whose dependencies are already satisfied. In <code>goal_decomposition</code> mode, the manifest includes planner, producer, and read-only critic roles, model tiers, file scopes, dependencies, and critic signoff requirements. Process IDs are recorded in the state file, then the command returns control immediately. Use <code>$fleet status</code> to monitor completion and launch or diagnose subsequent dependency-ready work.</p>
+<p><strong>Output:</strong> Fleet state directory at <code>.cocoplus/fleet/[fleet-id]/</code>, including <code>state.json</code> and <code>comms.log</code>.</p>
 <hr>
 <p><strong><code>$fleet status [fleet-id]</code></strong> — Live fleet execution status</p>
 <pre><code>
 $fleet status fleet-001
 </code></pre>
-<p>Reads state file and renders: all instances, their status, runtime duration, checkpoint states. Failed instances show their last log lines.</p>
+<p>Reads state file and renders: all instances, their status, runtime duration, checkpoint states, role groups, model tiers, last heartbeat, current task summary, and recent comms events. Failed instances show their last log lines.</p>
 <p><strong>Output:</strong> Formatted status table. No state changes.</p>
+<hr>
+<p><strong><code>$fleet comms [fleet-id]</code></strong> — Read fleet dispatch and heartbeat events</p>
+<pre><code>
+$fleet comms fleet-001
+$fleet comms fleet-001 --role critic --tail 25
+</code></pre>
+<p>Reads <code>.cocoplus/fleet/[fleet-id]/comms.log</code> and prints the latest dispatch, heartbeat, completion, blocker, and signoff events. Optional filters narrow by role, event type, or tail count. The command is read-only.</p>
+<p><strong>Output:</strong> Formatted communications feed. No state changes.</p>
 <hr>
 <p><strong><code>$fleet logs [instance-id]</code></strong> — Stream instance logs</p>
 <pre><code>

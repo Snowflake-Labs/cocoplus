@@ -144,6 +144,8 @@ function main() {
     'artifact-check.js',
     'status-healer.js',
     'complexity-estimate.js',
+    'transcript-adapter.js',
+    'adapter-self-test.js',
     'meter-reconcile.js',
     'flow-event-reader.js',
   ];
@@ -242,21 +244,35 @@ function main() {
     'coordination_warning_threshold',
     'track_acrr',
     'track_actual_model',
+    'transcript_adapter_strict',
     'meter_reconciliation_enabled',
     'meter_reconciliation_threshold',
     'complexity_estimation',
     'trivial_floor_invariant',
+    '[run_policy]',
+    'merge_policy',
+    'allow_irreversible_actions',
+    'stop_after',
   ]) {
     requireIncludes(configTemplate, expected, failures, 'cocoplus.toml.template');
   }
 
   const principlesHtml = readFile(path.join(repoRoot, 'docs', 'principles.html'));
   const principleCount = (principlesHtml.match(/<h2 id="[0-9]/g) || []).length;
-  if (principleCount !== 39) {
-    failures.push(`docs/principles.html must contain 39 principle headings; found ${principleCount}`);
+  if (principleCount !== 41) {
+    failures.push(`docs/principles.html must contain 41 principle headings; found ${principleCount}`);
   }
   requireIncludes(principlesHtml, 'The Transcript Is the Source of Truth', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Timestamps Have Provenance', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Producers Never Grade Themselves', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Gate Weakening Requires a New Run', failures, 'docs/principles.html');
+
+  const adapterPath = path.join(templatesDir, 'scripts', 'transcript-adapter.js');
+  if (fs.existsSync(adapterPath)) {
+    const adapter = readFile(adapterPath);
+    rejectPattern(adapter, /\.\.\./, failures, 'templates/scripts/transcript-adapter.js');
+    requireIncludes(adapter, "kind: 'other'", failures, 'templates/scripts/transcript-adapter.js');
+  }
 
   const stalePatterns = [
     /All 32 Features/i,

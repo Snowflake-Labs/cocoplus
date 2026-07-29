@@ -34,6 +34,8 @@
     "templates/scripts/artifact-check.js",
     "templates/scripts/status-healer.js",
     "templates/scripts/complexity-estimate.js",
+    "templates/scripts/transcript-adapter.js",
+    "templates/scripts/adapter-self-test.js",
     "templates/scripts/meter-reconcile.js",
     "templates/scripts/flow-event-reader.js"
   ],
@@ -100,6 +102,7 @@
     "cocodiscuss/discuss",
     "cocodiscuss/red-team",
     "cocofleet/fleet-init",
+    "cocofleet/fleet-comms",
     "cocofleet/fleet-logs",
     "cocofleet/fleet-run",
     "cocofleet/fleet-status",

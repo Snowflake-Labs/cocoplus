@@ -33,6 +33,8 @@ const HOOK_LOG      = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const SAFETY_LOG    = path.join(COCOPLUS_DIR, 'safety-decisions.log');
 const SAFETY_AUDIT  = path.join(COCOPLUS_DIR, 'safety-audit.jsonl');
 const GOVERNANCE_LOG = path.join(COCOPLUS_DIR, 'lifecycle', 'governance-log.json');
+const AUDIT_MD = path.join(COCOPLUS_DIR, 'lifecycle', 'audit.md');
+const STEER_INBOX = path.join(COCOPLUS_DIR, 'STEER.md');
 const STAGE_EVIDENCE = path.join(COCOPLUS_DIR, 'session', 'stage-evidence.json');
 const PROPOSAL_LOG = path.join(COCOPLUS_DIR, 'proposals', 'proposal-log.jsonl');
 const FLOW_ARTIFACT_ROOT = path.join(COCOPLUS_DIR, 'flow', 'artifacts');
@@ -145,6 +147,119 @@ function readJsonFile(filePath, fallback) {
 function writeJsonFile(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, JSON.stringify(value, null, 2), 'utf8');
+}
+
+function appendAudit(text) {
+  fs.mkdirSync(path.dirname(AUDIT_MD), { recursive: true });
+  fs.appendFileSync(AUDIT_MD, `${text}\n`, 'utf8');
+}
+
+function isGateWeakeningSteer(text) {
+  return /\b(skip|bypass|disable|ignore|remove|turn\s+off)\b.*\b(qa|quality|critic|review|sentinel|secondeye|evidence|gate|checkpoint|stop_after|run_policy)\b/i.test(text) ||
+    /\b(reverse|override|dismiss|clear)\b.*\b(blocking|blocked|fail|rejection|verdict)\b/i.test(text) ||
+    /\ballow_irreversible_actions\s*=\s*true\b/i.test(text) ||
+    /\b(merge_policy|stop_after|run_policy)\b.*\b(change|set|alter|override)\b/i.test(text);
+}
+
+function updateFlowState(mutator) {
+  const flowStatePath = path.join(COCOPLUS_DIR, 'lifecycle', 'flow-state.json');
+  const state = readJsonFile(flowStatePath, {});
+  mutator(state);
+  writeJsonFile(flowStatePath, state);
+}
+
+function drainSteerInboxAtStageTransition(params, ts) {
+  if (!isStageBoundaryDispatch(params) || !fs.existsSync(STEER_INBOX)) return null;
+  let text = '';
+  try { text = fs.readFileSync(STEER_INBOX, 'utf8').trim(); } catch (_) { return null; }
+  if (!text) {
+    try { fs.unlinkSync(STEER_INBOX); } catch (_) { /* already gone */ }
+    return null;
+  }
+
+  if (isGateWeakeningSteer(text)) {
+    appendJsonLine(HOOK_LOG, {
+      hook: 'pre-tool-use',
+      action: 'gate_weakening_refused',
+      stage_id: currentStageId(params),
+      instruction: text.slice(0, 160),
+      ts,
+    });
+    appendAudit(`- ${ts} gate-weakening steer refused at stage transition: ${text.slice(0, 240)}`);
+    updateFlowState((state) => {
+      state.gate_weakening_refusals = Number(state.gate_weakening_refusals || 0) + 1;
+      state.last_gate_weakening_refusal_at = ts;
+      state.last_inbox_drain_at = ts;
+    });
+    try { fs.unlinkSync(STEER_INBOX); } catch (_) { /* already gone */ }
+    return 'CocoFlow refused a STEER.md message that would weaken an active governance gate. Change run policy in cocoplus.toml and start a new run if that is intentional.';
+  }
+
+  appendJsonLine(path.join(COCOPLUS_DIR, 'session', 'steps.jsonl'), {
+    ts,
+    action: 'steer_inbox_drained',
+    source: 'hook.pre-tool-use',
+    stage_id: currentStageId(params),
+    instruction: text.slice(0, 1000),
+  });
+  updateFlowState((state) => {
+    state.last_inbox_drain_at = ts;
+    state.last_steer_stage_id = currentStageId(params);
+  });
+  try { fs.unlinkSync(STEER_INBOX); } catch (_) { /* already gone */ }
+  return null;
+}
+
+function runPolicy(config) {
+  const policy = config.run_policy || {};
+  const stopAfter = Array.isArray(policy.stop_after) ? policy.stop_after : [];
+  return {
+    merge_policy: policy.merge_policy || 'none',
+    allow_irreversible_actions: policy.allow_irreversible_actions === true || policy.allow_irreversible_actions === 'true',
+    stop_after: stopAfter.map(String),
+  };
+}
+
+function policySnapshotPath(runId) {
+  return path.join(COCOPLUS_DIR, 'lifecycle', 'cocoflow', runId, 'policy-snapshot.json');
+}
+
+function ensurePolicySnapshot(config, params, ts) {
+  if (!isStageBoundaryDispatch(params)) return;
+  const runId = flowRunId(params);
+  const snapshotPath = policySnapshotPath(runId);
+  if (fs.existsSync(snapshotPath)) return;
+  const snapshot = runPolicy(config);
+  snapshot.run_id = runId;
+  snapshot.declared_at = ts;
+  snapshot.source = 'cocoplus.toml';
+  writeJsonFile(snapshotPath, snapshot);
+  appendJsonLine(HOOK_LOG, { hook: 'pre-tool-use', action: 'run_policy_snapshotted', run_id: runId, ts });
+}
+
+function activePolicy(config, params) {
+  const runId = flowRunId(params);
+  return readJsonFile(policySnapshotPath(runId), runPolicy(config));
+}
+
+function checkRunPolicyBoundary(config, params, ts) {
+  if (!isStageBoundaryDispatch(params)) return null;
+  const policy = activePolicy(config, params);
+  const previousStage = params.previous_stage_id || params.previous_stage || process.env.COCOPLUS_PREVIOUS_STAGE_ID || '';
+  if (previousStage && Array.isArray(policy.stop_after) && policy.stop_after.includes(String(previousStage))) {
+    updateFlowState((state) => {
+      state.paused_by_run_policy = true;
+      state.paused_after_stage = previousStage;
+      state.paused_at = ts;
+    });
+    appendJsonLine(HOOK_LOG, { hook: 'pre-tool-use', action: 'run_policy_stop_after_paused', stage_id: previousStage, ts });
+    return `CocoFlow run policy paused after stage "${previousStage}". Resume explicitly before dispatching the next stage.`;
+  }
+  return null;
+}
+
+function sqlIsIrreversible(sql) {
+  return /\b(DROP|TRUNCATE|DELETE|ALTER|MERGE|GRANT|REVOKE)\b/i.test(sql);
 }
 
 function recordStageEvidence(stageId, filePath, ts) {
@@ -336,9 +451,23 @@ function main() {
   const params   = event.parameters || {};
   const config   = loadConfig();
 
+  const steerBlock = drainSteerInboxAtStageTransition(params, ts);
+  if (steerBlock) {
+    block(steerBlock);
+    return;
+  }
+
+  ensurePolicySnapshot(config, params, ts);
+
   const budgetBlock = checkBudgetBoundary(config, params, ts);
   if (budgetBlock) {
     block(budgetBlock);
+    return;
+  }
+
+  const runPolicyBlock = checkRunPolicyBoundary(config, params, ts);
+  if (runPolicyBlock) {
+    block(runPolicyBlock);
     return;
   }
 
@@ -444,6 +573,19 @@ function main() {
 
   // Extract SQL from parameters.sql (spec-defined path)
   const sql = params.sql || params.query || params.statement || '';
+  const policy = activePolicy(config, params);
+  if (!policy.allow_irreversible_actions && sqlIsIrreversible(sql)) {
+    appendJsonLine(GOVERNANCE_LOG, {
+      ts,
+      policy: 'run_policy_irreversible_guard',
+      tool: toolName,
+      action: 'BLOCKED',
+      stage_id: currentStageId(params),
+      summary: sql.slice(0, 160),
+    });
+    block('[CocoFlow] Run policy blocks irreversible SQL. Set [run_policy] allow_irreversible_actions = true in cocoplus.toml and start a new run if this operation is intended.');
+    return;
+  }
 
   // CocoSentinel RBAC Escalation Guard: structural protection independent of
   // session env vars. ACCOUNTADMIN escalation requires explicit pod opt-in.

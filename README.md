@@ -14,18 +14,19 @@ CocoPlus wraps a structured development lifecycle around every project — from 
 
 The current operating layer includes:
 
-- **CocoConsole**: a local, read-only browser control plane launched with `$cocoplus console`.
+- **CocoConsole**: a local, read-only browser control plane launched with `$cocoplus console`, including Flow, Cost, Sessions, Forge, and Fleet Comms visibility.
 - **CocoPilot**: opt-in natural-language orchestration with `$pilot on` / `$pilot off`.
 - **CocoForge**: goal-driven expert-team meta-loop with `$forge`.
 - **Leviathan Mode + Ronin**: explicit-activation autonomous coordination with a personal assistant return briefing.
 - **Dynamic Personas**: evidence-gated emergent specialists with retained history.
 - **Governance hooks**: ReviewerLockout and PII governance with observe/enforce rollout.
 - **Feature-owned runtime**: hooks enqueue deterministic work through feature-owned skill contracts; CocoConsole is the only registered local runtime script.
-- **CocoFlow orchestration**: tiered planning, pre-dispatch complexity scoring, dependency-group dispatch, dotted branch topology, named artifacts, thinking-effort tuning, divergence at branch points, synthesis passes, and `$flow template` reuse.
+- **CocoFlow orchestration**: tiered planning, pre-dispatch complexity scoring, committed run-policy snapshots, inbox-first stage transitions, dependency-group dispatch, dotted branch topology, named artifacts, thinking-effort tuning, divergence at branch points, synthesis passes, and `$flow template` reuse.
 - **CocoSession continuity**: PROGRESS handoff, predicate context, iteration and cost budgets with reserve landing, operator kill-switch, canonical terminal statuses, and one-shot steering for long-running work.
 - **Evidence and proposal gates**: opt-in stage evidence checks and retained Snowflake-write proposals settled with `$flow settle`.
 - **CocoRoutine**: opt-in Snowflake TASK scheduling for completed self-contained flows with `$routine`.
-- **Research, retrospective, hygiene, and correctness loops**: `$flow research`, `$retrospective run`, `$hygiene --model-upgrade`, `$meter benchmark`, and `$meter compare` make quality, coordination cost, transcript reconciliation, model drift, and ACRR calibration measurable.
+- **Research, retrospective, hygiene, and correctness loops**: `$flow research`, `$retrospective run`, `$hygiene --model-upgrade`, `$meter benchmark`, and `$meter compare` make quality, coordination cost, adapter-backed transcript reconciliation, model drift, and ACRR calibration measurable.
+- **CocoFleet goal mode**: `$fleet run`, `$fleet status`, and `$fleet comms` support planner/producer/read-only-critic orchestration with disjoint file scopes and signoff-driven completion.
 - **Console-aware visual commands**: `$flow view` and `$meter view` redirect into CocoConsole when it is running.
 
 The root plugin implements the current runtime and documentation surface while preserving older project state through explicit migration skills.

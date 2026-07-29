@@ -403,11 +403,13 @@ $fleet init data-platform
 $fleet run .cocoplus/fleet/data-platform-manifest.json
 </code></pre>
 <p>CocoFleet resolves the dependency graph, launches the initial dependency-ready instances, records their process IDs, and returns control immediately. Use <code>$fleet status</code> for ongoing monitoring and dependency progression.</p>
+<p>If the manifest uses <code>goal_decomposition</code>, confirm that producer file scopes are disjoint for concurrent work and that every critic is read-only. Required producer outputs are not considered complete until the dependent critic records PASS signoff.</p>
 <p><strong>Monitor execution:</strong></p>
 <pre><code>
 $fleet status fleet-001
+$fleet comms fleet-001
 </code></pre>
-<p>Live view of all instances — status, runtime, checkpoint states. If any instance is failing:</p>
+<p>Live view of all instances — status, runtime, checkpoint states, role heartbeats, and recent communications. If any instance is failing:</p>
 <pre><code>
 $fleet logs instance-003
 </code></pre>
