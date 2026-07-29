@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const transcriptAdapter = require('./transcript-adapter.js');
 
 function readJson(filePath, fallback = {}) {
   try {
@@ -23,72 +24,35 @@ function atomicWriteJson(filePath, value) {
   fs.renameSync(tmp, filePath);
 }
 
-function eventTimestamp(record) {
-  return record.timestamp || record.ts || record.created_at || null;
-}
-
-function toolUseId(record) {
-  return record.tool_use_id || record.toolUseId || record['tool-use-id'] || record.id || null;
-}
-
-function taskId(record) {
-  return record.task_id || record.taskId || record['task-id'] || null;
-}
-
-function isQueueCompletion(record) {
-  const type = String(record.type || record.event || record.record_type || '');
-  const operation = String(record.operation || record.queue_operation || '');
-  const status = String(record.status || record.result || '');
-  return /queue-operation|queue_operation/i.test(type) &&
-    /enqueue/i.test(operation) &&
-    /complete|completed|success/i.test(status);
-}
-
-function isBackgroundPodToolResult(record) {
-  const type = String(record.type || record.event || record.role || '');
-  const name = String(record.name || record.tool_name || record.tool || '');
-  const input = record.input || record.parameters || {};
-  return /tool_result|tool-result/i.test(type) &&
-    (record.background === true || input.background === true || /cocopod|subagent|agent/i.test(name));
-}
-
 function parseTranscriptEvents(transcriptText) {
   const completionByTask = new Map();
   const completionByToolUse = new Map();
   const pods = [];
 
-  for (const line of String(transcriptText || '').split(/\r?\n/)) {
-    if (!line.trim()) continue;
-    let record;
-    try {
-      record = JSON.parse(line);
-    } catch (_) {
-      continue;
-    }
-
-    if (isQueueCompletion(record)) {
+  for (const record of transcriptAdapter.parseText(transcriptText)) {
+    if (record.kind === 'queue_completion') {
       const completion = {
-        task_id: taskId(record),
-        tool_use_id: toolUseId(record),
-        timestamp: eventTimestamp(record),
+        task_id: record.task_id,
+        tool_use_id: record.tool_use_id,
+        timestamp: record.timestamp,
       };
       if (completion.task_id) completionByTask.set(completion.task_id, completion);
       if (completion.tool_use_id) completionByToolUse.set(completion.tool_use_id, completion);
       continue;
     }
 
-    if (isBackgroundPodToolResult(record)) {
-      const id = toolUseId(record);
-      const task = taskId(record);
+    if (record.kind === 'tool_result' && record.background) {
+      const id = record.tool_use_id;
+      const task = record.task_id;
       const completion = task && completionByTask.get(task) || id && completionByToolUse.get(id) || null;
-      const startTime = record.started_at || record.start_time || record.dispatched_at || eventTimestamp(record);
-      const fallbackEnd = record.completed_at || record.end_time || eventTimestamp(record);
+      const startTime = record.started_at || record.timestamp;
+      const fallbackEnd = record.completed_at || record.timestamp;
       const endTime = completion && completion.timestamp || fallbackEnd;
       const durationSeconds = startTime && endTime
         ? Math.max(0, Math.round((new Date(endTime).getTime() - new Date(startTime).getTime()) / 1000))
         : null;
       pods.push({
-        pod_id: record.subagent_id || record.pod_id || task || id || null,
+        pod_id: record.pod_id || task || id || null,
         task_id: task,
         tool_use_id: id,
         started_at: startTime,

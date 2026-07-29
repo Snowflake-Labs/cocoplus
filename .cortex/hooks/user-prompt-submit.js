@@ -41,6 +41,7 @@ const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const V2_QUEUE     = path.join(COCOPLUS_DIR, 'v2-runtime-requests.jsonl');
 const SESSION_DIR  = path.join(COCOPLUS_DIR, 'session');
+const AUDIT_MD     = path.join(COCOPLUS_DIR, 'lifecycle', 'audit.md');
 
 /** Default persona shorthand map (overridden by .cocoplus/personas.json if present) */
 const DEFAULT_PERSONAS = {
@@ -61,6 +62,18 @@ function loadPersonaMap() {
   } catch (_) {
     return DEFAULT_PERSONAS;
   }
+}
+
+function appendAudit(text) {
+  fs.mkdirSync(path.dirname(AUDIT_MD), { recursive: true });
+  fs.appendFileSync(AUDIT_MD, `${text}\n`, 'utf8');
+}
+
+function isGateWeakeningSteer(text) {
+  return /\b(skip|bypass|disable|ignore|remove|turn\s+off)\b.*\b(qa|quality|critic|review|sentinel|secondeye|evidence|gate|checkpoint|stop_after|run_policy)\b/i.test(text) ||
+    /\b(reverse|override|dismiss|clear)\b.*\b(blocking|blocked|fail|rejection|verdict)\b/i.test(text) ||
+    /\ballow_irreversible_actions\s*=\s*true\b/i.test(text) ||
+    /\b(merge_policy|stop_after|run_policy)\b.*\b(change|set|alter|override)\b/i.test(text);
 }
 
 function spawnCocoScout(message, ts) {
@@ -99,19 +112,29 @@ function main() {
     let steerText = '';
     try { steerText = fs.readFileSync(steerPath, 'utf8').trim(); } catch (_) { /* absent */ }
     if (steerText) {
-      appendJsonLine(V2_QUEUE, {
-        skill: 'cocosession/session',
-        action: 'steer',
-        instruction: steerText.slice(0, 1000),
-        requested_at: ts,
-        source: 'hook.user-prompt-submit',
-      });
-      appendJsonLine(HOOK_LOG, {
-        hook: 'user-prompt-submit',
-        action: 'operator_steering_injected',
-        instruction: steerText.slice(0, 160),
-        ts,
-      });
+      if (isGateWeakeningSteer(steerText)) {
+        appendJsonLine(HOOK_LOG, {
+          hook: 'user-prompt-submit',
+          action: 'gate_weakening_refused',
+          instruction: steerText.slice(0, 160),
+          ts,
+        });
+        appendAudit(`- ${ts} gate-weakening steer refused at prompt submit: ${steerText.slice(0, 240)}`);
+      } else {
+        appendJsonLine(V2_QUEUE, {
+          skill: 'cocosession/session',
+          action: 'steer',
+          instruction: steerText.slice(0, 1000),
+          requested_at: ts,
+          source: 'hook.user-prompt-submit',
+        });
+        appendJsonLine(HOOK_LOG, {
+          hook: 'user-prompt-submit',
+          action: 'operator_steering_injected',
+          instruction: steerText.slice(0, 160),
+          ts,
+        });
+      }
     }
     try { fs.unlinkSync(steerPath); } catch (_) { /* already cleared */ }
   }
