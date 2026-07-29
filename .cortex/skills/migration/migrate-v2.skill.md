@@ -38,8 +38,8 @@ Inspect the existing project before planning changes:
 For `--dry-run`, inspect and report without writing:
 
 1. Missing current directories: `.cocoplus/flows/templates/`, `.cocoplus/flows/templates/archive/`, `.cocoplus/flow/artifacts/`, `.cocoplus/proposals/`, `.cocoplus/proposals/archive/`, `.cocoplus/session/`, `.cocoplus/personas/`, `.cocoplus/personas/archive/`, `.cocoplus/skills/`, `.cocoplus/governance/`, `.cocoplus/routines/`, `.cocoplus/sentinel/`, `.cocoplus/brew/`, `.cocoplus/migration/`, `.cocoplus/migration/archive/`.
-2. Missing current files: `.cocoplus/personas/dynamic-registry.json`, `.cocoplus/v2-runtime-requests.jsonl`, `.cocoplus/.last-consolidation`, `.cocoplus/.last-retrospective`, `.cocoplus/pod-state.json`, `.cocoplus/session/PROGRESS.md`, `.cocoplus/session/CONTEXT.md`, `.cocoplus/session/task-queue.jsonl`, `.cocoplus/session/stage-evidence.json`, `.cocoplus/session/iteration-budget.json`, `.cocoplus/session/budget-state.json`, `.cocoplus/session/status.json`, `.cocoplus/session/discoveries.jsonl`, `.cocoplus/proposals/proposal-log.jsonl`, `.cocoplus/routines/registry.json`, `.cocoplus/scripts/complexity-estimate.js`, `.cocoplus/scripts/meter-reconcile.js`, `.cocoplus/scripts/flow-event-reader.js`.
-3. Missing `cocoplus.toml` sections or keys: `[cocoplus]`, `[cocopilot]`, `[cocoforge]`, `[leviathan]`, `[dynamic_personas]`, `[governance]`, `[session]` with `budget_limit`, `budget_reserve_fraction`, and `budget_enforcement`, `[harness]` with `trivial_floor_invariant`, `[evidence_gate]`, `[proposals]`, `[research]`, `[retrospective]`, `[routine]`, `[meter]` with `track_coordination_cost`, `coordination_warning_threshold`, `track_acrr`, `track_actual_model`, `meter_reconciliation_enabled`, and `meter_reconciliation_threshold`, `[flow]` with `complexity_estimation`, `[flow.planning]`, `[flow.planning.frames]`, `[flow.tiers]`, `[model_roles]`.
+2. Missing current files: `.cocoplus/personas/dynamic-registry.json`, `.cocoplus/v2-runtime-requests.jsonl`, `.cocoplus/.last-consolidation`, `.cocoplus/.last-retrospective`, `.cocoplus/pod-state.json`, `.cocoplus/session/PROGRESS.md`, `.cocoplus/session/CONTEXT.md`, `.cocoplus/session/task-queue.jsonl`, `.cocoplus/session/stage-evidence.json`, `.cocoplus/session/iteration-budget.json`, `.cocoplus/session/budget-state.json`, `.cocoplus/session/status.json`, `.cocoplus/session/discoveries.jsonl`, `.cocoplus/proposals/proposal-log.jsonl`, `.cocoplus/routines/registry.json`, `.cocoplus/scripts/complexity-estimate.js`, `.cocoplus/scripts/transcript-adapter.js`, `.cocoplus/scripts/adapter-self-test.js`, `.cocoplus/scripts/meter-reconcile.js`, `.cocoplus/scripts/flow-event-reader.js`.
+3. Missing `cocoplus.toml` sections or keys: `[cocoplus]`, `[cocopilot]`, `[cocoforge]`, `[leviathan]`, `[dynamic_personas]`, `[governance]`, `[session]` with `budget_limit`, `budget_reserve_fraction`, and `budget_enforcement`, `[harness]` with `trivial_floor_invariant`, `[evidence_gate]`, `[proposals]`, `[run_policy]` with `merge_policy`, `allow_irreversible_actions`, and `stop_after`, `[research]`, `[retrospective]`, `[routine]`, `[meter]` with `track_coordination_cost`, `coordination_warning_threshold`, `track_acrr`, `track_actual_model`, `transcript_adapter_strict`, `meter_reconciliation_enabled`, and `meter_reconciliation_threshold`, `[flow]` with `complexity_estimation`, `[flow.planning]`, `[flow.planning.frames]`, `[flow.tiers]`, `[model_roles]`.
 4. Legacy configuration that needs conversion: `safety-config.json`, older monitor templates, missing `.cocoplus/.gitignore` entries, older AGENTS activation blocks.
 5. Testing and validation commands that will run after migration.
 6. Post-migration cleanup actions that will archive legacy config files and remove obsolete generated scratch state.
@@ -69,7 +69,7 @@ When not in dry-run mode:
 7. Create CocoRoutine registry `.cocoplus/routines/registry.json` if absent.
 8. Create `.cocoplus/pod-state.json` with canonical status `idle` if absent.
 9. Ensure `.cocoplus/flow/artifacts/`, `.cocoplus/sentinel/`, and `.cocoplus/brew/` exist for named artifact handoffs, coach queues, and distribution gate reports.
-10. Copy `templates/scripts/complexity-estimate.js`, `templates/scripts/meter-reconcile.js`, and `templates/scripts/flow-event-reader.js` into `.cocoplus/scripts/` if absent.
+10. Copy `templates/scripts/complexity-estimate.js`, `templates/scripts/transcript-adapter.js`, `templates/scripts/adapter-self-test.js`, `templates/scripts/meter-reconcile.js`, and `templates/scripts/flow-event-reader.js` into `.cocoplus/scripts/` if absent.
 11. Convert `safety-config.json` into `cocoplus.toml` when `cocoplus.toml` is absent. Preserve the original file until post-migration cleanup.
 12. Append missing current config sections to `cocoplus.toml` or `.cocoplus/cocoplus.toml`, preserving existing values.
 13. Append current activation blocks to `.cocoplus/AGENTS.md` if missing, including CocoSession budget reserve, canonical terminal statuses, pre-dispatch complexity estimation, ACRR tracking, evidence gates, proposal settlement, named artifacts, CocoRoutine, stage coaching, retrospective, hygiene, and benchmarking.
@@ -93,10 +93,11 @@ After applying file changes, run these checks before cleanup:
 5. Verify CocoSession files exist and `CONTEXT.md` contains predicate-style `CLASS.key=value` lines.
 6. Verify proposal, evidence, iteration budget, cost-budget, status, routine registry, and coach queue paths exist and parse where JSON is expected.
 7. Run `node .cocoplus/scripts/complexity-estimate.js "rename column x to y and run the tests to confirm"` and verify the result is `trivial` or `simple` with `has_acceptance_check = true`.
-8. Run `node .cocoplus/scripts/meter-reconcile.js --transcript <sample-jsonl> --session-file <sample-meter-json>` in a migration scratch directory and verify duplicate assistant messages are deduplicated.
-9. Run `node .cocoplus/scripts/flow-event-reader.js --transcript <sample-jsonl> --flow-state <sample-flow-state-json>` in a migration scratch directory and verify background pods include `completion_source`.
-10. Run `$pod status` if available; otherwise record that runtime validation is pending until Coco reloads the plugin.
-11. Run `$governance status` if available; otherwise verify the governance config sections and log path exist.
+8. Run `node .cocoplus/scripts/adapter-self-test.js --transcript <sample-jsonl> --out .cocoplus/meter/adapter-self-test.json` and verify the canary result matches the sample transcript.
+9. Run `node .cocoplus/scripts/meter-reconcile.js --transcript <sample-jsonl> --session-file <sample-meter-json>` in a migration scratch directory and verify duplicate assistant messages are deduplicated.
+10. Run `node .cocoplus/scripts/flow-event-reader.js --transcript <sample-jsonl> --flow-state <sample-flow-state-json>` in a migration scratch directory and verify background pods include `completion_source`.
+11. Run `$pod status` if available; otherwise record that runtime validation is pending until Coco reloads the plugin.
+12. Run `$governance status` if available; otherwise verify the governance config sections and log path exist.
 
 Record every command/check and result in `.cocoplus/migration/v2-migration-report.md`.
 
@@ -110,7 +111,7 @@ The migration is valid only when:
 - No legacy `safety-config.json` remains active when `cocoplus.toml` is present.
 - No active mode was enabled by the migration itself.
 - No kill-switch or steering file was created by migration.
-- Complexity estimation, ACRR, transcript reconciliation, and actual-model config keys exist without enabling any autonomous mode.
+- Complexity estimation, ACRR, transcript adapter, transcript reconciliation, actual-model, and run-policy config keys exist without enabling any autonomous mode.
 - `git diff -- .cocoplus/` shows only migration-related changes.
 - The migration report includes version inference, applied changes, test results, cleanup actions, and residual risks.
 

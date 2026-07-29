@@ -102,6 +102,7 @@
     "cocodiscuss/discuss",
     "cocodiscuss/red-team",
     "cocofleet/fleet-init",
+    "cocofleet/fleet-comms",
     "cocofleet/fleet-logs",
     "cocofleet/fleet-run",
     "cocofleet/fleet-status",

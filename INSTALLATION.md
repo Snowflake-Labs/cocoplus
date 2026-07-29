@@ -117,7 +117,7 @@ $spec
 
 `$cocoplus console` opens the read-only local dashboard. Optional operating modes are activated per session with `$pilot on`, `$forge "goal"`, or `$leviathan on`.
 
-`$session status` verifies the CocoSession handoff surface, predicate context, iteration budget, cost-budget reserve state, canonical terminal status, operator kill-switch state, and queued work. Existing projects that enable the current gates should add the optional `[session]`, `[harness]`, `[evidence_gate]`, `[proposals]`, `[research]`, `[retrospective]`, `[routine]`, `[meter]`, and `[flow.*]` configuration blocks through `$migrate v2` rather than hand-editing partial state.
+`$session status` verifies the CocoSession handoff surface, predicate context, iteration budget, cost-budget reserve state, canonical terminal status, operator kill-switch state, and queued work. Existing projects that enable the current gates should add the optional `[session]`, `[harness]`, `[evidence_gate]`, `[proposals]`, `[run_policy]`, `[research]`, `[retrospective]`, `[routine]`, `[meter]`, and `[flow.*]` configuration blocks through `$migrate v2` rather than hand-editing partial state.
 
 The migration adds the cost, status, complexity, and calibration defaults used by current CocoSession, CocoFlow, and CocoMeter behavior:
 
@@ -133,7 +133,13 @@ trivial_floor_invariant = true
 [flow]
 complexity_estimation = true
 
+[run_policy]
+merge_policy = "none"
+allow_irreversible_actions = false
+stop_after = []
+
 [meter]
+transcript_adapter_strict = true
 track_coordination_cost = true
 coordination_warning_threshold = 0.25
 track_acrr = true

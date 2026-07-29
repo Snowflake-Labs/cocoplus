@@ -48,16 +48,19 @@ Active only after explicit covenant acceptance and `.cocoplus/modes/leviathan.on
 Dynamic personas live in `.cocoplus/personas/`. A persona must cite evidence from at least three distinct sessions or committed artifacts before activation. Dissolved personas retain `history.md`.
 
 ### CocoSession
-CocoSession is always available for continuity and operator control. Read `.cocoplus/session/PROGRESS.md` before resuming long-running work. Treat `.cocoplus/session/CONTEXT.md` as predicate state: cite lines verbatim instead of paraphrasing. `.cocoplus/AGENT_STOP` blocks tool use until resumed. `.cocoplus/STEER.md` is injected once and then cleared.
+CocoSession is always available for continuity and operator control. Read `.cocoplus/session/PROGRESS.md` before resuming long-running work. Treat `.cocoplus/session/CONTEXT.md` as predicate state: cite lines verbatim instead of paraphrasing. `.cocoplus/AGENT_STOP` blocks tool use until resumed. `.cocoplus/STEER.md` is injected once and then cleared. Gate-weakening steer messages are refused and logged rather than injected.
 
 ### Evidence and Proposal Gates
 If `[evidence_gate] enabled = true`, CocoFlow stages start from default-fail and cannot complete until a qualifying evidence artifact has been read. Stages with `writes_via_proposal = true` must retain Snowflake writes or pipeline changes under `.cocoplus/proposals/` until `$flow settle --accept` or `$flow settle --discard`.
+
+### Run Policy and Fleet Critics
+Declare `[run_policy]` before running CocoFlow. The hook snapshots it under `.cocoplus/lifecycle/cocoflow/<run-id>/policy-snapshot.json`; mid-run steering cannot weaken it. CocoFleet goal-decomposition tasks must separate producers from read-only critics, require PASS signoff when `critic_required = true`, and keep concurrent producer `file_scope` entries disjoint.
 
 ### Named Artifacts, Routines, and Stage Coaching
 CocoFlow stages may declare `artifacts.reads` and `artifacts.writes`; missing handoff files are deterministic gate failures. CocoRoutine schedules only self-contained flows and never references local paths or local-only credentials. If `[harness] coach_model` is configured, per-stage external coaching must use a different model than the executor.
 
 ### Complexity and ACRR
-If `[flow] complexity_estimation = true`, run descriptions are scored before dispatch and recorded in `.cocoplus/lifecycle/cocoflow/<run-id>/complexity.json`. Complexity sets model and thinking-effort floors; budget state caps only parallelism and retry budget. CocoMeter ACRR is a calibration diagnostic, not an accuracy score. When `[meter] meter_reconciliation_enabled = true`, transcript-derived token totals and `assistant.message.model` are authoritative for billing and model-drift advisories.
+If `[flow] complexity_estimation = true`, run descriptions are scored before dispatch and recorded in `.cocoplus/lifecycle/cocoflow/<run-id>/complexity.json`. Complexity sets model and thinking-effort floors; budget state caps only parallelism and retry budget. CocoMeter ACRR is a calibration diagnostic, not an accuracy score. When `[meter] meter_reconciliation_enabled = true`, transcript-derived token totals and model identity are authoritative for billing and model-drift advisories, and transcript reads route through `.cocoplus/scripts/transcript-adapter.js`.
 
 ### Retrospective and Hygiene
 Use `$retrospective run`, `$hygiene --model-upgrade`, and `$meter benchmark --flow <template>` before changing recurring rules, hooks, skills, or flow templates. Prefer the cheapest sufficient actuator: hook, then skill, then structural rule, then standing context.
