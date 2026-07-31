@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 const repoRoot = path.resolve(__dirname, '..');
-const pluginPath = path.join(repoRoot, 'plugin.json');
+const pluginPath = path.join(repoRoot, '.cortex-plugin', 'plugin.json');
 const agentsDir = path.join(repoRoot, '.cortex', 'agents');
 const hooksDir = path.join(repoRoot, '.cortex', 'hooks');
 const hookLibDir = path.join(hooksDir, 'lib');
@@ -59,6 +59,26 @@ function requireIncludes(content, expected, failures, label) {
   }
 }
 
+
+function asArray(value) {
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') return [value];
+  return [];
+}
+
+function normalizeManifestPath(value) {
+  return String(value).replace(/\\/g, '/').replace(/\/+$/, '').replace(/^\.\//, '');
+}
+
+function manifestIncludesPath(value, expected) {
+  const normalizedExpected = normalizeManifestPath(expected);
+  return asArray(value).some((item) => normalizeManifestPath(item) === normalizedExpected);
+}
+
+function listAgentIds(dirPath) {
+  return new Set(walkFiles(dirPath, (filePath) => filePath.endsWith('.agent.md'))
+    .map((filePath) => path.relative(dirPath, filePath).replace(/\\/g, '/').replace(/\.agent\.md$/, '')));
+}
 function rejectPattern(content, pattern, failures, label) {
   if (pattern.test(content)) {
     failures.push(`${label} contains stale or malformed content matching ${pattern}`);
@@ -98,6 +118,7 @@ function main() {
   const failures = [];
   const plugin = readJson(pluginPath);
   const skillNativeDir = path.join(repoRoot, '.cortex', 'skills', 'skill-native');
+  const registeredAgentIds = listAgentIds(agentsDir);
 
   if ((plugin.skills || []).some((skill) => skill.startsWith('skill-native/'))) {
     failures.push('V2-only manifest must not register skill-native/* compatibility skills');
@@ -150,18 +171,33 @@ function main() {
     'flow-event-reader.js',
   ];
 
-  for (const agentId of plugin.agents || []) {
-    const agentFile = path.join(agentsDir, `${agentId}.agent.md`);
-    if (!fs.existsSync(agentFile)) {
-      failures.push(`Manifest agent "${agentId}" is missing file ${path.relative(repoRoot, agentFile)}`);
-    }
+  if (!manifestIncludesPath(plugin.skills, './.cortex/skills')) {
+    failures.push('.cortex-plugin/plugin.json must register skills as "./.cortex/skills"');
   }
 
-  for (const skill of plugin.skills || []) {
-    const skillFile = path.join(repoRoot, '.cortex', 'skills', `${skill}.skill.md`);
-    const skillIndex = path.join(repoRoot, '.cortex', 'skills', skill, 'SKILL.md');
-    if (!fs.existsSync(skillFile) && !fs.existsSync(skillIndex)) {
-      failures.push(`Manifest skill "${skill}" is missing file ${path.relative(repoRoot, skillFile)} or ${path.relative(repoRoot, skillIndex)}`);
+  if (!manifestIncludesPath(plugin.agents, './.cortex/agents')) {
+    failures.push('.cortex-plugin/plugin.json must register agents as "./.cortex/agents"');
+  }
+
+  const requiredHookEvents = {
+    SessionStart: '.cortex/hooks/session-start.js',
+    SessionEnd: '.cortex/hooks/session-end.js',
+    PreToolUse: '.cortex/hooks/pre-tool-use.js',
+    PostToolUse: '.cortex/hooks/post-tool-use.js',
+    UserPromptSubmit: '.cortex/hooks/user-prompt-submit.js',
+    Stop: '.cortex/hooks/stop.js',
+    SubagentStop: '.cortex/hooks/subagent-stop.js',
+    PreCompact: '.cortex/hooks/pre-compact.js',
+    Notification: '.cortex/hooks/notification.js',
+  };
+
+  for (const [eventName, scriptPath] of Object.entries(requiredHookEvents)) {
+    const eventHooks = plugin.hooks && plugin.hooks[eventName];
+    const command = Array.isArray(eventHooks) && eventHooks[0] && eventHooks[0].hooks && eventHooks[0].hooks[0]
+      ? eventHooks[0].hooks[0].command
+      : '';
+    if (!command.includes(scriptPath)) {
+      failures.push(`.cortex-plugin/plugin.json must register ${eventName} hook command for ${scriptPath}`);
     }
   }
 
@@ -173,8 +209,8 @@ function main() {
   }
 
   for (const agentId of requiredAgents) {
-    if (!(plugin.agents || []).includes(agentId)) {
-      failures.push(`Required agent "${agentId}" is not registered in plugin.json`);
+    if (!registeredAgentIds.has(agentId)) {
+      failures.push(`Required agent "${agentId}" is missing from ${path.relative(repoRoot, agentsDir)}`);
     }
   }
 
@@ -202,12 +238,12 @@ function main() {
   for (const asset of [...requiredTemplates.map((name) => path.join('templates', name)), ...requiredRecipes.map((name) => path.join('recipes', name))]) {
     const manifestList = asset.startsWith('templates') ? plugin.templates : plugin.recipes;
     if (!Array.isArray(manifestList) || !manifestList.includes(asset.replace(/\//g, '\\')) && !manifestList.includes(asset.replace(/\\/g, '/'))) {
-      failures.push(`plugin.json does not register asset ${asset}`);
+      failures.push(`.cortex-plugin/plugin.json does not register asset ${asset}`);
     }
   }
 
   if (!plugin.cocoHarvest || Number(plugin.cocoHarvest.pullThreshold) !== 8000) {
-    failures.push('plugin.json must define cocoHarvest.pullThreshold as 8000');
+    failures.push('.cortex-plugin/plugin.json must define cocoHarvest.pullThreshold as 8000');
   }
 
   for (const fileName of requiredRecipes) {
@@ -307,8 +343,8 @@ function main() {
   }
 
   for (const agentId of spawnedAgents) {
-    if (!(plugin.agents || []).includes(agentId)) {
-      failures.push(`Hook-spawned agent "${agentId}" is not registered in plugin.json`);
+    if (!registeredAgentIds.has(agentId)) {
+      failures.push(`Hook-spawned agent "${agentId}" is missing from ${path.relative(repoRoot, agentsDir)}`);
     }
     const agentFile = path.join(agentsDir, `${agentId}.agent.md`);
     if (!fs.existsSync(agentFile)) {
@@ -393,3 +429,4 @@ function main() {
 }
 
 main();
+
