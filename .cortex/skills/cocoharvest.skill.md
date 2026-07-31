@@ -51,7 +51,7 @@ For each workstream, classify its primary domain using this mapping:
 
 ## Step 4: Create Per-Stage Prompt Files
 
-Before writing each prompt, inspect every input file referenced by the workstream. Estimate tokens as `ceil(characters / 4)`. If the estimate exceeds `plugin.json` `cocoHarvest.pullThreshold` (default: 8000), use CocoPull:
+Before writing each prompt, inspect every input file referenced by the workstream. Estimate tokens as `ceil(characters / 4)`. If the estimate exceeds `.cortex-plugin/plugin.json` `cocoHarvest.pullThreshold` (default: 8000), use CocoPull:
 
 - If `<input>.pull.md` exists and its frontmatter says `reliability: high`, reference the pull file in the stage prompt and log the substitution in `.cocoplus/harvest/[run-id]-progress.txt`.
 - If `<input>.pull.md` exists but reliability is `low`, keep the original file and log a warning.
@@ -213,7 +213,7 @@ Mode is written to `flow.json` `runtime.concurrency_mode`. Mode never auto-upgra
 
 ## Runtime Behavior — Stall Detection
 
-If a subagent's output token rate falls below `stallTokenThreshold` (default: 150 tokens/step, configurable in `plugin.json` under `cocoHarvest.stallDetection`) for more than `stallMinSteps` (default: 5) consecutive steps, the agent is flagged as stalled. On stall: send a re-prompt. If the re-prompt produces continued low-token output at the same threshold, escalate to a failure signal for Enhancement G. Never abort a subagent without a re-prompt attempt. Log stall signals to `hook-log.jsonl`.
+If a subagent's output token rate falls below `stallTokenThreshold` (default: 150 tokens/step, configurable in `.cortex-plugin/plugin.json` under `cocoHarvest.stallDetection`) for more than `stallMinSteps` (default: 5) consecutive steps, the agent is flagged as stalled. On stall: send a re-prompt. If the re-prompt produces continued low-token output at the same threshold, escalate to a failure signal for Enhancement G. Never abort a subagent without a re-prompt attempt. Log stall signals to `hook-log.jsonl`.
 
 ## Runtime Behavior — Consecutive Failure Escalation
 
@@ -237,3 +237,4 @@ After three consecutive hard failures from any subagent (configurable per stage 
 - [ ] Each stage has at least one entry in its `checkpoints` array
 - [ ] `harvest/[run-id]-progress.txt` and `harvest/[run-id]-tasks.json` are initialized
 - [ ] Summary output shows HITL/AFK counts alongside workstream and stage counts
+
