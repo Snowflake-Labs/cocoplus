@@ -1,0 +1,178 @@
+{
+  "name": "cocoplus",
+  "version": "2.0.0",
+  "description": "CocoPlus — Agentic Operating System for Snowflake Coco",
+  "author": {
+    "name": "sgsshankar, viveksrinivasanss"
+  },
+  "license": "MIT",
+  "entry": ".cortex/",
+  "minCocoVersion": "1.1.1",
+  "runtime": "node",
+  "cocoHarvest": {
+    "pullThreshold": 8000,
+    "stallDetection": {
+      "stallTokenThreshold": 150,
+      "stallMinSteps": 5
+    }
+  },
+  "templates": [
+    "templates/AGENTS.md.template",
+    "templates/project.md.template",
+    "templates/flow.json.template",
+    "templates/notifications.json.template",
+    "templates/safety-config.json.template",
+    "templates/flow-view.html.template",
+    "templates/meter-view.html.template",
+    "templates/cocoplus.toml.template",
+    "templates/monitors/narrator.monitor.json",
+    "templates/monitors/cost-tracker.monitor.json",
+    "templates/monitors/quality-advisor.monitor.json",
+    "templates/monitors/memory-capture.monitor.json",
+    "templates/scripts/rollback.js",
+    "templates/scripts/scope-classify.js",
+    "templates/scripts/spec-validator.js",
+    "templates/scripts/alignment-check.js",
+    "templates/scripts/artifact-check.js",
+    "templates/scripts/status-healer.js",
+    "templates/scripts/complexity-estimate.js",
+    "templates/scripts/transcript-adapter.js",
+    "templates/scripts/adapter-self-test.js",
+    "templates/scripts/meter-reconcile.js",
+    "templates/scripts/flow-event-reader.js"
+  ],
+  "recipes": [
+    "recipes/cortex-add-classifier.json.template",
+    "recipes/cortex-add-search.json.template",
+    "recipes/cortex-semantic-model.json.template",
+    "recipes/cortex-add-extraction.json.template"
+  ],
+  "agents": [
+    "./.cortex/agents"
+  ],
+  "skills": [
+    "./.cortex/skills"
+  ],
+  "scripts": [
+    ".cortex/scripts/cocoplus-console.js"
+  ],
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/.cortex/hooks/session-start.js\"",
+            "timeout": 60,
+            "enabled": true
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/.cortex/hooks/session-end.js\"",
+            "timeout": 60,
+            "enabled": true
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/.cortex/hooks/pre-tool-use.js\"",
+            "timeout": 60,
+            "enabled": true
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/.cortex/hooks/post-tool-use.js\"",
+            "timeout": 60,
+            "enabled": true
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/.cortex/hooks/user-prompt-submit.js\"",
+            "timeout": 60,
+            "enabled": true
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/.cortex/hooks/stop.js\"",
+            "timeout": 60,
+            "enabled": true
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/.cortex/hooks/subagent-stop.js\"",
+            "timeout": 60,
+            "enabled": true
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/.cortex/hooks/pre-compact.js\"",
+            "timeout": 60,
+            "enabled": true
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/.cortex/hooks/notification.js\"",
+            "timeout": 60,
+            "enabled": true
+          }
+        ]
+      }
+    ]
+  }
+}
