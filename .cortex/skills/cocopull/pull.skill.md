@@ -180,7 +180,7 @@ If score < 85%, output warning:
 ## Automatic Use by CocoHarvest
 
 When CocoHarvest prepares stage inputs, it checks each input file's estimated token count:
-- If estimated tokens exceed `cocoHarvest.pullThreshold` (default: 8,000 tokens) in `plugin.json`:
+- If estimated tokens exceed `cocoHarvest.pullThreshold` (default: 8,000 tokens) in `.cortex-plugin/plugin.json`:
   1. Check for `<file>.pull.md` counterpart
   2. If found AND `reliability` is `high`: use the pull file; log: "Using pull file for [stage-id]: [source] → [pull file] ([compression]%)"
   3. If found AND `reliability` is `low`: use the source; log warning: "Pull file exists but reliability is low — loading original for [stage-id]"
@@ -223,3 +223,4 @@ Do NOT:
 - Delete the source file — CocoPull only writes new files alongside sources
 - Use `--human` output in CocoHarvest — human pull files are stakeholder artifacts, not context files
 - Overwrite an existing `.pull.md` when running `--human` — the two modes produce separate files
+

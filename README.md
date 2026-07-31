@@ -42,10 +42,24 @@ Older CocoPods migrate forward with `$migrate v2 --dry-run` and `$migrate v2`; n
 
 ## Installation
 
-In Coco, enter:
+Install directly from the GitHub repository with Coco's managed plugin installer:
 
+```text
+cortex plugin install Snowflake-Labs/cocoplus
+cortex plugin enable cocoplus
 ```
-Install this plugin from [Snowflake-Labs/cocoplus](https://github.com/Snowflake-Labs/cocoplus)
+
+You can also use the full repository URL:
+
+```text
+cortex plugin install https://github.com/Snowflake-Labs/cocoplus
+```
+
+For local development from a checkout, run this from the repository root:
+
+```text
+cortex plugin install . --force
+cortex plugin enable cocoplus
 ```
 
 ### Upgrading an Existing CocoPlus Project
@@ -78,7 +92,7 @@ See [cocoplus.dev](https://cocoplus.dev) for the full documentation site.
 
 ## Requirements
 
-- Snowflake Coco CLI (`coco`) with plugin support
+- Snowflake Coco CLI (`cortex`) with plugin support
 - Node.js (for hooks — Windows/Mac/Linux compatible)
 - Git
 

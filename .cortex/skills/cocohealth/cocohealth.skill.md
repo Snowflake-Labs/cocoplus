@@ -66,7 +66,7 @@ Recommended next step: [one command or action]
 
 ## Thresholds Configuration
 
-Read thresholds from `plugin.json` if available:
+Read thresholds from `.cortex-plugin/plugin.json` if available:
 - `cocoHealth.warnThreshold` (default: 0.60)
 - `cocoHealth.criticalThreshold` (default: 0.70)
 
@@ -96,3 +96,4 @@ Do NOT:
 - Repeat threshold warnings on every subsequent tool call
 - Fail if the session API is unavailable; use the token-count fallback
 - Run expensive analysis in the PostToolUse critical path
+

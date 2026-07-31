@@ -9,8 +9,15 @@ All notable changes to CocoPlus are documented here.
 ### Added
 
 #### CocoPlus Runtime Layer
-- `plugin.json` bumped to `2.0.0` and registers the V2 command surface.
+- `.cortex-plugin/plugin.json` declares version `2.0.0` for the V2 command surface.
 - The release specification covers CocoConsole, CocoPilot, CocoForge, Leviathan Mode/Ronin, Dynamic Personas, feature-owned runtime architecture, and required modifications to existing features.
+
+#### Plugin Packaging and Installation
+- Added native `.cortex-plugin/plugin.json` and `.cortex-plugin/activation.md` so Coco can validate, discover, enable, and install CocoPlus as a managed plugin.
+- Replaced the obsolete root `plugin.json` manifest with Coco's supported `.cortex-plugin/plugin.json` layout, registering `.cortex/skills`, `.cortex/agents`, and hook commands as component roots.
+- Updated the CocoPlus validator to read `.cortex-plugin/plugin.json`, verify Coco-native component roots, and guard the hook registrations used by managed installs.
+- Updated README, installation instructions, and public docs to use `cortex plugin install Snowflake-Labs/cocoplus`, with full GitHub URL and local checkout installation paths documented.
+- Updated threshold references from root `plugin.json` to `.cortex-plugin/plugin.json` across skills and generated docs.
 
 #### CocoConsole
 - `.cortex/scripts/cocoplus-console.js` — local read-only browser control plane launched by `$cocoplus console`.
@@ -739,4 +746,7 @@ All notable changes to CocoPlus are documented here.
 - `safety-config.json` template — added `production_schema_patterns` key
 - All 56 skills — Exit Criteria and Anti-Rationalization sections added
 - All platform-specific bash commands in skills replaced with Node.js one-liners
+
+
+
 

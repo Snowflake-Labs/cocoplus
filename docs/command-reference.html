@@ -888,7 +888,7 @@ $fleet stop fleet-001
 <hr>
 <h2 id="context-health-cocohealth">Context Health — CocoHealth</h2>
 <p>CocoHealth monitors context utilization automatically via the PostToolUse hook. Its primary command, <code>$pod checkpoint</code>, is documented in the CocoPod section above. The monitoring behavior itself is automatic and requires no invocation.</p>
-<p>CocoHealth fires advisory warnings at 60% context utilization and critical warnings with a structured recovery decision matrix at 70%. Thresholds are configurable in <code>plugin.json</code> under <code>cocoHealth.warnThreshold</code> and <code>cocoHealth.criticalThreshold</code>.</p>
+<p>CocoHealth fires advisory warnings at 60% context utilization and critical warnings with a structured recovery decision matrix at 70%. Thresholds are configurable in <code>.cortex-plugin/plugin.json</code> under <code>cocoHealth.warnThreshold</code> and <code>cocoHealth.criticalThreshold</code>.</p>
 <hr>
 <h2 id="function-knowledge-graph-cocomap">Function Knowledge Graph — CocoMap</h2>
 <hr>
