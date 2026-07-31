@@ -37,11 +37,10 @@
 <p>Before you begin:</p>
 <p><strong>Coco CLI</strong> — Snowflake Coco installed and connected to a Snowflake account. Run <code>cortex --version</code> to verify. If Coco isn't installed, start with the <a href="https://docs.snowflake.com/en/user-guide/cortex-code">Snowflake Coco documentation</a> before coming back here.</p>
 <p><strong>Git</strong> — Your project directory must be a git repository. CocoPlus is tightly coupled to git — lifecycle phase commits, worktree isolation for parallel builds, rollback by commit hash. If your project isn't in git, run <code>git init &amp;&amp; git commit --allow-empty -m "init"</code> before proceeding.</p>
-<p><strong>CocoPlus plugin installed</strong> — In Coco, enter:</p>
-<pre><code>
-Install this plugin from [Snowflake-Labs/cocoplus](https://github.com/Snowflake-Labs/cocoplus)
-</code></pre>
-<p>If Coco needs to install the plugin manually, download the repository and place it at <code>&lt;user-home&gt;/.snowflake/cortex/plugins/cocoplus</code>, then add that directory to <code>pluginDirs</code> in Coco's <code>settings.json</code>. Preserve any existing plugin directories.</p>
+<p><strong>CocoPlus plugin installed</strong> — Install directly from GitHub with Coco's managed plugin installer:</p>
+<pre><code>cortex plugin install Snowflake-Labs/cocoplus
+cortex plugin enable cocoplus</code></pre>
+<p>You can also use the full repository URL: <code>cortex plugin install https://github.com/Snowflake-Labs/cocoplus</code>. For local development from a checkout, run <code>cortex plugin install . --force</code> from the repository root. Do not hand-edit <code>settings.json</code> for plugin discovery unless Coco's installer is unavailable.</p>
 <section class="summary-box">
   <h2>Upgrading From an Earlier CocoPlus Project</h2>
   <p>If this project already has a <code>.cocoplus/</code> directory from a previous release, do not run <code>$pod init</code> again. After installing the current plugin, run <code>$migrate v2 --dry-run</code> first, review the migration report, then run <code>$migrate v2</code>.</p>
@@ -179,7 +178,7 @@ $spark [topic]
 <hr>
 <h2 id="if-something-goes-wrong">If Something Goes Wrong</h2>
 <p><strong><code>$pod init</code> fails — "CocoPlus already initialized"</strong> — This is a warning, not an error. Your pod already exists. Run <code>$pod status</code> to see its current state. If you genuinely want to start fresh, remove <code>.cocoplus/</code> manually and re-run, but be aware this discards all existing state.</p>
-<p><strong>Command not recognized</strong> — CocoPlus commands require the plugin to be active in your Coco session. If you see "command not found" on any <code>/</code> command, verify the plugin is installed with <code>coco plugins list</code>.</p>
+<p><strong>Command not recognized</strong> — CocoPlus commands require the plugin to be active in your Coco session. If you see "command not found" on any <code>/</code> command, verify the plugin is installed and enabled with <code>cortex plugin list</code>.</p>
 <p><strong>Safety Gate blocking a command you intended</strong> — The default safety mode (normal) warns on potentially destructive SQL but doesn't block it. If you're in strict mode and getting hard blocks on operations you need, run <code>$safety normal</code> to reduce protection level. Never use <code>$safety off</code> in an environment with production data.</p>
 <p><strong>Environment Inspector shows unexpected objects or missing grants</strong> — This is the inspector doing its job. Review the findings in <code>$pod status</code>. You may want to share them with your team or address them before beginning build work.</p>
 <hr>

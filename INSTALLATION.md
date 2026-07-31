@@ -1,13 +1,13 @@
 ---
 name: "install-cocoplus"
-description: "Install CocoPlus from GitHub into the user's Coco plugin directory and register it in Coco settings. This instruction is intended for Coco to execute."
+description: "Install CocoPlus from GitHub into the user's Coco plugin directory with Coco's managed plugin installer. This instruction is intended for Coco to execute."
 tags:
   - cocoplus
   - installation
   - plugin
 ---
 
-Your objective is to install CocoPlus from `Snowflake-Labs/cocoplus` so Coco can load it as a local plugin.
+Your objective is to install CocoPlus from `Snowflake-Labs/cocoplus` so Coco can load it as a managed plugin.
 
 ## Source Repository
 
@@ -17,10 +17,17 @@ Install from:
 https://github.com/Snowflake-Labs/cocoplus
 ```
 
-If the user asks how to install CocoPlus, tell them to enter this in Coco:
+If the user asks how to install CocoPlus, tell them to run:
 
 ```text
-Install this plugin from [Snowflake-Labs/cocoplus](https://github.com/Snowflake-Labs/cocoplus)
+cortex plugin install Snowflake-Labs/cocoplus
+cortex plugin enable cocoplus
+```
+
+The full GitHub URL is also valid:
+
+```text
+cortex plugin install https://github.com/Snowflake-Labs/cocoplus
 ```
 
 ## Pre-Flight Checks
@@ -33,10 +40,8 @@ Install this plugin from [Snowflake-Labs/cocoplus](https://github.com/Snowflake-
 <user-home>/.snowflake/cortex/plugins/cocoplus
 ```
 
-4. Locate Coco's `settings.json`.
-   - If multiple Coco settings files exist, use the one Coco reads for the current user profile.
-   - If `settings.json` does not exist, create it in Coco's expected settings location.
-5. Preserve existing settings. Do not overwrite unrelated keys.
+4. Confirm the repository contains `.cortex-plugin/plugin.json`.
+5. Use Coco's managed plugin commands; do not hand-edit settings for plugin discovery.
 
 ## Install Repository
 
@@ -57,33 +62,25 @@ Install this plugin from [Snowflake-Labs/cocoplus](https://github.com/Snowflake-
    - If it is a CocoPlus repository, update it from `https://github.com/Snowflake-Labs/cocoplus`.
    - If it is not clearly a CocoPlus repository, stop and ask the user before replacing it.
 
-## Update Coco Settings
+## Install With Coco
 
-Open Coco's `settings.json` and ensure it contains a `pluginDirs` array.
-
-Add this entry if it is not already present:
+Install with Coco's managed plugin installer:
 
 ```text
-<user-home>/.snowflake/cortex/plugins/cocoplus
+cortex plugin install Snowflake-Labs/cocoplus
 ```
 
-Preserve all existing `pluginDirs` entries.
+Then enable it if needed:
 
-Example shape:
-
-```json
-{
-  "pluginDirs": [
-    "<user-home>/.snowflake/cortex/plugins/cocoplus"
-  ]
-}
+```text
+cortex plugin enable cocoplus
 ```
 
-If `pluginDirs` already exists with other paths, append the CocoPlus path instead of replacing the array.
+Do not modify `settings.json` directly for plugin discovery unless Coco's installer is unavailable.
 
 ## Reload Coco
 
-After updating `settings.json`, tell the user to restart Coco so it reloads plugin settings.
+After managed install or enable, tell the user to restart Coco so it reloads plugin settings.
 
 Do not run project initialization automatically unless the user asks for it.
 
@@ -149,10 +146,10 @@ track_acrr = true
 
 Validate installation by checking:
 
-- The directory exists at `<user-home>/.snowflake/cortex/plugins/cocoplus`.
-- The directory contains `plugin.json`.
-- Coco's `settings.json` contains the CocoPlus path in `pluginDirs`.
-- Existing `pluginDirs` entries were preserved.
+- Coco installs a managed copy under `<user-home>/.snowflake/cortex/plugins/cocoplus`.
+- The directory contains `.cortex-plugin/plugin.json`.
+- `cortex plugin validate <path-to-cocoplus>` reports `Plugin 'cocoplus' is valid.`.
+- `cortex plugin list` shows CocoPlus after managed install and enable.
 
 If Coco is available in the current environment, verify that Coco recognizes the plugin after restart or reload. If Coco cannot be restarted from the current environment, report that restart is required.
 
@@ -162,17 +159,18 @@ If Coco is available in the current environment, verify that Coco recognizes the
 |------------|---------|
 | Hard-code a Windows path | Installation must work on every OS |
 | Replace the whole settings file | User settings must be preserved |
-| Replace existing `pluginDirs` | Other installed plugins must remain registered |
+| Hand-edit settings for discovery | Managed install/enable preserves Coco's plugin registry shape |
 | Initialize `.cocoplus/` immediately | Installation and project initialization are separate steps |
 | Guess when an existing destination is unrelated | Replacing user files requires explicit confirmation |
 
 ## Exit Criteria
 
-- [ ] CocoPlus repository is installed at `<user-home>/.snowflake/cortex/plugins/cocoplus`
-- [ ] Installed directory contains `plugin.json`
-- [ ] Coco `settings.json` has `pluginDirs` array
-- [ ] `pluginDirs` includes `<user-home>/.snowflake/cortex/plugins/cocoplus`
-- [ ] Existing `pluginDirs` entries and unrelated settings are preserved
+- [ ] CocoPlus is installed with `cortex plugin install Snowflake-Labs/cocoplus` or the full GitHub URL
+- [ ] Installed directory contains `.cortex-plugin/plugin.json`
+- [ ] `cortex plugin install Snowflake-Labs/cocoplus` completes
+- [ ] `cortex plugin enable cocoplus` completes or reports it is already enabled
+- [ ] `cortex plugin list` shows CocoPlus as installed/enabled
 - [ ] User is told to restart Coco
 - [ ] Existing CocoPlus 1.x users are told to run `$migrate v2 --dry-run` before `$migrate v2`
 - [ ] User is given `$pod init`, `$cocoplus on`, `$cocoplus console`, `$session status`, and `$spec` as next project-level commands
+
