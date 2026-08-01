@@ -37,11 +37,11 @@ Interactively collect all required fields, then write a new strategy YAML to `co
 - The strategy content contains hedging language (scan for "might", "could", "may help", "in some cases", "possibly")
 - No evidence attribution record is provided — a self-authored justification ("I believe this works because...") is not sufficient
 
-Run `node scripts/refine-update.js --op add --file <path>` to commit the mutation atomically.
+Run `node .cortex/scripts/refine-update.js --op add --file <path>` to commit the mutation atomically.
 
 ### `$refine update <strategy-id>`
 
-Create a new version of an existing strategy. Read the current YAML, increment the version number, append the prior version's content block to a `history` section (never delete it), apply the new content. Requires a new attribution record for the update — the same self-citation rejection rules from `$refine add` apply. Run `node scripts/refine-update.js --op update --id <strategy-id> --file <path>`.
+Create a new version of an existing strategy. Read the current YAML, increment the version number, append the prior version's content block to a `history` section (never delete it), apply the new content. Requires a new attribution record for the update — the same self-citation rejection rules from `$refine add` apply. Run `node .cortex/scripts/refine-update.js --op update --id <strategy-id> --file <path>`.
 
 For optimization rounds, include a structured mutation vocabulary:
 
@@ -54,7 +54,7 @@ Each optimization round must change exactly one field and must use binary evalua
 
 ### `$refine deprecate <strategy-id> [reason]`
 
-Mark a strategy `deprecated: true` with the recorded reason and timestamp. The version history is preserved — deprecation is not deletion. Deprecated strategies are excluded from SkillbookView injection into future sessions. Run `node scripts/refine-update.js --op deprecate --id <strategy-id> --reason "<reason>"`.
+Mark a strategy `deprecated: true` with the recorded reason and timestamp. The version history is preserved — deprecation is not deletion. Deprecated strategies are excluded from SkillbookView injection into future sessions. Run `node .cortex/scripts/refine-update.js --op deprecate --id <strategy-id> --reason "<reason>"`.
 
 ### `$refine history <strategy-id>`
 
@@ -70,8 +70,8 @@ CocoRefine's four-step cycle runs after evaluation results are available for a c
 
 1. **Execute** — CocoBrew loads matching strategies from the CocoStrategyBook into the agent's prompt context before build begins (SkillbookView, read-only). The injected strategy IDs are recorded in session metadata.
 2. **Evaluate** — the declared CocoContract outcome contract or active quality gate runs against the function's output, producing an evidence record at a specific tier.
-3. **Reflect** (`scripts/refine-reflect.js`, Tier 3 async, may invoke Haiku) — examines the actual trace data: injected strategy IDs, function version hash, model output/evaluation metadata when available, and the specific evaluation evidence record. **This step is prohibited from attributing effectiveness based on the reflecting agent's own assessment of strategy quality.** If the evaluation record is missing or incomplete, no attribution is produced — this is a valid, expected outcome, not an error to work around.
-4. **Update** (`scripts/refine-update.js`) — applies the mutation atomically. Only `add`, `update`, and `deprecate` are permitted; no other write path exists.
+3. **Reflect** (`.cortex/scripts/refine-reflect.js`, Tier 3 async, may invoke Haiku) — examines the actual trace data: injected strategy IDs, function version hash, model output/evaluation metadata when available, and the specific evaluation evidence record. **This step is prohibited from attributing effectiveness based on the reflecting agent's own assessment of strategy quality.** If the evaluation record is missing or incomplete, no attribution is produced — this is a valid, expected outcome, not an error to work around.
+4. **Update** (`.cortex/scripts/refine-update.js`) — applies the mutation atomically. Only `add`, `update`, and `deprecate` are permitted; no other write path exists.
 
 ## Access Control
 

@@ -23,7 +23,7 @@ Interactively collect a rule definition (lens, trigger pattern, description) and
 
 ### `$secondeye shadow-report`
 
-Run `node scripts/shadow-report.js`. Reads `.cocoplus/secondeye/shadow-findings.json`, computes per-rule activation rate (how often the rule fires across reviews) and developer-acceptance rate (how often a surfaced shadow finding matches a finding the developer subsequently acted on), and reports promotion readiness against configured thresholds.
+Run `node .cortex/scripts/shadow-report.js`. Reads `.cocoplus/secondeye/shadow-findings.json`, computes per-rule activation rate (how often the rule fires across reviews) and developer-acceptance rate (how often a surfaced shadow finding matches a finding the developer subsequently acted on), and reports promotion readiness against configured thresholds.
 
 ### `$secondeye shadow-promote <rule-id>`
 

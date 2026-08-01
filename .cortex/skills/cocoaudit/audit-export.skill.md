@@ -19,7 +19,7 @@ Export the complete CocoAudit trail as a uniquely timestamped compliance documen
 2. Count total event blocks (lines starting with `## [`)
 3. Generate timestamp: `YYYY-MM-DDTHH-MM-SSZ` (hyphens replace colons for filesystem safety)
 4. Write `.cocoplus/audit-export-[timestamp].md` with header + full verbatim trail
-5. If a format was requested, run `node scripts/report-export.js --source <exported-md> --format <markdown|html|pdf> --out-dir .cocoplus/audit-exports`
+5. If a format was requested, run `node .cortex/scripts/report-export.js --source <exported-md> --format <markdown|html|pdf> --out-dir .cocoplus/audit-exports`
 6. Output path, event count, and export renderer status to developer
 7. Never overwrite prior export files — each invocation is uniquely timestamped (idempotent per export)
 

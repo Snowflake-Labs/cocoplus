@@ -20,7 +20,7 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is
 ## Step 1 — Run Deterministic Marker Harvest
 
 ```
-node scripts/lean-debt.js
+node .cortex/scripts/lean-debt.js
 ```
 
 Run the command directly with Node. Do not wrap it in PowerShell redirection such as `2>&1`; stderr handling differs across shells and can corrupt the JSON output.

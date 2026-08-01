@@ -16,7 +16,7 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus no
 
 ## Run the Assessment
 
-Run `node scripts/behavior-maturity.js`. It reads `cocoplus.toml` and `.cocoplus/modes/` and writes `.cocoplus/maturity.json`.
+Run `node .cortex/scripts/behavior-maturity.js`. It reads `cocoplus.toml` and `.cocoplus/modes/` and writes `.cocoplus/maturity.json`.
 
 ## Maturity Levels
 
@@ -57,7 +57,7 @@ L3 readiness: 6/10 items passing
 
 ## Exit Criteria
 
-- `scripts/behavior-maturity.js` runs deterministically (no LLM) and writes `.cocoplus/maturity.json`
+- `.cortex/scripts/behavior-maturity.js` runs deterministically (no LLM) and writes `.cocoplus/maturity.json`
 - Reported level matches the highest tier whose conditions are fully satisfied
 - L3 is only reported when all ten readiness checklist items pass
 - Failing checklist items are named specifically, not just counted

@@ -18,5 +18,5 @@ Run the 35-day trailing chargeback refresh. The warehouse implementation must de
 For local fixture validation, run:
 
 ```text
-node scripts/chargeback-refresh.js --input <fixture.json>
+node .cortex/scripts/chargeback-refresh.js --input <fixture.json>
 ```

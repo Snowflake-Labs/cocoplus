@@ -47,7 +47,7 @@ Resolve binary name ONCE. Store as `DRAWIO_BIN`. Use `DRAWIO_BIN` verbatim in St
 
 ## Step 3 — Plan Layout
 - Direction: **LR** for sequences/pipelines, **TB** for hierarchies/schemas
-- For >15 nodes: run `node scripts/sketch-autolayout.js <input.json> <layout.json>`
+- For >15 nodes: run `node .cortex/scripts/sketch-autolayout.js <input.json> <layout.json>`
 - For ≤15 nodes: hand-place coordinates with reasonable spacing (120px wide × 60px tall, 50px H-gap, 40px V-gap)
 - Groups: use swimlane cells to visually cluster related nodes
 
@@ -62,7 +62,7 @@ Required XML structure:
   </root>
 </mxGraphModel>
 ```
-Run: `node scripts/sketch-validate.js <file.drawio>`
+Run: `node .cortex/scripts/sketch-validate.js <file.drawio>`
 **If FAIL: stop immediately. Report structural errors. Do not proceed to Step 5.**
 
 ## Step 5 — Export Preview PNG (NO -e)
@@ -80,7 +80,7 @@ After round 2: proceed and note any remaining issues in output.
 ## Step 7 — Final Export + Repair
 ```bash
 $DRAWIO_BIN -x -f png -e --width 2000 -o <name>.png <file.drawio>
-node scripts/sketch-repair.js <name>.png
+node .cortex/scripts/sketch-repair.js <name>.png
 ```
 `-e` flag embeds diagram XML in PNG — developer can open in draw.io directly.
 `sketch-repair.js` restores truncated IEND chunk that `-e` can produce.
@@ -116,7 +116,7 @@ Record the exact final PNG path in the command output. If Mermaid fallback is us
 
 1. Read `.cocoplus/map/coco-map.json` structural dependency view
 2. Build node/edge graph from function dependencies
-3. Default (`--reduce` on): run `node scripts/map-reduce.js <input.json> <reduced.json>` before layout
+3. Default (`--reduce` on): run `node .cortex/scripts/map-reduce.js <input.json> <reduced.json>` before layout
 4. `--reduce off`: use full transitive closure
 5. Execute seven-step pipeline
 6. Compute and report dependency metrics: node count, edge count before reduction, edge count after reduction, and reduction percentage
@@ -141,7 +141,7 @@ Generate a self-contained HTML viewer for a CocoSketch diagram with pan, zoom, f
 For Markdown/HTML/PDF packaging of generated diagram notes, use:
 
 ```text
-node scripts/report-export.js --source <diagram-report.md> --format <markdown|html|pdf> --out-dir .cocoplus/diagrams/exports
+node .cortex/scripts/report-export.js --source <diagram-report.md> --format <markdown|html|pdf> --out-dir .cocoplus/diagrams/exports
 ```
 
 ---

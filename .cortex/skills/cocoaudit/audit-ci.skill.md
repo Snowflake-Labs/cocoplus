@@ -1,6 +1,6 @@
 ---
 name: "audit-ci"
-description: "V2-native deterministic contract for the owning CocoPlus feature. Executes the behavior formerly delegated to scripts/audit-ci.js without registered runtime scripts."
+description: "V2-native deterministic contract for the owning CocoPlus feature. Executes the behavior formerly delegated to .cortex/scripts/audit-ci.js without registered runtime scripts."
 version: "2.0.0"
 author: "CocoPlus"
 tags:

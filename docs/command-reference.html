@@ -1395,7 +1395,7 @@ $trace show plan.md
 <p><strong><code>$trace health</code></strong> — Compute Snowflake asset health grade</p>
 <pre><code>$trace health
 </code></pre>
-<p>Uses <code>scripts/health-grader.js</code> to score dead assets, circular dependencies, coupling, security findings, layer violations, and churn hotspots. Honors <code>[trace].show_grade = false</code> by showing metrics without the letter grade.</p>
+<p>Uses <code>.cortex/scripts/health-grader.js</code> to score dead assets, circular dependencies, coupling, security findings, layer violations, and churn hotspots. Honors <code>[trace].show_grade = false</code> by showing metrics without the letter grade.</p>
 <hr>
 <p><strong><code>$trace compare</code></strong> — Show before/after health and blast-radius movement</p>
 <pre><code>$trace compare before.json after.json

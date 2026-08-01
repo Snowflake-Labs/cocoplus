@@ -54,7 +54,7 @@ Quality trend: <Improving (no rejection in last 8 sessions) | Active (<count> in
 
 Routes CocoCupper's auto-captured corrections (`.cocoplus/cupper/auto-captured.json`) to proposed skill-file edits, closing the loop between "the developer corrected the agent" and "the skill that caused it gets fixed."
 
-1. Run `node scripts/wisdom-route.js`. It reads `.cocoplus/cupper/auto-captured.json` entries that carry a `skill_context` field, groups them by skill file, and applies a routing classification per group:
+1. Run `node .cortex/scripts/wisdom-route.js`. It reads `.cocoplus/cupper/auto-captured.json` entries that carry a `skill_context` field, groups them by skill file, and applies a routing classification per group:
    - **incorrect-behavior** — the skill's instructions produced an action the developer reversed
    - **missing-variant** — the correction asks for an option or mode the skill doesn't support
    - **agent-misapplication** — the skill or persona was invoked in a context it doesn't fit
@@ -84,8 +84,8 @@ Routes CocoCupper's auto-captured corrections (`.cocoplus/cupper/auto-captured.j
 Use:
 
 ```text
-node scripts/wisdom-route.js --keep --id <id> --text "<rule>"
-node scripts/wisdom-route.js --forget --id <id> --rationale "<reason>"
+node .cortex/scripts/wisdom-route.js --keep --id <id> --text "<rule>"
+node .cortex/scripts/wisdom-route.js --forget --id <id> --rationale "<reason>"
 ```
 
 ## Evidence Gate and Denser-Not-Larger Rule
@@ -95,7 +95,7 @@ Stable CocoWisdom promotion requires at least 3 distinct confirmed sessions by d
 Before promoting a consolidated thesis, validate it with:
 
 ```text
-node scripts/wisdom-route.js --candidate <candidate.json>
+node .cortex/scripts/wisdom-route.js --candidate <candidate.json>
 ```
 
 The candidate is rejected if it increases word count without reducing entry count, unless a justified exception is recorded. Consolidation should make memory denser, not merely larger.

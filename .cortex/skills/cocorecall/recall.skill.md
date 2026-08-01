@@ -54,7 +54,7 @@ Report: total sessions indexed, total turns indexed, index freshness (time since
 
 ## Index Architecture
 
-`recall.db` normalizes session data into four tables — see `scripts/recall-import.js` for the exact schema:
+`recall.db` normalizes session data into four tables — see `.cortex/scripts/recall-import.js` for the exact schema:
 
 - **sessions** — session ID, start/end time, phase context, key entity tags, source path
 - **turns** — turn ID, session ID (FK), speaker role, sequence number, extracted (non-LLM) summary, full-text hash, tag set

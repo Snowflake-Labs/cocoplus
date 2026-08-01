@@ -45,7 +45,7 @@ Tiers, ordered by epistemic strength (strongest first):
 - **differential** (Tier 4) — demonstrated measurably better than a documented, pre-existing baseline.
 - **unit** (Tier 5) — evaluated against criteria authored in the same session by the same or a context-sharing agent. **Insufficient for `$ship` certification regardless of thoroughness.** Recordable as developmental context only.
 
-Run `node scripts/contract-prove.js --function <function-name> --tier <tier> --description "<text>" [--check-command '["node","check.js"]']`. The script records evidence in `contract-evidence.json` keyed to the function's current source hash. When `--check-command` is provided, `$contract ci` re-executes the exact argument-vector command and fails on non-zero exit.
+Run `node .cortex/scripts/contract-prove.js --function <function-name> --tier <tier> --description "<text>" [--check-command '["node","check.js"]']`. The script records evidence in `contract-evidence.json` keyed to the function's current source hash. When `--check-command` is provided, `$contract ci` re-executes the exact argument-vector command and fails on non-zero exit.
 
 ### `$contract archive [function-name]`
 
@@ -55,7 +55,7 @@ If `contract.md` already exists in the archive and its content differs from the 
 
 ### `$contract ci`
 
-Run `node scripts/contract-prove.js --ci`. This re-executes every archived contract's falsifiability condition where it is machine-executable, reports pass/fail per contract, and exits non-zero if any contract fails re-execution (a behavioral regression). Intended for use as a pre-deployment CI gate.
+Run `node .cortex/scripts/contract-prove.js --ci`. This re-executes every archived contract's falsifiability condition where it is machine-executable, reports pass/fail per contract, and exits non-zero if any contract fails re-execution (a behavioral regression). Intended for use as a pre-deployment CI gate.
 
 ### `$contract status`
 
