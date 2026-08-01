@@ -13,7 +13,7 @@
  * No LLM. Deterministic. Exit 0 on success, exit 1 on error.
  *
  * Usage:
- *   node scripts/map-reduce.js <input.json> <output.json>
+ *   node .cortex/scripts/map-reduce.js <input.json> <output.json>
  *
  * Input JSON shape:
  *   { "nodes": ["F1","F2",...], "edges": [{"from":"F1","to":"F2"},...]  }

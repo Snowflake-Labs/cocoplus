@@ -24,7 +24,7 @@ Evaluate the FinOps onboarding checklist exposed by the CocoMeter chargeback lay
 For local fixture validation, run:
 
 ```text
-node scripts/chargeback-refresh.js --input <fixture.json>
+node .cortex/scripts/chargeback-refresh.js --input <fixture.json>
 ```
 
 Render the `onboarding` object as a pass/fail table. If `spansPresent` is false, report it as progressive rollout guidance, not a fatal error.

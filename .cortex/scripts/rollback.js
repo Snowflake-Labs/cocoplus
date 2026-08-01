@@ -9,7 +9,7 @@ const tag = tagIndex >= 0 ? args[tagIndex + 1] : args[0];
 const execute = args.includes('--execute');
 
 if (!tag) {
-  console.error('Usage: node .cocoplus/scripts/rollback.js --tag <tag-name> [--execute]');
+  console.error('Usage: node .cortex/scripts/rollback.js --tag <tag-name> [--execute]');
   process.exit(2);
 }
 
