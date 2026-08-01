@@ -38,7 +38,7 @@ Before the dialogue starts:
 1. Check `.cocoplus/lifecycle/bloom.md`.
    - If it exists, read it first and summarize the Core Capability as the anchor for the specification.
    - If it does not exist and `.cocoplus/lifecycle/meta.json` does not contain `"bloom_waived": true`, output: "No working-backwards document found — consider running `$bloom` before specifying. Run `$bloom --skip` to suppress this message." Then continue normally.
-2. Run `.cocoplus/scripts/scope-classify.js` against the initial task description if one was provided, or against the first goal answer once available.
+2. Run `.cortex/scripts/scope-classify.js` against the initial task description if one was provided, or against the first goal answer once available.
    - Script output must be `quick` or `full`.
    - `--quick` forces Quick Flow. `--full` forces Full Flow.
    - Record the final `"flow_type": "quick" | "full"` in `.cocoplus/lifecycle/meta.json`.
@@ -94,7 +94,7 @@ An L4-only verification path is a plan smell. Require at least one faster harnes
 
 ## Vague Language Detection
 
-Before writing the specification document, use `.cocoplus/scripts/spec-validator.js` for deterministic vague language detection on the draft spec answers. If the script is unavailable, fall back to the inline scan below.
+Before writing the specification document, use `.cortex/scripts/spec-validator.js` for deterministic vague language detection on the draft spec answers. If the script is unavailable, fall back to the inline scan below.
 
 Scan all six answers for these term categories (exact word match, case-insensitive):
 - Performance: "fast", "quick", "slow", "performant", "efficient", "responsive"

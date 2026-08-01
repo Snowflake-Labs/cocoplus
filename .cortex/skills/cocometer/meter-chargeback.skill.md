@@ -34,7 +34,7 @@ Run a 35-day trailing delete/insert refresh. On first setup, load 60 days. Sched
 For local validation or dry-run fixtures, use:
 
 ```text
-node scripts/chargeback-refresh.js --input <fixture.json>
+node .cortex/scripts/chargeback-refresh.js --input <fixture.json>
 ```
 
 The helper applies the same deterministic rules used by the warehouse implementation:

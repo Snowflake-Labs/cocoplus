@@ -26,7 +26,7 @@ CocoAudit records four categories of CocoContract event, written by `contract-pr
 
 ### `$audit ci`
 
-Extends `$audit` with a contract regression phase that runs **before** standard audit log verification. Run `node scripts/audit-ci.js`. The regression phase reads all archived contracts in `outcomes/`, re-executes each contract's falsifiability condition where machine-executable (e2e checks against a real Cortex endpoint), and records pass/fail. A contract whose re-execution fails is a behavioral regression — reported with the same severity as a failing safety gate. Intended for use as a CI/CD pre-deployment gate.
+Extends `$audit` with a contract regression phase that runs **before** standard audit log verification. Run `node .cortex/scripts/audit-ci.js`. The regression phase reads all archived contracts in `outcomes/`, re-executes each contract's falsifiability condition where machine-executable (e2e checks against a real Cortex endpoint), and records pass/fail. A contract whose re-execution fails is a behavioral regression — reported with the same severity as a failing safety gate. Intended for use as a CI/CD pre-deployment gate.
 
 ## Commands
 
@@ -35,7 +35,7 @@ Extends `$audit` with a contract regression phase that runs **before** standard 
 Routes to `audit-add.skill.md`. Appends a clearly marked manual event using:
 
 ```text
-node scripts/audit-events.js add "<message>"
+node .cortex/scripts/audit-events.js add "<message>"
 ```
 
 Manual entries are useful for migration, test, and documentation scenarios. They must remain labeled as manual and must not be treated as hook-generated HITL evidence.
@@ -45,7 +45,7 @@ Manual entries are useful for migration, test, and documentation scenarios. They
 Routes to `audit-timeline.skill.md`. Displays a compact chronological view using:
 
 ```text
-node scripts/audit-events.js timeline
+node .cortex/scripts/audit-events.js timeline
 ```
 
 ### `$audit view [--from <date>]`

@@ -15,7 +15,7 @@ Append a manual audit event to `.cocoplus/lifecycle/audit.md`.
 Run:
 
 ```text
-node scripts/audit-events.js add "<message>"
+node .cortex/scripts/audit-events.js add "<message>"
 ```
 
 Manual entries must be labeled `Manual Entry` and `Event: manual`. They supplement hook-recorded evidence; they must never be presented as automatic HITL proof.

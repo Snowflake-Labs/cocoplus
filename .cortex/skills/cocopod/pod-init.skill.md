@@ -39,7 +39,6 @@ Create the following directories (create them even if empty — they are require
 .cocoplus/modes/
 .cocoplus/config/
 .cocoplus/fleet/
-.cocoplus/scripts/
 .cocoplus/pull/
 .cocoplus/harvest/
 .cocoplus/seeds/
@@ -95,13 +94,8 @@ Copy template files from the plugin templates directory to `.cocoplus/`:
 8. Copy `templates/monitors/cost-tracker.monitor.json` → `.cocoplus/monitors/cost-tracker.monitor.json`
 9. Copy `templates/monitors/quality-advisor.monitor.json` → `.cocoplus/monitors/quality-advisor.monitor.json`
 10. Copy `templates/monitors/memory-capture.monitor.json` → `.cocoplus/monitors/memory-capture.monitor.json`
-11. Copy `templates/scripts/rollback.js` → `.cocoplus/scripts/rollback.js`
-12. Copy `templates/scripts/scope-classify.js` → `.cocoplus/scripts/scope-classify.js`
-13. Copy `templates/scripts/spec-validator.js` → `.cocoplus/scripts/spec-validator.js`
-14. Copy `templates/scripts/alignment-check.js` → `.cocoplus/scripts/alignment-check.js`
-15. Copy `templates/scripts/artifact-check.js` → `.cocoplus/scripts/artifact-check.js`
-16. Copy `templates/scripts/status-healer.js` → `.cocoplus/scripts/status-healer.js`
-17. Copy `templates/scripts/complexity-estimate.js` → `.cocoplus/scripts/complexity-estimate.js`
+
+Feature scripts stay in the installed plugin at `.cortex/scripts/`; do not copy scripts into `.cocoplus/`.
 
 ## Initialize Mode Flags
 
@@ -445,7 +439,6 @@ CocoPlus initialized successfully.
 ├── routines/          ← CocoRoutine registry
 ├── session/           ← CocoSession handoff, predicate state, evidence, and task queue
 ├── personas/          ← dynamic persona registry and history files
-├── scripts/           ← compatibility and deterministic validation scripts copied into CocoPods
 ├── pull/              ← CocoPull manifest and distillation registry
 ├── harvest/           ← pipeline recovery scratch state
 ├── snapshots/         ← Environment Inspector results
@@ -470,13 +463,12 @@ Next steps:
 
 ## Exit Criteria
 
-- [ ] `.cocoplus/` directory exists with all required subdirectories (`lifecycle/`, `memory/`, `prompts/`, `monitors/`, `brew/`, `grove/`, `grove/patterns/`, `meter/`, `snapshots/`, `modes/`, `config/`, `fleet/`, `scripts/`, `pull/`, `harvest/`, `seeds/`, `map/`, `flow/artifacts/`, `routines/`, `sentinel/`)
+- [ ] `.cocoplus/` directory exists with all required subdirectories (`lifecycle/`, `memory/`, `prompts/`, `monitors/`, `brew/`, `grove/`, `grove/patterns/`, `meter/`, `snapshots/`, `modes/`, `config/`, `fleet/`, `pull/`, `harvest/`, `seeds/`, `map/`, `flow/artifacts/`, `routines/`, `sentinel/`)
 - [ ] `.cocoplus/modes/safety.normal` flag file exists; no other safety flags exist
 - [ ] `.cocoplus/modes/memory.on` flag file exists
 - [ ] `.cocoplus/AGENTS.md`, `.cocoplus/project.md`, `.cocoplus/flow.json`, and all four monitor JSON files exist
 - [ ] `.cocoplus/lifecycle/meta.json` exists with `"current_phase": "not_started"` and empty `phases_completed`
 - [ ] `.cocoplus/lifecycle/cocoplus-context.md` exists
-- [ ] `.cocoplus/scripts/rollback.js`, `scope-classify.js`, `spec-validator.js`, `alignment-check.js`, `artifact-check.js`, `status-healer.js`, and `complexity-estimate.js` exist
 - [ ] `.cocoplus/.gitignore` exists excluding transient session files
 - [ ] Root `AGENTS.md` shim exists at project root with `cocoplus-agents-redirect` directive
 - [ ] Root `cocoplus.toml` exists and includes the current 2.0 sections

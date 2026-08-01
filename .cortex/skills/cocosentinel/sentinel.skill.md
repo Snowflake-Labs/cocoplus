@@ -48,7 +48,7 @@ Before passing artifact content to any dimension agent, scan for content sourced
 
 ## Step 5 — Run Dimension G Evidence Pre-Gate
 
-Execute `scripts/sentinel-pregate.js` with the artifact content as input:
+Execute `.cortex/scripts/sentinel-pregate.js` with the artifact content as input:
 
 ```
 node .cortex/scripts/sentinel-pregate.js --input <artifact_path>
@@ -64,7 +64,7 @@ Parse the JSON output. Check `verdict`:
 
 **If `verdict === "FAIL"`:**
 - Do NOT spawn dimension sub-agents A1–F
-- Call `scripts/wisdom-writer.js` with:
+- Call `.cortex/scripts/wisdom-writer.js` with:
   ```json
   {
     "gate": "sentinel",
@@ -156,7 +156,7 @@ Create `.cocoplus/sentinel/` directory if needed. Write result to `.cocoplus/sen
 
 ## Step 11 — Write to CocoWisdom on BLOCKED
 
-If outcome is BLOCKED, for each dimension that returned FAIL, call `scripts/wisdom-writer.js` with:
+If outcome is BLOCKED, for each dimension that returned FAIL, call `.cortex/scripts/wisdom-writer.js` with:
 ```json
 {
   "gate": "sentinel",
@@ -218,5 +218,5 @@ Dimension Results:
 - Dimension H FAIL overrides overall outcome to BLOCKED regardless of A1–F verdicts
 - Result JSON written to `.cocoplus/sentinel/<sha>.json`
 - Active evaluation lock created before sub-agent spawn and deleted after all verdicts received
-- BLOCKED outcomes written to CocoWisdom via `scripts/wisdom-writer.js`
+- BLOCKED outcomes written to CocoWisdom via `.cortex/scripts/wisdom-writer.js`
 - Developer sees full dimension-by-dimension report (G, A1–F, H) with overall verdict

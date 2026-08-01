@@ -29,7 +29,7 @@ Output: "Pipeline is paused. Run `$flow resume` to continue." Then stop.
 Stages may also declare `model_tier: "smol" | "regular" | "smart" | "ultra"`. Resolve tiers from `[model_tiers]` in `cocoplus.toml` before spawning the stage:
 
 ```text
-node scripts/model-tier-resolve.js --config cocoplus.toml --tier <tier>
+node .cortex/scripts/model-tier-resolve.js --config cocoplus.toml --tier <tier>
 ```
 
 If the tier is unmapped or marked unavailable, halt the stage and surface the error. Do not silently fall back to another model.
@@ -52,7 +52,7 @@ Read `[flow.planning]` before the orchestration pass. If `diverge_on_branch_poin
 If `[flow] complexity_estimation = true`, run the local lexical estimator before first stage dispatch:
 
 ```text
-node .cocoplus/scripts/complexity-estimate.js "<task description>"
+node .cortex/scripts/complexity-estimate.js "<task description>"
 ```
 
 Write the result to `.cocoplus/lifecycle/cocoflow/<run-id>/complexity.json` with `tier`, `score`, `signals`, `ambiguity_score`, `has_acceptance_check`, and the applied harness floor.
@@ -63,7 +63,7 @@ If the description has high ambiguity or no acceptance check, surface a non-bloc
 
 ## Completion Timestamp Provenance
 
-When stages run as background CocoPods, completion time must come from authoritative transcript queue records when available. The SubagentStop hook runs `.cocoplus/scripts/flow-event-reader.js` when it can see the transcript path and writes pod records to `.cocoplus/lifecycle/flow-state.json`.
+When stages run as background CocoPods, completion time must come from authoritative transcript queue records when available. The SubagentStop hook runs `.cortex/scripts/flow-event-reader.js` when it can see the transcript path and writes pod records to `.cocoplus/lifecycle/flow-state.json`.
 
 Each pod record should include:
 
@@ -147,7 +147,7 @@ For each stage to execute:
     - Stages with `synthesis` absent or `synthesis.primary != "llm"` are unaffected.
     - Execution stages (SQL execution, test runs, file writes) do NOT have a fallback — they fail hard by design.
 14. **HITL pause** (if `hitl: true`): after successful completion, output the stage results and ask developer to confirm before spawning downstream stages
-15. **No-op workflow check** (if `handler: "noop-check"`): run `node scripts/noop-check.js --state <state-file>`. If it returns `noop: true`, mark the stage `skipped` with the recorded reason and append `NOOP_SKIPPED` to progress. This is a successful no-op, not an error.
+15. **No-op workflow check** (if `handler: "noop-check"`): run `node .cortex/scripts/noop-check.js --state <state-file>`. If it returns `noop: true`, mark the stage `skipped` with the recorded reason and append `NOOP_SKIPPED` to progress. This is a successful no-op, not an error.
 16. **Retained proposal model** (if `writes_via_proposal: true`): write Snowflake DDL, SQL file changes, or pipeline configuration output under `.cocoplus/proposals/[stage-id]/[timestamp]/` and stop before live application. Surface: `Proposal retained. Run $flow settle --accept [stage-id] or $flow settle --discard [stage-id].`
 
 ## Adaptive Checkpoint Typing

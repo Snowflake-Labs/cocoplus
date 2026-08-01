@@ -138,7 +138,7 @@ status: complete
 ### Phase 4 — CocoSpec Scoring Gate
 
 7. **Run deterministic pre-checks before scoring:**
-   - Run `.cocoplus/scripts/spec-validator.js .cocoplus/lifecycle/spec.md .cocoplus/lifecycle/discuss.md`.
+   - Run `.cortex/scripts/spec-validator.js .cocoplus/lifecycle/spec.md .cocoplus/lifecycle/discuss.md`.
    - Apply vague-language penalties from the JSON output before the final score (maximum 3-point deduction).
    - If the script is missing, warn and continue with the scorer fallback.
 
@@ -166,7 +166,7 @@ status: complete
    Ready for $plan.
    ```
 
-   After PASS, run `.cocoplus/scripts/alignment-check.js`. If it returns conflicts, block subagent spawning and surface each conflict by field, value, and source file. If clean, proceed.
+   After PASS, run `.cortex/scripts/alignment-check.js`. If it returns conflicts, block subagent spawning and surface each conflict by field, value, and source file. If clean, proceed.
 
    **After alignment check passes — Red-Team trigger (if `--red-team` flag present):**
    Load and execute `red-team.skill.md`. This runs non-blocking after PASS and alignment-check. Output the red-team summary to the developer. Do NOT block `$plan` on red-team findings.

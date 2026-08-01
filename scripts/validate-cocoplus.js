@@ -9,6 +9,7 @@ const pluginPath = path.join(repoRoot, '.cortex-plugin', 'plugin.json');
 const agentsDir = path.join(repoRoot, '.cortex', 'agents');
 const hooksDir = path.join(repoRoot, '.cortex', 'hooks');
 const hookLibDir = path.join(hooksDir, 'lib');
+const runtimeScriptsDir = path.join(repoRoot, '.cortex', 'scripts');
 const templatesDir = path.join(repoRoot, 'templates');
 const recipesDir = path.join(repoRoot, 'recipes');
 const referenceDir = path.join(repoRoot, 'reference-specs');
@@ -157,7 +158,7 @@ function main() {
     'cortex-add-extraction.json.template',
   ];
 
-  const requiredProjectScripts = [
+  const requiredRuntimeScripts = [
     'rollback.js',
     'scope-classify.js',
     'spec-validator.js',
@@ -205,6 +206,16 @@ function main() {
     const scriptPath = path.join(repoRoot, script);
     if (!fs.existsSync(scriptPath)) {
       failures.push(`Manifest script "${script}" is missing file ${path.relative(repoRoot, scriptPath)}`);
+    }
+    if (!normalizeManifestPath(script).startsWith('.cortex/scripts/')) {
+      failures.push(`Manifest script "${script}" must live under .cortex/scripts/`);
+    }
+  }
+
+  for (const scriptPath of walkFiles(runtimeScriptsDir, (filePath) => filePath.endsWith('.js'))) {
+    const manifestPath = path.relative(repoRoot, scriptPath).replace(/\\/g, '/');
+    if (!manifestIncludesPath(plugin.scripts, manifestPath)) {
+      failures.push(`Runtime script ${manifestPath} must be registered in .cortex-plugin/plugin.json`);
     }
   }
 
@@ -264,10 +275,23 @@ function main() {
     }
   }
 
-  for (const fileName of requiredProjectScripts) {
-    const filePath = path.join(templatesDir, 'scripts', fileName);
+  const templateScriptDir = path.join(templatesDir, 'scripts');
+  if (fs.existsSync(templateScriptDir)) {
+    failures.push('templates/scripts must not exist; feature scripts belong under .cortex/scripts/');
+  }
+
+  const rootScriptFiles = walkFiles(path.join(repoRoot, 'scripts'), (filePath) => filePath.endsWith('.js'));
+  for (const filePath of rootScriptFiles) {
+    const relative = path.relative(repoRoot, filePath).replace(/\\/g, '/');
+    if (relative !== 'scripts/validate-cocoplus.js' && !relative.startsWith('scripts/tests/')) {
+      failures.push(`Root script ${relative} is not repo maintenance/test tooling; move feature scripts to .cortex/scripts/`);
+    }
+  }
+
+  for (const fileName of requiredRuntimeScripts) {
+    const filePath = path.join(runtimeScriptsDir, fileName);
     if (!fs.existsSync(filePath)) {
-      failures.push(`Required project script template is missing: ${path.relative(repoRoot, filePath)}`);
+      failures.push(`Required runtime script is missing: ${path.relative(repoRoot, filePath)}`);
     }
   }
 
@@ -303,11 +327,11 @@ function main() {
   requireIncludes(principlesHtml, 'Producers Never Grade Themselves', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Gate Weakening Requires a New Run', failures, 'docs/principles.html');
 
-  const adapterPath = path.join(templatesDir, 'scripts', 'transcript-adapter.js');
+  const adapterPath = path.join(runtimeScriptsDir, 'transcript-adapter.js');
   if (fs.existsSync(adapterPath)) {
     const adapter = readFile(adapterPath);
-    rejectPattern(adapter, /\.\.\./, failures, 'templates/scripts/transcript-adapter.js');
-    requireIncludes(adapter, "kind: 'other'", failures, 'templates/scripts/transcript-adapter.js');
+    rejectPattern(adapter, /\.\.\./, failures, '.cortex/scripts/transcript-adapter.js');
+    requireIncludes(adapter, "kind: 'other'", failures, '.cortex/scripts/transcript-adapter.js');
   }
 
   const stalePatterns = [

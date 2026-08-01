@@ -31,7 +31,7 @@ For each template file found, read the `__recipe_meta` block to get:
 Use the deterministic helper when available:
 
 ```text
-node scripts/recipe-metadata.js --dir <profile-recipes> --dir .cocoplus/recipes
+node .cortex/scripts/recipe-metadata.js --dir <profile-recipes> --dir .cocoplus/recipes
 ```
 
 ## Output

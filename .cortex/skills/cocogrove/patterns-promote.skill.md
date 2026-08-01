@@ -15,7 +15,7 @@ If not: output "CocoPlus not initialized in this directory. Run `$pod init` to b
 
 ## `$grove score <pattern-id>` — Promotion Scoring (Durability × Impact × Scope)
 
-Before any promotion is confirmed, run `node scripts/grove-score.js --id <pattern-id>` (or run this scoring interactively when invoked directly as `$grove score`). Score the candidate pattern on three dimensions, each zero to three:
+Before any promotion is confirmed, run `node .cortex/scripts/grove-score.js --id <pattern-id>` (or run this scoring interactively when invoked directly as `$grove score`). Score the candidate pattern on three dimensions, each zero to three:
 
 - **Durability** — 0: one-time fix · 1: temporary workaround · 2: stable pattern · 3: architectural truth. Assesses whether the pattern remains valid for 30+ days and across schema/data changes.
 - **Impact** — 0: nice-to-know · 1: saves a minute · 2: prevents mistakes · 3: prevents breakage.

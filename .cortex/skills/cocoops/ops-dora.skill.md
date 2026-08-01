@@ -23,7 +23,7 @@ Read `cocoplus.toml` if it exists and check `[demo] enabled`. If demo mode is ac
 
 ## Step 2 — Run Deterministic Metrics Computation
 
-Execute `scripts/dora-metrics.js`:
+Execute `.cortex/scripts/dora-metrics.js`:
 
 ```
 node .cortex/scripts/dora-metrics.js
@@ -57,10 +57,10 @@ Write insights to `.cocoplus/ops/dora-insights-<YYYY-MM-DD>.md`. Commit both `do
 
 ## Step 5b — Extend Longitudinal Thesis (Async)
 
-After committing the snapshot, spawn `scripts/ops-thesis-updater.js` as a fire-and-forget async call (does not block the report display):
+After committing the snapshot, spawn `.cortex/scripts/ops-thesis-updater.js` as a fire-and-forget async call (does not block the report display):
 
 ```
-node scripts/ops-thesis-updater.js
+node .cortex/scripts/ops-thesis-updater.js
 ```
 
 This script reads `dora-snapshot.json` and extends `.cocoplus/ops/dora-thesis.md` with a new evidence block. It never replaces the prior thesis — only appends. If the script fails, log warning to `.cocoplus/hook-errors.log` and continue (non-fatal).
@@ -72,7 +72,7 @@ Commit `dora-thesis.md` if it changed: `docs(ops): extend longitudinal delivery 
 If the developer asks for a stakeholder export, run:
 
 ```text
-node scripts/report-export.js --source .cocoplus/ops/dora-insights-<YYYY-MM-DD>.md --format <markdown|html|pdf> --out-dir .cocoplus/ops/exports
+node .cortex/scripts/report-export.js --source .cocoplus/ops/dora-insights-<YYYY-MM-DD>.md --format <markdown|html|pdf> --out-dir .cocoplus/ops/exports
 ```
 
 PDF requests report renderer availability; do not block DORA computation on PDF rendering.

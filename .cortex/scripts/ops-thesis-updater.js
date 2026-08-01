@@ -13,7 +13,7 @@
  * Exit 0 on success, exit 1 on error.
  *
  * Usage:
- *   node scripts/ops-thesis-updater.js [--ops-dir <path>]
+ *   node .cortex/scripts/ops-thesis-updater.js [--ops-dir <path>]
  *
  * Reads:  <ops-dir>/dora-snapshot.json
  *         <ops-dir>/dora-thesis.md (if exists)
