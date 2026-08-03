@@ -13,6 +13,7 @@ All notable changes to CocoPlus are documented here.
 - Stop hook queues non-blocking CocoWisdom distillation when `[wisdom].auto_distill = true`, including failed-session eligibility and contradiction queue policy.
 - CocoFlow stages may declare `model_tier_floor`; PreToolUse records the resolved `effective_model_tier` in the per-run policy snapshot.
 - CocoFlow stages may declare `human_gate: true`; dispatch blocks until `$flow gate-clear <stage-id>` writes an audited clearance, with `$flow gate-status` for inspection.
+- CocoConsole Flow panel now shows a read-only Human Gate Hold card with the held stage, persona, reason, and terminal-only `$flow gate-clear <stage-id>` instruction.
 - CocoSentinel permission-event detection now uses the stable `.cocoplus/session/open-pre-tool-use.json` bracket instead of notification text parsing.
 - CocoConsole Forge view now includes a plain-language intent feed, danger flagging, a `Danger only` filter, and expandable raw command details while remaining read-only.
 
