@@ -78,6 +78,12 @@ show_grade = true            # Set false to hide CocoTrace A-F grade while keepi
 
 [wisdom]
 min_evidence_sessions = 3    # Distinct confirmed sessions required before stable wisdom promotion
+auto_distill = true           # Stop hook queues background wisdom distillation from terminal sessions
+distill_on_failure = true     # Failed or exited sessions can still contribute validated lessons
+contradiction_action = "queue" # "queue" | "overwrite" | "skip"
+schema_file = ".cocoplus/wisdom/SCHEMA.md"
+injection_mode = "progressive" # "progressive" | "preload"
+preload_categories = []       # Keep empty unless a project needs standing wisdom topics
 
 [sprint]
 # CocoOps $ops sprint configuration
@@ -180,6 +186,10 @@ meter_reconciliation_threshold = 0.05
 
 [flow]
 complexity_estimation = true
+model_tier_default = "regular"
+
+[flow.stage]
+human_gate_clearance_file = ".cocoplus/lifecycle/cocoflow/<run-id>/gate-clearances.json"
 
 [flow.planning]
 diverge_on_branch_points = true

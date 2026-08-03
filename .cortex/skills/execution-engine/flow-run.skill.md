@@ -122,20 +122,21 @@ For full pipeline execution:
 For each stage to execute:
 
 1. **Log start:** Update flow.json stage status to `"running"`, add `started_at` timestamp. Append `STAGE_STARTED` entry to `harvest/[run-id]-progress.txt` and `.cocoplus/session/steps.jsonl`. Write updated `harvest/[run-id]-tasks.json` atomically.
-2. **Named artifact protocol:** if the stage declares `artifacts.reads`, verify every required file exists under `.cocoplus/flow/artifacts/[run-id]/` before dispatch. If missing, stop with the missing path and the upstream stage expected to write it.
-3. **Run setup commands** (if stage has setup commands in flow.json)
-4. **Read prompt file** from `.cocoplus/prompts/[stage-id]-prompt.md`
-5. **Create worktree** if `context: "isolated"` or `isolated: true`: `git worktree add .git/worktrees/[stage-id] -b agent/[stage-id]`
-6. **Inject shell identity:** set `COCOPLUS_FUNCTION`, `COCOPLUS_PERSONA`, `COCOPLUS_EVAL_ID`, `COCOPLUS_HARVEST_ID`, `COCOPLUS_STAGE_ID`, `COCOPLUS_RUN_ID`, `COCOPLUS_STAGE_START=true`, and resolved `CORTEX_THINKING_EFFORT` in the subagent shell environment. Set `CTX_STEP_ENFORCEMENT=false` for CocoFlow stages so ctx step enforcement cannot conflict with CocoFlow gates. Never set `CTX_DIR`.
-7. **Invoke persona subagent** with the prompt file content and stage context
-8. **Wait for completion**
-9. **Intermediate result persistence** (for evaluation stages with `isolated: true`): if the subagent is a Data Scientist running evaluation work, require detailed results to be written to `.cocoplus/harvest/intermediate/[agent-id]-results.json`; only a summary (accuracy score, pass/fail, function name, anomalies) returns to orchestrator context
-10. **Validate checkpoints:** for each glob pattern in `checkpoints`, verify at least one matching file exists. If `[evidence_gate] enabled = true`, read at least one qualifying evidence artifact before marking the stage completed, unless the stage declares `evidence_exempt: true`. If `artifacts.writes` is declared, verify each expected artifact was produced under `.cocoplus/flow/artifacts/[run-id]/`.
-11. **Handle result:**
+2. **Human gate and model floor:** if the stage declares `human_gate: true`, do not dispatch until `$flow gate-clear [stage-id]` writes the run clearance. If the stage declares `model_tier_floor`, PreToolUse records the resolved `effective_model_tier` in the policy snapshot before dispatch.
+3. **Named artifact protocol:** if the stage declares `artifacts.reads`, verify every required file exists under `.cocoplus/flow/artifacts/[run-id]/` before dispatch. If missing, stop with the missing path and the upstream stage expected to write it.
+4. **Run setup commands** (if stage has setup commands in flow.json)
+5. **Read prompt file** from `.cocoplus/prompts/[stage-id]-prompt.md`
+6. **Create worktree** if `context: "isolated"` or `isolated: true`: `git worktree add .git/worktrees/[stage-id] -b agent/[stage-id]`
+7. **Inject shell identity:** set `COCOPLUS_FUNCTION`, `COCOPLUS_PERSONA`, `COCOPLUS_EVAL_ID`, `COCOPLUS_HARVEST_ID`, `COCOPLUS_STAGE_ID`, `COCOPLUS_RUN_ID`, `COCOPLUS_STAGE_START=true`, and resolved `CORTEX_THINKING_EFFORT` in the subagent shell environment. Set `CTX_STEP_ENFORCEMENT=false` for CocoFlow stages so ctx step enforcement cannot conflict with CocoFlow gates. Never set `CTX_DIR`.
+8. **Invoke persona subagent** with the prompt file content and stage context
+9. **Wait for completion**
+10. **Intermediate result persistence** (for evaluation stages with `isolated: true`): if the subagent is a Data Scientist running evaluation work, require detailed results to be written to `.cocoplus/harvest/intermediate/[agent-id]-results.json`; only a summary (accuracy score, pass/fail, function name, anomalies) returns to orchestrator context
+11. **Validate checkpoints:** for each glob pattern in `checkpoints`, verify at least one matching file exists. If `[evidence_gate] enabled = true`, read at least one qualifying evidence artifact before marking the stage completed, unless the stage declares `evidence_exempt: true`. If `artifacts.writes` is declared, verify each expected artifact was produced under `.cocoplus/flow/artifacts/[run-id]/`.
+12. **Handle result:**
     - If all checkpoints pass: update flow.json stage to `"completed"`, add `completed_at`. Append `STAGE_COMPLETED` to progress.txt. Reset `consecutive_failure_count` to 0 in tasks.json.
     - If any checkpoint fails: increment `consecutive_failure_count` in tasks.json. Append `STAGE_FAILED` to progress.txt. Apply `on_failure` action. If `consecutive_failure_count` reaches `maxConsecutiveFailures`, append `ESCALATED` and halt with full escalation message.
-12. **External coach queue:** if `[harness] coach_model` is configured, stage completion queues a per-stage CocoSentinel coach review. The coach model must differ from the executor model; same-model coach requests become known-gaps entries.
-13. **Dual synthesis path** (if stage has `synthesis.primary: "llm"` and `synthesis.fallback: "rule-based"`):
+13. **External coach queue:** if `[harness] coach_model` is configured, stage completion queues a per-stage CocoSentinel coach review. The coach model must differ from the executor model; same-model coach requests become known-gaps entries.
+14. **Dual synthesis path** (if stage has `synthesis.primary: "llm"` and `synthesis.fallback: "rule-based"`):
     - Attempt primary LLM synthesis normally.
     - If the LLM synthesis call fails (access error, timeout, rate limit, credential constraint):
       - Do NOT halt the pipeline.
@@ -146,9 +147,9 @@ For each stage to execute:
       - Continue the pipeline with the fallback output.
     - Stages with `synthesis` absent or `synthesis.primary != "llm"` are unaffected.
     - Execution stages (SQL execution, test runs, file writes) do NOT have a fallback — they fail hard by design.
-14. **HITL pause** (if `hitl: true`): after successful completion, output the stage results and ask developer to confirm before spawning downstream stages
-15. **No-op workflow check** (if `handler: "noop-check"`): run `node .cortex/scripts/noop-check.js --state <state-file>`. If it returns `noop: true`, mark the stage `skipped` with the recorded reason and append `NOOP_SKIPPED` to progress. This is a successful no-op, not an error.
-16. **Retained proposal model** (if `writes_via_proposal: true`): write Snowflake DDL, SQL file changes, or pipeline configuration output under `.cocoplus/proposals/[stage-id]/[timestamp]/` and stop before live application. Surface: `Proposal retained. Run $flow settle --accept [stage-id] or $flow settle --discard [stage-id].`
+15. **HITL pause** (if `hitl: true`): after successful completion, output the stage results and ask developer to confirm before spawning downstream stages
+16. **No-op workflow check** (if `handler: "noop-check"`): run `node .cortex/scripts/noop-check.js --state <state-file>`. If it returns `noop: true`, mark the stage `skipped` with the recorded reason and append `NOOP_SKIPPED` to progress. This is a successful no-op, not an error.
+17. **Retained proposal model** (if `writes_via_proposal: true`): write Snowflake DDL, SQL file changes, or pipeline configuration output under `.cocoplus/proposals/[stage-id]/[timestamp]/` and stop before live application. Surface: `Proposal retained. Run $flow settle --accept [stage-id] or $flow settle --discard [stage-id].`
 
 ## Adaptive Checkpoint Typing
 

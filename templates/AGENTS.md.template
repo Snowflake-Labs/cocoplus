@@ -53,6 +53,9 @@ CocoSession is always available for continuity and operator control. Read `.coco
 ### Evidence and Proposal Gates
 If `[evidence_gate] enabled = true`, CocoFlow stages start from default-fail and cannot complete until a qualifying evidence artifact has been read. Stages with `writes_via_proposal = true` must retain Snowflake writes or pipeline changes under `.cocoplus/proposals/` until `$flow settle --accept` or `$flow settle --discard`.
 
+### Stage Model Floors and Human Gates
+CocoFlow stages may declare `model_tier_floor`; dispatch resolves the stronger of the run default and stage floor and records `effective_model_tier` in the run policy snapshot. Stages with `human_gate = true` do not dispatch until `$flow gate-clear <stage-id>` writes a clearance. `.cocoplus/STEER.md` cannot clear a human gate.
+
 ### Run Policy and Fleet Critics
 Declare `[run_policy]` before running CocoFlow. The hook snapshots it under `.cocoplus/lifecycle/cocoflow/<run-id>/policy-snapshot.json`; mid-run steering cannot weaken it. CocoFleet goal-decomposition tasks must separate producers from read-only critics, require PASS signoff when `critic_required = true`, and keep concurrent producer `file_scope` entries disjoint.
 
@@ -64,3 +67,6 @@ If `[flow] complexity_estimation = true`, run descriptions are scored before dis
 
 ### Retrospective and Hygiene
 Use `$retrospective run`, `$hygiene --model-upgrade`, and `$meter benchmark --flow <template>` before changing recurring rules, hooks, skills, or flow templates. Prefer the cheapest sufficient actuator: hook, then skill, then structural rule, then standing context.
+
+### CocoWisdom Progressive Loading
+When `[wisdom].injection_mode = "progressive"`, list available wisdom topics and load content only with `$wisdom get <topic>`. Stop-hook distillation may queue lessons from terminal sessions, but contradictions must go through `wisdom/review-queue.md` and `$wisdom review`.

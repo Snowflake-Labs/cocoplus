@@ -16,6 +16,7 @@ const {
   checkpointLeviathan,
   flagExists,
   lifecyclePath,
+  loadConfig,
   readJson,
   writeJson,
 } = require('./_v2-state.js');
@@ -62,6 +63,7 @@ function main() {
   const sessionId = process.env.COCO_SESSION_ID || 'unknown';
 
   appendJsonLine(HOOK_LOG, { hook: 'stop', session: sessionId, ts, action: 'cupper_triggered' });
+  const config = loadConfig();
 
   // CocoSession durable handoff: every session stop leaves a cold-startable
   // PROGRESS.md and a predicate-style CONTEXT.md for the next context window.
@@ -136,6 +138,25 @@ function main() {
       trigger: 'stop-hook-24h-cadence',
     });
     appendJsonLine(HOOK_LOG, { hook: 'stop', action: 'recall_dream_cycle_requested', session: sessionId, ts });
+  }
+
+  const wisdomConfig = config.wisdom || {};
+  if (wisdomConfig.auto_distill !== false && wisdomConfig.auto_distill !== 'false') {
+    appendJsonLine(V2_QUEUE, {
+      skill: 'cocowisdom/wisdom-distill',
+      command: `$wisdom distill ${sessionId}`,
+      requested_at: ts,
+      session_id: sessionId,
+      distill_on_failure: wisdomConfig.distill_on_failure !== false && wisdomConfig.distill_on_failure !== 'false',
+      contradiction_action: wisdomConfig.contradiction_action || 'queue',
+      source: 'hook.stop',
+    });
+    appendJsonLine(HOOK_LOG, {
+      hook: 'stop',
+      action: 'wisdom_distillation_requested',
+      session: sessionId,
+      ts,
+    });
   }
 
   // CocoRetro cadence: monthly by default, configurable in cocoplus.toml.
