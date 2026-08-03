@@ -240,6 +240,22 @@ function statusBadge(status) {
   return `<span class="status ${STATUS_CLASS[value] || ''}">${esc(value)}</span>`;
 }
 
+function humanGateHoldCard(state) {
+  if (!state.flowState || state.flowState.human_gate_waiting !== true) {
+    return panelCard('Human Gate Hold', '<p>No human-gated stage is currently waiting.</p>');
+  }
+  const stageId = state.flowState.human_gate_stage_id || '';
+  const flowStages = Array.isArray(state.flow.stages) ? state.flow.stages : [];
+  const stage = flowStages.find((item) =>
+    String(item.id || item.name || item.stage_id || '') === String(stageId)
+  ) || {};
+  const stageName = stage.name || stage.id || stageId || 'unknown stage';
+  const persona = stage.persona || stage.agent || stage.role || 'unassigned';
+  const reason = state.flowState.human_gate_reason || stage.human_gate_reason || stage.reason || 'Operator clearance required.';
+  const command = stageId ? `$flow gate-clear ${stageId}` : '$flow gate-status';
+  return panelCard('Human Gate Hold', `<div class="human-gate-card"><p><strong>${esc(stageName)}</strong></p><p>Persona: <strong>${esc(persona)}</strong></p><p>${esc(reason)}</p><p class="note">Clear this gate from the terminal:</p><pre>${esc(command)}</pre></div>`);
+}
+
 function renderPanel(panel, state) {
   const flowStages = Array.isArray(state.flow.stages) ? state.flow.stages : [];
   const cards = {
@@ -254,6 +270,7 @@ function renderPanel(panel, state) {
       panelCard('Arc Reactor', `<p>${Object.keys(state.fleetState || {}).length ? 'Fleet topology is available for the orchestration view.' : 'Arc-reactor mode appears when a fleet run writes state.json and comms.log.'}</p><pre>${esc(JSON.stringify(state.fleetState, null, 2).slice(0, 3000))}</pre>`),
       panelCard('Active Run Policy', `<pre>${esc(JSON.stringify(state.runPolicy, null, 2).slice(0, 2500))}</pre>`),
       panelCard('Gate-Weakening Refusals', `<p>Refused: <strong>${esc(state.flowState.gate_weakening_refusals || 0)}</strong></p><p>Last: <strong>${esc(state.flowState.last_gate_weakening_refusal_at || 'none')}</strong></p>`),
+      humanGateHoldCard(state),
       panelCard('Prompt Quality', `${promptQualityWidget()}<pre>${esc(JSON.stringify(state.complexity, null, 2).slice(0, 2500))}</pre>`),
       panelCard('Completion Provenance', `<pre>${esc(JSON.stringify((state.flowState.pods || []).slice(-20), null, 2).slice(0, 3000))}</pre>`),
       panelCard('Branch Topology', `<pre>${esc(JSON.stringify(state.branchTopology, null, 2).slice(0, 3000))}</pre>`),
@@ -388,6 +405,7 @@ function renderHtml(panel, state) {
     .chip{display:inline-block;border:1px solid #5a6d82;border-radius:999px;padding:2px 8px;margin-right:8px;color:#9be7c4}
     .warn{border-left:3px solid #a87321;padding-left:10px;color:#ffd48a}
     .note{border-left:3px solid #477aa6;padding-left:10px;color:#b8dcff}
+    .human-gate-card{border:1px solid #a87321;background:#211b12;border-radius:6px;padding:12px}
     table{width:100%;border-collapse:collapse}
     th,td{border-bottom:1px solid #2b3744;padding:7px;text-align:left;vertical-align:top}
     .danger-row td{color:#ffd48a}

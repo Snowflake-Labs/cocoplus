@@ -371,6 +371,8 @@ function main() {
   const consoleScript = readFile(path.join(runtimeScriptsDir, 'cocoplus-console.js'));
   requireIncludes(consoleScript, 'translateIntent', failures, 'CocoConsole script');
   requireIncludes(consoleScript, 'Danger only', failures, 'CocoConsole script');
+  requireIncludes(consoleScript, 'Human Gate Hold', failures, 'CocoConsole script');
+  requireIncludes(consoleScript, '$flow gate-clear', failures, 'CocoConsole script');
 
   const stalePatterns = [
     /All 32 Features/i,
