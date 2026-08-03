@@ -89,8 +89,69 @@ function latestFleetComms() {
   return latest ? readText(path.join(latest.path, 'comms.log'), '') : '';
 }
 
+function parseJsonLines(text) {
+  return String(text || '')
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => {
+      try {
+        return JSON.parse(line);
+      } catch (_) {
+        return { message: line };
+      }
+    });
+}
+
+function translateIntent(event) {
+  const tool = event.tool || event.tool_name || event.name || 'tool';
+  const input = event.parameters || event.tool_input || event.input || {};
+  const raw = typeof input === 'string' ? input : JSON.stringify(input || {});
+  const filePath = input.file_path || input.path || input.file || '';
+  const command = input.command || input.cmd || raw;
+  const danger = /\b(git\s+push\s+--force|DROP\s+TABLE|TRUNCATE|USE\s+ROLE\s+ACCOUNTADMIN|credential|secret|token|rm\s+-rf)\b/i.test(command);
+  let intent = `Run ${tool}`;
+
+  if (/^(Read|mcp__files_read)$/i.test(tool) && filePath) intent = `Read ${path.basename(filePath)}`;
+  else if (/^(Write|Edit)$/i.test(tool) && filePath) intent = `Edit ${path.basename(filePath)}`;
+  else if (/SnowflakeSqlExecute/i.test(tool)) intent = danger ? 'Run high-risk Snowflake SQL' : 'Run Snowflake SQL';
+  else if (/Bash|shell|powershell/i.test(tool) && /\b(test|pytest|npm\s+run|validate|check)\b/i.test(command)) intent = 'Run validation command';
+  else if (/Bash|shell|powershell/i.test(tool) && /\bgit\b/i.test(command)) intent = 'Run Git command';
+
+  return {
+    intent,
+    danger,
+    tool,
+    raw_command: command,
+    ts: event.ts || event.timestamp || event.requested_at || '',
+  };
+}
+
+function renderIntentFeed(events) {
+  const translated = events.slice(-100).map(translateIntent).reverse();
+  if (!translated.length) return '<p>No forge activity yet.</p>';
+  const rows = translated.map((item) => {
+    const dangerClass = item.danger ? ' class="danger-row"' : '';
+    const label = item.danger ? 'DANGER' : 'normal';
+    return `<tr${dangerClass} data-danger="${item.danger ? 'true' : 'false'}"><td>${esc(item.ts)}</td><td>${esc(label)}</td><td>${esc(item.intent)}</td><td>${esc(item.tool)}</td><td><details><summary>Show command</summary><pre>${esc(item.raw_command)}</pre></details></td></tr>`;
+  }).join('');
+  return `<p><label><input id="danger-only" type="checkbox"> Danger only</label></p>
+<table class="intent-feed"><thead><tr><th>Time</th><th>Risk</th><th>Intent</th><th>Tool</th><th>Raw</th></tr></thead><tbody>${rows}</tbody></table>
+<script>
+(() => {
+  const toggle = document.getElementById('danger-only');
+  if (!toggle) return;
+  toggle.addEventListener('change', () => {
+    document.querySelectorAll('tr[data-danger]').forEach((row) => {
+      row.style.display = toggle.checked && row.dataset.danger !== 'true' ? 'none' : '';
+    });
+  });
+})();
+</script>`;
+}
+
 function collectState() {
   const lifecycle = path.join(COCOPLUS_DIR, 'lifecycle');
+  const forgeActivityRaw = readText(lifecyclePath('forge-activity.jsonl'), '');
   const state = {
     generated_at: isoUtc(),
     project: readText(path.join(COCOPLUS_DIR, 'project.md'), 'Project not initialized.'),
@@ -125,6 +186,8 @@ function collectState() {
     fleetState: latestFleetState(),
     fleetComms: latestFleetComms(),
     fleetRegistry: safeJson(path.join(os.homedir(), '.cocoplus', 'fleet', 'projects.json'), {}),
+    forgeActivity: forgeActivityRaw || 'No forge activity yet.',
+    forgeActivityEvents: parseJsonLines(forgeActivityRaw),
     config: loadConfig(),
   };
   state.branchTopology = flowBranchTopology(state.flow);
@@ -246,7 +309,8 @@ function renderPanel(panel, state) {
     forge: [
       panelCard('Forge State', `<pre>${esc(JSON.stringify(state.forge, null, 2))}</pre>`),
       panelCard('Refinement Ladder', `<pre>${esc(JSON.stringify(state.forge.refinement_ladder || { enabled: false }, null, 2))}</pre>`),
-      panelCard('Activity', `<pre>${esc(readText(lifecyclePath('forge-activity.jsonl'), 'No forge activity yet.').slice(-5000))}</pre>`),
+      panelCard('Intent Feed', renderIntentFeed(state.forgeActivityEvents)),
+      panelCard('Activity', `<pre>${esc(state.forgeActivity.slice(-5000))}</pre>`),
     ],
     comms: [
       panelCard('Fleet Comms Feed', `<pre>${esc(state.fleetComms.slice(-8000) || 'No fleet comms events recorded.')}</pre>`),
@@ -324,6 +388,9 @@ function renderHtml(panel, state) {
     .chip{display:inline-block;border:1px solid #5a6d82;border-radius:999px;padding:2px 8px;margin-right:8px;color:#9be7c4}
     .warn{border-left:3px solid #a87321;padding-left:10px;color:#ffd48a}
     .note{border-left:3px solid #477aa6;padding-left:10px;color:#b8dcff}
+    table{width:100%;border-collapse:collapse}
+    th,td{border-bottom:1px solid #2b3744;padding:7px;text-align:left;vertical-align:top}
+    .danger-row td{color:#ffd48a}
     pre{white-space:pre-wrap;word-break:break-word;margin:0;color:#d6e2ee}
     code{color:#9be7c4}
   </style>

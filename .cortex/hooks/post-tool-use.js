@@ -26,6 +26,7 @@ const GOVERNANCE_LOG = path.join(COCOPLUS_DIR, 'lifecycle', 'governance-log.json
 const SESSION_DIR = path.join(COCOPLUS_DIR, 'session');
 const COACH_QUEUE = path.join(COCOPLUS_DIR, 'sentinel', 'coach-requests.jsonl');
 const SESSION_BUDGET_STATE = path.join(SESSION_DIR, 'budget-state.json');
+const OPEN_PRE_TOOL_USE = path.join(SESSION_DIR, 'open-pre-tool-use.json');
 
 const PII_PATTERNS = [
   { type: 'EMAIL', re: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi },
@@ -57,6 +58,34 @@ function readJson(filePath, fallback) {
 function writeJson(filePath, value) {
   ensureDir(path.dirname(filePath));
   fs.writeFileSync(filePath, JSON.stringify(value, null, 2), 'utf8');
+}
+
+function sessionId(event) {
+  return event.session_id ||
+    process.env.COCO_SESSION_ID ||
+    process.env.CORTEX_SESSION_ID ||
+    'unknown';
+}
+
+function clearOpenPreToolUse(event, toolName) {
+  const registry = readJson(OPEN_PRE_TOOL_USE, { open: [] });
+  const open = Array.isArray(registry.open) ? registry.open : [];
+  const sid = sessionId(event);
+  let removed = false;
+  const remaining = [];
+  for (const entry of open) {
+    const matches = !removed &&
+      String(entry.session_id || 'unknown') === String(sid) &&
+      String(entry.tool_name || 'unknown') === String(toolName);
+    if (matches) {
+      removed = true;
+      continue;
+    }
+    remaining.push(entry);
+  }
+  if (removed || open.length !== remaining.length) {
+    writeJson(OPEN_PRE_TOOL_USE, { open: remaining });
+  }
 }
 
 function appendProgressBudget(progressPath, budget) {
@@ -285,6 +314,7 @@ function main() {
   const succeeded  = result.success !== false;
   const config     = loadConfig();
 
+  clearOpenPreToolUse(event, toolName);
   appendJsonLine(HOOK_LOG, { hook: 'post-tool-use', tool: toolName, ts });
 
   // CocoSession iteration budget: every completed turn advances the budget.

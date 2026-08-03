@@ -172,6 +172,15 @@ function main() {
     'flow-event-reader.js',
   ];
 
+  const requiredTwentySixthSkills = [
+    path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-distill.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-review.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-status.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-get.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'execution-engine', 'flow-gate-clear.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'execution-engine', 'flow-gate-status.skill.md'),
+  ];
+
   if (!manifestIncludesPath(plugin.skills, './.cortex/skills')) {
     failures.push('.cortex-plugin/plugin.json must register skills as "./.cortex/skills"');
   }
@@ -246,6 +255,10 @@ function main() {
     requireFile(skillPath, failures, 'Reference-specified skill path');
   }
 
+  for (const skillPath of requiredTwentySixthSkills) {
+    requireFile(skillPath, failures, 'Twenty-sixth-cycle skill path');
+  }
+
   for (const asset of [...requiredTemplates.map((name) => path.join('templates', name)), ...requiredRecipes.map((name) => path.join('recipes', name))]) {
     const manifestList = asset.startsWith('templates') ? plugin.templates : plugin.recipes;
     if (!Array.isArray(manifestList) || !manifestList.includes(asset.replace(/\//g, '\\')) && !manifestList.includes(asset.replace(/\\/g, '/'))) {
@@ -309,23 +322,33 @@ function main() {
     'meter_reconciliation_threshold',
     'complexity_estimation',
     'trivial_floor_invariant',
+    'auto_distill',
+    'distill_on_failure',
+    'contradiction_action',
+    'injection_mode',
+    'preload_categories',
     '[run_policy]',
     'merge_policy',
     'allow_irreversible_actions',
     'stop_after',
+    'model_tier_default',
+    '[flow.stage]',
+    'human_gate_clearance_file',
   ]) {
     requireIncludes(configTemplate, expected, failures, 'cocoplus.toml.template');
   }
 
   const principlesHtml = readFile(path.join(repoRoot, 'docs', 'principles.html'));
   const principleCount = (principlesHtml.match(/<h2 id="[0-9]/g) || []).length;
-  if (principleCount !== 41) {
-    failures.push(`docs/principles.html must contain 41 principle headings; found ${principleCount}`);
+  if (principleCount !== 43) {
+    failures.push(`docs/principles.html must contain 43 principle headings; found ${principleCount}`);
   }
   requireIncludes(principlesHtml, 'The Transcript Is the Source of Truth', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Timestamps Have Provenance', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Producers Never Grade Themselves', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Gate Weakening Requires a New Run', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Stable API Surface for Unstable Conditions', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Skill Is Memory', failures, 'docs/principles.html');
 
   const adapterPath = path.join(runtimeScriptsDir, 'transcript-adapter.js');
   if (fs.existsSync(adapterPath)) {
@@ -333,6 +356,21 @@ function main() {
     rejectPattern(adapter, /\.\.\./, failures, '.cortex/scripts/transcript-adapter.js');
     requireIncludes(adapter, "kind: 'other'", failures, '.cortex/scripts/transcript-adapter.js');
   }
+
+  const preToolUse = readFile(path.join(hooksDir, 'pre-tool-use.js'));
+  requireIncludes(preToolUse, 'model_tier_floor_applied', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'human_gate_blocked', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'open-pre-tool-use', failures, 'PreToolUse hook');
+
+  const postToolUse = readFile(path.join(hooksDir, 'post-tool-use.js'));
+  requireIncludes(postToolUse, 'open-pre-tool-use', failures, 'PostToolUse hook');
+
+  const notificationHook = readFile(path.join(hooksDir, 'notification.js'));
+  requireIncludes(notificationHook, 'open-pre-tool-use', failures, 'Notification hook');
+
+  const consoleScript = readFile(path.join(runtimeScriptsDir, 'cocoplus-console.js'));
+  requireIncludes(consoleScript, 'translateIntent', failures, 'CocoConsole script');
+  requireIncludes(consoleScript, 'Danger only', failures, 'CocoConsole script');
 
   const stalePatterns = [
     /All 32 Features/i,
