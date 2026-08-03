@@ -8,6 +8,14 @@ All notable changes to CocoPlus are documented here.
 
 ### Added
 
+#### Late-Cycle Gate and Wisdom Contracts
+- CocoWisdom now has schema-declared terminal-session distillation skills: `$wisdom distill`, `$wisdom get <topic>`, `$wisdom review`, and `$wisdom status`.
+- Stop hook queues non-blocking CocoWisdom distillation when `[wisdom].auto_distill = true`, including failed-session eligibility and contradiction queue policy.
+- CocoFlow stages may declare `model_tier_floor`; PreToolUse records the resolved `effective_model_tier` in the per-run policy snapshot.
+- CocoFlow stages may declare `human_gate: true`; dispatch blocks until `$flow gate-clear <stage-id>` writes an audited clearance, with `$flow gate-status` for inspection.
+- CocoSentinel permission-event detection now uses the stable `.cocoplus/session/open-pre-tool-use.json` bracket instead of notification text parsing.
+- CocoConsole Forge view now includes a plain-language intent feed, danger flagging, a `Danger only` filter, and expandable raw command details while remaining read-only.
+
 #### CocoPlus Runtime Layer
 - `.cortex-plugin/plugin.json` declares version `2.0.0` for the V2 command surface.
 - The release specification covers CocoConsole, CocoPilot, CocoForge, Leviathan Mode/Ronin, Dynamic Personas, feature-owned runtime architecture, and required modifications to existing features.
@@ -100,7 +108,7 @@ All notable changes to CocoPlus are documented here.
 - `templates/cocoplus.toml.template` adds `[cocoplus]`, `[cocopilot]`, `[cocoforge]`, `[leviathan]`, `[dynamic_personas]`, `[governance]`, `[session]`, `[harness]`, `[evidence_gate]`, `[proposals]`, `[research]`, `[retrospective]`, `[routine]`, `[meter]`, `[flow.planning]`, `[flow.planning.frames]`, `[flow.tiers]`, and role-based model allocation sections.
 - `templates/AGENTS.md.template` adds V2 activation blocks so new pods understand CocoPilot, CocoForge, Leviathan Mode/Ronin, and Dynamic Personas.
 - Root `README.md`, `AGENTS.md`, installation guidance, and the HTML documentation site now present CocoPlus as a V2.0.0 release.
-- `docs/principles.html` now reflects the complete 41-principle catalog, including durable records, untestable-here verification, session understanding capture, context isolation, stated-vs-enforced labeling, consolidation-vs-capture, budget-seam enforcement, shared status vocabulary, complexity-floor dispatch, ambiguity prepayment, transcript authority, timestamp provenance, producer/critic separation, and gate weakening as a new-run operation.
+- `docs/principles.html` now reflects the expanded principle catalog, including durable records, untestable-here verification, session understanding capture, context isolation, stated-vs-enforced labeling, consolidation-vs-capture, budget-seam enforcement, shared status vocabulary, complexity-floor dispatch, ambiguity prepayment, transcript authority, timestamp provenance, producer/critic separation, gate weakening as a new-run operation, stable runtime brackets, and skill-scoped memory.
 
 #### Twenty-Fifth-Cycle 2.0 Additions
 - `templates/scripts/transcript-adapter.js` adds a named-field allowlist adapter for JSONL transcript reads. `templates/scripts/adapter-self-test.js` adds a schema-drift canary for agent dispatch events.
@@ -456,7 +464,7 @@ All notable changes to CocoPlus are documented here.
 - Registered and defined the CocoScout and CocoWatch background agents so the manifest matches runtime agent files.
 - Completed skill metadata and required Exit Criteria / Anti-Rationalization sections across all new and updated skills for validation compliance.
 - Normalized all CocoPlus command references to the `$` prefix across docs, skills, hooks, and templates — removed all remaining `/cmd` slash-command references.
-- Updated public feature-count references to 32 features across the documentation.
+- Updated public feature-count references across the documentation.
 
 ### Documentation
 
