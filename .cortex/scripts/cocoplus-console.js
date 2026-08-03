@@ -89,8 +89,69 @@ function latestFleetComms() {
   return latest ? readText(path.join(latest.path, 'comms.log'), '') : '';
 }
 
+function parseJsonLines(text) {
+  return String(text || '')
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => {
+      try {
+        return JSON.parse(line);
+      } catch (_) {
+        return { message: line };
+      }
+    });
+}
+
+function translateIntent(event) {
+  const tool = event.tool || event.tool_name || event.name || 'tool';
+  const input = event.parameters || event.tool_input || event.input || {};
+  const raw = typeof input === 'string' ? input : JSON.stringify(input || {});
+  const filePath = input.file_path || input.path || input.file || '';
+  const command = input.command || input.cmd || raw;
+  const danger = /\b(git\s+push\s+--force|DROP\s+TABLE|TRUNCATE|USE\s+ROLE\s+ACCOUNTADMIN|credential|secret|token|rm\s+-rf)\b/i.test(command);
+  let intent = `Run ${tool}`;
+
+  if (/^(Read|mcp__files_read)$/i.test(tool) && filePath) intent = `Read ${path.basename(filePath)}`;
+  else if (/^(Write|Edit)$/i.test(tool) && filePath) intent = `Edit ${path.basename(filePath)}`;
+  else if (/SnowflakeSqlExecute/i.test(tool)) intent = danger ? 'Run high-risk Snowflake SQL' : 'Run Snowflake SQL';
+  else if (/Bash|shell|powershell/i.test(tool) && /\b(test|pytest|npm\s+run|validate|check)\b/i.test(command)) intent = 'Run validation command';
+  else if (/Bash|shell|powershell/i.test(tool) && /\bgit\b/i.test(command)) intent = 'Run Git command';
+
+  return {
+    intent,
+    danger,
+    tool,
+    raw_command: command,
+    ts: event.ts || event.timestamp || event.requested_at || '',
+  };
+}
+
+function renderIntentFeed(events) {
+  const translated = events.slice(-100).map(translateIntent).reverse();
+  if (!translated.length) return '<p>No forge activity yet.</p>';
+  const rows = translated.map((item) => {
+    const dangerClass = item.danger ? ' class="danger-row"' : '';
+    const label = item.danger ? 'DANGER' : 'normal';
+    return `<tr${dangerClass} data-danger="${item.danger ? 'true' : 'false'}"><td>${esc(item.ts)}</td><td>${esc(label)}</td><td>${esc(item.intent)}</td><td>${esc(item.tool)}</td><td><details><summary>Show command</summary><pre>${esc(item.raw_command)}</pre></details></td></tr>`;
+  }).join('');
+  return `<p><label><input id="danger-only" type="checkbox"> Danger only</label></p>
+<table class="intent-feed"><thead><tr><th>Time</th><th>Risk</th><th>Intent</th><th>Tool</th><th>Raw</th></tr></thead><tbody>${rows}</tbody></table>
+<script>
+(() => {
+  const toggle = document.getElementById('danger-only');
+  if (!toggle) return;
+  toggle.addEventListener('change', () => {
+    document.querySelectorAll('tr[data-danger]').forEach((row) => {
+      row.style.display = toggle.checked && row.dataset.danger !== 'true' ? 'none' : '';
+    });
+  });
+})();
+</script>`;
+}
+
 function collectState() {
   const lifecycle = path.join(COCOPLUS_DIR, 'lifecycle');
+  const forgeActivityRaw = readText(lifecyclePath('forge-activity.jsonl'), '');
   const state = {
     generated_at: isoUtc(),
     project: readText(path.join(COCOPLUS_DIR, 'project.md'), 'Project not initialized.'),
@@ -125,6 +186,8 @@ function collectState() {
     fleetState: latestFleetState(),
     fleetComms: latestFleetComms(),
     fleetRegistry: safeJson(path.join(os.homedir(), '.cocoplus', 'fleet', 'projects.json'), {}),
+    forgeActivity: forgeActivityRaw || 'No forge activity yet.',
+    forgeActivityEvents: parseJsonLines(forgeActivityRaw),
     config: loadConfig(),
   };
   state.branchTopology = flowBranchTopology(state.flow);
@@ -177,6 +240,22 @@ function statusBadge(status) {
   return `<span class="status ${STATUS_CLASS[value] || ''}">${esc(value)}</span>`;
 }
 
+function humanGateHoldCard(state) {
+  if (!state.flowState || state.flowState.human_gate_waiting !== true) {
+    return panelCard('Human Gate Hold', '<p>No human-gated stage is currently waiting.</p>');
+  }
+  const stageId = state.flowState.human_gate_stage_id || '';
+  const flowStages = Array.isArray(state.flow.stages) ? state.flow.stages : [];
+  const stage = flowStages.find((item) =>
+    String(item.id || item.name || item.stage_id || '') === String(stageId)
+  ) || {};
+  const stageName = stage.name || stage.id || stageId || 'unknown stage';
+  const persona = stage.persona || stage.agent || stage.role || 'unassigned';
+  const reason = state.flowState.human_gate_reason || stage.human_gate_reason || stage.reason || 'Operator clearance required.';
+  const command = stageId ? `$flow gate-clear ${stageId}` : '$flow gate-status';
+  return panelCard('Human Gate Hold', `<div class="human-gate-card"><p><strong>${esc(stageName)}</strong></p><p>Persona: <strong>${esc(persona)}</strong></p><p>${esc(reason)}</p><p class="note">Clear this gate from the terminal:</p><pre>${esc(command)}</pre></div>`);
+}
+
 function renderPanel(panel, state) {
   const flowStages = Array.isArray(state.flow.stages) ? state.flow.stages : [];
   const cards = {
@@ -191,6 +270,7 @@ function renderPanel(panel, state) {
       panelCard('Arc Reactor', `<p>${Object.keys(state.fleetState || {}).length ? 'Fleet topology is available for the orchestration view.' : 'Arc-reactor mode appears when a fleet run writes state.json and comms.log.'}</p><pre>${esc(JSON.stringify(state.fleetState, null, 2).slice(0, 3000))}</pre>`),
       panelCard('Active Run Policy', `<pre>${esc(JSON.stringify(state.runPolicy, null, 2).slice(0, 2500))}</pre>`),
       panelCard('Gate-Weakening Refusals', `<p>Refused: <strong>${esc(state.flowState.gate_weakening_refusals || 0)}</strong></p><p>Last: <strong>${esc(state.flowState.last_gate_weakening_refusal_at || 'none')}</strong></p>`),
+      humanGateHoldCard(state),
       panelCard('Prompt Quality', `${promptQualityWidget()}<pre>${esc(JSON.stringify(state.complexity, null, 2).slice(0, 2500))}</pre>`),
       panelCard('Completion Provenance', `<pre>${esc(JSON.stringify((state.flowState.pods || []).slice(-20), null, 2).slice(0, 3000))}</pre>`),
       panelCard('Branch Topology', `<pre>${esc(JSON.stringify(state.branchTopology, null, 2).slice(0, 3000))}</pre>`),
@@ -246,7 +326,8 @@ function renderPanel(panel, state) {
     forge: [
       panelCard('Forge State', `<pre>${esc(JSON.stringify(state.forge, null, 2))}</pre>`),
       panelCard('Refinement Ladder', `<pre>${esc(JSON.stringify(state.forge.refinement_ladder || { enabled: false }, null, 2))}</pre>`),
-      panelCard('Activity', `<pre>${esc(readText(lifecyclePath('forge-activity.jsonl'), 'No forge activity yet.').slice(-5000))}</pre>`),
+      panelCard('Intent Feed', renderIntentFeed(state.forgeActivityEvents)),
+      panelCard('Activity', `<pre>${esc(state.forgeActivity.slice(-5000))}</pre>`),
     ],
     comms: [
       panelCard('Fleet Comms Feed', `<pre>${esc(state.fleetComms.slice(-8000) || 'No fleet comms events recorded.')}</pre>`),
@@ -324,6 +405,10 @@ function renderHtml(panel, state) {
     .chip{display:inline-block;border:1px solid #5a6d82;border-radius:999px;padding:2px 8px;margin-right:8px;color:#9be7c4}
     .warn{border-left:3px solid #a87321;padding-left:10px;color:#ffd48a}
     .note{border-left:3px solid #477aa6;padding-left:10px;color:#b8dcff}
+    .human-gate-card{border:1px solid #a87321;background:#211b12;border-radius:6px;padding:12px}
+    table{width:100%;border-collapse:collapse}
+    th,td{border-bottom:1px solid #2b3744;padding:7px;text-align:left;vertical-align:top}
+    .danger-row td{color:#ffd48a}
     pre{white-space:pre-wrap;word-break:break-word;margin:0;color:#d6e2ee}
     code{color:#9be7c4}
   </style>

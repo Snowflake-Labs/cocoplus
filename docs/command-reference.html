@@ -313,6 +313,20 @@ $flow status
 <p>Renders the pipeline state as a structured report: each stage with canonical status indicator, runtime duration, checkpoint validation results, branch topology when available, budget reserve posture, and failure reason if applicable. <code>completed</code>, <code>exited</code>, and <code>failed</code> are distinct terminal outcomes.</p>
 <p><strong>Output:</strong> Formatted pipeline report. No state changes.</p>
 <hr>
+<p><strong><code>$flow gate-status</code></strong> — Show human-gated stages for the active run</p>
+<pre><code>
+$flow gate-status
+</code></pre>
+<p>Reads the active flow and the current run's <code>gate-clearances.json</code>, then lists every stage with <code>human_gate: true</code>, its reason, and whether it is waiting or cleared.</p>
+<p><strong>Output:</strong> Gate report. No state changes.</p>
+<hr>
+<p><strong><code>$flow gate-clear &lt;stage-id&gt;</code></strong> — Clear a declared stage human gate</p>
+<pre><code>
+$flow gate-clear deploy-prod
+</code></pre>
+<p>Writes an operator clearance to <code>.cocoplus/lifecycle/cocoflow/&lt;run-id&gt;/gate-clearances.json</code> and appends an audit entry. PreToolUse will not dispatch a stage with <code>human_gate: true</code> until this explicit clearance exists. Steering messages cannot clear the gate.</p>
+<p><strong>Output:</strong> Clearance confirmation and audit entry.</p>
+<hr>
 <p><strong><code>$flow pause</code></strong> — Pause after current stage completes</p>
 <pre><code>
 $flow pause
@@ -1117,6 +1131,35 @@ $wisdom insights
 </code></pre>
 <p>Invokes a Haiku sub-agent to read <code>rejections.jsonl</code> and produce a structured synthesis: most frequently blocked dimension, quality trend over time (improving/stable/degrading), dimension health table (total blocks, last 30 days, trend direction). Uses carry-forward thesis pattern: loads the <code>## Thesis</code> section from the most recent prior insights file and preserves it verbatim, then appends a <code>### New Evidence</code> subsection with findings from the latest records. The thesis is never replaced — only extended. Written to <code>.cocoplus/wisdom/insights-&lt;date&gt;.md</code> — committed to git.</p>
 <p><strong>Output:</strong> <code>insights-&lt;date&gt;.md</code> + git commit.</p>
+<hr>
+<p><strong><code>$wisdom get &lt;topic&gt;</code></strong> — Load one wisdom topic on demand</p>
+<pre><code>
+$wisdom get acceptance-criteria
+</code></pre>
+<p>Loads a single schema-declared topic file from <code>.cocoplus/wisdom/</code>. In progressive mode, CocoPilot and other orchestrators list available topics and counts, then load content only when a topic is relevant.</p>
+<p><strong>Output:</strong> Requested topic content or an available-topic list.</p>
+<hr>
+<p><strong><code>$wisdom distill [session-id]</code></strong> — Distill terminal session lessons into topic files</p>
+<pre><code>
+$wisdom distill
+$wisdom distill session-20260803
+</code></pre>
+<p>Reads terminal-session artifacts, applies <code>.cocoplus/wisdom/SCHEMA.md</code>, routes durable lessons into category files, and queues contradictions in <code>wisdom/review-queue.md</code> according to <code>[wisdom].contradiction_action</code>. The Stop hook can queue this automatically when <code>[wisdom].auto_distill = true</code>.</p>
+<p><strong>Output:</strong> Distillation report with accepted, queued, skipped, and errored counts.</p>
+<hr>
+<p><strong><code>$wisdom review</code></strong> — Resolve queued wisdom contradictions</p>
+<pre><code>
+$wisdom review
+</code></pre>
+<p>Reads <code>wisdom/review-queue.md</code>, groups contradictions by topic and source session, and records operator decisions with rationale. Existing wisdom is never silently overwritten.</p>
+<p><strong>Output:</strong> Review decisions and updated queue state.</p>
+<hr>
+<p><strong><code>$wisdom status</code></strong> — Show distillation and progressive-loading health</p>
+<pre><code>
+$wisdom status
+</code></pre>
+<p>Reports schema presence, injection mode, topic count, review queue depth, latest distillation report, and whether Stop hook auto-distillation is enabled.</p>
+<p><strong>Output:</strong> Read-only CocoWisdom health report.</p>
 <hr>
 <p><strong><code>$wisdom export</code></strong> — Export all rejection records as a formatted Markdown report</p>
 <pre><code>

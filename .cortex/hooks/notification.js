@@ -14,6 +14,7 @@ const { isoUtc, appendJsonLine, logError } = require('./_common.js');
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
+const OPEN_PRE_TOOL_USE = path.join(COCOPLUS_DIR, 'session', 'open-pre-tool-use.json');
 
 /** Notification types that should surface in UI */
 const UI_EVENTS = new Set([
@@ -32,6 +33,27 @@ function simpleHash(str) {
     h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
   }
   return Math.abs(h).toString(16);
+}
+
+function readJson(filePath, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (_) {
+    return fallback;
+  }
+}
+
+function sessionId() {
+  return process.env.COCO_SESSION_ID ||
+    process.env.CORTEX_SESSION_ID ||
+    'unknown';
+}
+
+function matchingOpenPreToolUse() {
+  const registry = readJson(OPEN_PRE_TOOL_USE, { open: [] });
+  const open = Array.isArray(registry.open) ? registry.open : [];
+  const sid = sessionId();
+  return open.filter((entry) => String(entry.session_id || 'unknown') === String(sid));
 }
 
 function main() {
@@ -66,6 +88,26 @@ function main() {
   try {
     fs.appendFileSync(path.join(COCOPLUS_DIR, 'notifications.log'), `[${ts}] ${notifType}: ${notifPayload}\n`);
   } catch (_) { /* non-fatal */ }
+
+  const openTools = matchingOpenPreToolUse();
+  if (openTools.length > 0) {
+    const latest = openTools[openTools.length - 1];
+    const event = {
+      ts,
+      event_type: 'permission_blocked',
+      source: 'open-pre-tool-use',
+      session_id: latest.session_id || sessionId(),
+      tool_name: latest.tool_name || 'unknown',
+      tool_timestamp: latest.timestamp || null,
+      notification_type: notifType,
+    };
+    appendJsonLine(path.join(COCOPLUS_DIR, 'session', 'permission-events.jsonl'), event);
+    appendJsonLine(path.join(COCOPLUS_DIR, 'ui-notifications.jsonl'), {
+      notify: 'permission_blocked',
+      payload: `Permission blocked while ${event.tool_name} was open.`,
+      ts,
+    });
+  }
 
   // Update dedupe file
   try {

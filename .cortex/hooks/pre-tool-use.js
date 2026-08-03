@@ -40,6 +40,7 @@ const PROPOSAL_LOG = path.join(COCOPLUS_DIR, 'proposals', 'proposal-log.jsonl');
 const FLOW_ARTIFACT_ROOT = path.join(COCOPLUS_DIR, 'flow', 'artifacts');
 const SESSION_BUDGET_STATE = path.join(COCOPLUS_DIR, 'session', 'budget-state.json');
 const COMPLEXITY_SCRIPT = path.join(COCOPLUS_DIR, 'scripts', 'complexity-estimate.js');
+const OPEN_PRE_TOOL_USE = path.join(COCOPLUS_DIR, 'session', 'open-pre-tool-use.json');
 
 /** Planning artifacts that are scanned for prompt injection */
 const PLANNING_ARTIFACTS = [
@@ -237,6 +238,66 @@ function ensurePolicySnapshot(config, params, ts) {
   appendJsonLine(HOOK_LOG, { hook: 'pre-tool-use', action: 'run_policy_snapshotted', run_id: runId, ts });
 }
 
+function rankModelTier(tier) {
+  const key = String(tier || '').toLowerCase();
+  const ranks = {
+    smol: 1,
+    haiku: 1,
+    regular: 2,
+    sonnet: 2,
+    smart: 3,
+    ultra: 4,
+    opus: 4,
+  };
+  return ranks[key] || 0;
+}
+
+function strongerModelTier(left, right) {
+  return rankModelTier(left) >= rankModelTier(right) ? left : right;
+}
+
+function configuredDefaultModelTier(config) {
+  const flowConfig = config.flow || {};
+  const modelRoles = config.model_roles || {};
+  return flowConfig.model_tier_default || modelRoles.worker || 'regular';
+}
+
+function ensureStagePolicySnapshot(config, params, ts) {
+  if (!isStageBoundaryDispatch(params)) return;
+  const stageId = currentStageId(params);
+  const stage = findStage(stageId);
+  if (!stage) return;
+
+  const declaredFloor = stage.model_tier_floor || stage.model_floor || null;
+  const defaultTier = configuredDefaultModelTier(config);
+  const effective = declaredFloor ? strongerModelTier(defaultTier, declaredFloor) : defaultTier;
+  const runId = flowRunId(params);
+  const snapshotPath = policySnapshotPath(runId);
+  const snapshot = readJsonFile(snapshotPath, runPolicy(config));
+  if (!snapshot.stages) snapshot.stages = {};
+  snapshot.stages[stageId] = {
+    ...(snapshot.stages[stageId] || {}),
+    model_tier_default: defaultTier,
+    model_tier_floor: declaredFloor,
+    effective_model_tier: effective,
+    model_tier_resolved_at: ts,
+  };
+  writeJsonFile(snapshotPath, snapshot);
+
+  if (declaredFloor && effective === declaredFloor && rankModelTier(declaredFloor) > rankModelTier(defaultTier)) {
+    appendJsonLine(HOOK_LOG, {
+      hook: 'pre-tool-use',
+      action: 'model_tier_floor_applied',
+      run_id: runId,
+      stage_id: stageId,
+      default_tier: defaultTier,
+      floor_tier: declaredFloor,
+      effective_model_tier: effective,
+      ts,
+    });
+  }
+}
+
 function activePolicy(config, params) {
   const runId = flowRunId(params);
   return readJsonFile(policySnapshotPath(runId), runPolicy(config));
@@ -395,6 +456,63 @@ function flowRunId(params) {
     `run-${Date.now()}`;
 }
 
+function sessionId() {
+  return process.env.COCO_SESSION_ID ||
+    process.env.CORTEX_SESSION_ID ||
+    'unknown';
+}
+
+function recordOpenPreToolUse(event, toolName, params, ts) {
+  const registry = readJsonFile(OPEN_PRE_TOOL_USE, { open: [] });
+  const open = Array.isArray(registry.open) ? registry.open : [];
+  open.push({
+    session_id: event.session_id || sessionId(),
+    tool_name: toolName,
+    tool_input: params,
+    timestamp: ts,
+  });
+  writeJsonFile(OPEN_PRE_TOOL_USE, { open: open.slice(-100) });
+}
+
+function gateClearancePath(config, runId) {
+  const flowStage = config.flow_stage || config['flow.stage'] || {};
+  const configured = flowStage.human_gate_clearance_file || '';
+  if (configured) {
+    return configured.replace('<run-id>', runId).replace('[run-id]', runId);
+  }
+  return path.join(COCOPLUS_DIR, 'lifecycle', 'cocoflow', runId, 'gate-clearances.json');
+}
+
+function humanGateCleared(config, runId, stageId) {
+  const clearances = readJsonFile(gateClearancePath(config, runId), { clearances: [] });
+  const entries = Array.isArray(clearances.clearances) ? clearances.clearances : [];
+  return entries.some((entry) => String(entry.stage_id || entry.stage || '') === String(stageId));
+}
+
+function checkHumanGate(config, params, ts) {
+  if (!isStageBoundaryDispatch(params)) return null;
+  const stageId = currentStageId(params);
+  const stage = findStage(stageId);
+  if (!stage || !(stage.human_gate === true || stage.human_gate === 'true')) return null;
+  const runId = flowRunId(params);
+  if (humanGateCleared(config, runId, stageId)) return null;
+  updateFlowState((state) => {
+    state.human_gate_waiting = true;
+    state.human_gate_stage_id = stageId;
+    state.human_gate_reason = stage.human_gate_reason || stage.reason || '';
+    state.human_gate_blocked_at = ts;
+  });
+  appendJsonLine(HOOK_LOG, {
+    hook: 'pre-tool-use',
+    action: 'human_gate_blocked',
+    run_id: runId,
+    stage_id: stageId,
+    reason: stage.human_gate_reason || stage.reason || '',
+    ts,
+  });
+  return `CocoFlow human gate: stage "${stageId}" is waiting for operator clearance. Run $flow gate-clear ${stageId} before dispatch.`;
+}
+
 function budgetState() {
   const state = readJsonFile(SESSION_BUDGET_STATE, { budget_state: 'normal' });
   return state.budget_state || 'normal';
@@ -450,6 +568,7 @@ function main() {
   const toolName = event.tool || process.env.COCO_TOOL_NAME || 'unknown';
   const params   = event.parameters || {};
   const config   = loadConfig();
+  recordOpenPreToolUse(event, toolName, params, ts);
 
   const steerBlock = drainSteerInboxAtStageTransition(params, ts);
   if (steerBlock) {
@@ -458,6 +577,13 @@ function main() {
   }
 
   ensurePolicySnapshot(config, params, ts);
+  ensureStagePolicySnapshot(config, params, ts);
+
+  const humanGateBlock = checkHumanGate(config, params, ts);
+  if (humanGateBlock) {
+    block(humanGateBlock);
+    return;
+  }
 
   const budgetBlock = checkBudgetBoundary(config, params, ts);
   if (budgetBlock) {

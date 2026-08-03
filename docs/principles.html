@@ -610,6 +610,32 @@
     <p>CocoFlow snapshots <code>[run_policy]</code> before dispatch, drains <code>STEER.md</code> before stage transitions, refuses gate-weakening steer messages at the processing layer, and logs refusals to CocoAudit.</p>
   </div>
 </div>
+<hr>
+<h2 id="42-stable-api-surface-for-unstable-conditions">42. Stable API Surface for Unstable Conditions</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
+<p>Some runtime conditions are inherently unstable: permission prompts, provider wording, live policy posture, and background completion timing can all change without warning. Governance should not depend on parsing those unstable surfaces.</p>
+<p>A stable API surface records the facts the system owns: which tool opened, which session it belonged to, when it opened, and whether a matching completion record closed the bracket. Human-readable text remains useful context, but it is not the classifier.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>PreToolUse writes <code>session/open-pre-tool-use.json</code>, PostToolUse closes the matching record, and Notification classifies permission-blocked events from that open set instead of scraping notification wording.</p>
+  </div>
+</div>
+<hr>
+<h2 id="43-skill-is-memory">43. Skill Is Memory</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
+<p>A skill is not only an invocation surface. It is a compact memory contract: when to load a topic, what evidence is required, what files are authoritative, and what must never be inferred from ambient context.</p>
+<p>Institutional learning scales when memory is routed through topic skills and schema-declared files rather than poured into standing instructions. The system should know where wisdom lives, but it should load the content only when the task needs it.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoWisdom defaults to progressive disclosure. <code>$wisdom get &lt;topic&gt;</code> loads a specific category on demand, while Stop-hook distillation writes durable topic files and queues contradictions for review.</p>
+  </div>
+</div>
 <blockquote><p><em>Principles are only principles when they are applied in the cases where violating them would be convenient.</em></p></blockquote>
 </div>
 
