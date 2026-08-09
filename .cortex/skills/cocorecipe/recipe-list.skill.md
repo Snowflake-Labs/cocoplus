@@ -28,10 +28,10 @@ For each template file found, read the `__recipe_meta` block to get:
 - `keywords` — search/filter terms
 - `stage_preview` — first five stage names from the recipe body
 
-Use the deterministic helper when available:
+Use the deterministic when available:
 
 ```text
-node .cortex/scripts/recipe-metadata.js --dir <profile-recipes> --dir .cocoplus/recipes
+invoke cocorecipe/recipe-metadata --dir <profile-recipes> --dir .cocoplus/recipes
 ```
 
 ## Output

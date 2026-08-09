@@ -1,6 +1,6 @@
 ---
 name: "refine-reflect"
-description: "V2-native deterministic contract for the owning CocoPlus feature. Executes the behavior formerly delegated to .cortex/scripts/refine-reflect.js without registered runtime scripts."
+description: "V2-native deterministic contract for the owning CocoPlus feature. Executes the behavior formerly delegated to cocorefine/refine-reflect without registered runtime scripts."
 version: "2.0.0"
 author: "CocoPlus"
 tags:

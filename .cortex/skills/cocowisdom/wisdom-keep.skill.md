@@ -16,7 +16,7 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus no
 Run:
 
 ```text
-node .cortex/scripts/wisdom-route.js --keep --id <id> --text "<rule>"
+invoke cocowisdom/wisdom-route --keep --id <id> --text "<rule>"
 ```
 
 The command appends a protected entry to `.cocoplus/wisdom/must-keep.md`. Must-keep entries are exempt from automatic consolidation.

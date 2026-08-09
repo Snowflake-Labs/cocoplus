@@ -20,9 +20,9 @@ CocoScout is a **Tier 2** operation in the UserPromptSubmit hook pipeline:
 
 | Tier | Who | Budget | Runs In |
 |------|-----|--------|---------|
-| Tier 1 | Hook inline | <50ms | user-prompt-submit.js — command passthrough, persona routing, context-mode flag |
+| Tier 1 | Hook inline | <50ms | the UserPromptSubmit hook — command passthrough, persona routing, context-mode flag |
 | Tier 2 | CocoScout (this skill) | <5s async | Fire-and-forget subagent — context scoring, injection, audit record |
-| Tier 3 | Batch/off-cycle | No deadline | session-end.js — audit flush, dream promotion, grove reindex |
+| Tier 3 | Batch/off-cycle | No deadline | the SessionEnd hook — audit flush, dream promotion, grove reindex |
 
 **Invariant:** CocoScout MUST NOT block the UserPromptSubmit hook return. It is spawned after Tier 1 completes via fire-and-forget `execFile`. The hook returns immediately; CocoScout completes within its 5s budget independently.
 

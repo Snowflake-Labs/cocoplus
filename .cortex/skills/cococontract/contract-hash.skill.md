@@ -1,6 +1,6 @@
 ---
 name: "contract-hash"
-description: "V2-native deterministic contract for the owning CocoPlus feature. Executes the behavior formerly delegated to .cortex/scripts/_contract-hash.js without registered runtime scripts."
+description: "V2-native deterministic contract for the owning CocoPlus feature. Executes the behavior formerly delegated to _contract-hash skill without registered runtime scripts."
 version: "2.0.0"
 author: "CocoPlus"
 tags:

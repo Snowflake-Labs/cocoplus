@@ -26,11 +26,7 @@ Output: "Pipeline is paused. Run `$flow resume` to continue." Then stop.
 - `--concurrency <normal|caution|single-track>`: force concurrency mode for this run. Overrides the mode inferred from SubagentStop signals. Not persisted — next `$flow run` resumes inference from signals.
 - `--outcome "<observable result>"`: records the outcome frame for this run. If absent and the request is implementation-framed, ask: "What does success look like? Describe the state of the world when this work is done, not the steps to get there."
 
-Stages may also declare `model_tier: "smol" | "regular" | "smart" | "ultra"`. Resolve tiers from `[model_tiers]` in `cocoplus.toml` before spawning the stage:
-
-```text
-node .cortex/scripts/model-tier-resolve.js --config cocoplus.toml --tier <tier>
-```
+Stages may also declare `model_tier: "smol" | "regular" | "smart" | "ultra"`. Resolve tiers from `[model_tiers]` in `cocoplus.toml` before spawning the stage by reading the configured tier map directly.
 
 If the tier is unmapped or marked unavailable, halt the stage and surface the error. Do not silently fall back to another model.
 
@@ -49,11 +45,7 @@ Read `[flow.planning]` before the orchestration pass. If `diverge_on_branch_poin
 
 ## Pre-Dispatch Complexity Gate
 
-If `[flow] complexity_estimation = true`, run the local lexical estimator before first stage dispatch:
-
-```text
-node .cortex/scripts/complexity-estimate.js "<task description>"
-```
+If `[flow] complexity_estimation = true`, run the skill-native lexical estimator before first stage dispatch.
 
 Write the result to `.cocoplus/lifecycle/cocoflow/<run-id>/complexity.json` with `tier`, `score`, `signals`, `ambiguity_score`, `has_acceptance_check`, and the applied harness floor.
 
@@ -63,7 +55,7 @@ If the description has high ambiguity or no acceptance check, surface a non-bloc
 
 ## Completion Timestamp Provenance
 
-When stages run as background CocoPods, completion time must come from authoritative transcript queue records when available. The SubagentStop hook runs `.cortex/scripts/flow-event-reader.js` when it can see the transcript path and writes pod records to `.cocoplus/lifecycle/flow-state.json`.
+When stages run as background CocoPods, completion time must come from authoritative transcript queue records when available. The SubagentStop hook queues the `execution-engine/flow-event-reader` skill when it can see the transcript path; that skill writes pod records to `.cocoplus/lifecycle/flow-state.json`.
 
 Each pod record should include:
 
@@ -140,15 +132,15 @@ For each stage to execute:
     - Attempt primary LLM synthesis normally.
     - If the LLM synthesis call fails (access error, timeout, rate limit, credential constraint):
       - Do NOT halt the pipeline.
-      - Run the `synthesis.fallback_script` from the stage definition: `node .cortex/<fallback_script> '<input_json>'`
-      - The fallback script receives the stage's input data as a JSON argument and produces the same schema as the primary output, plus `"synthesis_path": "rule-based"`.
-      - Write a notification to `.cocoplus/ui-notifications.jsonl`: `{"type": "synthesis_fallback", "stage_id": "<id>", "reason": "<error>", "fallback_script": "<script>"}`
+      - Execute the rule-based fallback instructions declared in the stage definition using Coco-native file, query, and shell tools.
+      - Produce the same schema as the primary output, plus `"synthesis_path": "rule-based"`.
+      - Write a notification to `.cocoplus/ui-notifications.jsonl`: `{"type": "synthesis_fallback", "stage_id": "<id>", "reason": "<error>"}`
       - Surface to developer: `CocoFlow: LLM unavailable for stage [id] synthesis — rule-based fallback ran. Review fallback output before proceeding.`
       - Continue the pipeline with the fallback output.
     - Stages with `synthesis` absent or `synthesis.primary != "llm"` are unaffected.
     - Execution stages (SQL execution, test runs, file writes) do NOT have a fallback — they fail hard by design.
 15. **HITL pause** (if `hitl: true`): after successful completion, output the stage results and ask developer to confirm before spawning downstream stages
-16. **No-op workflow check** (if `handler: "noop-check"`): run `node .cortex/scripts/noop-check.js --state <state-file>`. If it returns `noop: true`, mark the stage `skipped` with the recorded reason and append `NOOP_SKIPPED` to progress. This is a successful no-op, not an error.
+16. **No-op workflow check** (if `handler: "noop-check"`): execute the `execution-engine/noop-check` skill-native check against the stage state. If it returns `noop: true`, mark the stage `skipped` with the recorded reason and append `NOOP_SKIPPED` to progress. This is a successful no-op, not an error.
 17. **Retained proposal model** (if `writes_via_proposal: true`): write Snowflake DDL, SQL file changes, or pipeline configuration output under `.cocoplus/proposals/[stage-id]/[timestamp]/` and stop before live application. Surface: `Proposal retained. Run $flow settle --accept [stage-id] or $flow settle --discard [stage-id].`
 
 ## Adaptive Checkpoint Typing
@@ -216,7 +208,7 @@ For stages with `"type": "parallel"`:
 ```
 
 1. Spawn all pods in the `pods:` list simultaneously, in a single response turn. Do not advance to the next flow step until every pod has reported a terminal status: `COMPLETE`, `PARTIAL`, `ERROR`, or `SKIPPED`.
-2. Each pod's subagent output must open with a status envelope (see Pattern: Agent Status Envelope). `status-envelope-check.js` validates and records it to `.cocoplus/pod-status.json` at SubagentStop.
+2. Each pod's subagent output must open with a status envelope (see Pattern: Agent Status Envelope). The `cococonverge/status-envelope-check` skill validates and records it to `.cocoplus/pod-status.json` at SubagentStop.
 3. If `require_complete: true` is set on the step: halt the flow if any pod reports anything other than `COMPLETE`, regardless of `on_partial:`.
 4. Otherwise, apply `on_partial:` when any pod reports `PARTIAL`:
    - `continue_with_flag` (default) — proceed to the next step; the convergence step will flag the partial source
@@ -275,7 +267,7 @@ Time: [duration]
 
 | Temptation | Why Not |
 |------------|---------|
-| Halt pipeline on LLM synthesis failure | Synthesis stages degrade gracefully — run the fallback script and continue |
+| Halt pipeline on LLM synthesis failure | Synthesis stages degrade gracefully — run the rule-based fallback and continue |
 | Skip the synthesis_path field in fallback output | Downstream consumers need to know which path ran — omitting it hides degraded output |
 | Apply fallback to execution stages | Execution stages (SQL, file writes) fail hard by design — fallback applies to synthesis only |
 | Skip checkpoint validation | Checkpoints are the quality gate — never skip |

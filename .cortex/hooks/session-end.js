@@ -8,8 +8,7 @@
 
 const fs   = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
-const { isoUtc, appendJsonLine, logError, readJsonString, readJsonNumber, readStdinJson } = require('./_common.js');
+const { isoUtc, appendJsonLine, stableQueueKey, logError, readJsonString, readJsonNumber, readStdinJson } = require('./_common.js');
 const { updateAgentsMd, readActiveModes, readRecentDecisions } = require('./lib/agents-update.js');
 const { loadConfig } = require('./_v2-state.js');
 
@@ -36,34 +35,31 @@ function reconcileMeterIfAvailable(config, sessionId, meterFile, ts, event) {
     process.env.COCO_TRANSCRIPT_PATH || process.env.CLAUDE_TRANSCRIPT_PATH || '';
   if (!transcriptPath || !fs.existsSync(transcriptPath)) return null;
 
-  const scriptPath = path.join(COCOPLUS_DIR, 'scripts', 'meter-reconcile.js');
-  if (!fs.existsSync(scriptPath)) return null;
-
   const outPath = path.join(COCOPLUS_DIR, 'meter', `reconciliation-${sessionId}.json`);
-  const threshold = String(meterConfig.meter_reconciliation_threshold === undefined ? 0.05 : meterConfig.meter_reconciliation_threshold);
   try {
-    const stdout = execFileSync(process.execPath, [
-      scriptPath,
-      '--transcript', transcriptPath,
-      '--session-file', meterFile,
-      '--out', outPath,
-      '--threshold', threshold,
-      '--session-id', sessionId,
-    ], { encoding: 'utf8', timeout: 30000, windowsHide: true });
-    const result = readJson(outPath, null) || JSON.parse(stdout);
+    appendJsonLine(V2_QUEUE, {
+      skill: 'cocometer/meter-reconcile',
+      operation: 'reconcile',
+      idempotency_key: stableQueueKey('cocometer/meter-reconcile', [sessionId, transcriptPath, meterFile, outPath]),
+      requested_at: ts,
+      source: 'hook.session-end',
+      session_id: sessionId,
+      transcript_path: transcriptPath,
+      session_file: meterFile,
+      out: outPath,
+      threshold: meterConfig.meter_reconciliation_threshold === undefined ? 0.05 : meterConfig.meter_reconciliation_threshold,
+    });
     appendJsonLine(HOOK_LOG, {
       hook: 'session-end',
-      action: 'meter_reconciled',
+      action: 'meter_reconciliation_requested',
       session: sessionId,
-      status: result.reconciliation_status,
-      gap_fraction: result.gap_fraction,
       ts,
     });
-    return result;
   } catch (err) {
-    logError('session-end', `meter reconciliation failed: ${err.message}`);
-    return null;
+    logError('session-end', `meter reconciliation request failed: ${err.message}`);
   }
+
+  return readJson(outPath, null);
 }
 
 function main() {
@@ -162,6 +158,7 @@ function main() {
     appendJsonLine(V2_QUEUE, {
       skill: 'cocopull/session-indexer',
       operation: 'append',
+      idempotency_key: stableQueueKey('cocopull/session-indexer', [sessionRecord.session_id, sessionRecord.started_at, sessionRecord.ended_at]),
       session_record: sessionRecord,
       requested_at: ts,
       source: 'hook.session-end',
@@ -191,6 +188,7 @@ function main() {
     appendJsonLine(V2_QUEUE, {
       skill: 'cocorecall/recall-import',
       operation: 'import',
+      idempotency_key: stableQueueKey('cocorecall/recall-import', [sessionId, meterStartedAt || ts]),
       since: meterStartedAt || ts,
       requested_at: ts,
       source: 'hook.session-end',

@@ -15,7 +15,7 @@ Render the append-only audit trail as a compact timeline.
 Run:
 
 ```text
-node .cortex/scripts/audit-events.js timeline
+invoke audit-events timeline
 ```
 
 The timeline is display-only. Do not modify `audit.md`.

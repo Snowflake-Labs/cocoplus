@@ -8,9 +8,9 @@ Use this pattern when the correct outcome may be "nothing changed".
   "type": "check",
   "handler": "noop-check",
   "model_tier": "smol",
-  "command": "node .cortex/scripts/noop-check.js --state .cocoplus/flow/noop-state.json",
+  "command": "invoke execution-engine/noop-check --state .cocoplus/flow/noop-state.json",
   "checkpoints": [".cocoplus/flow/noop-log.jsonl"]
 }
 ```
 
-No-op is valid only when `noop-check.js` records the reason in `noop-log.jsonl`.
+No-op is valid only when `execution-engine/noop-check` records the reason in `noop-log.jsonl`.

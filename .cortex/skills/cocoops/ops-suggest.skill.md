@@ -17,7 +17,7 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus no
 Run:
 
 ```bash
-node .cortex/scripts/ops-suggest.js
+invoke cocoops/ops-suggest-engine
 ```
 
 Display the returned suggestions with their cited operational signal. Do not invent recommendations when the script reports insufficient data.
@@ -26,6 +26,6 @@ If a suggestion has no citation because `dora-snapshot.json` is missing or incom
 
 ## Exit Criteria
 
-- Suggestions come from `.cortex/scripts/ops-suggest.js`
+- Suggestions come from `cocoops/ops-suggest-engine`
 - Every suggestion includes the source signal or data gap
 - Absence of data is reported as a data gap, not converted into a recommendation

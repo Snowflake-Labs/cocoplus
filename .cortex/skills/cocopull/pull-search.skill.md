@@ -20,7 +20,7 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is
 ## Handling `$pull index rebuild`
 
 If the developer invoked `$pull index rebuild`:
-1. Run `node .cortex/scripts/session-indexer.js --rebuild`
+1. Invoke `cocopull/session-indexer --rebuild`
 2. Output: "CocoPull index rebuilt. <N> session records indexed."
 3. Stop.
 
@@ -73,7 +73,7 @@ If no matches: "No sessions match '<query>'. Try a broader search term or `--sin
 
 ## Exit Criteria
 
-- Index rebuild calls `session-indexer.js --rebuild` and reports count
+- Index rebuild calls `cocopull/session-indexer --rebuild` and reports count
 - Search matches on summary, features, and archetype
 - Filters apply correctly (AND logic between --since and --feature)
 - Results show session ID, date, archetype, duration, features, and summary excerpt

@@ -13,8 +13,8 @@
 
 const fs   = require('fs');
 const path = require('path');
-const { spawn, execFileSync } = require('child_process');
-const { isoUtc, appendJsonLine, logError, readStdinJson } = require('./_common.js');
+const { spawn } = require('child_process');
+const { isoUtc, appendJsonLine, stableQueueKey, logError, readStdinJson } = require('./_common.js');
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
@@ -26,24 +26,25 @@ function correctFlowTimestampsIfAvailable(event, ts) {
     process.env.COCO_TRANSCRIPT_PATH || process.env.CLAUDE_TRANSCRIPT_PATH || '';
   if (!transcriptPath || !fs.existsSync(transcriptPath)) return;
 
-  const scriptPath = path.join(COCOPLUS_DIR, 'scripts', 'flow-event-reader.js');
-  if (!fs.existsSync(scriptPath)) return;
-
   const flowStatePath = path.join(COCOPLUS_DIR, 'lifecycle', 'flow-state.json');
   try {
-    execFileSync(process.execPath, [
-      scriptPath,
-      '--transcript', transcriptPath,
-      '--flow-state', flowStatePath,
-    ], { encoding: 'utf8', timeout: 30000, windowsHide: true });
+    appendJsonLine(V2_QUEUE, {
+      skill: 'execution-engine/flow-event-reader',
+      operation: 'correct-background-completion-timestamps',
+      idempotency_key: stableQueueKey('execution-engine/flow-event-reader', [transcriptPath, flowStatePath]),
+      requested_at: ts,
+      source: 'hook.subagent-stop',
+      transcript_path: transcriptPath,
+      flow_state: flowStatePath,
+    });
     appendJsonLine(HOOK_LOG, {
       hook: 'subagent-stop',
-      action: 'flow_timestamp_correction_applied',
+      action: 'flow_timestamp_correction_requested',
       transcript_path: transcriptPath,
       ts,
     });
   } catch (err) {
-    logError('subagent-stop', `flow timestamp correction failed: ${err.message}`);
+    logError('subagent-stop', `flow timestamp correction request failed: ${err.message}`);
   }
 }
 
@@ -109,6 +110,7 @@ function main() {
   if (event.status_envelope || event.output_path || event.output || event.artifact) {
     appendJsonLine(V2_QUEUE, {
       skill: 'cococonverge/status-envelope-check',
+      idempotency_key: stableQueueKey('cococonverge/status-envelope-check', [subagentId, event.output_path || event.artifact || '', status]),
       requested_at: ts,
       source: 'hook.subagent-stop',
       subagent_id: subagentId,
@@ -337,6 +339,7 @@ function main() {
       appendJsonLine(V2_QUEUE, {
         skill: 'cocowisdom/wisdom-writer',
         operation: 'record',
+        idempotency_key: stableQueueKey('cocowisdom/wisdom-writer', [subagentId, dimension, evidence]),
         requested_at: ts,
         source: 'hook.subagent-stop',
         record: {
@@ -356,7 +359,7 @@ function main() {
     return;
   }
 
-  // 12. CocoFlow synthesis fallback — trigger rule-based fallback when LLM synthesis fails
+  // 12. CocoFlow synthesis fallback — queue skill-native fallback when LLM synthesis fails
   const isSynthesisStage = subagentId.startsWith('synthesis-') || event.stage_type === 'synthesis';
   if (isSynthesisStage && status === 'failed') {
     const flowPath = path.join(COCOPLUS_DIR, 'flow.json');
@@ -365,36 +368,19 @@ function main() {
         const flow = JSON.parse(fs.readFileSync(flowPath, 'utf8'));
         const stageId = event.stage_id || subagentId.replace(/^synthesis-/, '');
         const stage = (flow.stages || []).find(s => s.stage_id === stageId || s.id === stageId);
-        const fallbackScript = stage && stage.synthesis && stage.synthesis.fallback_script;
-        if (fallbackScript && stage.synthesis.fallback === 'rule-based') {
-          const inputData = JSON.stringify(event.input_data || event.stage_input || {});
-          try {
-            const { execFileSync } = require('child_process');
-            const fallbackOutput = execFileSync(
-              process.execPath,
-              [`.cortex/${fallbackScript}`, '--input', inputData],
-              { timeout: 10000, windowsHide: true, encoding: 'utf8' }
-            );
-            const result = JSON.parse(fallbackOutput);
-            // Write fallback result to stage output path
-            const outputPath = path.join(COCOPLUS_DIR, 'harvest', `${stageId}-fallback-output.json`);
-            fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-            const tmp = outputPath + '.tmp.' + process.pid;
-            fs.writeFileSync(tmp, JSON.stringify(result, null, 2));
-            fs.renameSync(tmp, outputPath);
-            appendJsonLine(path.join(COCOPLUS_DIR, 'ui-notifications.jsonl'), {
-              type: 'synthesis_fallback',
-              stage_id: stageId,
-              reason: event.error || 'LLM unavailable',
-              fallback_script: fallbackScript,
-              output_path: outputPath,
-              timestamp: ts,
-              source: 'hook.SubagentStop',
-            });
-            appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'synthesis_fallback', stage_id: stageId, fallback_script: fallbackScript, ts });
-          } catch (fbErr) {
-            logError('subagent-stop', `synthesis fallback failed for ${stageId}: ${fbErr.message}`);
-          }
+        if (stage && stage.synthesis && stage.synthesis.fallback === 'rule-based') {
+          appendJsonLine(V2_QUEUE, {
+            skill: 'execution-engine/flow-run',
+            operation: 'rule-based-synthesis-fallback',
+            idempotency_key: stableQueueKey('execution-engine/flow-run', [stageId, event.error || 'LLM unavailable']),
+            requested_at: ts,
+            source: 'hook.subagent-stop',
+            stage_id: stageId,
+            reason: event.error || 'LLM unavailable',
+            input_data: event.input_data || event.stage_input || {},
+            output_path: path.join(COCOPLUS_DIR, 'harvest', `${stageId}-fallback-output.json`),
+          });
+          appendJsonLine(HOOK_LOG, { hook: 'subagent-stop', type: 'synthesis_fallback_requested', stage_id: stageId, ts });
         }
       } catch (_) { /* flow.json may be invalid */ }
     }
@@ -416,6 +402,7 @@ function queueRefineReflection(event, ts) {
   const strategyIds = event.injected_strategy_ids || event.strategy_ids || [];
   const functionName = event.function_name || event.artifact_reference || null;
   const functionVersionHash = event.function_version_hash || event.source_hash || null;
+  const sourceId = event.subagent_id || event.agent_id || event.task_id || 'unknown';
   if (!strategyIds.length || !functionName || !functionVersionHash) return;
 
   for (const strategyId of strategyIds) {
@@ -436,6 +423,7 @@ function queueRefineReflection(event, ts) {
   if (queueLength >= REFINE_QUEUE_THRESHOLD) {
     appendJsonLine(V2_QUEUE, {
       skill: 'cocorefine/refine-reflect',
+      idempotency_key: stableQueueKey('cocorefine/refine-reflect', [event.evaluation_id || event.artifact_path || event.artifact_reference || sourceId, queueLength]),
       requested_at: ts,
       source: 'hook.subagent-stop',
       queue_length: queueLength,

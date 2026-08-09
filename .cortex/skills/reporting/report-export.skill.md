@@ -22,7 +22,7 @@ $report export <path> --format markdown|html|pdf
 Run:
 
 ```text
-node .cortex/scripts/report-export.js --source <path> --format <format> --out-dir .cocoplus/exports
+invoke reporting/report-export --source <path> --format <format> --out-dir .cocoplus/exports
 ```
 
 Supported source artifacts include CocoOps, CocoTrace, CocoAudit, CocoReview, and CocoSketch reports.

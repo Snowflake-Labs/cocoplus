@@ -138,9 +138,9 @@ status: complete
 ### Phase 4 — CocoSpec Scoring Gate
 
 7. **Run deterministic pre-checks before scoring:**
-   - Run `.cortex/scripts/spec-validator.js .cocoplus/lifecycle/spec.md .cocoplus/lifecycle/discuss.md`.
+   - Run `the Cocobrew spec validator .cocoplus/lifecycle/spec.md .cocoplus/lifecycle/discuss.md`.
    - Apply vague-language penalties from the JSON output before the final score (maximum 3-point deduction).
-   - If the script is missing, warn and continue with the scorer fallback.
+   - If the skill contract is missing, warn and continue with the scorer fallback.
 
 8. **Invoke CocoSpec scorer** (background Haiku subagent, read-only): Score the combined `spec.md` + `discuss.md` on five dimensions (0–2 points each, maximum 10):
 
@@ -166,7 +166,7 @@ status: complete
    Ready for $plan.
    ```
 
-   After PASS, run `.cortex/scripts/alignment-check.js`. If it returns conflicts, block subagent spawning and surface each conflict by field, value, and source file. If clean, proceed.
+   After PASS, run `alignment-check`. If it returns conflicts, block subagent spawning and surface each conflict by field, value, and source file. If clean, proceed.
 
    **After alignment check passes — Red-Team trigger (if `--red-team` flag present):**
    Load and execute `red-team.skill.md`. This runs non-blocking after PASS and alignment-check. Output the red-team summary to the developer. Do NOT block `$plan` on red-team findings.
@@ -217,7 +217,7 @@ status: complete
 - **`spec.md` not found:** Output message directing user to run `$spec` first
 - **Developer exits mid-wizard:** Save partial discuss.md with `status: incomplete`; no CocoSpec gate is run on incomplete discuss
 - **CocoSpec scorer fails:** Note failure in output; do not block developer from proceeding unless deterministic alignment conflicts were found
-- **alignment-check.js reports conflicts:** Block subagent launch until the conflicting shared decision inputs are resolved
+- **alignment-check reports conflicts:** Block subagent launch until the conflicting shared decision inputs are resolved
 - **Cannot write discuss.md:** Output filesystem error
 
 ## Exit Criteria
@@ -225,8 +225,8 @@ status: complete
 This skill is complete when:
 - `lifecycle/discuss.md` is written with all answered questions
 - CocoSpec scorer has run and produced a score in `lifecycle/spec-score.md`
-- `spec-validator.js` output has been considered before scoring
-- `alignment-check.js` has run after PASS and produced either no conflicts or a blocking conflict report
+- `the Cocobrew spec validator` output has been considered before scoring
+- `alignment-check` has run after PASS and produced either no conflicts or a blocking conflict report
 - Developer has received the gate outcome (PASS, CONCERNS, FAIL, Quick Mode offer, or alignment conflict report)
 
 ## Anti-Rationalization

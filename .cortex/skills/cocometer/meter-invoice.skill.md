@@ -18,7 +18,7 @@ Generate invoice-ready HTML and CSV artifacts from refreshed chargeback facts. E
 For local fixture validation, run:
 
 ```text
-node .cortex/scripts/invoice-generator.js --input <chargeback-output.json> --out-dir .cocoplus/meter/invoices
+invoke cocometer/invoice-generator --input <chargeback-output.json> --out-dir .cocoplus/meter/invoices
 ```
 
 Never fabricate PDF output. If a PDF is requested, report renderer availability through the shared report-export path.

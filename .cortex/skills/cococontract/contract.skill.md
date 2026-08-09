@@ -29,7 +29,7 @@ Guide the developer through declaring a new outcome contract with an outcome ora
 3. **Falsifiability Condition** — a concrete test that would demonstrate failure: the specific condition under which the contract is violated.
 4. **Acceptance Checks** — collect two to five checks. At least one check must be `kind: e2e`, running the real Cortex endpoint with real data or an externally verified equivalent. Store check commands as argument arrays, never shell strings.
 
-Validate each field inline before accepting it. Write the completed contract to `outcomes/<function-name>/contract.md` and commit it. This commit is what the pre-build gate (`contract-gate.js`) checks for before `$spec` or `$build` is permitted to proceed for this function.
+Validate each field inline before accepting it. Write the completed contract to `outcomes/<function-name>/contract.md` and commit it. This commit is what the pre-build gate (`contract-gate`) checks for before `$spec` or `$build` is permitted to proceed for this function.
 
 ### `$contract check [function-name]`
 
@@ -45,7 +45,7 @@ Tiers, ordered by epistemic strength (strongest first):
 - **differential** (Tier 4) — demonstrated measurably better than a documented, pre-existing baseline.
 - **unit** (Tier 5) — evaluated against criteria authored in the same session by the same or a context-sharing agent. **Insufficient for `$ship` certification regardless of thoroughness.** Recordable as developmental context only.
 
-Run `node .cortex/scripts/contract-prove.js --function <function-name> --tier <tier> --description "<text>" [--check-command '["node","check.js"]']`. The script records evidence in `contract-evidence.json` keyed to the function's current source hash. When `--check-command` is provided, `$contract ci` re-executes the exact argument-vector command and fails on non-zero exit.
+Invoke `contract-prove --function <function-name> --tier <tier> --description "<text>" [--check-command '["node","check.js"]']`. The skill records evidence in `contract-evidence.json` keyed to the function's current source hash. When `--check-command` is provided, `$contract ci` re-executes the exact argument-vector command and fails on non-zero exit.
 
 ### `$contract archive [function-name]`
 
@@ -55,7 +55,7 @@ If `contract.md` already exists in the archive and its content differs from the 
 
 ### `$contract ci`
 
-Run `node .cortex/scripts/contract-prove.js --ci`. This re-executes every archived contract's falsifiability condition where it is machine-executable, reports pass/fail per contract, and exits non-zero if any contract fails re-execution (a behavioral regression). Intended for use as a pre-deployment CI gate.
+Invoke `contract-prove --ci`. This re-executes every archived contract's falsifiability condition where it is machine-executable, reports pass/fail per contract, and exits non-zero if any contract fails re-execution (a behavioral regression). Intended for use as a pre-deployment CI gate.
 
 ### `$contract status`
 
@@ -63,7 +63,7 @@ List all active contracts across the CocoPod with their evidence tier and `$ship
 
 ## Stop Hook Enforcement (`$ship` gate)
 
-`contract-gate.js` is invoked from `user-prompt-submit.js` for `$spec`, `$build`, and `$ship`. Two conditions gate `$ship`:
+`contract-gate` is invoked from `the UserPromptSubmit hook` for `$spec`, `$build`, and `$ship`. Two conditions gate `$ship`:
 
 1. **Evidence Exists** — at least one Tier 1 (e2e) or Tier 2 (reference) evidence record must exist in `contract-evidence.json` for every function in the deployment artifact. Tier 3–5 evidence is treated as no evidence for this purpose.
 2. **Evidence Is Not Stale** — evidence is keyed to the function's source hash at proof time. If source has changed since, the evidence is stale and treated as absent.

@@ -20,7 +20,7 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is
 ## Step 1 — Run Deterministic Diff Scanner
 
 ```
-node .cortex/scripts/lean-review.js
+invoke cocolean/lean-review-engine
 ```
 
 The script reads `git diff` (unstaged and staged changes), applies AST-level pattern matching, and outputs a JSON finding list. Read the JSON output.
@@ -104,7 +104,7 @@ Read `.cocoplus/modes/lean.mode`:
 
 ## Exit Criteria
 
-- `lean-review.js` executed against current git diff
+- `cocolean/lean-review-engine` executed against current git diff
 - Findings surfaced in severity order (Tier 1 → Tier 2 → Tier 3)
 - Carve-out constructs excluded from findings
 - Mode-appropriate enforcement applied

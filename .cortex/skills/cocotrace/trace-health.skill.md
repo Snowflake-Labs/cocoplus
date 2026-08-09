@@ -16,7 +16,7 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus no
 Run:
 
 ```text
-node .cortex/scripts/health-grader.js --input .cocoplus/trace/snowflake-assets.json
+invoke cocotrace/health-grader --input .cocoplus/trace/snowflake-assets.json
 ```
 
 Report the A-F health grade unless `[trace].show_grade = false` in `cocoplus.toml`. Always show the component metrics: dead assets, circular dependencies, coupling, security findings, layer violations, and churn hotspots.

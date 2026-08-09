@@ -1,6 +1,6 @@
 ---
 name: "dora-metrics"
-description: "V2-native deterministic contract for the owning CocoPlus feature. Executes the behavior formerly delegated to .cortex/scripts/dora-metrics.js without registered runtime scripts."
+description: "V2-native deterministic contract for the owning CocoPlus feature. Executes the behavior formerly delegated to cocoops/dora-metrics without registered runtime scripts."
 version: "2.0.0"
 author: "CocoPlus"
 tags:

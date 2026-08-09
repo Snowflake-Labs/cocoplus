@@ -38,9 +38,10 @@ Before the dialogue starts:
 1. Check `.cocoplus/lifecycle/bloom.md`.
    - If it exists, read it first and summarize the Core Capability as the anchor for the specification.
    - If it does not exist and `.cocoplus/lifecycle/meta.json` does not contain `"bloom_waived": true`, output: "No working-backwards document found — consider running `$bloom` before specifying. Run `$bloom --skip` to suppress this message." Then continue normally.
-2. Run `.cortex/scripts/scope-classify.js` against the initial task description if one was provided, or against the first goal answer once available.
-   - Script output must be `quick` or `full`.
+2. Classify scope natively from the initial task description if one was provided, or from the first goal answer once available.
+   - Count affected files/objects, destructive or billing-significant operations, external dependencies, EHRB-sensitive categories, and evaluation burden.
    - `--quick` forces Quick Flow. `--full` forces Full Flow.
+   - If not forced, choose `quick` only when affected files/objects are <= 3, no EHRB category is present, acceptance criteria are concrete, and no parallel workstream is needed. Otherwise choose `full`.
    - Record the final `"flow_type": "quick" | "full"` in `.cocoplus/lifecycle/meta.json`.
    - If Quick Flow is selected, the lifecycle may skip `$plan` after spec capture and proceed to a single structured build artifact at `.cocoplus/lifecycle/quick-build.md`.
 
@@ -94,7 +95,7 @@ An L4-only verification path is a plan smell. Require at least one faster harnes
 
 ## Vague Language Detection
 
-Before writing the specification document, use `.cortex/scripts/spec-validator.js` for deterministic vague language detection on the draft spec answers. If the script is unavailable, fall back to the inline scan below.
+Before writing the specification document, perform deterministic vague language detection on the draft spec answers using the inline scan below.
 
 Scan all six answers for these term categories (exact word match, case-insensitive):
 - Performance: "fast", "quick", "slow", "performant", "efficient", "responsive"

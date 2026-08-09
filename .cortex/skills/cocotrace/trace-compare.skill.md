@@ -16,7 +16,7 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus no
 Run:
 
 ```text
-node .cortex/scripts/health-grader.js --compare <before.json> <after.json>
+invoke cocotrace/health-grader --compare <before.json> <after.json>
 ```
 
 Display the thermal receipt exactly as a before/after delta, for example:

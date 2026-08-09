@@ -23,8 +23,7 @@
 
 const fs   = require('fs');
 const path = require('path');
-const { execFile } = require('child_process');
-const { isoUtc, appendJsonLine, logError, readStdinJson, readJsonString } = require('./_common.js');
+const { isoUtc, appendJsonLine, stableQueueKey, logError, readStdinJson, readJsonString } = require('./_common.js');
 const {
   checkpointForge,
   checkpointLeviathan,
@@ -77,18 +76,17 @@ function isGateWeakeningSteer(text) {
 }
 
 function spawnCocoScout(message, ts) {
-  // Tier 2: fire-and-forget CocoScout subagent. Hook returns immediately; scout
-  // completes async within its 5s budget and injects context via hook-log.
-  const scoutScript = path.join('.cortex', 'scripts', 'cocoscout-invoke.js');
-  if (!fs.existsSync(scoutScript)) return;
-  execFile(process.execPath, [scoutScript, '--message', message.slice(0, 200)], {
-    timeout: 6000,
-    windowsHide: true,
-  }, (err) => {
-    if (err && err.killed) {
-      appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'scout_timeout', ts });
-    }
+  // Tier 2: queue fire-and-forget CocoScout context injection. Hook returns
+  // immediately; the owning skill performs the slower analysis.
+  appendJsonLine(V2_QUEUE, {
+    skill: 'cocoscout/SKILL',
+    operation: 'rank-context',
+    idempotency_key: stableQueueKey('cocoscout/SKILL', [message.slice(0, 200), ts.slice(0, 16)]),
+    requested_at: ts,
+    source: 'hook.user-prompt-submit',
+    message: message.slice(0, 200),
   });
+  appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'scout_context_requested', ts });
 }
 
 function main() {
@@ -124,6 +122,7 @@ function main() {
         appendJsonLine(V2_QUEUE, {
           skill: 'cocosession/session',
           action: 'steer',
+          idempotency_key: stableQueueKey('cocosession/session', [sessionId, steerText.slice(0, 240)]),
           instruction: steerText.slice(0, 1000),
           requested_at: ts,
           source: 'hook.user-prompt-submit',
@@ -264,6 +263,7 @@ function main() {
     appendJsonLine(V2_QUEUE, {
       skill: 'cocoroutine/routine',
       action,
+      idempotency_key: stableQueueKey('cocoroutine/routine', [action, message.slice(0, 500)]),
       command: message.slice(0, 500),
       requested_at: ts,
       source: 'hook.user-prompt-submit',
@@ -301,6 +301,7 @@ function main() {
         appendJsonLine(V2_QUEUE, {
           skill: 'cococontract/contract-gate',
           command: gateCommand,
+          idempotency_key: stableQueueKey('cococontract/contract-gate', [gateCommand, fnArg || '', sessionId]),
           function: fnArg || null,
           requested_at: ts,
           source: 'hook.user-prompt-submit',
@@ -347,6 +348,7 @@ function main() {
   // rest of this hook. Silent: writes to auto-captured.json only, no output.
   appendJsonLine(V2_QUEUE, {
     skill: 'cococupper/cupper-capture',
+    idempotency_key: stableQueueKey('cococupper/cupper-capture', [routedPersona || 'none', message.slice(0, 500), ts.slice(0, 16)]),
     message: message.slice(0, 500),
     skill_context: routedPersona,
     requested_at: ts,

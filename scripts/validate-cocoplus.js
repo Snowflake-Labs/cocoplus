@@ -120,6 +120,7 @@ function main() {
   const plugin = readJson(pluginPath);
   const skillNativeDir = path.join(repoRoot, '.cortex', 'skills', 'skill-native');
   const registeredAgentIds = listAgentIds(agentsDir);
+  const manifestScripts = (plugin.scripts || []).map(normalizeManifestPath);
 
   if ((plugin.skills || []).some((skill) => skill.startsWith('skill-native/'))) {
     failures.push('V2-only manifest must not register skill-native/* compatibility skills');
@@ -149,6 +150,9 @@ function main() {
     path.join(repoRoot, '.cortex', 'skills', 'cocobloom', 'bloom-skip.skill.md'),
     path.join(repoRoot, '.cortex', 'skills', 'cocowatch', 'SKILL.md'),
     path.join(repoRoot, '.cortex', 'skills', 'cocohealth', 'pod-checkpoint.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'execution-engine', 'runtime-queue.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocometer', 'meter-reconcile.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'execution-engine', 'flow-event-reader.skill.md'),
   ];
 
   const requiredRecipes = [
@@ -159,18 +163,10 @@ function main() {
   ];
 
   const requiredRuntimeScripts = [
-    'rollback.js',
-    'scope-classify.js',
-    'spec-validator.js',
-    'alignment-check.js',
-    'artifact-check.js',
-    'status-healer.js',
-    'complexity-estimate.js',
-    'transcript-adapter.js',
-    'adapter-self-test.js',
-    'meter-reconcile.js',
-    'flow-event-reader.js',
+    'cocoplus-console.js',
   ];
+
+  const allowedRuntimeScripts = new Set(requiredRuntimeScripts);
 
   const requiredTwentySixthSkills = [
     path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-distill.skill.md'),
@@ -211,6 +207,14 @@ function main() {
     }
   }
 
+  if (plugin.version !== '2.0.1') {
+    failures.push('.cortex-plugin/plugin.json must declare version 2.0.1');
+  }
+
+  if (manifestScripts.length !== 1 || manifestScripts[0] !== '.cortex/scripts/cocoplus-console.js') {
+    failures.push('.cortex-plugin/plugin.json must register only .cortex/scripts/cocoplus-console.js as a V2.0.1 runtime script');
+  }
+
   for (const script of plugin.scripts || []) {
     const scriptPath = path.join(repoRoot, script);
     if (!fs.existsSync(scriptPath)) {
@@ -218,13 +222,6 @@ function main() {
     }
     if (!normalizeManifestPath(script).startsWith('.cortex/scripts/')) {
       failures.push(`Manifest script "${script}" must live under .cortex/scripts/`);
-    }
-  }
-
-  for (const scriptPath of walkFiles(runtimeScriptsDir, (filePath) => filePath.endsWith('.js'))) {
-    const manifestPath = path.relative(repoRoot, scriptPath).replace(/\\/g, '/');
-    if (!manifestIncludesPath(plugin.scripts, manifestPath)) {
-      failures.push(`Runtime script ${manifestPath} must be registered in .cortex-plugin/plugin.json`);
     }
   }
 
@@ -290,14 +287,14 @@ function main() {
 
   const templateScriptDir = path.join(templatesDir, 'scripts');
   if (fs.existsSync(templateScriptDir)) {
-    failures.push('templates/scripts must not exist; feature scripts belong under .cortex/scripts/');
+    failures.push('templates/scripts must not exist; non-console feature behavior belongs in V2-native skills');
   }
 
   const rootScriptFiles = walkFiles(path.join(repoRoot, 'scripts'), (filePath) => filePath.endsWith('.js'));
   for (const filePath of rootScriptFiles) {
     const relative = path.relative(repoRoot, filePath).replace(/\\/g, '/');
     if (relative !== 'scripts/validate-cocoplus.js' && !relative.startsWith('scripts/tests/')) {
-      failures.push(`Root script ${relative} is not repo maintenance/test tooling; move feature scripts to .cortex/scripts/`);
+      failures.push(`Root script ${relative} is not repo maintenance/test tooling; implement feature behavior as V2-native skills`);
     }
   }
 
@@ -305,6 +302,13 @@ function main() {
     const filePath = path.join(runtimeScriptsDir, fileName);
     if (!fs.existsSync(filePath)) {
       failures.push(`Required runtime script is missing: ${path.relative(repoRoot, filePath)}`);
+    }
+  }
+
+  for (const filePath of walkFiles(runtimeScriptsDir, (candidate) => candidate.endsWith('.js'))) {
+    const fileName = path.basename(filePath);
+    if (!allowedRuntimeScripts.has(fileName)) {
+      failures.push(`V2.0.1 ships only CocoConsole as a runtime script; remove ${path.relative(repoRoot, filePath)}`);
     }
   }
 
@@ -350,13 +354,6 @@ function main() {
   requireIncludes(principlesHtml, 'Stable API Surface for Unstable Conditions', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Skill Is Memory', failures, 'docs/principles.html');
 
-  const adapterPath = path.join(runtimeScriptsDir, 'transcript-adapter.js');
-  if (fs.existsSync(adapterPath)) {
-    const adapter = readFile(adapterPath);
-    rejectPattern(adapter, /\.\.\./, failures, '.cortex/scripts/transcript-adapter.js');
-    requireIncludes(adapter, "kind: 'other'", failures, '.cortex/scripts/transcript-adapter.js');
-  }
-
   const preToolUse = readFile(path.join(hooksDir, 'pre-tool-use.js'));
   requireIncludes(preToolUse, 'model_tier_floor_applied', failures, 'PreToolUse hook');
   requireIncludes(preToolUse, 'human_gate_blocked', failures, 'PreToolUse hook');
@@ -395,6 +392,30 @@ function main() {
     }
   }
 
+  const legacyRuntimeReferencePatterns = [
+    /\.cortex[\\/]scripts[\\/](?!cocoplus-console\.js)/i,
+    /node\s+\.cortex[\\/]scripts/i,
+    /runtime script `?[^`]*?(rollback|scope-classify|spec-validator|meter-reconcile|flow-event-reader|transcript-adapter|pr-complexity|dora-metrics|sentinel-pregate|report-export)\b/i,
+  ];
+  const runtimeReferenceFiles = [
+    ...walkFiles(path.join(repoRoot, '.cortex', 'skills'), (filePath) => filePath.endsWith('.md')),
+    ...walkFiles(path.join(repoRoot, 'docs'), (filePath) => filePath.endsWith('.html')),
+    path.join(repoRoot, 'README.md'),
+    path.join(repoRoot, 'INSTALLATION.md'),
+    path.join(templatesDir, 'AGENTS.md.template'),
+  ].filter((filePath) => fs.existsSync(filePath));
+
+  for (const filePath of runtimeReferenceFiles) {
+    const relative = path.relative(repoRoot, filePath).replace(/\\/g, '/');
+    if (relative === '.cortex/skills/assist-mode/cocoplus-console.skill.md') continue;
+    const content = readFile(filePath);
+    for (const pattern of legacyRuntimeReferencePatterns) {
+      if (pattern.test(content)) {
+        failures.push(`Legacy runtime script reference found in ${relative}: ${pattern.source}`);
+      }
+    }
+  }
+
   const hookFiles = listFiles(hooksDir, '.js');
   const spawnedAgents = new Set();
 
@@ -420,6 +441,57 @@ function main() {
   for (const prefix of ['klatch-participant-', 'klatch-synthesis-', 'pull-']) {
     if (!subagentStop.includes(prefix)) {
       failures.push(`SubagentStop hook missing routing prefix ${prefix}`);
+    }
+  }
+
+  for (const hookName of ['session-end.js', 'subagent-stop.js', 'user-prompt-submit.js']) {
+    const hookContent = readFile(path.join(hooksDir, hookName));
+    requireIncludes(hookContent, 'idempotency_key', failures, `${hookName} V2 queue writer`);
+    requireIncludes(hookContent, 'stableQueueKey', failures, `${hookName} V2 queue writer`);
+  }
+
+  const runtimeQueueSkillPath = path.join(repoRoot, '.cortex', 'skills', 'execution-engine', 'runtime-queue.skill.md');
+  if (requireFile(runtimeQueueSkillPath, failures, 'V2 runtime queue skill')) {
+    const runtimeQueueSkill = readFile(runtimeQueueSkillPath);
+    for (const expected of [
+      'Request Envelope',
+      'idempotency_key',
+      'claim_token',
+      'Settlement States',
+      'claimed|completed|failed|superseded',
+      'Do not execute JavaScript helpers',
+    ]) {
+      requireIncludes(runtimeQueueSkill, expected, failures, 'execution-engine/runtime-queue skill');
+    }
+  }
+
+  const meterReconcileSkillPath = path.join(repoRoot, '.cortex', 'skills', 'cocometer', 'meter-reconcile.skill.md');
+  if (requireFile(meterReconcileSkillPath, failures, 'CocoMeter reconciliation skill')) {
+    const meterReconcileSkill = readFile(meterReconcileSkillPath);
+    for (const expected of [
+      'Idempotency',
+      'Queue Settlement',
+      'authoritative_tokens',
+      'model_drift',
+      'adapter-canary',
+      'Do not infer token totals from prose',
+    ]) {
+      requireIncludes(meterReconcileSkill, expected, failures, 'cocometer/meter-reconcile skill');
+    }
+  }
+
+  const flowEventReaderSkillPath = path.join(repoRoot, '.cortex', 'skills', 'execution-engine', 'flow-event-reader.skill.md');
+  if (requireFile(flowEventReaderSkillPath, failures, 'CocoFlow event reader skill')) {
+    const flowEventReaderSkill = readFile(flowEventReaderSkillPath);
+    for (const expected of [
+      'Timestamp Precedence',
+      'completed_at',
+      'completion_source',
+      'completion_timestamp_reliable',
+      'Queue Settlement',
+      'Do not overwrite transcript-derived timestamps',
+    ]) {
+      requireIncludes(flowEventReaderSkill, expected, failures, 'execution-engine/flow-event-reader skill');
     }
   }
 

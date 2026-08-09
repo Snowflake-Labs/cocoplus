@@ -16,7 +16,7 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus no
 Run:
 
 ```text
-node .cortex/scripts/wisdom-route.js --forget --id <id> --rationale "<reason>"
+invoke cocowisdom/wisdom-route --forget --id <id> --rationale "<reason>"
 ```
 
 Forgetting without a rationale is rejected. The rationale is appended to `.cocoplus/wisdom/consolidation-log.md`.

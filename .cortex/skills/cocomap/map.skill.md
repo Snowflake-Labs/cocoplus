@@ -83,7 +83,7 @@ Build and commit a knowledge graph of all Cortex AI functions in the project. Pr
 
    Run:
    ```
-   node .cortex/scripts/map-reduce.js .cocoplus/map/intermediate/dependency-graph.json .cocoplus/map/intermediate/dependency-reduced.json
+   invoke cocomap/map-reduce .cocoplus/map/intermediate/dependency-graph.json .cocoplus/map/intermediate/dependency-reduced.json
    ```
 
    On success: use `dependency-reduced.json` edges as the canonical `structural.dependencies` in the merged map. Store `removed_edges` and `reduction_stats` under `structural.reduction`.

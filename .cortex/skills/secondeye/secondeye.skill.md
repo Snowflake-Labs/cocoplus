@@ -23,7 +23,7 @@ Interactively collect a rule definition (lens, trigger pattern, description) and
 
 ### `$secondeye shadow-report`
 
-Run `node .cortex/scripts/shadow-report.js`. Reads `.cocoplus/secondeye/shadow-findings.json`, computes per-rule activation rate (how often the rule fires across reviews) and developer-acceptance rate (how often a surfaced shadow finding matches a finding the developer subsequently acted on), and reports promotion readiness against configured thresholds.
+Invoke `secondeye/shadow-report`. Reads `.cocoplus/secondeye/shadow-findings.json`, computes per-rule activation rate (how often the rule fires across reviews) and developer-acceptance rate (how often a surfaced shadow finding matches a finding the developer subsequently acted on), and reports promotion readiness against configured thresholds.
 
 ### `$secondeye shadow-promote <rule-id>`
 
@@ -285,4 +285,4 @@ Report: .cocoplus/lifecycle/secondeye-[timestamp].md
 - [ ] Critic outputs are aggregated into `.cocoplus/lifecycle/secondeye-[timestamp].md` with `critical_open` and acknowledgment metadata
 - [ ] Output clearly indicates whether `$build` is soft-gated and shows the `--hitl-only` and `--blocking-only` acknowledge options
 - [ ] Shadow rules (if any exist) run in parallel with active critics and record to `shadow-findings.json` without influencing HITL/AFK, BLOCKING/MINOR, severity, or verdict
-- [ ] `shadow-report.js` computes per-rule activation rate and developer-acceptance rate before any promotion is considered
+- [ ] `secondeye/shadow-report` computes per-rule activation rate and developer-acceptance rate before any promotion is considered
