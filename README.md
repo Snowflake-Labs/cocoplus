@@ -26,7 +26,7 @@ The current operating layer includes:
 - **Evidence and proposal gates**: opt-in stage evidence checks and retained Snowflake-write proposals settled with `$flow settle`.
 - **CocoWisdom distillation and negative memory**: terminal sessions can queue schema-declared wisdom distillation, contradiction review, progressive `$wisdom get <topic>` loading, `$wisdom reject` do-not-use records, and `$wisdom index` / `$wisdom recall` session-log search.
 - **CocoRoutine**: opt-in Snowflake TASK scheduling for completed self-contained flows with `$routine`.
-- **Research, retrospective, hygiene, and correctness loops**: `$flow research`, `$retrospective run`, `$hygiene --model-upgrade`, `$meter benchmark`, and `$meter compare` make quality, coordination cost, adapter-backed transcript reconciliation, model drift, and ACRR calibration measurable.
+- **Research, retrospective, hygiene, and correctness loops**: `$flow research`, `$retrospective run`, `$hygiene --model-upgrade`, `$meter benchmark`, `$meter compare`, `$meter verify`, `$meter waste`, and `$audit verify` make quality, coordination cost, adapter-backed transcript reconciliation, model drift, ACRR calibration, context waste, and audit integrity measurable.
 - **CocoFleet goal mode**: `$fleet run`, `$fleet status`, and `$fleet comms` support planner/producer/read-only-critic orchestration with disjoint file scopes and signoff-driven completion.
 - **Console-aware visual commands**: `$flow view` and `$meter view` redirect into CocoConsole when it is running.
 

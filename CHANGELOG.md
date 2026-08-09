@@ -11,6 +11,7 @@ All notable changes to CocoPlus are documented here.
 - `.cortex-plugin/plugin.json` now declares version `2.0.1`.
 - Added Snow-Cocoplus parity command contracts for CocoWisdom negative memory and recall: `$wisdom reject`, `$wisdom learn`, `$wisdom learnings`, `$wisdom index`, and `$wisdom recall`.
 - CocoWisdom now documents `do-not-use.md` as universal negative memory that is loaded outside topic-gated progressive disclosure and is never auto-pruned.
+- Added CocoMeter and CocoAudit parity contracts for `$meter verify`, `$meter waste`, and `$audit verify`.
 - The managed plugin manifest now registers only `.cortex/scripts/cocoplus-console.js` as the V2 runtime script, matching the Skill-Native Architecture boundary from the updated Snow-Cocoplus 2.0 specs.
 - V2 hooks now write durable queue envelopes with `idempotency_key` values, letting feature-owned skills claim and settle background work without duplicate artifacts.
 - Added `execution-engine/runtime-queue`, `cocometer/meter-reconcile`, and `execution-engine/flow-event-reader` skill contracts for request settlement, transcript-backed meter reconciliation, and authoritative CocoFlow completion timestamps.
