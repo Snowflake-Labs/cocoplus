@@ -691,7 +691,7 @@ $wisdom forget --id W-OLD-014 --rationale "Merged into W-PII-001 with clearer co
 <pre><code>
 $cocoplus review queries/sentiment_classifier.sql
 </code></pre>
-<p>CocoReview runs <code>pr-complexity.js</code> first: complexity score 0.41, size bucket M, estimated 25-minute review. No risk flags. Proceeds to the four-phase review.</p>
+<p>CocoReview runs <code>cocoreview/pr-complexity</code> first: complexity score 0.41, size bucket M, estimated 25-minute review. No risk flags. Proceeds to the four-phase review.</p>
 <p>Phase 2 (high-level) surfaces an observation: the function's error handling path returns a generic error code rather than the specific code defined in the project's error taxonomy in <code>cocoplus-context.md</code>. This is a structural concern — better to surface it before line-by-line work.</p>
 <p>Phase 3 (line-by-line) finds two additional items: a nested conditional three levels deep (nit — not blocking), and a reuse gap — a sanitization utility already in the CocoGrove pattern library covers exactly the pre-processing step that was implemented from scratch.</p>
 <p>The verdict:</p>
@@ -716,7 +716,7 @@ $report export .cocoplus/lifecycle/review.md --format markdown
 <pre><code>
 $ops dora
 </code></pre>
-<p>CocoOps runs <code>dora-metrics.js</code> against Snowflake task execution history and git log. Six minutes later (the Snowflake query takes most of the time):</p>
+<p>CocoOps runs <code>cocoops/dora-metrics</code> against Snowflake task execution history and git log. Six minutes later (the Snowflake query takes most of the time):</p>
 <pre><code>
 CocoOps DORA Report — customer-analytics — 2026-05-25
 

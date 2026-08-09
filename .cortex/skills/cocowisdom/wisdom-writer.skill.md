@@ -1,6 +1,6 @@
 ---
 name: "wisdom-writer"
-description: "V2-native deterministic contract for the owning CocoPlus feature. Executes the behavior formerly delegated to .cortex/scripts/wisdom-writer.js without registered runtime scripts."
+description: "V2-native deterministic contract for the owning CocoPlus feature. Executes the behavior formerly delegated to cocowisdom/wisdom-writer without registered runtime scripts."
 version: "2.0.0"
 author: "CocoPlus"
 tags:

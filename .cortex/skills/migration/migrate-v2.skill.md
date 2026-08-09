@@ -69,7 +69,7 @@ When not in dry-run mode:
 7. Create CocoRoutine registry `.cocoplus/routines/registry.json` if absent.
 8. Create `.cocoplus/pod-state.json` with canonical status `idle` if absent.
 9. Ensure `.cocoplus/flow/artifacts/`, `.cocoplus/sentinel/`, and `.cocoplus/brew/` exist for named artifact handoffs, coach queues, and distribution gate reports.
-10. Do not copy script files into `.cocoplus/`. Current feature scripts are loaded from the installed plugin at `.cortex/scripts/`.
+10. Do not copy script files into `.cocoplus/`. Current non-console feature behavior is skill-native; CocoConsole is the only shipped runtime script.
 11. Convert `safety-config.json` into `cocoplus.toml` when `cocoplus.toml` is absent. Preserve the original file until post-migration cleanup.
 12. Append missing current config sections to `cocoplus.toml` or `.cocoplus/cocoplus.toml`, preserving existing values.
 13. Append current activation blocks to `.cocoplus/AGENTS.md` if missing, including CocoSession budget reserve, canonical terminal statuses, pre-dispatch complexity estimation, ACRR tracking, evidence gates, proposal settlement, named artifacts, CocoRoutine, stage coaching, retrospective, hygiene, and benchmarking.
@@ -92,10 +92,10 @@ After applying file changes, run these checks before cleanup:
 4. Verify `.cocoplus/AGENTS.md` contains current operating-mode blocks.
 5. Verify CocoSession files exist and `CONTEXT.md` contains predicate-style `CLASS.key=value` lines.
 6. Verify proposal, evidence, iteration budget, cost-budget, status, routine registry, and coach queue paths exist and parse where JSON is expected.
-7. Run `node .cortex/scripts/complexity-estimate.js "rename column x to y and run the tests to confirm"` and verify the result is `trivial` or `simple` with `has_acceptance_check = true`.
-8. Run `node .cortex/scripts/adapter-self-test.js --transcript <sample-jsonl> --out .cocoplus/meter/adapter-self-test.json` and verify the canary result matches the sample transcript.
-9. Run `node .cortex/scripts/meter-reconcile.js --transcript <sample-jsonl> --session-file <sample-meter-json>` in a migration scratch directory and verify duplicate assistant messages are deduplicated.
-10. Run `node .cortex/scripts/flow-event-reader.js --transcript <sample-jsonl> --flow-state <sample-flow-state-json>` in a migration scratch directory and verify background pods include `completion_source`.
+7. Run the flow complexity-estimation procedure from `execution-engine/flow-run` against "rename column x to y and run the tests to confirm" and verify the result is `trivial` or `simple` with `has_acceptance_check = true`.
+8. Run the transcript adapter canary procedure from `cocometer/meter-reconcile` against a sample JSONL transcript and write `.cocoplus/meter/adapter-self-test.json`.
+9. Run the reconciliation procedure from `cocometer/meter-reconcile` against a sample transcript plus sample meter session and verify duplicate assistant messages are deduplicated.
+10. Run the completion-event extraction procedure from `execution-engine/flow-event-reader` against a sample transcript plus sample flow-state JSON and verify background pods include `completion_source`.
 11. Run `$pod status` if available; otherwise record that runtime validation is pending until Coco reloads the plugin.
 12. Run `$governance status` if available; otherwise verify the governance config sections and log path exist.
 

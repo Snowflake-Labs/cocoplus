@@ -24,7 +24,7 @@ If not: output "CocoPlus not initialized in this directory. Run `$pod init` to b
 2. If it says a console is running, output:
    `CocoConsole running at http://localhost:<port>. Opening browser.`
 3. If no running console is recorded, run:
-   `node .cortex/scripts/cocoplus-console.js`
+   `invoke cocoplus-console.js`
 4. The server writes `.cocoplus/lifecycle/console-state.json` with `running`, `port`, `url`, `pid`, `started_at`, and panel list.
 5. Open `http://localhost:<port>/` in the browser when the host permits browser opening.
 

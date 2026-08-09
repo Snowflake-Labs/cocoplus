@@ -1,6 +1,6 @@
 ---
 name: "ops-thesis-updater"
-description: "V2-native deterministic contract for the owning CocoPlus feature. Executes the behavior formerly delegated to .cortex/scripts/ops-thesis-updater.js without registered runtime scripts."
+description: "V2-native deterministic contract for the owning CocoPlus feature. Executes the behavior formerly delegated to cocoops/ops-thesis-updater without registered runtime scripts."
 version: "2.0.0"
 author: "CocoPlus"
 tags:

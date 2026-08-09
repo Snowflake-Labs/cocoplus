@@ -108,7 +108,7 @@ A pre-change impact gate, not a permission gate — it does not block the change
 Compute the Snowflake asset health grade for the current dependency graph. Run:
 
 ```text
-node .cortex/scripts/health-grader.js --input .cocoplus/trace/snowflake-assets.json
+invoke cocotrace/health-grader --input .cocoplus/trace/snowflake-assets.json
 ```
 
 The grade is A-F and combines dead asset percentage, circular dependencies, coupling, security findings, layer violations, and churn hotspots. Dead assets include zero-caller UDFs, unqueried views, and stale tables. Layer violations include staging objects consumed directly by BI, raw sources updated by application code, and production assets accessed from development contexts.
@@ -120,7 +120,7 @@ If `[trace].show_grade = false` in `cocoplus.toml`, suppress the letter grade bu
 Run:
 
 ```text
-node .cortex/scripts/health-grader.js --compare <before.json> <after.json>
+invoke cocotrace/health-grader --compare <before.json> <after.json>
 ```
 
 Display the thermal receipt line exactly as a before/after delta, for example:
@@ -153,7 +153,7 @@ SessionStart appends a `cocotrace/trace-check` request (Tier 2 async — non-blo
 Trace reports such as `trace-gaps.md` or blast-radius summaries can be exported through the shared exporter:
 
 ```text
-node .cortex/scripts/report-export.js --source <trace-report.md> --format <markdown|html|pdf> --out-dir .cocoplus/trace/exports
+invoke reporting/report-export --source <trace-report.md> --format <markdown|html|pdf> --out-dir .cocoplus/trace/exports
 ```
 
 PDF requests report renderer availability; Markdown and HTML are local deterministic exports.

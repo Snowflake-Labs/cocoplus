@@ -15,7 +15,7 @@ If not: output "CocoPlus not initialized in this directory. Run `$pod init` to b
 
 ## `$grove score <pattern-id>` — Promotion Scoring (Durability × Impact × Scope)
 
-Before any promotion is confirmed, run `node .cortex/scripts/grove-score.js --id <pattern-id>` (or run this scoring interactively when invoked directly as `$grove score`). Score the candidate pattern on three dimensions, each zero to three:
+Before any promotion is confirmed, run `invoke cocogrove/grove-score --id <pattern-id>` (or run this scoring interactively when invoked directly as `$grove score`). Score the candidate pattern on three dimensions, each zero to three:
 
 - **Durability** — 0: one-time fix · 1: temporary workaround · 2: stable pattern · 3: architectural truth. Assesses whether the pattern remains valid for 30+ days and across schema/data changes.
 - **Impact** — 0: nice-to-know · 1: saves a minute · 2: prevents mistakes · 3: prevents breakage.
@@ -107,5 +107,5 @@ Output: "Pattern '[pattern-name]' promoted to CocoGrove. File: `.cocoplus/grove/
 - [ ] `.cocoplus/grove/patterns/[pattern-name].md` exists with YAML frontmatter containing `id`, `name`, `domain`, `tags`, `promoted_from`, and `promoted_at`
 - [ ] The source finding in `.cocoplus/grove/cupper-findings.md` has been updated from `**Promoted:** false` to `**Promoted:** [pattern-id]`
 - [ ] Developer confirmed promotion with "yes" before the pattern file was written
-- [ ] `grove-score.js` computed the three-dimension total and decision threshold before promotion was confirmed
+- [ ] `cocogrove/grove-score` computed the three-dimension total and decision threshold before promotion was confirmed
 - [ ] Pattern text passes all three distillation rules (prescriptive, concise, absolute) before being written to the convention entry

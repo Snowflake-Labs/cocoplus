@@ -32,13 +32,7 @@ If `cocoplus.toml` is absent or `[sprint]` section is missing, use defaults:
 
 ## Step 2 — Compute Sprint Metrics Deterministically
 
-Run:
-
-```
-node .cortex/scripts/dora-metrics.js
-```
-
-Then compute sprint-specific metrics from git log directly. Extract:
+Compute sprint-specific metrics from git log directly. Extract:
 
 **Story Velocity:**
 ```
@@ -131,7 +125,7 @@ Snapshot: .cocoplus/ops/sprint-health.json
 
 | Shortcut / Temptation | Why It Fails |
 |-----------------------|--------------|
-| Let LLM compute velocity | Metrics must be deterministic — git log counts are a script output, not inference |
+| Let LLM compute velocity | Metrics must be deterministic — git log counts are evidence, not inference |
 | Omit sprint window from config | Without a defined window, velocity numbers are meaningless |
 | Skip committing sprint-health.json | Sprint snapshot is a team artifact — teammates must see the same numbers |
 | Invent projected velocity without daily burn rate | Projection must use actual measured burn rate, not a guess |

@@ -20,7 +20,7 @@ The current operating layer includes:
 - **Leviathan Mode + Ronin**: explicit-activation autonomous coordination with a personal assistant return briefing.
 - **Dynamic Personas**: evidence-gated emergent specialists with retained history.
 - **Governance hooks**: ReviewerLockout and PII governance with observe/enforce rollout.
-- **Feature-owned runtime**: hooks enqueue deterministic work through feature-owned skill contracts; CocoConsole is the only registered local runtime script.
+- **Feature-owned runtime**: hooks enqueue deterministic work through idempotent, feature-owned skill contracts; CocoConsole is the only registered local runtime script.
 - **CocoFlow orchestration**: tiered planning, pre-dispatch complexity scoring, committed run-policy snapshots, stage model floors, explicit human gates, inbox-first stage transitions, dependency-group dispatch, dotted branch topology, named artifacts, thinking-effort tuning, divergence at branch points, synthesis passes, and `$flow template` reuse.
 - **CocoSession continuity**: PROGRESS handoff, predicate context, iteration and cost budgets with reserve landing, operator kill-switch, canonical terminal statuses, and one-shot steering for long-running work.
 - **Evidence and proposal gates**: opt-in stage evidence checks and retained Snowflake-write proposals settled with `$flow settle`.
@@ -32,7 +32,7 @@ The current operating layer includes:
 
 The root plugin implements the current runtime and documentation surface while preserving older project state through explicit migration skills.
 
-Older CocoPods migrate forward with `$migrate v2 --dry-run` and `$migrate v2`; new work should use the feature-owned skills directly.
+Older CocoPods migrate forward with `$migrate v2 --dry-run` and `$migrate v2`; new work should use the feature-owned skills directly. In V2.0.1, queued hook follow-up work uses durable request envelopes, stable idempotency keys, and skill-owned settlements so replayed queues do not duplicate meter, trace, or flow artifacts.
 
 ## Specialist Personas
 

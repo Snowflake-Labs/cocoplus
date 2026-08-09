@@ -1,6 +1,6 @@
 ---
 name: "noop-check"
-description: "V2-native deterministic contract for the owning CocoPlus feature. Executes the behavior formerly delegated to .cortex/scripts/noop-check.js without registered runtime scripts."
+description: "V2-native deterministic contract for the owning CocoPlus feature. Executes the behavior formerly delegated to execution-engine/noop-check without registered runtime scripts."
 version: "2.0.0"
 author: "CocoPlus"
 tags:

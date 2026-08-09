@@ -20,7 +20,7 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is
 ## Step 1 — Run Deterministic Marker Harvest
 
 ```
-node .cortex/scripts/lean-debt.js
+invoke cocolean/lean-debt-engine
 ```
 
 Run the command directly with Node. Do not wrap it in PowerShell redirection such as `2>&1`; stderr handling differs across shells and can corrupt the JSON output.
@@ -72,7 +72,7 @@ Malformed markers (missing fields): [N]
 
 ## High Imminence
 
-### [1] scripts/session-start.js:47
+### [1] scripts/the SessionStart hook:47
 **Simplified:** Single-threaded seed evaluation — evaluates all seeds synchronously on session start
 **Ceiling:** Session start latency exceeds 500ms when seed count exceeds 200
 **Trigger:** When `$seed list` reports more than 200 entries
@@ -135,7 +135,7 @@ Append this narrative to the end of `lean-debt.md` under `## Narrative Assessmen
 
 ## Exit Criteria
 
-- `lean-debt.js` executed across full CocoPod
+- `cocolean/lean-debt-engine` executed across full CocoPod
 - All `cocoplus:` markers harvested and classified by imminence
 - Report ranked by `(ceiling_imminence × days_since_annotation)`
 - Report written to `.cocoplus/lifecycle/lean-debt.md` and committed

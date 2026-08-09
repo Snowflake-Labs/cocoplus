@@ -23,7 +23,7 @@ If `report-path` is omitted, use the newest `.cocoplus/review/cocoreview-*.md`.
 Run:
 
 ```text
-node .cortex/scripts/report-export.js --source <report-path> --format <markdown|html|pdf> --out-dir .cocoplus/review/exports
+invoke reporting/report-export --source <report-path> --format <markdown|html|pdf> --out-dir .cocoplus/review/exports
 ```
 
 Markdown and HTML exports are generated locally. PDF export reports `renderer_unavailable` unless a future renderer profile is configured; do not fake a PDF by renaming another format.

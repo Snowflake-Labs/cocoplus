@@ -21,7 +21,7 @@ Parse arguments: `$review clear-blocked --id <finding-id> --rationale <text>`. B
 1. Read `.cocoplus/lifecycle/review-state.json`. If it does not exist or the named finding is not present: output "Finding [id] not found in review-state.json." Then stop.
 2. Verify the finding's `severity` is `BLOCKED`. If it is not: output "Finding [id] is not a BLOCKED finding (severity: [severity]). $review clear-blocked only resolves BLOCKED findings." Then stop.
 3. If already `resolved: true`: output "Finding [id] is already resolved." Then stop.
-4. Record the rationale in the audit trail via the same append logic `post-tool-use.js` uses for `lifecycle/audit.md` (if CocoAudit is enabled): event type `blocked-finding-resolved`, artifact the finding ID, developer input the verbatim rationale.
+4. Record the rationale in the audit trail via the same append logic `the PostToolUse hook` uses for `lifecycle/audit.md` (if CocoAudit is enabled): event type `blocked-finding-resolved`, artifact the finding ID, developer input the verbatim rationale.
 5. Update the finding in `review-state.json`: set `resolved: true`, `resolved_at: <ISO 8601 timestamp>`, `resolution_rationale: <text>`.
 6. Check whether any other `BLOCKING` or unresolved `BLOCKED` finding remains in `review-state.json`.
    - If none remain: output "Finding [id] resolved. No other BLOCKING or BLOCKED findings remain — $ship is unblocked."

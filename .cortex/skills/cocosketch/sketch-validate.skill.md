@@ -1,6 +1,6 @@
 ---
 name: "sketch-validate"
-description: "V2-native deterministic contract for the owning CocoPlus feature. Executes the behavior formerly delegated to .cortex/scripts/sketch-validate.js without registered runtime scripts."
+description: "V2-native deterministic contract for the owning CocoPlus feature. Executes the behavior formerly delegated to cocosketch/sketch-validate without registered runtime scripts."
 version: "2.0.0"
 author: "CocoPlus"
 tags:

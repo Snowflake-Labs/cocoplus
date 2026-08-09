@@ -37,7 +37,7 @@ function main() {
     releaseCondition = 'Wait for $sentinel evaluation to complete (active-evaluation.lock removed)';
   } else if (fs.existsSync(wisdomLock)) {
     blockReason      = 'CocoWisdom write in progress';
-    releaseCondition = 'wisdom-writer.js will remove the lock on completion';
+    releaseCondition = 'CocoWisdom will remove the lock on completion';
   } else {
     try {
       const flowState = JSON.parse(fs.readFileSync(flowStatePath, 'utf8'));

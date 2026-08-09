@@ -75,7 +75,7 @@ Loaded on demand during Phase 5 of `$review` and when the Boy Scout Rule (Constr
 | G32 | Don't be arbitrary | `SELECT * FROM T1 left join T2` — inconsistent casing | All SQL keywords uppercase or all lowercase — pick one |
 | G33 | Encapsulate boundary conditions | `offset + 1` and `limit - 1` repeated across 4 functions | `nextIndex = offset + 1`, `lastIndex = limit - 1` as named vars |
 | G34 | Descend one level of abstraction | Orchestration SQL mixed with transformation logic | Orchestration reads/writes; transformation transforms — separate |
-| G35 | Configurable data at high levels | `accuracy_threshold = 0.85` buried 3 levels deep in a helper | Move to `cocoplus.toml [cost]` or `[review.rules]` |
+| G35 | Configurable data at high levels | `accuracy_threshold = 0.85` buried 3 levels deep in a | Move to `cocoplus.toml [cost]` or `[review.rules]` |
 | G36 | Avoid transitive navigation | `getStage().getAgent().getModel().getTokenLimit()` | Access what you need directly; don't chain through unrelated objects |
 
 ---

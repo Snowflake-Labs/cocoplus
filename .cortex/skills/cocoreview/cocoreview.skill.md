@@ -24,7 +24,7 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is
 | `$review <file>` | `universal-quality.md` + language guide inferred from file extension |
 | `$review --security` | `universal-quality.md` + language guide + `security-review.md` |
 | `$review --architecture` | `universal-quality.md` + `architecture-review.md` |
-| `$review --complexity` | Run `pr-complexity.js` only — no LLM review |
+| `$review --complexity` | Run `cocoreview/pr-complexity` only — no LLM review |
 | `$review --language <lang>` | `universal-quality.md` + explicit language guide |
 | `$review export markdown|html|pdf [report]` | Route to `review-export.skill.md` |
 
@@ -32,10 +32,10 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is
 
 Parse the `$review` command for file path and flags. If no file path provided for non-complexity commands, ask: "Which file or directory should I review?"
 
-**Always run `pr-complexity.js` first** (before any LLM work):
+**Always run `cocoreview/pr-complexity` first** (before any LLM work):
 
 ```
-node .cortex/scripts/pr-complexity.js --file <path>
+invoke cocoreview/pr-complexity --file <path>
 ```
 
 Read the output JSON. If `size_bucket` is `XL` (≥800 lines of change), surface a split recommendation:
@@ -345,7 +345,7 @@ Mention that stakeholder exports are available via `$review export markdown`, `$
 
 ## Exit Criteria
 
-- `pr-complexity.js` run before any LLM work
+- `cocoreview/pr-complexity` run before any LLM work
 - XL artifacts get split recommendation surfaced
 - At least one `praise` finding in every review (Phases 1-4)
 - Phase 5 clean-code section present with at least one rule-cited `praise` finding

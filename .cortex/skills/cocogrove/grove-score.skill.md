@@ -1,6 +1,6 @@
 ---
 name: "grove-score"
-description: "V2-native deterministic contract for the owning CocoPlus feature. Executes the behavior formerly delegated to .cortex/scripts/grove-score.js without registered runtime scripts."
+description: "V2-native deterministic contract for the owning CocoPlus feature. Executes the behavior formerly delegated to cocogrove/grove-score without registered runtime scripts."
 version: "2.0.0"
 author: "CocoPlus"
 tags:

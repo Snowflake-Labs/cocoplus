@@ -46,7 +46,7 @@ For each file listed in the prior sync manifest, check whether the file's curren
 
 ```
 cocoplus sync: The following generated files were modified since the last sync:
-  - hooks/pre-tool-use.js  (modified 2024-01-22)
+  - hooks/the PreToolUse hook  (modified 2024-01-22)
 These changes will be overwritten. Edit cocoplus.toml instead.
 ```
 
