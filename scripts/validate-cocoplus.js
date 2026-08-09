@@ -155,6 +155,50 @@ function main() {
     path.join(repoRoot, '.cortex', 'skills', 'execution-engine', 'flow-event-reader.skill.md'),
   ];
 
+  const snowCocoplusParitySkillPaths = [
+    path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-reject.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-index.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-recall.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-learnings.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-learn.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocometer', 'meter-verify.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocometer', 'meter-waste.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocoaudit', 'audit-verify.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocostyle', 'style.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocostyle', 'style-init.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocostyle', 'style-refresh.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocostyle', 'style-show.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocostyle', 'style-mode.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocostyle', 'style-diff.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocostyle', 'style-status.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocolex', 'lex.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocolex', 'lex-define.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocolex', 'lex-list.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocolex', 'lex-show.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocolex', 'lex-extract.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocolex', 'lex-validate.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocostall', 'stall.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocostall', 'stall-status.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocostall', 'stall-thresholds.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocostall', 'stall-reset.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocopulse', 'pulse.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocopulse', 'pulse-on.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocopulse', 'pulse-off.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocopulse', 'pulse-status.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocopulse', 'pulse-configure.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocoadversary', 'adversary.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocoadversary', 'adversary-enable.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocoadversary', 'adversary-disable.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocoadversary', 'adversary-run.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocoadversary', 'adversary-show.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocoadversary', 'adversary-audit.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocoadversary', 'adversary-gap.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocodiary', 'diary.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocodiary', 'diary-view.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocodiary', 'diary-list.skill.md'),
+    path.join(repoRoot, '.cortex', 'skills', 'cocodiary', 'diary-search.skill.md'),
+  ];
+
   const requiredRecipes = [
     'cortex-add-classifier.json.template',
     'cortex-add-search.json.template',
@@ -250,6 +294,10 @@ function main() {
 
   for (const skillPath of requiredSkillPaths) {
     requireFile(skillPath, failures, 'Reference-specified skill path');
+  }
+
+  for (const skillPath of snowCocoplusParitySkillPaths) {
+    requireFile(skillPath, failures, 'Snow-Cocoplus parity skill path');
   }
 
   for (const skillPath of requiredTwentySixthSkills) {
@@ -414,6 +462,29 @@ function main() {
         failures.push(`Legacy runtime script reference found in ${relative}: ${pattern.source}`);
       }
     }
+  }
+
+  const snowParityDocs = [
+    readFile(path.join(repoRoot, 'README.md')),
+    readFile(path.join(repoRoot, 'CHANGELOG.md')),
+    ...walkFiles(path.join(repoRoot, 'docs'), (filePath) => filePath.endsWith('.html')).map(readFile),
+  ].join('\n');
+  for (const expected of [
+    '$wisdom reject',
+    '$wisdom index',
+    '$wisdom recall',
+    'do-not-use.md',
+    '$meter verify',
+    '$meter waste',
+    '$audit verify',
+    '$style init',
+    '$lex define',
+    '$stall status',
+    '$pulse on',
+    '$adversary run',
+    '$diary view',
+  ]) {
+    requireIncludes(snowParityDocs, expected, failures, 'Snow-Cocoplus parity docs');
   }
 
   const hookFiles = listFiles(hooksDir, '.js');
