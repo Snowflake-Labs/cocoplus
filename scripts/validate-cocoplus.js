@@ -120,6 +120,7 @@ function main() {
   const plugin = readJson(pluginPath);
   const skillNativeDir = path.join(repoRoot, '.cortex', 'skills', 'skill-native');
   const registeredAgentIds = listAgentIds(agentsDir);
+  const manifestScripts = (plugin.scripts || []).map(normalizeManifestPath);
 
   if ((plugin.skills || []).some((skill) => skill.startsWith('skill-native/'))) {
     failures.push('V2-only manifest must not register skill-native/* compatibility skills');
@@ -159,6 +160,10 @@ function main() {
   ];
 
   const requiredRuntimeScripts = [
+    'cocoplus-console.js',
+  ];
+
+  const legacyRuntimeScripts = [
     'rollback.js',
     'scope-classify.js',
     'spec-validator.js',
@@ -211,6 +216,14 @@ function main() {
     }
   }
 
+  if (plugin.version !== '2.0.1') {
+    failures.push('.cortex-plugin/plugin.json must declare version 2.0.1');
+  }
+
+  if (manifestScripts.length !== 1 || manifestScripts[0] !== '.cortex/scripts/cocoplus-console.js') {
+    failures.push('.cortex-plugin/plugin.json must register only .cortex/scripts/cocoplus-console.js as a V2.0.1 runtime script');
+  }
+
   for (const script of plugin.scripts || []) {
     const scriptPath = path.join(repoRoot, script);
     if (!fs.existsSync(scriptPath)) {
@@ -221,10 +234,9 @@ function main() {
     }
   }
 
-  for (const scriptPath of walkFiles(runtimeScriptsDir, (filePath) => filePath.endsWith('.js'))) {
-    const manifestPath = path.relative(repoRoot, scriptPath).replace(/\\/g, '/');
-    if (!manifestIncludesPath(plugin.scripts, manifestPath)) {
-      failures.push(`Runtime script ${manifestPath} must be registered in .cortex-plugin/plugin.json`);
+  for (const legacyScript of legacyRuntimeScripts) {
+    if (manifestIncludesPath(plugin.scripts, `.cortex/scripts/${legacyScript}`)) {
+      failures.push(`Legacy runtime script .cortex/scripts/${legacyScript} must not be registered in .cortex-plugin/plugin.json`);
     }
   }
 
