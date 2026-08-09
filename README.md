@@ -24,7 +24,7 @@ The current operating layer includes:
 - **CocoFlow orchestration**: tiered planning, pre-dispatch complexity scoring, committed run-policy snapshots, stage model floors, explicit human gates, inbox-first stage transitions, dependency-group dispatch, dotted branch topology, named artifacts, thinking-effort tuning, divergence at branch points, synthesis passes, and `$flow template` reuse.
 - **CocoSession continuity**: PROGRESS handoff, predicate context, iteration and cost budgets with reserve landing, operator kill-switch, canonical terminal statuses, and one-shot steering for long-running work.
 - **Evidence and proposal gates**: opt-in stage evidence checks and retained Snowflake-write proposals settled with `$flow settle`.
-- **CocoWisdom distillation**: terminal sessions can queue schema-declared wisdom distillation, contradiction review, and progressive `$wisdom get <topic>` loading.
+- **CocoWisdom distillation and negative memory**: terminal sessions can queue schema-declared wisdom distillation, contradiction review, progressive `$wisdom get <topic>` loading, `$wisdom reject` do-not-use records, and `$wisdom index` / `$wisdom recall` session-log search.
 - **CocoRoutine**: opt-in Snowflake TASK scheduling for completed self-contained flows with `$routine`.
 - **Research, retrospective, hygiene, and correctness loops**: `$flow research`, `$retrospective run`, `$hygiene --model-upgrade`, `$meter benchmark`, and `$meter compare` make quality, coordination cost, adapter-backed transcript reconciliation, model drift, and ACRR calibration measurable.
 - **CocoFleet goal mode**: `$fleet run`, `$fleet status`, and `$fleet comms` support planner/producer/read-only-critic orchestration with disjoint file scopes and signoff-driven completion.

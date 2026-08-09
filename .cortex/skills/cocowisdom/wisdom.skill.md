@@ -17,6 +17,16 @@ Display a CocoWisdom status summary for the current project.
 
 Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is not initialized. Run `$pod init` first." Then stop.
 
+## Snow-Cocoplus 2.0.1 Command Surface
+
+- `$wisdom reject "<description>"` records a rejected approach in `.cocoplus/wisdom/do-not-use.md`.
+- `$wisdom index [--harness <name>]` builds the session-log lexical recall index.
+- `$wisdom recall "<query>"` searches curated wisdom plus the session-log index.
+- `$wisdom learnings [--filter <text>]` lists curated learning and rejection records.
+- `$wisdom learn "<text>" [--session <id>] [--reason <text>]` records an operator-curated learning.
+
+Negative memory in `do-not-use.md` is universal. Always load it before positive topic-gated wisdom, never auto-prune it, and never merge rejected approaches into positive wisdom category files.
+
 ## Step 1 — Read Rejections Store
 
 Read `.cocoplus/wisdom/rejections.jsonl`. If it does not exist or is empty, output:
