@@ -1,0 +1,34 @@
+---
+name: "wisdom-recall"
+description: "Search curated wisdom and the session-log lexical index together."
+version: "2.0.1"
+author: "CocoPlus"
+tags:
+  - cocoplus
+  - cocowisdom
+  - recall
+---
+
+Your objective is to implement `$wisdom recall "<query>"`.
+
+Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is not initialized. Run `$pod init` first." Then stop.
+
+## Behavior
+
+Perform two-tier lexical recall:
+
+1. Search curated wisdom files under `.cocoplus/wisdom/`, including `do-not-use.md`.
+2. Search `.cocoplus/lifecycle/wisdom-index/` built by `$wisdom index`.
+3. Return results from both tiers together, labeled by source and confidence: exact phrase, all terms, or close term overlap.
+
+If no session index exists, output: "No session index found. Run `$wisdom index` first." Still search curated wisdom files.
+
+## Negative Memory Rule
+
+`do-not-use.md` matches must be surfaced before positive wisdom matches when confidence is equal. Rejected approaches are universal constraints, not optional suggestions.
+
+## Exit Criteria
+
+- [ ] Results identify whether they came from curated wisdom or session-log index.
+- [ ] `do-not-use.md` results are visible and prioritized.
+- [ ] Missing index guidance is explicit.
