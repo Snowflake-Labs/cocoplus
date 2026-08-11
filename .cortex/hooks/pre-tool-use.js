@@ -4,6 +4,7 @@
  *
  * Stdin JSON format from Coco:
  *   { "tool": "SnowflakeSqlExecute", "parameters": { "sql": "...", ... } }
+ *   { "tool_name": "SnowflakeSqlExecute", "tool_input": { "sql": "...", ... } }
  *   { "tool": "Read|Write|Edit", "parameters": { "file_path": "...", ... } }
  *
  * Stdout JSON response:
@@ -25,7 +26,7 @@
 
 const fs   = require('fs');
 const path = require('path');
-const { isoUtc, appendJsonLine, logError, readStdinJson } = require('./_common.js');
+const { isoUtc, appendJsonLine, logError, readStdinJson, normalizeToolEvent } = require('./_common.js');
 const { loadConfig } = require('./_v2-state.js');
 
 const COCOPLUS_DIR  = '.cocoplus';
@@ -633,9 +634,9 @@ function main() {
   const ts = isoUtc();
 
   // Read structured event from stdin
-  const event    = readStdinJson();
-  const toolName = event.tool || process.env.COCO_TOOL_NAME || 'unknown';
-  const params   = event.parameters || {};
+  const event    = normalizeToolEvent(readStdinJson());
+  const toolName = event.toolName;
+  const params   = event.params;
   const config   = loadConfig();
   recordOpenPreToolUse(event, toolName, params, ts);
 
