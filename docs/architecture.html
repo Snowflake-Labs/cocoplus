@@ -171,7 +171,7 @@
 │   ├── security-rules.json    ← generated boundary-tier rules
 │   └── sync-manifest.json     ← generated-file hashes for drift detection
 ├── fleet/                 ← CocoFleet process coordination state, state.json, task-plan.json, comms.log, and logs
-├── scripts/               ← rollback, scope classification, spec validation, transcript adapter, alignment checks
+├── v2-runtime-requests.jsonl ← durable idempotent queue for feature-owned skill settlements
 ├── trace/                 ← CocoTrace asset graph, health grade inputs, and receipts
 │   ├── snowflake-assets.json  ← asset graph used by $trace health
 │   └── health.md          ← latest health-grade receipt

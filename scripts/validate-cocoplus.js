@@ -197,7 +197,7 @@ function main() {
     path.join(repoRoot, '.cortex', 'skills', 'execution-engine', 'flow-event-reader.skill.md'),
   ];
 
-  const snowCocoplusParitySkillPaths = [
+  const sourceParitySkillPaths = [
     path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-reject.skill.md'),
     path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-index.skill.md'),
     path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-recall.skill.md'),
@@ -338,8 +338,8 @@ function main() {
     requireFile(skillPath, failures, 'Reference-specified skill path');
   }
 
-  for (const skillPath of snowCocoplusParitySkillPaths) {
-    requireFile(skillPath, failures, 'Snow-Cocoplus parity skill path');
+  for (const skillPath of sourceParitySkillPaths) {
+    requireFile(skillPath, failures, 'CocoPlus source parity skill path');
   }
 
   for (const skillPath of requiredTwentySixthSkills) {
@@ -434,8 +434,8 @@ function main() {
 
   const principlesHtml = readFile(path.join(repoRoot, 'docs', 'principles.html'));
   const principleCount = (principlesHtml.match(/<h2 id="[0-9]/g) || []).length;
-  if (principleCount !== 43) {
-    failures.push(`docs/principles.html must contain 43 principle headings; found ${principleCount}`);
+  if (principleCount !== 46) {
+    failures.push(`docs/principles.html must contain 46 principle headings; found ${principleCount}`);
   }
   requireIncludes(principlesHtml, 'The Transcript Is the Source of Truth', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Timestamps Have Provenance', failures, 'docs/principles.html');
@@ -443,6 +443,9 @@ function main() {
   requireIncludes(principlesHtml, 'Gate Weakening Requires a New Run', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Stable API Surface for Unstable Conditions', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Skill Is Memory', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Negative Memory Is Load-Bearing', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Lexical Baseline Before LLM Processing', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Structural Correctness', failures, 'docs/principles.html');
 
   const preToolUse = readFile(path.join(hooksDir, 'pre-tool-use.js'));
   requireIncludes(preToolUse, 'model_tier_floor_applied', failures, 'PreToolUse hook');
@@ -526,7 +529,7 @@ function main() {
     '$adversary run',
     '$diary view',
   ]) {
-    requireIncludes(snowParityDocs, expected, failures, 'Snow-Cocoplus parity docs');
+    requireIncludes(snowParityDocs, expected, failures, 'CocoPlus source parity docs');
   }
 
   const hookFiles = listFiles(hooksDir, '.js');

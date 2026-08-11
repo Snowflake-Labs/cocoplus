@@ -636,6 +636,45 @@
     <p>CocoWisdom defaults to progressive disclosure. <code>$wisdom get &lt;topic&gt;</code> loads a specific category on demand, while Stop-hook distillation writes durable topic files and queues contradictions for review.</p>
   </div>
 </div>
+<hr>
+<h2 id="44-negative-memory-is-load-bearing">44. Negative Memory Is Load-Bearing</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
+<p>A memory system that records only successful approaches will re-explore failed paths. Rejections, dead ends, and abandoned approaches are first-class memory because they protect future sessions from repeating the same mistake.</p>
+<p>Negative memory requires judgment, so it should be explicit and durable. A rejected approach must remain visible at session start, must not be silently pruned, and must not be merged into positive guidance where its warning value is lost.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoWisdom records do-not-use guidance in <code>do-not-use.md</code>. CocoHygiene does not auto-prune rejection records, and Wisdom recall surfaces rejected approaches before positive matches when they compete.</p>
+  </div>
+</div>
+<hr>
+<h2 id="45-lexical-baseline-before-llm-processing">45. Lexical Baseline Before LLM Processing</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
+<p>Before adding an LLM step to retrieval or analysis, establish the lexical baseline. Fast deterministic search over existing artifacts is cheap, local, explainable, and often good enough to serve as the first tier.</p>
+<p>An LLM layer should earn its place by improving a measured baseline, not by assumption. If deterministic matching recovers the needed evidence, the deterministic path is the correct first response.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p><code>$wisdom recall</code> begins with lexical search over curated wisdom and session indexes. Any semantic or synthesized layer is additive and must preserve the fast baseline rather than replacing it blindly.</p>
+  </div>
+</div>
+<hr>
+<h2 id="46-structural-correctness-intent-alignment">46. Structural Correctness ≠ Intent Alignment</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
+<p>A function can compile, run, return the right type, and pass automated checks while still failing the operator's intent. Structural correctness and intent alignment answer different questions, and both matter.</p>
+<p>Evaluation paths should be explicit about what they verified. A structural PASS does not mean the work answered the request unless intent alignment was also checked or the gap was consciously accepted.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoContract and CocoSentinel distinguish structural evidence from intent evidence. For judgment-heavy outputs, observability reads the artifacts CocoFlow already writes so intent drift can be reviewed without requiring extra instrumentation.</p>
+  </div>
+</div>
 <blockquote><p><em>Principles are only principles when they are applied in the cases where violating them would be convenient.</em></p></blockquote>
 </div>
 

@@ -17,7 +17,7 @@ Display a CocoWisdom status summary for the current project.
 
 Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is not initialized. Run `$pod init` first." Then stop.
 
-## Snow-Cocoplus 2.0.1 Command Surface
+## CocoPlus 2.0.1 Command Surface
 
 - `$wisdom reject "<description>"` records a rejected approach in `.cocoplus/wisdom/do-not-use.md`.
 - `$wisdom index [--harness <name>]` builds the session-log lexical recall index.
