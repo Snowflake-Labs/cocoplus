@@ -17,6 +17,16 @@ Display a CocoWisdom status summary for the current project.
 
 Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is not initialized. Run `$pod init` first." Then stop.
 
+## CocoPlus 2.0.1 Command Surface
+
+- `$wisdom reject "<description>"` records a rejected approach in `.cocoplus/wisdom/do-not-use.md`.
+- `$wisdom index [--harness <name>]` builds the session-log lexical recall index.
+- `$wisdom recall "<query>"` searches curated wisdom plus the session-log index.
+- `$wisdom learnings [--filter <text>]` lists curated learning and rejection records.
+- `$wisdom learn "<text>" [--session <id>] [--reason <text>]` records an operator-curated learning.
+
+Negative memory in `do-not-use.md` is universal. Always load it before positive topic-gated wisdom, never auto-prune it, and never merge rejected approaches into positive wisdom category files.
+
 ## Step 1 — Read Rejections Store
 
 Read `.cocoplus/wisdom/rejections.jsonl`. If it does not exist or is empty, output:
@@ -54,14 +64,14 @@ Quality trend: <Improving (no rejection in last 8 sessions) | Active (<count> in
 
 Routes CocoCupper's auto-captured corrections (`.cocoplus/cupper/auto-captured.json`) to proposed skill-file edits, closing the loop between "the developer corrected the agent" and "the skill that caused it gets fixed."
 
-1. Run `node .cortex/scripts/wisdom-route.js`. It reads `.cocoplus/cupper/auto-captured.json` entries that carry a `skill_context` field, groups them by skill file, and applies a routing classification per group:
+1. Invoke `cocowisdom/wisdom-route`. It reads `.cocoplus/cupper/auto-captured.json` entries that carry a `skill_context` field, groups them by skill file, and applies a routing classification per group:
    - **incorrect-behavior** — the skill's instructions produced an action the developer reversed
    - **missing-variant** — the correction asks for an option or mode the skill doesn't support
    - **agent-misapplication** — the skill or persona was invoked in a context it doesn't fit
 
    This classification may invoke Haiku (Tier 3, async) since it requires judging correction intent — unlike CocoCupper's Tier 1 capture, which is pure regex.
 
-2. For each group, `wisdom-route.js` generates a proposed edit (the specific skill section and suggested change) but does not apply it.
+2. For each group, `cocowisdom/wisdom-route` generates a proposed edit (the specific skill section and suggested change) but does not apply it.
 
 3. Present each proposed edit to the developer for explicit confirmation:
 
@@ -84,8 +94,8 @@ Routes CocoCupper's auto-captured corrections (`.cocoplus/cupper/auto-captured.j
 Use:
 
 ```text
-node .cortex/scripts/wisdom-route.js --keep --id <id> --text "<rule>"
-node .cortex/scripts/wisdom-route.js --forget --id <id> --rationale "<reason>"
+invoke cocowisdom/wisdom-route --keep --id <id> --text "<rule>"
+invoke cocowisdom/wisdom-route --forget --id <id> --rationale "<reason>"
 ```
 
 ## Evidence Gate and Denser-Not-Larger Rule
@@ -95,7 +105,7 @@ Stable CocoWisdom promotion requires at least 3 distinct confirmed sessions by d
 Before promoting a consolidated thesis, validate it with:
 
 ```text
-node .cortex/scripts/wisdom-route.js --candidate <candidate.json>
+invoke cocowisdom/wisdom-route --candidate <candidate.json>
 ```
 
 The candidate is rejected if it increases word count without reducing entry count, unless a justified exception is recorded. Consolidation should make memory denser, not merely larger.

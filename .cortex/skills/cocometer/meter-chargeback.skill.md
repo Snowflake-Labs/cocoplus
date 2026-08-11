@@ -34,10 +34,10 @@ Run a 35-day trailing delete/insert refresh. On first setup, load 60 days. Sched
 For local validation or dry-run fixtures, use:
 
 ```text
-node .cortex/scripts/chargeback-refresh.js --input <fixture.json>
+invoke cocometer/chargeback-refresh --input <fixture.json>
 ```
 
-The helper applies the same deterministic rules used by the warehouse implementation:
+The applies the same deterministic rules used by the warehouse implementation:
 
 - Strip `<system-reminder>...</system-reminder>` blocks before prompt persistence.
 - Extract SQL from tool argument arrays.

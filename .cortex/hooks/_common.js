@@ -7,6 +7,7 @@
 
 const fs   = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 /** ISO 8601 UTC timestamp */
 function isoUtc() {
@@ -32,6 +33,11 @@ function appendJsonLine(filePath, record) {
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.appendFileSync(filePath, JSON.stringify(record) + '\n');
   } catch (_) { /* non-fatal */ }
+}
+
+function stableQueueKey(skill, parts) {
+  const payload = JSON.stringify({ skill, parts: parts || [] });
+  return `${skill}:${crypto.createHash('sha256').update(payload).digest('hex').slice(0, 24)}`;
 }
 
 /**
@@ -105,14 +111,35 @@ function readStdinJson() {
   }
 }
 
+function normalizeToolEvent(event) {
+  const source = event && typeof event === 'object' ? event : {};
+  const toolName = source.tool ||
+    source.tool_name ||
+    source.name ||
+    process.env.COCO_TOOL_NAME ||
+    process.env.CORTEX_TOOL_NAME ||
+    'unknown';
+  const params = source.parameters ||
+    source.tool_input ||
+    source.input ||
+    {};
+  return {
+    ...source,
+    toolName,
+    params: params && typeof params === 'object' ? params : {},
+  };
+}
+
 module.exports = {
   isoUtc,
   jsonEscape,
   appendJsonLine,
+  stableQueueKey,
   atomicWrite,
   logError,
   readJsonString,
   readJsonNumber,
   readStdin,
   readStdinJson,
+  normalizeToolEvent,
 };

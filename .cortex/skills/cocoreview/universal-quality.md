@@ -55,7 +55,7 @@ Ternary chains deeper than one level, or if/else trees deeper than three levels.
 
 ## 5. Copy-Paste Variants
 
-Near-duplicate blocks differing only in variable names or string literals. A strong signal that a parameterized helper is warranted.
+Near-duplicate blocks differing only in variable names or string literals. A strong signal that a parameterized is warranted.
 
 **Detection:** Blocks >5 lines that are structurally identical except for 1–3 values.
 

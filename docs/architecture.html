@@ -171,7 +171,7 @@
 │   ├── security-rules.json    ← generated boundary-tier rules
 │   └── sync-manifest.json     ← generated-file hashes for drift detection
 ├── fleet/                 ← CocoFleet process coordination state, state.json, task-plan.json, comms.log, and logs
-├── scripts/               ← rollback, scope classification, spec validation, transcript adapter, alignment checks
+├── v2-runtime-requests.jsonl ← durable idempotent queue for feature-owned skill settlements
 ├── trace/                 ← CocoTrace asset graph, health grade inputs, and receipts
 │   ├── snowflake-assets.json  ← asset graph used by $trace health
 │   └── health.md          ← latest health-grade receipt
@@ -214,7 +214,7 @@
 │   ├── CONTEXT.md         ← predicate state for resumption (gitignored)
 │   ├── task-queue.jsonl   ← queued mid-session requests (gitignored)
 │   ├── stage-evidence.json ← evidence-gate observations (gitignored)
-│   ├── open-pre-tool-use.json ← stable open-tool bracket for permission-event classification
+│   ├── open-the PreToolUse hookon ← stable open-tool bracket for permission-event classification
 │   ├── permission-events.jsonl ← permission events derived from open tool brackets
 │   ├── iteration-budget.json ← turn budget state for long-running work (gitignored)
 │   ├── budget-state.json  ← cost reserve state and landing completeness (gitignored)

@@ -63,3 +63,10 @@ At the beginning of `$flow run`, attempt template matching. If a validated templ
 - [ ] `validate` names each incompatibility.
 - [ ] `show` previews template shape without flooding worker context.
 - [ ] `delete` archives rather than removes.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

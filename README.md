@@ -20,19 +20,21 @@ The current operating layer includes:
 - **Leviathan Mode + Ronin**: explicit-activation autonomous coordination with a personal assistant return briefing.
 - **Dynamic Personas**: evidence-gated emergent specialists with retained history.
 - **Governance hooks**: ReviewerLockout and PII governance with observe/enforce rollout.
-- **Feature-owned runtime**: hooks enqueue deterministic work through feature-owned skill contracts; CocoConsole is the only registered local runtime script.
+- **Feature-owned runtime**: hooks enqueue deterministic work through idempotent, feature-owned skill contracts; CocoConsole is the only registered local runtime script.
 - **CocoFlow orchestration**: tiered planning, pre-dispatch complexity scoring, committed run-policy snapshots, stage model floors, explicit human gates, inbox-first stage transitions, dependency-group dispatch, dotted branch topology, named artifacts, thinking-effort tuning, divergence at branch points, synthesis passes, and `$flow template` reuse.
 - **CocoSession continuity**: PROGRESS handoff, predicate context, iteration and cost budgets with reserve landing, operator kill-switch, canonical terminal statuses, and one-shot steering for long-running work.
 - **Evidence and proposal gates**: opt-in stage evidence checks and retained Snowflake-write proposals settled with `$flow settle`.
-- **CocoWisdom distillation**: terminal sessions can queue schema-declared wisdom distillation, contradiction review, and progressive `$wisdom get <topic>` loading.
+- **CocoWisdom distillation and negative memory**: terminal sessions can queue schema-declared wisdom distillation, contradiction review, progressive `$wisdom get <topic>` loading, `$wisdom reject` do-not-use records, and `$wisdom index` / `$wisdom recall` session-log search.
+- **CocoStyle and CocoLex**: `$style init`, `$style refresh`, `$style show`, `$style mode`, `$style diff`, and `$style status` keep project conventions evidence-backed; `$lex define`, `$lex list`, `$lex show`, `$lex extract`, and `$lex validate` keep shared terminology explicit.
+- **Operational awareness commands**: `$stall status`, `$stall thresholds`, `$stall reset`, `$pulse on`, `$pulse off`, `$pulse status`, `$pulse configure`, `$adversary run`, `$adversary audit`, `$adversary gap`, `$diary view`, `$diary list`, and `$diary search` expose no-progress detection, ambient observation, challenge review, and work journals.
 - **CocoRoutine**: opt-in Snowflake TASK scheduling for completed self-contained flows with `$routine`.
-- **Research, retrospective, hygiene, and correctness loops**: `$flow research`, `$retrospective run`, `$hygiene --model-upgrade`, `$meter benchmark`, and `$meter compare` make quality, coordination cost, adapter-backed transcript reconciliation, model drift, and ACRR calibration measurable.
+- **Research, retrospective, hygiene, and correctness loops**: `$flow research`, `$retrospective run`, `$hygiene --model-upgrade`, `$meter benchmark`, `$meter compare`, `$meter verify`, `$meter waste`, and `$audit verify` make quality, coordination cost, adapter-backed transcript reconciliation, model drift, ACRR calibration, context waste, and audit integrity measurable.
 - **CocoFleet goal mode**: `$fleet run`, `$fleet status`, and `$fleet comms` support planner/producer/read-only-critic orchestration with disjoint file scopes and signoff-driven completion.
 - **Console-aware visual commands**: `$flow view` and `$meter view` redirect into CocoConsole when it is running.
 
 The root plugin implements the current runtime and documentation surface while preserving older project state through explicit migration skills.
 
-Older CocoPods migrate forward with `$migrate v2 --dry-run` and `$migrate v2`; new work should use the feature-owned skills directly.
+Older CocoPods migrate forward with `$migrate v2 --dry-run` and `$migrate v2`; new work should use the feature-owned skills directly. In V2.0.1, queued hook follow-up work uses durable request envelopes, stable idempotency keys, and skill-owned settlements so replayed queues do not duplicate meter, trace, or flow artifacts.
 
 ## Specialist Personas
 

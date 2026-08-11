@@ -22,7 +22,7 @@ $report export <path> --format markdown|html|pdf
 Run:
 
 ```text
-node .cortex/scripts/report-export.js --source <path> --format <format> --out-dir .cocoplus/exports
+invoke reporting/report-export --source <path> --format <format> --out-dir .cocoplus/exports
 ```
 
 Supported source artifacts include CocoOps, CocoTrace, CocoAudit, CocoReview, and CocoSketch reports.
@@ -34,3 +34,10 @@ Markdown and HTML are generated locally. PDF returns `renderer_unavailable` unti
 - Source file exists.
 - Markdown and HTML produce concrete files.
 - PDF requests return an explicit renderer status.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

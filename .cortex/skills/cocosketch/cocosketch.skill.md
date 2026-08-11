@@ -23,11 +23,11 @@ Diagram quality requires a pipeline, not a single prompt. The AI generates XML; 
 ```
 Step 1: Resolve style preset
 Step 2: Check draw.io CLI availability (resolve binary once, use verbatim)
-Step 3: Plan layout — shapes, relationships, groups; run sketch-autolayout.js for >15 nodes
-Step 4: Generate draw.io XML → run sketch-validate.js → STOP pipeline if FAIL
+Step 3: Plan layout — shapes, relationships, groups; run cocosketch/sketch-autolayout for >15 nodes
+Step 4: Generate draw.io XML → run cocosketch/sketch-validate → STOP pipeline if FAIL
 Step 5: Export PREVIEW PNG (NO -e flag) capped at 2000px
 Step 6: Self-check preview via vision — auto-fix overlaps/clipped labels (max 2 rounds)
-Step 7: Export FINAL PNG (WITH -e flag) → run sketch-repair.js → deliver to developer
+Step 7: Export FINAL PNG (WITH -e flag) → run cocosketch/sketch-repair → deliver to developer
 ```
 
 **NEVER skip Steps 4 or 7. NEVER add -e to Step 5. NEVER omit -e from Step 7.**
@@ -47,7 +47,7 @@ Resolve binary name ONCE. Store as `DRAWIO_BIN`. Use `DRAWIO_BIN` verbatim in St
 
 ## Step 3 — Plan Layout
 - Direction: **LR** for sequences/pipelines, **TB** for hierarchies/schemas
-- For >15 nodes: run `node .cortex/scripts/sketch-autolayout.js <input.json> <layout.json>`
+- For >15 nodes: run `invoke cocosketch/sketch-autolayout <input.json> <layout.json>`
 - For ≤15 nodes: hand-place coordinates with reasonable spacing (120px wide × 60px tall, 50px H-gap, 40px V-gap)
 - Groups: use swimlane cells to visually cluster related nodes
 
@@ -62,7 +62,7 @@ Required XML structure:
   </root>
 </mxGraphModel>
 ```
-Run: `node .cortex/scripts/sketch-validate.js <file.drawio>`
+Run: `invoke cocosketch/sketch-validate <file.drawio>`
 **If FAIL: stop immediately. Report structural errors. Do not proceed to Step 5.**
 
 ## Step 5 — Export Preview PNG (NO -e)
@@ -80,10 +80,10 @@ After round 2: proceed and note any remaining issues in output.
 ## Step 7 — Final Export + Repair
 ```bash
 $DRAWIO_BIN -x -f png -e --width 2000 -o <name>.png <file.drawio>
-node .cortex/scripts/sketch-repair.js <name>.png
+invoke cocosketch/sketch-repair <name>.png
 ```
 `-e` flag embeds diagram XML in PNG — developer can open in draw.io directly.
-`sketch-repair.js` restores truncated IEND chunk that `-e` can produce.
+`cocosketch/sketch-repair` restores truncated IEND chunk that `-e` can produce.
 Output: `<name>.png` and `<name>.drawio` written to `.cocoplus/diagrams/`.
 
 Record the exact final PNG path in the command output. If Mermaid fallback is used, output the `.mmd` path instead and clearly state that PNG export was unavailable.
@@ -116,7 +116,7 @@ Record the exact final PNG path in the command output. If Mermaid fallback is us
 
 1. Read `.cocoplus/map/coco-map.json` structural dependency view
 2. Build node/edge graph from function dependencies
-3. Default (`--reduce` on): run `node .cortex/scripts/map-reduce.js <input.json> <reduced.json>` before layout
+3. Default (`--reduce` on): run `invoke cocomap/map-reduce <input.json> <reduced.json>` before layout
 4. `--reduce off`: use full transitive closure
 5. Execute seven-step pipeline
 6. Compute and report dependency metrics: node count, edge count before reduction, edge count after reduction, and reduction percentage
@@ -141,21 +141,21 @@ Generate a self-contained HTML viewer for a CocoSketch diagram with pan, zoom, f
 For Markdown/HTML/PDF packaging of generated diagram notes, use:
 
 ```text
-node .cortex/scripts/report-export.js --source <diagram-report.md> --format <markdown|html|pdf> --out-dir .cocoplus/diagrams/exports
+invoke reporting/report-export --source <diagram-report.md> --format <markdown|html|pdf> --out-dir .cocoplus/diagrams/exports
 ```
 
 ---
 
 ## Exit Criteria
-- [ ] `sketch-validate.js` runs before Step 5 on every invocation; pipeline stops on FAIL
-- [ ] `sketch-repair.js` runs after Step 7 on every invocation
+- [ ] `cocosketch/sketch-validate` runs before Step 5 on every invocation; pipeline stops on FAIL
+- [ ] `cocosketch/sketch-repair` runs after Step 7 on every invocation
 - [ ] Preview PNG (Step 5) has NO `-e` flag
 - [ ] Final PNG (Step 7) HAS `-e` flag
 - [ ] `$sketch deps` applies transitive reduction by default; `--reduce off` skips it
 - [ ] `$sketch deps` reports node count, original edge count, reduced edge count, and reduction percentage
 - [ ] Command output includes the final PNG path or fallback `.mmd` path
 - [ ] User style in `~/.cocoplus/sketch-styles/` takes precedence over built-in styles
-- [ ] For >15 nodes, `sketch-autolayout.js` is called in Step 3
+- [ ] For >15 nodes, `cocosketch/sketch-autolayout` is called in Step 3
 - [ ] Fallback chain (Mermaid → raw XML) executes when draw.io CLI unavailable
 - [ ] `$sketch diff` reports added, removed, modified relationship, and policy/role changes when available
 - [ ] `$sketch view` writes a self-contained HTML viewer without replacing the committed diagram artifact
@@ -164,9 +164,9 @@ node .cortex/scripts/report-export.js --source <diagram-report.md> --format <mar
 
 | Temptation | Why Wrong |
 |------------|-----------|
-| Skip `sketch-validate.js` | Invalid XML produces blank or corrupt diagrams without error |
+| Skip `cocosketch/sketch-validate` | Invalid XML produces blank or corrupt diagrams without error |
 | Use `-e` for preview PNG | `-e` truncates IEND; vision APIs reject the PNG |
-| Skip `sketch-repair.js` | Truncated IEND corrupts the PNG in several common viewers |
+| Skip `cocosketch/sketch-repair` | Truncated IEND corrupts the PNG in several common viewers |
 | Generate in one LLM shot without pipeline | Single-shot generation produces bad layouts and structural errors |
 | Reuse draw.io binary name without checking | Binary name varies by OS and install method — resolve once |
 | Say "diagram generated" without a path | Users need the exact artifact path to inspect or attach the diagram |

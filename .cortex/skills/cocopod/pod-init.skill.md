@@ -95,7 +95,7 @@ Copy template files from the plugin templates directory to `.cocoplus/`:
 9. Copy `templates/monitors/quality-advisor.monitor.json` → `.cocoplus/monitors/quality-advisor.monitor.json`
 10. Copy `templates/monitors/memory-capture.monitor.json` → `.cocoplus/monitors/memory-capture.monitor.json`
 
-Feature scripts stay in the installed plugin at `.cortex/scripts/`; do not copy scripts into `.cocoplus/`.
+Non-console feature behavior is implemented by V2-native skills; do not copy script files into `.cocoplus/`.
 
 ## Initialize Mode Flags
 

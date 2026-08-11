@@ -1,6 +1,6 @@
 ---
 name: "sketch-validate"
-description: "V2-native deterministic contract for the owning CocoPlus feature. Executes the behavior formerly delegated to .cortex/scripts/sketch-validate.js without registered runtime scripts."
+description: "V2-native deterministic contract for the owning CocoPlus feature. Executes the behavior formerly delegated to cocosketch/sketch-validate without registered runtime scripts."
 version: "2.0.0"
 author: "CocoPlus"
 tags:
@@ -22,3 +22,10 @@ Your objective is to perform this V2-native feature behavior using Coco-native c
 - [ ] The owning feature's documented artifact is produced or updated.
 - [ ] The output schema remains compatible with existing readers.
 - [ ] No registered runtime script invocation is required.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

@@ -4,6 +4,7 @@
  *
  * Stdin JSON format from Coco:
  *   { "tool": "Write", "parameters": { "file_path": "..." }, "result": { "success": true, "tokens_consumed": 45 } }
+ *   { "tool_name": "Write", "tool_input": { "file_path": "..." }, "result": { "success": true } }
  *
  * Features: CocoMeter (token/tool/SQL/write tracking), Memory Engine (artifact capture),
  *           Code Quality trigger (SQL files), Context Mode narration.
@@ -15,7 +16,7 @@
 const fs   = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
-const { isoUtc, appendJsonLine, atomicWrite, logError, readJsonString, readJsonNumber, readStdinJson } = require('./_common.js');
+const { isoUtc, appendJsonLine, atomicWrite, logError, readJsonString, readJsonNumber, readStdinJson, normalizeToolEvent } = require('./_common.js');
 const { readState } = require('./lib/state-reader.js');
 const { loadConfig } = require('./_v2-state.js');
 
@@ -304,10 +305,10 @@ function main() {
   if (!fs.existsSync(COCOPLUS_DIR)) return;
 
   const ts    = isoUtc();
-  const event = readStdinJson();
+  const event = normalizeToolEvent(readStdinJson());
 
-  const toolName   = event.tool    || process.env.COCO_TOOL_NAME    || 'unknown';
-  const params     = event.parameters || {};
+  const toolName   = event.toolName;
+  const params     = event.params;
   const result     = event.result     || {};
   const filePath   = params.file_path || params.path || '';
   const tokensUsed = Number(result.tokens_consumed) || 0;

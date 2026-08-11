@@ -66,3 +66,9 @@ At every gate, output:
 - [ ] CocoPilot resumes after forge stop if it was active before forge activation.
 - [ ] Ladder sessions preserve the current floor, score trend, and dispute state in `forge-state.json`.
 
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

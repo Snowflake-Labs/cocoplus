@@ -25,3 +25,10 @@ Measure before changing. For every candidate deletion or downgrade, name the rep
 - [ ] Each recommendation has evidence.
 - [ ] Deletions are proposed, not applied silently.
 - [ ] Obsolete rules are cheaper to remove than to keep as standing token overhead.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

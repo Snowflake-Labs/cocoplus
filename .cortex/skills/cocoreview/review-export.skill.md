@@ -23,7 +23,7 @@ If `report-path` is omitted, use the newest `.cocoplus/review/cocoreview-*.md`.
 Run:
 
 ```text
-node .cortex/scripts/report-export.js --source <report-path> --format <markdown|html|pdf> --out-dir .cocoplus/review/exports
+invoke reporting/report-export --source <report-path> --format <markdown|html|pdf> --out-dir .cocoplus/review/exports
 ```
 
 Markdown and HTML exports are generated locally. PDF export reports `renderer_unavailable` unless a future renderer profile is configured; do not fake a PDF by renaming another format.
@@ -33,3 +33,10 @@ Markdown and HTML exports are generated locally. PDF export reports `renderer_un
 - The source review report exists before export.
 - Markdown and HTML exports write files under `.cocoplus/review/exports/`.
 - PDF requests return a clear renderer-unavailable result rather than failing silently.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

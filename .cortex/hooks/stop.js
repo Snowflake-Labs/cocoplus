@@ -10,7 +10,7 @@
 const fs   = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
-const { isoUtc, appendJsonLine, logError } = require('./_common.js');
+const { isoUtc, appendJsonLine, stableQueueKey, logError } = require('./_common.js');
 const {
   checkpointForge,
   checkpointLeviathan,
@@ -145,6 +145,7 @@ function main() {
     appendJsonLine(V2_QUEUE, {
       skill: 'cocowisdom/wisdom-distill',
       command: `$wisdom distill ${sessionId}`,
+      idempotency_key: stableQueueKey('cocowisdom/wisdom-distill', [sessionId, ts.slice(0, 16)]),
       requested_at: ts,
       session_id: sessionId,
       distill_on_failure: wisdomConfig.distill_on_failure !== false && wisdomConfig.distill_on_failure !== 'false',
@@ -179,7 +180,9 @@ function main() {
     appendJsonLine(V2_QUEUE, {
       skill: 'retrospective/retrospective',
       command: '$retrospective run',
+      idempotency_key: stableQueueKey('retrospective/retrospective', [sessionId, ts.slice(0, 10)]),
       requested_at: ts,
+      session_id: sessionId,
       source: 'hook.stop',
     });
     appendJsonLine(HOOK_LOG, { hook: 'stop', action: 'retrospective_requested', session: sessionId, ts });
@@ -219,7 +222,9 @@ function main() {
   if (pivotRequested || convergePending) {
     appendJsonLine(V2_QUEUE, {
       skill: 'cococonverge/pivot-merge',
+      idempotency_key: stableQueueKey('cococonverge/pivot-merge', [sessionId, pivotRequested ? 'pivot-requested' : 'converge-pending', ts.slice(0, 16)]),
       requested_at: ts,
+      session_id: sessionId,
       reason: pivotRequested ? 'pivot-requested' : 'converge-pending',
       source: 'hook.stop',
     });

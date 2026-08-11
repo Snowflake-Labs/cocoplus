@@ -71,3 +71,10 @@ WARNING: cost reduction accompanied by accuracy regression.
 - [ ] Coordination and landing costs remain separate from execution cost when present.
 - [ ] ACRR appears as a calibration diagnostic when present and is not treated as a replacement for accuracy.
 - [ ] Transcript reconciliation and model drift appear when present, and corrected transcript totals lead runtime estimates for billing comparison.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

@@ -17,7 +17,7 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus no
 Run:
 
 ```bash
-node .cortex/scripts/ops-suggest.js
+invoke cocoops/ops-suggest-engine
 ```
 
 Display the returned suggestions with their cited operational signal. Do not invent recommendations when the script reports insufficient data.
@@ -26,6 +26,13 @@ If a suggestion has no citation because `dora-snapshot.json` is missing or incom
 
 ## Exit Criteria
 
-- Suggestions come from `.cortex/scripts/ops-suggest.js`
+- Suggestions come from `cocoops/ops-suggest-engine`
 - Every suggestion includes the source signal or data gap
 - Absence of data is reported as a data gap, not converted into a recommendation
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |
