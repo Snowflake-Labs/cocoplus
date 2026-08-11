@@ -62,3 +62,10 @@ Read `.cocoplus/ops/dora-snapshot.json` for the summary data. If absent, suggest
 - All sub-commands route to correct sub-skills
 - Default view shows last snapshot summary
 - Unknown sub-commands show routing table with available options
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

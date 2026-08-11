@@ -126,3 +126,10 @@ After writing the report, output the summary section to the developer. Do NOT bl
 - Risk levels assigned for all challenges
 - Developer sees summary with HIGH/MEDIUM/LOW counts
 - No blocking behavior — advisory output only
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

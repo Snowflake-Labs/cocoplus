@@ -41,3 +41,10 @@ Read `[research]` and `[session]` from `cocoplus.toml` when present:
 - [ ] The approved plan is recorded before retrieval.
 - [ ] Every claim in the report traces to at least one source.
 - [ ] Reviewer and Revisor are separated from the crawler process.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

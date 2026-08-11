@@ -476,6 +476,28 @@ function main() {
     ...walkFiles(path.join(repoRoot, '.cortex', 'skills'), (filePath) => filePath.endsWith('.md')),
   ];
 
+  const skillContractFiles = walkFiles(path.join(repoRoot, '.cortex', 'skills'), (filePath) =>
+    filePath.endsWith('.skill.md') || path.basename(filePath) === 'SKILL.md'
+  );
+  for (const filePath of skillContractFiles) {
+    const relative = path.relative(repoRoot, filePath);
+    const content = readFile(filePath);
+    if (!/^---\r?\n[\s\S]*?\r?\n---/.test(content)) {
+      failures.push(`Skill contract ${relative} is missing YAML frontmatter`);
+    }
+    for (const field of ['name', 'description', 'version', 'author', 'tags']) {
+      if (!new RegExp(`^${field}:`, 'm').test(content)) {
+        failures.push(`Skill contract ${relative} is missing frontmatter field ${field}`);
+      }
+    }
+    if (!/^## Exit Criteria\b/m.test(content)) {
+      failures.push(`Skill contract ${relative} is missing ## Exit Criteria`);
+    }
+    if (!/Anti-Rationalization/i.test(content)) {
+      failures.push(`Skill contract ${relative} is missing Anti-Rationalization guidance`);
+    }
+  }
+
   for (const filePath of textFiles) {
     const content = readFile(filePath);
     for (const pattern of stalePatterns) {

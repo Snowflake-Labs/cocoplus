@@ -77,3 +77,10 @@ If no matches: "No sessions match '<query>'. Try a broader search term or `--sin
 - Search matches on summary, features, and archetype
 - Filters apply correctly (AND logic between --since and --feature)
 - Results show session ID, date, archetype, duration, features, and summary excerpt
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

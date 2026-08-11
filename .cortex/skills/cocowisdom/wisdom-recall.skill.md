@@ -32,3 +32,10 @@ If no session index exists, output: "No session index found. Run `$wisdom index`
 - [ ] Results identify whether they came from curated wisdom or session-log index.
 - [ ] `do-not-use.md` results are visible and prioritized.
 - [ ] Missing index guidance is explicit.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

@@ -33,3 +33,10 @@ If `--update` is supplied, append a verification envelope with timestamp, eviden
 - [ ] Verification distinguishes measured activity from outcome proof.
 - [ ] L4 is claimed only when the artifact demonstrates durable user-visible outcome.
 - [ ] `--update` preserves existing metering fields and appends verification metadata.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

@@ -47,3 +47,10 @@ Support optional filters when present in the user request:
 - [ ] The feed is read from `.cocoplus/fleet/[fleet-id]/comms.log`.
 - [ ] Role, event, and tail filters are applied when requested.
 - [ ] No project state is mutated.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

@@ -93,3 +93,10 @@ When invoked from `.cocoplus/v2-runtime-requests.jsonl`, follow `execution-engin
 - [ ] Material gaps write a reconciliation artifact.
 - [ ] Model drift is visible when configured and actual models differ.
 - [ ] Queued requests settle exactly once per `idempotency_key`.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

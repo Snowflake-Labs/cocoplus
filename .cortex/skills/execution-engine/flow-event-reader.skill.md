@@ -73,3 +73,10 @@ Flow state: <path>
 - [ ] Fallback records are explicitly marked unreliable.
 - [ ] The flow-state file remains valid JSON.
 - [ ] Queued requests are settled and can be replayed without duplicating state changes.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

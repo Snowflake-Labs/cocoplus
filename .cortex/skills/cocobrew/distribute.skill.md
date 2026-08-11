@@ -51,3 +51,10 @@ Evaluate a CocoPod skill package before marketplace distribution or recommendati
 - [ ] Advisory verdict requires explicit acknowledgment.
 - [ ] The report names each failed criterion.
 - [ ] No install-time execution is allowed.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

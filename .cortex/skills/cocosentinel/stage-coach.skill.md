@@ -53,3 +53,10 @@ Evaluate completed CocoFlow stages with a separate coach model so generator and 
 - [ ] The coach never evaluates its own generation.
 - [ ] Missing artifacts are attributed to the stage that declared them.
 - [ ] Console-readable `stage-quality.jsonl` is updated.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

@@ -35,3 +35,10 @@ Proposals live under `.cocoplus/proposals/<stage-id>/<timestamp>/`. They represe
 - [ ] Accepted proposals have a settlement log record.
 - [ ] Discarded proposals remain inspectable.
 - [ ] No proposal-enabled stage writes directly to the live environment.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

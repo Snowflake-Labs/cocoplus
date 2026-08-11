@@ -41,3 +41,9 @@ When `$spec` sees `"bloom_waived": true`, it does not display the CocoBloom advi
 - `bloom_waived` is exactly `true`.
 - No bloom document is created.
 
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |
