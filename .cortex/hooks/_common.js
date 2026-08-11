@@ -111,6 +111,25 @@ function readStdinJson() {
   }
 }
 
+function normalizeToolEvent(event) {
+  const source = event && typeof event === 'object' ? event : {};
+  const toolName = source.tool ||
+    source.tool_name ||
+    source.name ||
+    process.env.COCO_TOOL_NAME ||
+    process.env.CORTEX_TOOL_NAME ||
+    'unknown';
+  const params = source.parameters ||
+    source.tool_input ||
+    source.input ||
+    {};
+  return {
+    ...source,
+    toolName,
+    params: params && typeof params === 'object' ? params : {},
+  };
+}
+
 module.exports = {
   isoUtc,
   jsonEscape,
@@ -122,4 +141,5 @@ module.exports = {
   readJsonNumber,
   readStdin,
   readStdinJson,
+  normalizeToolEvent,
 };

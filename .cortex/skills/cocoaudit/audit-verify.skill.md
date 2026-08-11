@@ -33,3 +33,10 @@ Output:
 - [ ] Hash or ordering failures are reported as deterministic audit failures.
 - [ ] Contract proof drift is distinguished from missing proof.
 - [ ] The command never repairs audit history silently.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

@@ -34,3 +34,10 @@ Record a rejected approach in `.cocoplus/wisdom/do-not-use.md`. Negative memory 
 - [ ] `.cocoplus/wisdom/do-not-use.md` contains the structured rejection.
 - [ ] The entry has Tried, Why rejected, and Use instead fields.
 - [ ] The change is committed with a wisdom rejection commit message.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

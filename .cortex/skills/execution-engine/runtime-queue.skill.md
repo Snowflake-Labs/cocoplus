@@ -85,3 +85,10 @@ Settlement fields:
 - [ ] Every claim settles as `completed`, `failed`, or `superseded`.
 - [ ] Replayed queue lines do not duplicate artifacts or metrics.
 - [ ] No non-console runtime script is invoked.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

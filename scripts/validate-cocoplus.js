@@ -115,6 +115,48 @@ function parseFrontmatterTools(agentFile) {
   return tools;
 }
 
+function extractObjectArgumentAfter(content, callStart) {
+  const braceStart = content.indexOf('{', callStart);
+  if (braceStart === -1) return '';
+  let depth = 0;
+  let quote = null;
+  let escaped = false;
+  for (let i = braceStart; i < content.length; i += 1) {
+    const char = content[i];
+    if (quote) {
+      if (escaped) {
+        escaped = false;
+      } else if (char === '\\') {
+        escaped = true;
+      } else if (char === quote) {
+        quote = null;
+      }
+      continue;
+    }
+    if (char === '"' || char === "'" || char === '`') {
+      quote = char;
+      continue;
+    }
+    if (char === '{') depth += 1;
+    if (char === '}') {
+      depth -= 1;
+      if (depth === 0) return content.slice(braceStart, i + 1);
+    }
+  }
+  return '';
+}
+
+function v2QueueWriteBlocks(content) {
+  const blocks = [];
+  const marker = 'appendJsonLine(V2_QUEUE';
+  let index = 0;
+  while ((index = content.indexOf(marker, index)) !== -1) {
+    blocks.push(extractObjectArgumentAfter(content, index));
+    index += marker.length;
+  }
+  return blocks.filter(Boolean);
+}
+
 function main() {
   const failures = [];
   const plugin = readJson(pluginPath);
@@ -155,7 +197,7 @@ function main() {
     path.join(repoRoot, '.cortex', 'skills', 'execution-engine', 'flow-event-reader.skill.md'),
   ];
 
-  const snowCocoplusParitySkillPaths = [
+  const sourceParitySkillPaths = [
     path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-reject.skill.md'),
     path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-index.skill.md'),
     path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-recall.skill.md'),
@@ -296,8 +338,8 @@ function main() {
     requireFile(skillPath, failures, 'Reference-specified skill path');
   }
 
-  for (const skillPath of snowCocoplusParitySkillPaths) {
-    requireFile(skillPath, failures, 'Snow-Cocoplus parity skill path');
+  for (const skillPath of sourceParitySkillPaths) {
+    requireFile(skillPath, failures, 'CocoPlus source parity skill path');
   }
 
   for (const skillPath of requiredTwentySixthSkills) {
@@ -392,8 +434,8 @@ function main() {
 
   const principlesHtml = readFile(path.join(repoRoot, 'docs', 'principles.html'));
   const principleCount = (principlesHtml.match(/<h2 id="[0-9]/g) || []).length;
-  if (principleCount !== 43) {
-    failures.push(`docs/principles.html must contain 43 principle headings; found ${principleCount}`);
+  if (principleCount !== 46) {
+    failures.push(`docs/principles.html must contain 46 principle headings; found ${principleCount}`);
   }
   requireIncludes(principlesHtml, 'The Transcript Is the Source of Truth', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Timestamps Have Provenance', failures, 'docs/principles.html');
@@ -401,6 +443,9 @@ function main() {
   requireIncludes(principlesHtml, 'Gate Weakening Requires a New Run', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Stable API Surface for Unstable Conditions', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Skill Is Memory', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Negative Memory Is Load-Bearing', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Lexical Baseline Before LLM Processing', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Structural Correctness', failures, 'docs/principles.html');
 
   const preToolUse = readFile(path.join(hooksDir, 'pre-tool-use.js'));
   requireIncludes(preToolUse, 'model_tier_floor_applied', failures, 'PreToolUse hook');
@@ -430,6 +475,28 @@ function main() {
     ...walkFiles(path.join(repoRoot, 'docs'), (filePath) => filePath.endsWith('.html')),
     ...walkFiles(path.join(repoRoot, '.cortex', 'skills'), (filePath) => filePath.endsWith('.md')),
   ];
+
+  const skillContractFiles = walkFiles(path.join(repoRoot, '.cortex', 'skills'), (filePath) =>
+    filePath.endsWith('.skill.md') || path.basename(filePath) === 'SKILL.md'
+  );
+  for (const filePath of skillContractFiles) {
+    const relative = path.relative(repoRoot, filePath);
+    const content = readFile(filePath);
+    if (!/^---\r?\n[\s\S]*?\r?\n---/.test(content)) {
+      failures.push(`Skill contract ${relative} is missing YAML frontmatter`);
+    }
+    for (const field of ['name', 'description', 'version', 'author', 'tags']) {
+      if (!new RegExp(`^${field}:`, 'm').test(content)) {
+        failures.push(`Skill contract ${relative} is missing frontmatter field ${field}`);
+      }
+    }
+    if (!/^## Exit Criteria\b/m.test(content)) {
+      failures.push(`Skill contract ${relative} is missing ## Exit Criteria`);
+    }
+    if (!/Anti-Rationalization/i.test(content)) {
+      failures.push(`Skill contract ${relative} is missing Anti-Rationalization guidance`);
+    }
+  }
 
   for (const filePath of textFiles) {
     const content = readFile(filePath);
@@ -484,7 +551,7 @@ function main() {
     '$adversary run',
     '$diary view',
   ]) {
-    requireIncludes(snowParityDocs, expected, failures, 'Snow-Cocoplus parity docs');
+    requireIncludes(snowParityDocs, expected, failures, 'CocoPlus source parity docs');
   }
 
   const hookFiles = listFiles(hooksDir, '.js');
@@ -515,10 +582,17 @@ function main() {
     }
   }
 
-  for (const hookName of ['session-end.js', 'subagent-stop.js', 'user-prompt-submit.js']) {
+  for (const hookName of ['session-start.js', 'session-end.js', 'stop.js', 'subagent-stop.js', 'user-prompt-submit.js']) {
     const hookContent = readFile(path.join(hooksDir, hookName));
-    requireIncludes(hookContent, 'idempotency_key', failures, `${hookName} V2 queue writer`);
-    requireIncludes(hookContent, 'stableQueueKey', failures, `${hookName} V2 queue writer`);
+    if (hookContent.includes('appendJsonLine(V2_QUEUE')) {
+      requireIncludes(hookContent, 'stableQueueKey', failures, `${hookName} V2 queue writer`);
+    }
+    for (const block of v2QueueWriteBlocks(hookContent)) {
+      if (!/\bidempotency_key\s*:/.test(block)) {
+        const skill = (block.match(/skill:\s*['"`]([^'"`]+)['"`]/) || [])[1] || '<unknown>';
+        failures.push(`${hookName} V2 queue request for ${skill} is missing idempotency_key`);
+      }
+    }
   }
 
   const runtimeQueueSkillPath = path.join(repoRoot, '.cortex', 'skills', 'execution-engine', 'runtime-queue.skill.md');

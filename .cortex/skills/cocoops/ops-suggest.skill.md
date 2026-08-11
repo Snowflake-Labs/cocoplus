@@ -29,3 +29,10 @@ If a suggestion has no citation because `dora-snapshot.json` is missing or incom
 - Suggestions come from `cocoops/ops-suggest-engine`
 - Every suggestion includes the source signal or data gap
 - Absence of data is reported as a data gap, not converted into a recommendation
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

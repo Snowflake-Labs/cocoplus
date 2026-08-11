@@ -43,3 +43,10 @@ It never edits files. CocoBrew performs changes only after the operator approves
 - [ ] Deterministic work is recommended as script work, not token generation.
 - [ ] Convergence findings recommend isolated divergence rather than another same-frame retry.
 - [ ] Public skills do not receive private implementation details.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

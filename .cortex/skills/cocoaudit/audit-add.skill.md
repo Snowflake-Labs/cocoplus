@@ -25,3 +25,10 @@ Manual entries must be labeled `Manual Entry` and `Event: manual`. They suppleme
 - CocoAudit is enabled.
 - The manual message is appended verbatim.
 - Output reports the audit path and timestamp.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |

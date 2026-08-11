@@ -151,3 +151,10 @@ git commit -m "chore(cocoplus): migrate project to v2"
 - [ ] Migration validation passes before cleanup.
 - [ ] Post-migration cleanup archives legacy config rather than deleting history.
 - [ ] Migration report is written and committed.
+
+## Anti-Rationalization
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Treat the skill as complete because the file exists | Skill contracts must describe observable behavior and verification, not just command names. |
+| Skip artifact and safety checks for a small command | Small commands still mutate state or guide execution; preserve the same gates. |
