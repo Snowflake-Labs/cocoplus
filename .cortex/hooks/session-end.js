@@ -146,20 +146,22 @@ function main() {
   try {
     const startedAtMs = meterStartedAt ? new Date(meterStartedAt).getTime() : Date.now();
     const durationMinutes = Math.max(0, Math.round((Date.now() - startedAtMs) / 60000));
-    const sessionRecord = JSON.stringify({
+    const sessionRecord = {
       session_id: sessionId,
+      started_at: meterStartedAt || ts,
+      ended_at: ts,
       timestamp: ts,
       duration_minutes: durationMinutes,
       turn_count: meterToolsCalled,
       archetype: 'exploration',
       summary: '',
       features_used: [],
-    });
+    };
     appendJsonLine(V2_QUEUE, {
       skill: 'cocopull/session-indexer',
       operation: 'append',
       idempotency_key: stableQueueKey('cocopull/session-indexer', [sessionRecord.session_id, sessionRecord.started_at, sessionRecord.ended_at]),
-      session_record: sessionRecord,
+      session_record: JSON.stringify(sessionRecord),
       requested_at: ts,
       source: 'hook.session-end',
     });

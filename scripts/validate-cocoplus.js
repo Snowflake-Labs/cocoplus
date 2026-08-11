@@ -115,6 +115,48 @@ function parseFrontmatterTools(agentFile) {
   return tools;
 }
 
+function extractObjectArgumentAfter(content, callStart) {
+  const braceStart = content.indexOf('{', callStart);
+  if (braceStart === -1) return '';
+  let depth = 0;
+  let quote = null;
+  let escaped = false;
+  for (let i = braceStart; i < content.length; i += 1) {
+    const char = content[i];
+    if (quote) {
+      if (escaped) {
+        escaped = false;
+      } else if (char === '\\') {
+        escaped = true;
+      } else if (char === quote) {
+        quote = null;
+      }
+      continue;
+    }
+    if (char === '"' || char === "'" || char === '`') {
+      quote = char;
+      continue;
+    }
+    if (char === '{') depth += 1;
+    if (char === '}') {
+      depth -= 1;
+      if (depth === 0) return content.slice(braceStart, i + 1);
+    }
+  }
+  return '';
+}
+
+function v2QueueWriteBlocks(content) {
+  const blocks = [];
+  const marker = 'appendJsonLine(V2_QUEUE';
+  let index = 0;
+  while ((index = content.indexOf(marker, index)) !== -1) {
+    blocks.push(extractObjectArgumentAfter(content, index));
+    index += marker.length;
+  }
+  return blocks.filter(Boolean);
+}
+
 function main() {
   const failures = [];
   const plugin = readJson(pluginPath);
@@ -515,10 +557,17 @@ function main() {
     }
   }
 
-  for (const hookName of ['session-end.js', 'subagent-stop.js', 'user-prompt-submit.js']) {
+  for (const hookName of ['session-start.js', 'session-end.js', 'stop.js', 'subagent-stop.js', 'user-prompt-submit.js']) {
     const hookContent = readFile(path.join(hooksDir, hookName));
-    requireIncludes(hookContent, 'idempotency_key', failures, `${hookName} V2 queue writer`);
-    requireIncludes(hookContent, 'stableQueueKey', failures, `${hookName} V2 queue writer`);
+    if (hookContent.includes('appendJsonLine(V2_QUEUE')) {
+      requireIncludes(hookContent, 'stableQueueKey', failures, `${hookName} V2 queue writer`);
+    }
+    for (const block of v2QueueWriteBlocks(hookContent)) {
+      if (!/\bidempotency_key\s*:/.test(block)) {
+        const skill = (block.match(/skill:\s*['"`]([^'"`]+)['"`]/) || [])[1] || '<unknown>';
+        failures.push(`${hookName} V2 queue request for ${skill} is missing idempotency_key`);
+      }
+    }
   }
 
   const runtimeQueueSkillPath = path.join(repoRoot, '.cortex', 'skills', 'execution-engine', 'runtime-queue.skill.md');

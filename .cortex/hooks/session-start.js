@@ -11,7 +11,7 @@
 const fs   = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
-const { isoUtc, appendJsonLine, atomicWrite, logError, readJsonString } = require('./_common.js');
+const { isoUtc, appendJsonLine, atomicWrite, stableQueueKey, logError, readJsonString } = require('./_common.js');
 const { loadConfig, setFlag, initPilotSession } = require('./_v2-state.js');
 
 const COCOPLUS_DIR = '.cocoplus';
@@ -187,6 +187,7 @@ function main() {
   // 5. CocoTrace — Tier 2 async staleness advisory through the V2 runtime queue.
   appendJsonLine(V2_QUEUE, {
     skill: 'cocotrace/trace-check',
+    idempotency_key: stableQueueKey('cocotrace/trace-check', [sessionId, ts.slice(0, 16)]),
     requested_at: ts,
     session_id: sessionId,
     source: 'hook.session-start',
