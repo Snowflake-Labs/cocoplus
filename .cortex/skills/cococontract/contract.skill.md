@@ -47,6 +47,25 @@ Tiers, ordered by epistemic strength (strongest first):
 
 Invoke `contract-prove --function <function-name> --tier <tier> --description "<text>" [--check-command '["node","check.js"]']`. The skill records evidence in `contract-evidence.json` keyed to the function's current source hash. When `--check-command` is provided, `$contract ci` re-executes the exact argument-vector command and fails on non-zero exit.
 
+Flow stages may also declare `contract_tier: "light" | "standard" | "full"` to select verification depth:
+
+- **light** — SQL syntax validation, column type check against schema, and result shape verification.
+- **standard** — light checks plus SQL lint, NULL handling validation, and determinism check on the same snapshot. This is the default.
+- **full** — standard checks plus mutation verification, real execution with row count and cost recorded, and supply-chain checks for credentials, hardcoded warehouses, and ACCOUNTADMIN assumptions. Stages with `allow_irreversible_actions: true` or `human_gate: true` default to full unless explicitly overridden by the flow definition.
+
+### Six honesty rules
+
+These integrity rules are structural requirements for every CocoContract evaluation:
+
+1. Never weaken a verification check to make it pass.
+2. Unverified never equals pass: a layer that cannot run records `status: "SKIPPED"` with a reason and cannot contribute to a PASS verdict.
+3. Fail closed: a must-find-nothing check passes only when it actually finds nothing.
+4. Prove each custom check can fail with a negative control before trusting it.
+5. Mutation survivors are BLOCKING findings in full-tier contracts.
+6. Disclose new Snowflake object dependencies item by item in the manifest.
+
+After a PASS verdict, write an operator-facing evidence artifact at `lifecycle/contracts/<function-name>/<timestamp>/evidence.md`. It must include what was expected, what was verified, known unverified modes, the exact entry command, and source state. Operators review the SPEC before generation and `evidence.md` after verification; the SQL diff is not the primary review interface.
+
 ### `$contract archive [function-name]`
 
 After the function ships, move the current contract and evidence into `outcomes/<function-name>/` as the permanent archive: `contract.md`, `evidence/` (timestamped records per tier), `history.md` (revision log). Commit the archive.
@@ -77,6 +96,9 @@ If either condition fails, `$ship` returns a blocking message naming the functio
 - `$ship` is blocked when evidence is absent, blocked when evidence is stale, and proceeds only with fresh Tier 1/2 evidence
 - `$contract ci` re-runs recorded executable check commands and exits non-zero on any archived-contract regression
 - No code path exists that bypasses the evidence-tier or staleness check for `$ship`
+- Stage `contract_tier` resolves to light, standard, or full, with irreversible and human-gated stages defaulting to full
+- PASS verdicts write `lifecycle/contracts/<function-name>/<timestamp>/evidence.md`
+- Six honesty rules prevent SKIPPED layers and mutation survivors from being reported as passing evidence
 
 ## Anti-Rationalization
 
@@ -87,3 +109,4 @@ If either condition fails, `$ship` returns a blocking message naming the functio
 | Add a `--force` or `--skip-contract` flag for urgent ships | No override flags exist by design — an urgent ship with unproven behavior is exactly the failure this gate stops |
 | Overwrite `outcomes/<name>/contract.md` silently when behavior changes | The diff must be visible and the revision explicit — silent overwrite lets implementation drift retroactively redefine the requirement |
 | Treat stale evidence as still valid because "the change was small" | Staleness is keyed to source hash, not developer judgment of change size — any hash change invalidates the evidence |
+| Treat SKIPPED verification as acceptable because the other layers passed | Unverified never equals pass; a skipped layer is disclosed uncertainty, not evidence |
