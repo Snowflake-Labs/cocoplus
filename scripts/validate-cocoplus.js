@@ -458,6 +458,8 @@ function main() {
   requireIncludes(preToolUse, 'premortem_required', failures, 'PreToolUse hook');
   requireIncludes(preToolUse, 'premortem_acknowledged', failures, 'PreToolUse hook');
   requireIncludes(preToolUse, 'require_outcome_verification', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'pilotConfig.first_run_gate', failures, 'PreToolUse hook');
+  rejectPattern(preToolUse, /params\.premortem_acknowledged/, failures, 'PreToolUse hook');
 
   const sessionStart = readFile(path.join(hooksDir, 'session-start.js'));
   requireIncludes(sessionStart, 'cocoplus-init.json', failures, 'SessionStart hook');

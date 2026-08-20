@@ -587,8 +587,32 @@ function checkHumanGate(config, params, ts) {
 
 function checkFirstRunConfigurationGate(params, ts) {
   if (!isStageBoundaryDispatch(params)) return null;
+  const config = loadConfig();
+  const pilotConfig = config.cocopilot || {};
+  if (pilotConfig.first_run_gate === false || pilotConfig.first_run_gate === 'false') return null;
+  const pilotActive = fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'cocopilot.on')) ||
+    pilotConfig.auto_activate === true ||
+    pilotConfig.auto_activate === 'true';
+  if (!pilotActive) return null;
+
   const initState = readJsonFile(INIT_CONFIRMATION, null);
-  if (!initState || initState.confirmed === true) return null;
+  if (initState && initState.confirmed === true) return null;
+  if (!initState) {
+    writeJsonFile(INIT_CONFIRMATION, {
+      confirmed: false,
+      status: 'pending_confirmation',
+      requested_at: ts,
+      operator: (config.cocoplus && config.cocoplus.operator) || 'unknown',
+      settings: [
+        { name: 'default_warehouse', value: (config.cocoplus && config.cocoplus.default_warehouse) || 'COMPUTE_WH' },
+        { name: 'cost_ceiling_per_run', value: (config.session && config.session.budget_limit) || 5.0 },
+        { name: 'schema_prefix_prod', value: (config.cocoplus && config.cocoplus.schema_prefix_prod) || 'COCOPLUS_PROD' },
+        { name: 'schema_prefix_dev', value: (config.cocoplus && config.cocoplus.schema_prefix_dev) || 'COCOPLUS_DEV' },
+        { name: 'notification_target', value: (config.cocoplus && config.cocoplus.notification_target) || null },
+      ],
+      instructions: 'Confirm or update these settings before the first CocoPilot dispatch. Run $cocoplus reset-init to force this gate again.',
+    });
+  }
   appendJsonLine(HOOK_LOG, {
     hook: 'pre-tool-use',
     action: 'first_run_configuration_blocked',
@@ -626,7 +650,15 @@ function premortemStatePath(runId) {
 function premortemAcknowledged(runId, stageId) {
   const state = readJsonFile(premortemStatePath(runId), { stages: {} });
   const stageState = state.stages && state.stages[stageId];
-  return Boolean(stageState && stageState.premortem_acknowledged === true);
+  if (!(stageState && stageState.premortem_acknowledged === true)) return false;
+  const progressPath = path.join(COCOPLUS_DIR, 'session', 'PROGRESS.md');
+  try {
+    const progress = fs.readFileSync(progressPath, 'utf8');
+    const escapedStageId = String(stageId).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`^## Pre-Mortem:.*${escapedStageId}`, 'm').test(progress);
+  } catch (_) {
+    return false;
+  }
 }
 
 function checkPremortemGate(config, params, ts) {
@@ -635,7 +667,7 @@ function checkPremortemGate(config, params, ts) {
   const stage = findStage(stageId);
   if (!premortemRequired(stage)) return null;
   const runId = flowRunId(params);
-  if (params.premortem_acknowledged === true || params.premortem_acknowledged === 'true' || premortemAcknowledged(runId, stageId)) return null;
+  if (premortemAcknowledged(runId, stageId)) return null;
 
   const statePath = premortemStatePath(runId);
   const state = readJsonFile(statePath, { run_id: runId, stages: {} });
