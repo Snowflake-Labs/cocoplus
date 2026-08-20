@@ -143,6 +143,12 @@ $pilot off
 </code></pre>
 <p><code>$pilot on</code> creates <code>.cocoplus/modes/cocopilot.on</code> and initializes <code>lifecycle/pilot-session.json</code>. CocoPilot may route natural-language requests and offer suggestions, but cannot perform irreversible actions or bypass approval gates. <code>$pilot off</code> removes the mode flag.</p>
 <hr>
+<p><strong><code>$cocoplus reset-init</code></strong> — Reset the CocoPilot first-run configuration gate</p>
+<pre><code>
+$cocoplus reset-init
+</code></pre>
+<p>Deletes <code>.cocoplus/lifecycle/cocoplus-init.json</code>. On the next CocoPilot session start, the first-run configuration gate presents the default warehouse, cost ceiling, production schema prefix, development schema prefix, and notification target for explicit confirmation before dispatch.</p>
+<hr>
 <p><strong><code>$forge</code></strong> — Start or manage CocoForge</p>
 <pre><code>
 $forge "prepare this project for release"
@@ -1561,7 +1567,7 @@ $sketch deps --reduce off
 </tr>
 <tr>
   <td style="text-align:left"><strong>Operating Layer</strong></td>
-  <td style="text-align:left"><code>$cocoplus console</code> · <code>$pilot on|off</code> · <code>$forge "goal" [--ladder]</code> · <code>$forge resolve-dispute</code> · <code>$leviathan on|off|status|learn</code> · <code>$session status|progress|steer|stop|resume</code> · <code>$routine list|schedule|disable|delete</code> · <code>$retrospective run</code> · <code>$hygiene --model-upgrade</code></td>
+  <td style="text-align:left"><code>$cocoplus console</code> · <code>$cocoplus reset-init</code> · <code>$pilot on|off</code> · <code>$forge "goal" [--ladder]</code> · <code>$forge resolve-dispute</code> · <code>$leviathan on|off|status|learn</code> · <code>$session status|progress|steer|stop|resume</code> · <code>$routine list|schedule|disable|delete</code> · <code>$retrospective run</code> · <code>$hygiene --model-upgrade</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Lifecycle</strong></td>

@@ -17,8 +17,9 @@ All notable changes to CocoPlus are documented here.
 - The managed plugin manifest now registers only `.cortex/scripts/cocoplus-console.js` as the V2 runtime script, matching the Skill-Native Architecture boundary from the updated CocoPlus 2.0 specs.
 - V2 hooks now normalize both `tool`/`parameters` and `tool_name`/`tool_input` payloads before applying safety, governance, evidence, and meter behavior.
 - Runtime queue validation now checks every V2 queue envelope for `idempotency_key`, and queued SessionStart, Stop, and SessionEnd records use stable semantic keys.
-- Public principle documentation now reflects all 46 design principles, including negative memory, lexical baseline, and structural-vs-intent correctness.
+- Public principle documentation now reflects all 47 design principles, including negative memory, lexical baseline, structural-vs-intent correctness, and reliability structure.
 - Skill contract validation now enforces required frontmatter, Exit Criteria, and Anti-Rationalization sections across all packaged skills.
+- twenty-ninth-cycle parity adds CocoPilot pre-mortem and first-run configuration gates, CocoContract risk-scaled verification tiers, and Principle 47.
 - V2 hooks now write durable queue envelopes with `idempotency_key` values, letting feature-owned skills claim and settle background work without duplicate artifacts.
 - Added `execution-engine/runtime-queue`, `cocometer/meter-reconcile`, and `execution-engine/flow-event-reader` skill contracts for request settlement, transcript-backed meter reconciliation, and authoritative CocoFlow completion timestamps.
 - `scripts/validate-cocoplus.js` now enforces the V2.0.1 runtime script contract, rejects legacy helper scripts, and verifies the queue/idempotency contracts remain present.
