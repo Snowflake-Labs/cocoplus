@@ -403,6 +403,10 @@ function main() {
   }
 
   const configTemplate = readFile(path.join(templatesDir, 'cocoplus.toml.template'));
+  const duplicateCortexConfigTemplate = path.join(repoRoot, '.cortex', 'templates', 'cocoplus.toml.template');
+  if (fs.existsSync(duplicateCortexConfigTemplate)) {
+    failures.push('.cortex/templates/cocoplus.toml.template must not exist; templates/cocoplus.toml.template is the canonical packaged template');
+  }
   for (const expected of [
     'budget_limit',
     'budget_reserve_fraction',
