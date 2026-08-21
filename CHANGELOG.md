@@ -23,6 +23,7 @@ All notable changes to CocoPlus are documented here.
 - V2 hooks now write durable queue envelopes with `idempotency_key` values, letting feature-owned skills claim and settle background work without duplicate artifacts.
 - Added `execution-engine/runtime-queue`, `cocometer/meter-reconcile`, and `execution-engine/flow-event-reader` skill contracts for request settlement, transcript-backed meter reconciliation, and authoritative CocoFlow completion timestamps.
 - `scripts/validate-cocoplus.js` now enforces the V2.0.1 runtime script contract, rejects legacy helper scripts, and verifies the queue/idempotency contracts remain present.
+- `templates/cocoplus.toml.template` is now the only canonical packaged config template; the duplicate `.cortex/templates/cocoplus.toml.template` was removed and validation now rejects reintroducing it.
 
 ---
 
