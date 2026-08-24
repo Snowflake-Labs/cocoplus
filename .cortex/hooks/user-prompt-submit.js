@@ -41,6 +41,7 @@ const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const V2_QUEUE     = path.join(COCOPLUS_DIR, 'v2-runtime-requests.jsonl');
 const SESSION_DIR  = path.join(COCOPLUS_DIR, 'session');
 const AUDIT_MD     = path.join(COCOPLUS_DIR, 'lifecycle', 'audit.md');
+const INIT_CONFIRMATION = path.join(COCOPLUS_DIR, 'lifecycle', 'cocoplus-init.json');
 
 /** Default persona shorthand map (overridden by .cocoplus/personas.json if present) */
 const DEFAULT_PERSONAS = {
@@ -180,6 +181,15 @@ function main() {
     pilot.session_id = sessionId;
     writeJson(pilotPath, pilot);
     appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'pilot_deactivated', tier: 1, ts });
+    return;
+  }
+  if (message === '$cocoplus reset-init') {
+    try {
+      if (fs.existsSync(INIT_CONFIRMATION)) fs.unlinkSync(INIT_CONFIRMATION);
+      appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'first_run_configuration_reset', command: '$cocoplus reset-init', tier: 1, ts });
+    } catch (err) {
+      logError('user-prompt-submit', `first-run reset failed: ${err.message}`);
+    }
     return;
   }
   if (message.startsWith('$forge')) {

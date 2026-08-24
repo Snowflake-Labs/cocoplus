@@ -29,7 +29,7 @@ Read `cocoplus.toml` from the project root. If absent, output:
 
 ```
 cocoplus sync: cocoplus.toml not found.
-Run $pod init to create a project bundle (which generates cocoplus.toml), or create cocoplus.toml manually using the template at .cortex/templates/cocoplus.toml.template.
+Run $pod init to create a project bundle (which generates cocoplus.toml), or create cocoplus.toml manually using templates/cocoplus.toml.template from the installed CocoPlus plugin bundle.
 ```
 
 Then stop.
@@ -164,7 +164,7 @@ Wait for confirmation before proceeding.
 
 ### Step 4 — Write cocoplus.toml
 
-If `cocoplus.toml` does not exist, copy from `.cortex/templates/cocoplus.toml.template`. Then populate the `[security]` section with values from `safety-config.json`.
+If `cocoplus.toml` does not exist, copy from `templates/cocoplus.toml.template` in the installed CocoPlus plugin bundle. Then populate the `[security]` section with values from `safety-config.json`.
 
 If `cocoplus.toml` exists, update only the `[security]` section.
 

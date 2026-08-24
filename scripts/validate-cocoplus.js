@@ -403,6 +403,10 @@ function main() {
   }
 
   const configTemplate = readFile(path.join(templatesDir, 'cocoplus.toml.template'));
+  const duplicateCortexConfigTemplate = path.join(repoRoot, '.cortex', 'templates', 'cocoplus.toml.template');
+  if (fs.existsSync(duplicateCortexConfigTemplate)) {
+    failures.push('.cortex/templates/cocoplus.toml.template must not exist; templates/cocoplus.toml.template is the canonical packaged template');
+  }
   for (const expected of [
     'budget_limit',
     'budget_reserve_fraction',
@@ -428,14 +432,17 @@ function main() {
     'model_tier_default',
     '[flow.stage]',
     'human_gate_clearance_file',
+    'premortem_enabled',
+    'premortem_warn_on_absent',
+    'contract_tier',
   ]) {
     requireIncludes(configTemplate, expected, failures, 'cocoplus.toml.template');
   }
 
   const principlesHtml = readFile(path.join(repoRoot, 'docs', 'principles.html'));
   const principleCount = (principlesHtml.match(/<h2 id="[0-9]/g) || []).length;
-  if (principleCount !== 46) {
-    failures.push(`docs/principles.html must contain 46 principle headings; found ${principleCount}`);
+  if (principleCount !== 47) {
+    failures.push(`docs/principles.html must contain 47 principle headings; found ${principleCount}`);
   }
   requireIncludes(principlesHtml, 'The Transcript Is the Source of Truth', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Timestamps Have Provenance', failures, 'docs/principles.html');
@@ -446,11 +453,23 @@ function main() {
   requireIncludes(principlesHtml, 'Negative Memory Is Load-Bearing', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Lexical Baseline Before LLM Processing', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Structural Correctness', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Structure Is the Reliability Gap', failures, 'docs/principles.html');
 
   const preToolUse = readFile(path.join(hooksDir, 'pre-tool-use.js'));
   requireIncludes(preToolUse, 'model_tier_floor_applied', failures, 'PreToolUse hook');
   requireIncludes(preToolUse, 'human_gate_blocked', failures, 'PreToolUse hook');
   requireIncludes(preToolUse, 'open-pre-tool-use', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'premortem_required', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'premortem_acknowledged', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'require_outcome_verification', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'pilotConfig.first_run_gate', failures, 'PreToolUse hook');
+  rejectPattern(preToolUse, /params\.premortem_acknowledged/, failures, 'PreToolUse hook');
+
+  const sessionStart = readFile(path.join(hooksDir, 'session-start.js'));
+  requireIncludes(sessionStart, 'cocoplus-init.json', failures, 'SessionStart hook');
+
+  const userPromptSubmit = readFile(path.join(hooksDir, 'user-prompt-submit.js'));
+  requireIncludes(userPromptSubmit, '$cocoplus reset-init', failures, 'UserPromptSubmit hook');
 
   const postToolUse = readFile(path.join(hooksDir, 'post-tool-use.js'));
   requireIncludes(postToolUse, 'open-pre-tool-use', failures, 'PostToolUse hook');
@@ -550,6 +569,10 @@ function main() {
     '$pulse on',
     '$adversary run',
     '$diary view',
+    '$cocoplus reset-init',
+    'CocoPilot pre-mortem gate',
+    'CocoContract risk-scaled verification tiers',
+    'Structure Is the Reliability Gap',
   ]) {
     requireIncludes(snowParityDocs, expected, failures, 'CocoPlus source parity docs');
   }

@@ -18,6 +18,7 @@ const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const SPAWN_QUEUE  = path.join(COCOPLUS_DIR, 'subagent-spawn-requests.jsonl');
 const V2_QUEUE     = path.join(COCOPLUS_DIR, 'v2-runtime-requests.jsonl');
+const INIT_CONFIRMATION = path.join(COCOPLUS_DIR, 'lifecycle', 'cocoplus-init.json');
 const STATUS_RANK = {
   idle: 0,
   running: 1,
@@ -127,6 +128,49 @@ function queueAndAttemptBackgroundSpawn(request, ts) {
   }
 }
 
+function firstRunGateEnabled(config) {
+  const pilot = config.cocopilot || {};
+  return pilot.first_run_gate !== false && pilot.first_run_gate !== 'false';
+}
+
+function settingValue(config, sectionName, key, fallback) {
+  const section = config[sectionName] || {};
+  return section[key] === undefined || section[key] === '' ? fallback : section[key];
+}
+
+function ensureFirstRunConfigurationGate(config, sessionId, ts) {
+  if (!firstRunGateEnabled(config)) return;
+  if (!(fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'cocopilot.on')) || (config.cocopilot && config.cocopilot.auto_activate === true))) return;
+
+  const existing = readJsonFile(INIT_CONFIRMATION, null);
+  if (existing && existing.confirmed === true) return;
+
+  const settings = [
+    { name: 'default_warehouse', value: settingValue(config, 'cocoplus', 'default_warehouse', 'COMPUTE_WH') },
+    { name: 'cost_ceiling_per_run', value: settingValue(config, 'session', 'budget_limit', 5.0) },
+    { name: 'schema_prefix_prod', value: settingValue(config, 'cocoplus', 'schema_prefix_prod', 'COCOPLUS_PROD') },
+    { name: 'schema_prefix_dev', value: settingValue(config, 'cocoplus', 'schema_prefix_dev', 'COCOPLUS_DEV') },
+    { name: 'notification_target', value: settingValue(config, 'cocoplus', 'notification_target', null) },
+  ];
+
+  writeJsonFile(INIT_CONFIRMATION, {
+    confirmed: false,
+    status: 'pending_confirmation',
+    requested_at: ts,
+    session_id: sessionId,
+    operator: settingValue(config, 'cocoplus', 'operator', 'unknown'),
+    settings,
+    instructions: 'Confirm or update these settings before the first CocoPilot dispatch. Run $cocoplus reset-init to force this gate again.',
+  });
+  appendJsonLine(HOOK_LOG, {
+    hook: 'session-start',
+    action: 'first_run_configuration_gate_pending',
+    artifact: 'lifecycle/cocoplus-init.json',
+    session: sessionId,
+    ts,
+  });
+}
+
 function main() {
   if (!fs.existsSync(COCOPLUS_DIR)) return;
 
@@ -142,6 +186,7 @@ function main() {
     initPilotSession('auto-activated at session start', sessionId);
     appendJsonLine(HOOK_LOG, { hook: 'session-start', action: 'pilot_auto_activated', session: sessionId, ts });
   }
+  ensureFirstRunConfigurationGate(config, sessionId, ts);
 
   // 1. Detect current lifecycle phase
   let phase = 'unknown';

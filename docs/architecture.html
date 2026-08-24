@@ -122,6 +122,7 @@
 │   └── noop-log.jsonl     ← verified no-op stage records
 ├── lifecycle/             ← phase artifacts: spec, plan, review, deployment
 │   ├── cocoflow/          ← per-run flow diagnostics such as complexity.json, policy-snapshot.json, and gate-clearances.json
+│   ├── cocoplus-init.json ← first-run configuration confirmation receipt for CocoPilot
 │   ├── cocoplus-context.md    ← constitutional document — every agent reads this first
 │   ├── bloom.md           ← CocoBloom working backwards commitment (optional, committed)
 │   ├── spec.md            ← current specification
@@ -177,6 +178,8 @@
 │   └── health.md          ← latest health-grade receipt
 ├── outcomes/              ← CocoContract outcome contracts and evidence archives
 │   └── [function]/contract.md ← pre-generation success contract
+├── contracts/             ← CocoContract verification evidence documents
+│   └── [function]/[timestamp]/evidence.md ← operator-facing SPEC/EVIDENCE proof record
 ├── sentinel/              ← CocoSentinel artifact quality gate results
 │   ├── &lt;artifact-sha&gt;.json    ← evaluation result per artifact (SHA-bound)
 │   ├── approvals.jsonl    ← SHA-bound approval records (append-only)
@@ -228,6 +231,7 @@ cocoplus.toml              ← single source of truth for all plugin configurati
 AGENTS.md                  ← project root shim that redirects to .cocoplus/AGENTS.md
 </code></pre>
 <p>Most of this directory goes into version control. Durable project state — decisions, patterns, lifecycle artifacts, pipeline definitions, promoted templates, and governance receipts — is versionable, diffable, and recoverable. Transient runtime state such as local session handoffs, proposal indexes, live process logs, local databases, and generated browser views is intentionally excluded by <code>.cocoplus/.gitignore</code>.</p>
+<p>The first-run configuration receipt lives at <code>lifecycle/cocoplus-init.json</code>. CocoContract operator evidence lives at <code>lifecycle/contracts/&lt;function&gt;/&lt;timestamp&gt;/evidence.md</code>.</p>
 <p>This is not an accident. File-based persistence was chosen specifically because it aligns with how developers already think about project state. You can read any of these files with a text editor. You can diff them with git. You can restore a previous state with <code>git checkout</code>. The system's intelligence lives in legible files, not in opaque service state.</p>
 <hr>
 <h2 id="the-four-tier-model-hierarchy">The Four-Tier Model Hierarchy</h2>
