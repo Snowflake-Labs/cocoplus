@@ -324,43 +324,42 @@
   </div>
 </div>
 <hr>
-<h2 id="20-orchestration-must-remain-legible">20. Orchestration Must Remain Legible</h2>
+<h2 id="20-declared-boundaries-over-assumed-scope">20. Declared Boundaries Over Assumed Scope</h2>
 <div class="principle-block">
   <div class="principle-core">
     <div class="principle-label">Principle</div>
-<p>CocoPilot can reduce friction, but it must not make the system mysterious. A companion that routes intent, suggests commands, or summarizes state is valuable only while the developer can still see what is happening, why it is happening, and which boundary applies next.</p>
-<p>This principle is why CocoPilot records session intent instead of hiding it, why CocoForge supersedes Pilot visibly while a goal loop is active, and why Leviathan Mode requires explicit covenant acceptance before autonomy expands. Ronin follows the same rule: the personal assistant briefing is not decoration, it is the human-readable surface that keeps autonomous coordination accountable.</p>
-<p>Orchestration should make the right path easier to follow. It should never turn a gated system into a black box.</p>
+<p>Agent authority, quality thresholds, action permissions, and evaluation criteria work when they are explicitly stated before action. They degrade when they are inferred at runtime, discovered mid-execution, or explained afterward to fit what already happened.</p>
+<p>Undeclared scope is scope that can be interpreted to fit whatever happened. Declared scope is accountable before the fact: a boundary stated before action is a constraint; a boundary stated after action is a rationalization.</p>
   </div>
   <div class="principle-applied">
     <div class="principle-label">Applied in CocoPlus</div>
-    <p>CocoPilot, CocoForge, Leviathan Mode, and Ronin expose active mode, routing, hard stops, and next boundaries. Orchestration is allowed to help, but not to hide who is acting or what gate applies.</p>
+    <p>CocoFlow HITL/AFK classification, CocoPivot <code>excludes:</code> scopes, CocoSpec and CocoContract pre-commitment, CocoSentinel action tiers, CocoStyle convention profiles, CocoLex vocabulary, and CocoAdversary exclusions declare boundaries before the system acts on them.</p>
   </div>
 </div>
 <hr>
-<h2 id="21-durable-records-outlive-session-memory">21. Durable Records Outlive Session Memory</h2>
+<h2 id="21-persistence-as-the-precondition-for-trustworthiness">21. Persistence as the Precondition for Trustworthiness</h2>
 <div class="principle-block">
   <div class="principle-core">
     <div class="principle-label">Principle</div>
-<p>Consequential decisions, approvals, evaluations, and audit claims must survive beyond the context window that produced them. A claim that exists only in private session memory cannot be verified by a future operator.</p>
-<p>CocoPlus writes durable records for lifecycle events, approvals, quality gates, cost reports, and session handoffs so the next agent can verify what happened without trusting a transcript summary.</p>
+<p>A system that stores critical state only in transient session memory cannot be trusted by anyone who was not present when the state was produced. Trust is a property of the record, not of the memory.</p>
+<p>Any decision, approval, quality gate result, or evaluation that a future agent, developer, or audit may rely on must be written to a durable, integrity-protected record before the session ends.</p>
   </div>
   <div class="principle-applied">
     <div class="principle-label">Applied in CocoPlus</div>
-    <p>CocoAudit, CocoSession, CocoDiary, CocoWisdom, CocoMeter history, Sentinel approvals, and lifecycle artifacts persist consequential claims so a later session can verify them without trusting memory.</p>
+    <p>CocoAudit append-only records, SHA-bound approvals, CocoContract evidence hashes, doc-state staleness graphs, quality watermarks, CocoFlow crash-recovery checkpoints, LEARNINGS records, and CocoWisdom stores make past claims verifiable.</p>
   </div>
 </div>
 <hr>
-<h2 id="22-verification-must-name-what-was-untestable">22. Verification Must Name What Was Untestable</h2>
+<h2 id="22-honest-uncertainty-as-a-first-class-outcome">22. Honest Uncertainty as a First-Class Outcome</h2>
 <div class="principle-block">
   <div class="principle-core">
     <div class="principle-label">Principle</div>
-<p>A quality system must distinguish between verified, refuted, and untestable-here. Treating unavailable evidence as either a silent pass or a generic failure hides the actual state of knowledge.</p>
-<p>CocoContract, CocoSentinel, CocoMeter, and related review surfaces carry confidence context and known-gap records when the current environment cannot prove a claim.</p>
+<p>A quality system that recognizes only verified and failed outcomes is structurally dishonest when evaluation cannot be performed in the current environment. UNTESTABLE HERE is not a failure; it is a disclosure.</p>
+<p>Known evaluation limitations are not documentation footnotes. They are live gap records that tell the operator what was being evaluated, what prevented evaluation, what evidence would close the gap, and whether the limitation is persistent or session-specific.</p>
   </div>
   <div class="principle-applied">
     <div class="principle-label">Applied in CocoPlus</div>
-    <p>CocoContract, CocoSentinel, CocoMeter, and review reports record verified, refuted, and untestable-here states. Known gaps remain visible instead of being collapsed into pass/fail theater.</p>
+    <p>CocoContract, CocoSentinel, CocoForge adversarial self-checks, CocoMeter reports, <code>lifecycle/known-gaps.json</code>, <code>$adversary gap</code>, and CocoDiary's open-risk section surface verified, refuted, and untestable-here states instead of collapsing them into pass/fail theater.</p>
   </div>
 </div>
 <hr>
@@ -641,12 +640,12 @@
 <div class="principle-block">
   <div class="principle-core">
     <div class="principle-label">Principle</div>
-<p>A memory system that records only successful approaches will re-explore failed paths. Rejections, dead ends, and abandoned approaches are first-class memory because they protect future sessions from repeating the same mistake.</p>
-<p>Negative memory requires judgment, so it should be explicit and durable. A rejected approach must remain visible at session start, must not be silently pruned, and must not be merged into positive guidance where its warning value is lost.</p>
+<p>A memory system that records only successful approaches will re-explore failed paths. The cost is not just wasted tokens — it is lost time, repeated failure, and weakened operator trust when the system proposes the same thing that did not work before.</p>
+<p>Rejected approaches are first-class memory citizens. The reason an approach was abandoned is exactly the signal the next session needs before trying it again. Negative memory requires judgment, so it should be explicit, durable, and never silently collapsed into positive guidance.</p>
   </div>
   <div class="principle-applied">
     <div class="principle-label">Applied in CocoPlus</div>
-    <p>CocoWisdom records do-not-use guidance in <code>do-not-use.md</code>. CocoHygiene does not auto-prune rejection records, and Wisdom recall surfaces rejected approaches before positive matches when they compete.</p>
+    <p>CocoWisdom's <code>do-not-use.md</code> is a primary read at session start, not an optional supplement. CocoHygiene does not auto-prune rejection records, and the distillation pipeline routes failure patterns to negative memory as a first-class output.</p>
   </div>
 </div>
 <hr>
@@ -654,12 +653,12 @@
 <div class="principle-block">
   <div class="principle-core">
     <div class="principle-label">Principle</div>
-<p>Before adding an LLM step to retrieval or analysis, establish the lexical baseline. Fast deterministic search over existing artifacts is cheap, local, explainable, and often good enough to serve as the first tier.</p>
-<p>An LLM layer should earn its place by improving a measured baseline, not by assumption. If deterministic matching recovers the needed evidence, the deterministic path is the correct first response.</p>
+<p>Before adding an LLM step to retrieval or analysis, establish the lexical baseline. Fast text search over existing artifacts is cheap, local, explainable, and strong enough that any semantic layer must earn its place with measurement.</p>
+<p>"It must be better because it uses AI" is not evidence. The baseline is a number; the improvement must also be a number. If deterministic matching recovers the needed evidence, the deterministic path is the correct first response.</p>
   </div>
   <div class="principle-applied">
     <div class="principle-label">Applied in CocoPlus</div>
-    <p><code>$wisdom recall</code> begins with lexical search over curated wisdom and session indexes. Any semantic or synthesized layer is additive and must preserve the fast baseline rather than replacing it blindly.</p>
+    <p><code>$wisdom recall</code> begins with lexical search over curated wisdom and session indexes. Before CocoRecall or CocoWisdom adds a semantic or synthesized layer, the exact and close-match baseline must be measured and preserved.</p>
   </div>
 </div>
 <hr>
@@ -667,12 +666,12 @@
 <div class="principle-block">
   <div class="principle-core">
     <div class="principle-label">Principle</div>
-<p>A function can compile, run, return the right type, and pass automated checks while still failing the operator's intent. Structural correctness and intent alignment answer different questions, and both matter.</p>
-<p>Evaluation paths should be explicit about what they verified. A structural PASS does not mean the work answered the request unless intent alignment was also checked or the gap was consciously accepted.</p>
+<p>A function can compile, run, return the right type, and pass automated checks while still failing the operator's intent. Structural testing answers "does it work?" Intent alignment answers "does it do what was asked?" Both are required.</p>
+<p>Evaluation paths should be explicit about which question they verified. A structural PASS does not mean the work answered the request unless intent alignment was also checked or the gap was consciously accepted.</p>
   </div>
   <div class="principle-applied">
     <div class="principle-label">Applied in CocoPlus</div>
-    <p>CocoContract and CocoSentinel distinguish structural evidence from intent evidence. For judgment-heavy outputs, observability reads the artifacts CocoFlow already writes so intent drift can be reviewed without requiring extra instrumentation.</p>
+    <p>CocoContract's structural gates are necessary but not sufficient; intent-match evaluation answers whether the agent understood the request. For judgment-heavy outputs, observability reads the artifacts CocoFlow already writes instead of requiring special instrumentation from skill authors.</p>
   </div>
 </div>
 <hr>
@@ -680,12 +679,12 @@
 <div class="principle-block">
   <div class="principle-core">
     <div class="principle-label">Principle</div>
-<p>Agents default toward fluency, recency, and optimism when important decisions are left unstructured. A named checklist, gate, or framework can recover failure modes that a free-form advisory misses.</p>
-<p>The reliability gap appears before dispatch, during verification, and at first operation. Pre-mortems force imagined failure analysis before work starts. Verification gauntlets force evidence discipline before delivery. First-run gates force configuration awareness before defaults affect production work.</p>
+<p>Agents default toward fluency, recency, and optimism when important decisions are left unstructured. Across repeated sessions, the same reasoning conducted through a checklist, gate, or named framework is more reliable than free-form advisory judgment.</p>
+<p>The reliability gap appears before dispatch, during verification, and at first operation. Pre-mortems recover failure scenarios that forward-only reasoning misses. Verification gauntlets prevent "looks correct" from substituting for evidence. First-run gates prevent silent defaults from becoming operational assumptions.</p>
   </div>
   <div class="principle-applied">
     <div class="principle-label">Applied in CocoPlus</div>
-    <p>CocoPilot uses pre-mortem and first-run configuration gates, while CocoContract uses risk-scaled tiers and honesty rules so unverified work cannot be laundered into a passing verdict.</p>
+    <p>CocoPilot uses pre-mortem and first-run configuration gates, while CocoContract uses risk-scaled tiers, mutation verification, and six honesty rules so unverified work cannot be laundered into a passing verdict.</p>
   </div>
 </div>
 <blockquote><p><em>Principles are only principles when they are applied in the cases where violating them would be convenient.</em></p></blockquote>
