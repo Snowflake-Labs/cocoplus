@@ -110,6 +110,9 @@ console_auto_launch = false
 # Natural-language orchestration layer over existing CocoPlus features.
 auto_activate = false
 suggestion_verbosity = "normal" # "minimal" | "normal" | "verbose"
+first_run_gate = true
+premortem_enabled = true
+premortem_warn_on_absent = true
 
 [cocoforge]
 # Meta Loop Expert Team Engine.
@@ -190,6 +193,7 @@ model_tier_default = "regular"
 
 [flow.stage]
 human_gate_clearance_file = ".cocoplus/lifecycle/cocoflow/<run-id>/gate-clearances.json"
+# contract_tier = "standard" # "light" | "standard" | "full"; irreversible or human-gated stages default to full
 
 [flow.planning]
 diverge_on_branch_points = true

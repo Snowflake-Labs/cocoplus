@@ -75,6 +75,10 @@ The consolidation cycle has four phases:
 
 If `.last-consolidation` is older than 48 hours, CocoConsole should surface an amber maintenance indicator.
 
+## Pre-Mortem Recall
+
+Index `## Pre-Mortem: <stage-id> <timestamp>` sections from `.cocoplus/session/PROGRESS.md` as session context. Store the stage ID, failure scenario text, prevention status, operator acknowledgment, and source path so `$wisdom recall` and `$recall search` can surface prior analytical intent risks for similar future stages.
+
 ## Exit Criteria
 
 - `$recall search` returns session-diverse results by default with all four citation fields present on every result
@@ -84,6 +88,7 @@ If `.last-consolidation` is older than 48 hours, CocoConsole should surface an a
 - `$recall sources` lists configured sources and indexed source counts
 - `recall.db` is present in `.cocoplus/.gitignore`
 - A result whose source transcript has been deleted since indexing reports `source_exists: false` rather than silently omitting the flag or hiding the result
+- Pre-Mortem sections from `PROGRESS.md` are indexed with stage ID, prevention status, and citation path
 
 ## Anti-Rationalization
 

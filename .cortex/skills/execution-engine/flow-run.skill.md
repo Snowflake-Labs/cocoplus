@@ -34,6 +34,10 @@ Resolve role-based defaults from `[model_roles]`: orchestration and synthesis us
 
 Stages may declare `thinking_effort: "low" | "medium" | "high"`. If absent, inherit `[session] default_thinking_effort` from `cocoplus.toml` (default `medium`). Pass the resolved value to the stage environment as `CORTEX_THINKING_EFFORT`; do not mutate global session settings.
 
+Stages may declare `contract_tier: "light" | "standard" | "full"` for CocoContract verification depth. Default to `standard`; default to `full` when `allow_irreversible_actions: true` or `human_gate: true` unless the stage explicitly declares a lower tier and the operator has accepted that risk in the flow definition.
+
+Stages may declare `premortem: true | false`. When absent, treat it as true for stages with `allow_irreversible_actions: true` or `require_outcome_verification: true`, and false for read-only advisory stages. A required pre-mortem must be recorded before dispatch.
+
 Read `[flow.tiers]` before dispatch:
 - `advisor_budget` caps advisor-tier calls per flow session.
 - `worker_budget` caps worker-tier calls per flow session.
@@ -114,7 +118,7 @@ For full pipeline execution:
 For each stage to execute:
 
 1. **Log start:** Update flow.json stage status to `"running"`, add `started_at` timestamp. Append `STAGE_STARTED` entry to `harvest/[run-id]-progress.txt` and `.cocoplus/session/steps.jsonl`. Write updated `harvest/[run-id]-tasks.json` atomically.
-2. **Human gate and model floor:** if the stage declares `human_gate: true`, do not dispatch until `$flow gate-clear [stage-id]` writes the run clearance. If the stage declares `model_tier_floor`, PreToolUse records the resolved `effective_model_tier` in the policy snapshot before dispatch.
+2. **Human gate, pre-mortem, model floor, and contract tier:** if the stage declares `human_gate: true`, do not dispatch until `$flow gate-clear [stage-id]` writes the run clearance. If the stage requires a pre-mortem, record three plausible failure scenarios and prevention status in `.cocoplus/session/PROGRESS.md` before dispatch. If the stage declares `model_tier_floor`, PreToolUse records the resolved `effective_model_tier` in the policy snapshot before dispatch. Resolve `contract_tier` before CocoContract evaluation and pass it to `$contract prove`.
 3. **Named artifact protocol:** if the stage declares `artifacts.reads`, verify every required file exists under `.cocoplus/flow/artifacts/[run-id]/` before dispatch. If missing, stop with the missing path and the upstream stage expected to write it.
 4. **Run setup commands** (if stage has setup commands in flow.json)
 5. **Read prompt file** from `.cocoplus/prompts/[stage-id]-prompt.md`
@@ -297,6 +301,8 @@ Time: [duration]
 - [ ] A `parallel:` step without a subsequent `converge:` step triggers a validator warning
 - [ ] Every `model_tier` resolves from `cocoplus.toml` without silent fallback
 - [ ] Every `thinking_effort` resolves from stage config or `[session] default_thinking_effort`
+- [ ] Every `contract_tier` resolves to light, standard, or full, with irreversible or human-gated stages defaulting to full
+- [ ] Required pre-mortem stages have a PROGRESS.md Pre-Mortem section before dispatch
 - [ ] `complexity.json` exists for enabled complexity-estimation runs before first model-backed dispatch
 - [ ] Model and thinking-effort floors come from complexity tier; budget state caps only parallelism and retry budget
 - [ ] High ambiguity or missing acceptance check is surfaced as a non-blocking pre-launch advisory

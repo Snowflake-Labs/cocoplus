@@ -32,12 +32,6 @@
 <div class="content">
 <p>Every CocoPlus command, organized by the feature that owns it. Each command includes its flags, what it does, and what output to expect.</p>
 <p>Commands marked <strong>[auto]</strong> do not require explicit invocation — they are triggered by hooks. They are documented here for awareness, not for manual use.</p>
-<h2 id="cocoplus-201-source-parity-commands">CocoPlus 2.0.1 Source-Parity Commands</h2>
-<p><strong>CocoWisdom:</strong> <code>$wisdom reject</code> appends structured negative memory to <code>do-not-use.md</code>; <code>$wisdom learn</code> and <code>$wisdom learnings</code> manage curated operator learnings; <code>$wisdom index</code> builds the credential-redacted session-log lexical index; <code>$wisdom recall</code> searches curated wisdom and the session index together, prioritizing do-not-use matches when confidence ties.</p>
-<p><strong>CocoMeter and CocoAudit:</strong> <code>$meter verify</code> validates outcome evidence and L4 claims for a run; <code>$meter waste</code> identifies context reconstruction, loop, and off-brief waste without silently writing Wisdom; <code>$audit verify</code> checks audit ordering, provenance, hash continuity, and contract proof drift.</p>
-<p><strong>CocoStyle and CocoLex:</strong> <code>$style init</code>, <code>$style refresh</code>, <code>$style show</code>, <code>$style mode</code>, <code>$style diff</code>, and <code>$style status</code> manage evidence-backed conventions; <code>$lex define</code>, <code>$lex list</code>, <code>$lex show</code>, <code>$lex extract</code>, and <code>$lex validate</code> manage project terminology and detect undefined or conflicting terms.</p>
-<p><strong>Operational controls:</strong> <code>$stall status</code>, <code>$stall thresholds</code>, and <code>$stall reset</code> expose no-progress loops; <code>$pulse on</code>, <code>$pulse off</code>, <code>$pulse status</code>, and <code>$pulse configure</code> manage ambient progress observation; <code>$adversary enable</code>, <code>$adversary disable</code>, <code>$adversary run</code>, <code>$adversary show</code>, <code>$adversary audit</code>, and <code>$adversary gap</code> manage read-only challenge review; <code>$diary view</code>, <code>$diary list</code>, and <code>$diary search</code> expose the work journal.</p>
-<hr>
 <h2 id="setup-and-state-cocopod">Setup and State — CocoPod</h2>
 <p>CocoPod is the prerequisite. No other CocoPlus command functions in a directory without an initialized CocoPod.</p>
 <hr>
@@ -142,6 +136,12 @@ $pilot on
 $pilot off
 </code></pre>
 <p><code>$pilot on</code> creates <code>.cocoplus/modes/cocopilot.on</code> and initializes <code>lifecycle/pilot-session.json</code>. CocoPilot may route natural-language requests and offer suggestions, but cannot perform irreversible actions or bypass approval gates. <code>$pilot off</code> removes the mode flag.</p>
+<hr>
+<p><strong><code>$cocoplus reset-init</code></strong> — Reset the CocoPilot first-run configuration gate</p>
+<pre><code>
+$cocoplus reset-init
+</code></pre>
+<p>Deletes <code>.cocoplus/lifecycle/cocoplus-init.json</code>. On the next CocoPilot session start, the first-run configuration gate presents the default warehouse, cost ceiling, production schema prefix, development schema prefix, and notification target for explicit confirmation before dispatch.</p>
 <hr>
 <p><strong><code>$forge</code></strong> — Start or manage CocoForge</p>
 <pre><code>
@@ -638,6 +638,21 @@ $meter accuracy
 $meter compare before.json after.json
 </code></pre>
 <p>Compares benchmark or harness result files. Accuracy delta leads by default; token or credit cost is a secondary signal unless <code>cocoplus.toml [meter]</code> explicitly sets and acknowledges cost-first mode. A cheaper result with lower accuracy is reported as a regression under correctness-first rules. When present, execution, coordination, landing, and ACRR rows are preserved separately rather than collapsed into one total. ACRR is reported as a calibration diagnostic, not as a replacement for accuracy.</p>
+<hr>
+<p><strong><code>$meter verify &lt;run-id&gt;</code></strong> — Mark a run's outcome as evidence-verified</p>
+<pre><code>
+$meter verify run-20260824 --evidence "Operator confirmed the Snowflake task produced the expected rows"
+</code></pre>
+<p>Validates outcome evidence and records the run as L4 only when the claim has downstream confirmation. This prevents merged code, completed stages, or agent assertions from being reported as verified outcomes without a concrete evidence note.</p>
+<p><strong>Output:</strong> Updated run outcome level and verification evidence.</p>
+<hr>
+<p><strong><code>$meter waste</code></strong> — Report avoidable coordination and context waste</p>
+<pre><code>
+$meter waste
+$meter waste --run run-20260824
+</code></pre>
+<p>Identifies context reconstruction, repeated-loop, and off-brief waste from meter and lifecycle records. The report is diagnostic: it does not silently write CocoWisdom entries or mutate project guidance.</p>
+<p><strong>Output:</strong> Waste report grouped by source and remediation hint.</p>
 <hr>
 <p><strong><code>$meter refresh</code></strong> — Refresh FinOps chargeback facts <em>(CocoMeter Enhanced)</em></p>
 <pre><code>$meter refresh
@@ -1166,6 +1181,41 @@ $wisdom status
 <p>Reports schema presence, injection mode, topic count, review queue depth, latest distillation report, and whether Stop hook auto-distillation is enabled.</p>
 <p><strong>Output:</strong> Read-only CocoWisdom health report.</p>
 <hr>
+<p><strong><code>$wisdom reject "&lt;description&gt;"</code></strong> — Record a rejected approach as negative memory</p>
+<pre><code>
+$wisdom reject "Do not use COPY INTO for this incremental upsert path; it cannot handle the merge semantics."
+</code></pre>
+<p>Appends a structured rejection record to <code>.cocoplus/wisdom/do-not-use.md</code>. Negative memory is loaded before positive recall guidance so known-bad approaches are visible before the system proposes them again.</p>
+<p><strong>Output:</strong> New do-not-use entry with category, date, and rationale.</p>
+<hr>
+<p><strong><code>$wisdom learn</code></strong> — Add a curated operator learning</p>
+<pre><code>
+$wisdom learn "Prefer stream/task checkpoints for this ingestion pattern"
+</code></pre>
+<p>Records an explicit operator-approved learning in the appropriate CocoWisdom topic file. The command is for curated memory, not automatic transcript harvesting.</p>
+<p><strong>Output:</strong> Proposed or written learning entry according to the active wisdom policy.</p>
+<hr>
+<p><strong><code>$wisdom learnings</code></strong> — Review curated operator learnings</p>
+<pre><code>
+$wisdom learnings
+</code></pre>
+<p>Lists operator-curated learnings separately from rejection records, routed wisdom, and raw session-index recall.</p>
+<p><strong>Output:</strong> Curated learning list with topic/source metadata.</p>
+<hr>
+<p><strong><code>$wisdom index</code></strong> — Build the local session-log lexical index</p>
+<pre><code>
+$wisdom index
+</code></pre>
+<p>Builds a credential-redacted local index over existing session JSONL transcripts. Raw session logs are not modified; redaction applies to the indexed representation before content becomes searchable.</p>
+<p><strong>Output:</strong> Updated local wisdom index and indexing summary.</p>
+<hr>
+<p><strong><code>$wisdom recall &lt;query&gt;</code></strong> — Search curated wisdom and session history together</p>
+<pre><code>
+$wisdom recall "PII masking role drift"
+</code></pre>
+<p>Searches both curated wisdom files and the lexical session index, labels each result by source, and prioritizes <code>do-not-use.md</code> matches when confidence ties.</p>
+<p><strong>Output:</strong> Ranked recall results with source labels and excerpts.</p>
+<hr>
 <p><strong><code>$wisdom export</code></strong> — Export all rejection records as a formatted Markdown report</p>
 <pre><code>
 $wisdom export
@@ -1417,6 +1467,13 @@ $audit ci
 <p>Re-executes all archived CocoContract falsifiability conditions before verifying the audit log's structural integrity. A contract regression is reported with the same severity as a failing safety gate. Also records the four CocoContract lifecycle event categories (declaration, evidence submission, stale-evidence detection, archive) to <code>lifecycle/audit.md</code> as they occur.</p>
 <p><strong>Output:</strong> Pass/fail report; non-zero exit on regression.</p>
 <hr>
+<p><strong><code>$audit verify</code></strong> — Verify audit-chain and contract-proof integrity</p>
+<pre><code>
+$audit verify
+</code></pre>
+<p>Checks audit ordering, timestamp provenance, hash continuity, and contract-proof drift before audit-backed claims are treated as reliable release evidence.</p>
+<p><strong>Output:</strong> Integrity report with pass/fail status and drift details.</p>
+<hr>
 <h2 id="artifact-trace-cocoTrace">Artifact Traceability — CocoTrace</h2>
 <p><strong><code>$trace build</code></strong> — Build the artifact traceability map for the current project</p>
 <pre><code>
@@ -1486,6 +1543,203 @@ $sketch deps --reduce off
 </code></pre>
 <p>Generates a Mermaid dependency graph for all pipeline tasks. By default, applies transitive reduction via <code>cocomap/map-reduce</code> — removes edges that are implied by longer paths, eliminating visual clutter without losing information. Use <code>--reduce off</code> to see the raw full dependency graph including all implied edges.</p>
 <p><strong>Output:</strong> <code>lifecycle/sketch-deps.md</code> with Mermaid dependency graph.</p>
+<hr>
+<h2 id="project-style-cocostyle">Project Style — CocoStyle</h2>
+<p><strong><code>$style init</code></strong> — Create the project convention profile</p>
+<pre><code>
+$style init
+</code></pre>
+<p>Infers conventions from the production branch and writes the initial CocoStyle profile for evidence-backed style review.</p>
+<p><strong>Output:</strong> Convention profile with inferred evidence.</p>
+<hr>
+<p><strong><code>$style refresh</code></strong> — Re-scan conventions from current evidence</p>
+<pre><code>
+$style refresh
+</code></pre>
+<p>Updates the convention profile from the latest branch evidence while preserving explicit style-mode settings.</p>
+<p><strong>Output:</strong> Refreshed profile and changed convention summary.</p>
+<hr>
+<p><strong><code>$style show</code></strong> — Display active conventions</p>
+<pre><code>
+$style show
+</code></pre>
+<p>Shows the current style profile, evidence snippets, and enforcement posture.</p>
+<p><strong>Output:</strong> Read-only convention report.</p>
+<hr>
+<p><strong><code>$style mode &lt;shadow|enforce|off&gt;</code></strong> — Set convention-review posture</p>
+<pre><code>
+$style mode shadow
+$style mode enforce
+$style mode off
+</code></pre>
+<p>Controls whether CocoReview reports style drift as shadow findings, enforceable findings, or ignores convention checks.</p>
+<p><strong>Output:</strong> Updated style mode.</p>
+<hr>
+<p><strong><code>$style diff</code></strong> — Compare current changes against conventions</p>
+<pre><code>
+$style diff
+</code></pre>
+<p>Reports changed files that diverge from the stored convention profile without rewriting files.</p>
+<p><strong>Output:</strong> Convention-drift diff report.</p>
+<hr>
+<p><strong><code>$style status</code></strong> — Check style profile health</p>
+<pre><code>
+$style status
+</code></pre>
+<p>Reports profile presence, mode, evidence freshness, and whether CocoReview is configured to consume CocoStyle.</p>
+<p><strong>Output:</strong> Read-only CocoStyle status.</p>
+<hr>
+<h2 id="project-vocabulary-cocolex">Project Vocabulary — CocoLex</h2>
+<p><strong><code>$lex define &lt;term&gt;</code></strong> — Define a project term</p>
+<pre><code>
+$lex define "customer active date"
+</code></pre>
+<p>Adds or proposes a term definition so specs and contracts can refer to shared language rather than ad hoc phrasing.</p>
+<p><strong>Output:</strong> Lexicon entry or proposed definition.</p>
+<hr>
+<p><strong><code>$lex list</code></strong> — List defined project terms</p>
+<pre><code>
+$lex list
+</code></pre>
+<p>Displays known terms, aliases, and ownership metadata from the project lexicon.</p>
+<p><strong>Output:</strong> Term list.</p>
+<hr>
+<p><strong><code>$lex show &lt;term&gt;</code></strong> — Show a term definition</p>
+<pre><code>
+$lex show "customer active date"
+</code></pre>
+<p>Displays the canonical meaning, aliases, and cited evidence for a specific term.</p>
+<p><strong>Output:</strong> Term definition.</p>
+<hr>
+<p><strong><code>$lex extract</code></strong> — Extract candidate terms from project artifacts</p>
+<pre><code>
+$lex extract
+</code></pre>
+<p>Scans specs, docs, and lifecycle artifacts for recurring undefined vocabulary and proposes terms for operator review.</p>
+<p><strong>Output:</strong> Candidate term report.</p>
+<hr>
+<p><strong><code>$lex validate</code></strong> — Validate vocabulary consistency</p>
+<pre><code>
+$lex validate
+</code></pre>
+<p>Checks current specs and docs for undefined terms, conflicting usage, or terms used against their agreed meaning.</p>
+<p><strong>Output:</strong> Vocabulary validation report.</p>
+<hr>
+<h2 id="execution-health-cocostall">Execution Health — CocoStall</h2>
+<p><strong><code>$stall status</code></strong> — Show no-progress and stalled-agent state</p>
+<pre><code>
+$stall status
+</code></pre>
+<p>Reports active specialists or stages whose output rate has fallen below the configured threshold.</p>
+<p><strong>Output:</strong> Stall status and recommended operator choices.</p>
+<hr>
+<p><strong><code>$stall thresholds</code></strong> — Review or configure stall thresholds</p>
+<pre><code>
+$stall thresholds
+</code></pre>
+<p>Displays configured silence windows and no-progress limits for CocoFlow and CocoForge work.</p>
+<p><strong>Output:</strong> Threshold report.</p>
+<hr>
+<p><strong><code>$stall reset</code></strong> — Clear acknowledged stall state</p>
+<pre><code>
+$stall reset
+</code></pre>
+<p>Clears resolved stall markers after the operator has chosen to wait, restart, reassign, skip, or abort.</p>
+<p><strong>Output:</strong> Reset confirmation.</p>
+<hr>
+<h2 id="ambient-observability-cocopulse">Ambient Observability — CocoPulse</h2>
+<p><strong><code>$pulse on</code></strong> — Enable the terminal status line</p>
+<pre><code>
+$pulse on
+</code></pre>
+<p>Enables a read-only status surface for phase, quality, flow progress, budget consumption, and forge state.</p>
+<p><strong>Output:</strong> Pulse enabled confirmation.</p>
+<hr>
+<p><strong><code>$pulse off</code></strong> — Disable the terminal status line</p>
+<pre><code>
+$pulse off
+</code></pre>
+<p>Disables ambient terminal progress rendering without changing underlying lifecycle state.</p>
+<p><strong>Output:</strong> Pulse disabled confirmation.</p>
+<hr>
+<p><strong><code>$pulse status</code></strong> — Show current pulse state</p>
+<pre><code>
+$pulse status
+</code></pre>
+<p>Reports whether Pulse is enabled, whether the terminal supports in-place rendering, and the most recent observed state.</p>
+<p><strong>Output:</strong> Read-only Pulse status.</p>
+<hr>
+<p><strong><code>$pulse configure</code></strong> — Configure pulse display options</p>
+<pre><code>
+$pulse configure
+</code></pre>
+<p>Updates display preferences such as refresh cadence and fallback logging behavior.</p>
+<p><strong>Output:</strong> Updated Pulse configuration.</p>
+<hr>
+<h2 id="challenge-review-cocoadversary">Challenge Review — CocoAdversary</h2>
+<p><strong><code>$adversary enable</code></strong> — Enable adversarial verification mode</p>
+<pre><code>
+$adversary enable
+</code></pre>
+<p>Turns on explicit-consent adversarial testing for eligible non-production verification surfaces.</p>
+<p><strong>Output:</strong> Adversary mode enabled confirmation.</p>
+<hr>
+<p><strong><code>$adversary disable</code></strong> — Disable adversarial verification mode</p>
+<pre><code>
+$adversary disable
+</code></pre>
+<p>Turns off adversarial testing without modifying prior audit records.</p>
+<p><strong>Output:</strong> Adversary mode disabled confirmation.</p>
+<hr>
+<p><strong><code>$adversary run</code></strong> — Run bounded challenge checks</p>
+<pre><code>
+$adversary run
+</code></pre>
+<p>Injects bounded deterministic challenge cases to prove gates catch the defects they claim to catch. It never targets production, irreversible operations, security/auth paths, active incidents, or pre-ship artifacts.</p>
+<p><strong>Output:</strong> Challenge report with caught and missed cases.</p>
+<hr>
+<p><strong><code>$adversary show</code></strong> — Show the latest challenge report</p>
+<pre><code>
+$adversary show
+</code></pre>
+<p>Displays the latest adversarial verification report without rerunning tests.</p>
+<p><strong>Output:</strong> Read-only challenge report.</p>
+<hr>
+<p><strong><code>$adversary audit</code></strong> — Audit challenge history</p>
+<pre><code>
+$adversary audit
+</code></pre>
+<p>Reviews prior challenge runs and whether gate behavior has improved or regressed over time.</p>
+<p><strong>Output:</strong> Challenge-history audit.</p>
+<hr>
+<p><strong><code>$adversary gap</code></strong> — Report unchallenged verification claims</p>
+<pre><code>
+$adversary gap
+</code></pre>
+<p>Identifies verification claims that lack adversarial challenge coverage.</p>
+<p><strong>Output:</strong> Gap report by gate or artifact.</p>
+<hr>
+<h2 id="session-journal-cocodiary">Session Journal — CocoDiary</h2>
+<p><strong><code>$diary view</code></strong> — Show the latest session narrative</p>
+<pre><code>
+$diary view
+</code></pre>
+<p>Displays the most recent factual session narrative: what changed, what failed, what was learned, and what needs attention next.</p>
+<p><strong>Output:</strong> Latest diary entry.</p>
+<hr>
+<p><strong><code>$diary list</code></strong> — List session narratives</p>
+<pre><code>
+$diary list
+</code></pre>
+<p>Lists available diary entries by timestamp, session, and summary title.</p>
+<p><strong>Output:</strong> Diary entry index.</p>
+<hr>
+<p><strong><code>$diary search &lt;query&gt;</code></strong> — Search session narratives</p>
+<pre><code>
+$diary search "contract proof drift"
+</code></pre>
+<p>Searches recorded diary entries so return briefings can cite prior documented work instead of relying on memory.</p>
+<p><strong>Output:</strong> Matching diary entries with excerpts.</p>
 <hr>
 <h2 id="hooks-automatic-reference-only">Hooks (Automatic — Reference Only)</h2>
 <p>These hooks fire on Coco lifecycle events. They are documented here for understanding the system, not for manual invocation.</p>
@@ -1561,7 +1815,7 @@ $sketch deps --reduce off
 </tr>
 <tr>
   <td style="text-align:left"><strong>Operating Layer</strong></td>
-  <td style="text-align:left"><code>$cocoplus console</code> · <code>$pilot on|off</code> · <code>$forge "goal" [--ladder]</code> · <code>$forge resolve-dispute</code> · <code>$leviathan on|off|status|learn</code> · <code>$session status|progress|steer|stop|resume</code> · <code>$routine list|schedule|disable|delete</code> · <code>$retrospective run</code> · <code>$hygiene --model-upgrade</code></td>
+  <td style="text-align:left"><code>$cocoplus console</code> · <code>$cocoplus reset-init</code> · <code>$pilot on|off</code> · <code>$forge "goal" [--ladder]</code> · <code>$forge resolve-dispute</code> · <code>$leviathan on|off|status|learn</code> · <code>$session status|progress|steer|stop|resume</code> · <code>$routine list|schedule|disable|delete</code> · <code>$retrospective run</code> · <code>$hygiene --model-upgrade</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Lifecycle</strong></td>
@@ -1601,7 +1855,7 @@ $sketch deps --reduce off
 </tr>
 <tr>
   <td style="text-align:left"><strong>Meter</strong></td>
-  <td style="text-align:left"><code>$meter on</code> · <code>$meter off</code> · <code>$meter</code> · <code>$meter estimate</code> · <code>$meter history</code> · <code>$meter accuracy</code> · <code>$meter benchmark --flow</code> · <code>$meter compare</code> · <code>$meter view</code> · <code>$meter sync</code> · <code>$meter refresh</code> · <code>$meter invoice</code> · <code>$meter status</code></td>
+  <td style="text-align:left"><code>$meter on</code> · <code>$meter off</code> · <code>$meter</code> · <code>$meter estimate</code> · <code>$meter history</code> · <code>$meter accuracy</code> · <code>$meter benchmark --flow</code> · <code>$meter compare</code> · <code>$meter verify</code> · <code>$meter waste</code> · <code>$meter view</code> · <code>$meter sync</code> · <code>$meter refresh</code> · <code>$meter invoice</code> · <code>$meter status</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Cupper</strong></td>
@@ -1633,7 +1887,7 @@ $sketch deps --reduce off
 </tr>
 <tr>
   <td style="text-align:left"><strong>Wisdom</strong></td>
-  <td style="text-align:left"><code>$wisdom</code> · <code>$wisdom list [--gate] [--since] [--dimension]</code> · <code>$wisdom search "&lt;pattern&gt;"</code> · <code>$wisdom insights</code> · <code>$wisdom export</code> · <code>$wisdom route</code> · <code>$wisdom keep</code> · <code>$wisdom forget</code></td>
+  <td style="text-align:left"><code>$wisdom</code> · <code>$wisdom list [--gate] [--since] [--dimension]</code> · <code>$wisdom search "&lt;pattern&gt;"</code> · <code>$wisdom insights</code> · <code>$wisdom get</code> · <code>$wisdom distill</code> · <code>$wisdom review</code> · <code>$wisdom status</code> · <code>$wisdom reject</code> · <code>$wisdom learn</code> · <code>$wisdom learnings</code> · <code>$wisdom index</code> · <code>$wisdom recall</code> · <code>$wisdom export</code> · <code>$wisdom route</code> · <code>$wisdom keep</code> · <code>$wisdom forget</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Code Review</strong></td>
@@ -1701,7 +1955,7 @@ $sketch deps --reduce off
 </tr>
 <tr>
   <td style="text-align:left"><strong>Audit</strong></td>
-  <td style="text-align:left"><code>$audit view</code> · <code>$audit view --from &lt;date&gt;</code> · <code>$audit add</code> · <code>$audit timeline</code> · <code>$audit export</code> · <code>$audit ci</code></td>
+  <td style="text-align:left"><code>$audit view</code> · <code>$audit view --from &lt;date&gt;</code> · <code>$audit add</code> · <code>$audit timeline</code> · <code>$audit export</code> · <code>$audit ci</code> · <code>$audit verify</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Trace</strong></td>
@@ -1710,6 +1964,30 @@ $sketch deps --reduce off
 <tr>
   <td style="text-align:left"><strong>Sketch</strong></td>
   <td style="text-align:left"><code>$sketch schema</code> · <code>$sketch flow</code> · <code>$sketch deps</code> · <code>$sketch deps --reduce off</code> · <code>$sketch diff</code> · <code>$sketch view</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Style</strong></td>
+  <td style="text-align:left"><code>$style init</code> · <code>$style refresh</code> · <code>$style show</code> · <code>$style mode</code> · <code>$style diff</code> · <code>$style status</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Lexicon</strong></td>
+  <td style="text-align:left"><code>$lex define</code> · <code>$lex list</code> · <code>$lex show</code> · <code>$lex extract</code> · <code>$lex validate</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Execution Health</strong></td>
+  <td style="text-align:left"><code>$stall status</code> · <code>$stall thresholds</code> · <code>$stall reset</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Pulse</strong></td>
+  <td style="text-align:left"><code>$pulse on</code> · <code>$pulse off</code> · <code>$pulse status</code> · <code>$pulse configure</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Adversary</strong></td>
+  <td style="text-align:left"><code>$adversary enable</code> · <code>$adversary disable</code> · <code>$adversary run</code> · <code>$adversary show</code> · <code>$adversary audit</code> · <code>$adversary gap</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>Diary</strong></td>
+  <td style="text-align:left"><code>$diary view</code> · <code>$diary list</code> · <code>$diary search</code></td>
 </tr>
 <tr>
   <td style="text-align:left"><strong>Reporting</strong></td>

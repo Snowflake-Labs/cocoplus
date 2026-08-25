@@ -41,6 +41,7 @@ const PROPOSAL_LOG = path.join(COCOPLUS_DIR, 'proposals', 'proposal-log.jsonl');
 const FLOW_ARTIFACT_ROOT = path.join(COCOPLUS_DIR, 'flow', 'artifacts');
 const SESSION_BUDGET_STATE = path.join(COCOPLUS_DIR, 'session', 'budget-state.json');
 const OPEN_PRE_TOOL_USE = path.join(COCOPLUS_DIR, 'session', 'open-pre-tool-use.json');
+const INIT_CONFIRMATION = path.join(COCOPLUS_DIR, 'lifecycle', 'cocoplus-init.json');
 
 const COMPLEXITY_TIERS = [
   { name: 'trivial', max: 20 },
@@ -584,6 +585,121 @@ function checkHumanGate(config, params, ts) {
   return `CocoFlow human gate: stage "${stageId}" is waiting for operator clearance. Run $flow gate-clear ${stageId} before dispatch.`;
 }
 
+function checkFirstRunConfigurationGate(params, ts) {
+  if (!isStageBoundaryDispatch(params)) return null;
+  const config = loadConfig();
+  const pilotConfig = config.cocopilot || {};
+  if (pilotConfig.first_run_gate === false || pilotConfig.first_run_gate === 'false') return null;
+  const pilotActive = fs.existsSync(path.join(COCOPLUS_DIR, 'modes', 'cocopilot.on')) ||
+    pilotConfig.auto_activate === true ||
+    pilotConfig.auto_activate === 'true';
+  if (!pilotActive) return null;
+
+  const initState = readJsonFile(INIT_CONFIRMATION, null);
+  if (initState && initState.confirmed === true) return null;
+  if (!initState) {
+    writeJsonFile(INIT_CONFIRMATION, {
+      confirmed: false,
+      status: 'pending_confirmation',
+      requested_at: ts,
+      operator: (config.cocoplus && config.cocoplus.operator) || 'unknown',
+      settings: [
+        { name: 'default_warehouse', value: (config.cocoplus && config.cocoplus.default_warehouse) || 'COMPUTE_WH' },
+        { name: 'cost_ceiling_per_run', value: (config.session && config.session.budget_limit) || 5.0 },
+        { name: 'schema_prefix_prod', value: (config.cocoplus && config.cocoplus.schema_prefix_prod) || 'COCOPLUS_PROD' },
+        { name: 'schema_prefix_dev', value: (config.cocoplus && config.cocoplus.schema_prefix_dev) || 'COCOPLUS_DEV' },
+        { name: 'notification_target', value: (config.cocoplus && config.cocoplus.notification_target) || null },
+      ],
+      instructions: 'Confirm or update these settings before the first CocoPilot dispatch. Run $cocoplus reset-init to force this gate again.',
+    });
+  }
+  appendJsonLine(HOOK_LOG, {
+    hook: 'pre-tool-use',
+    action: 'first_run_configuration_blocked',
+    stage_id: currentStageId(params),
+    artifact: 'lifecycle/cocoplus-init.json',
+    ts,
+  });
+  return 'CocoPilot first-run configuration is pending. Confirm the five key settings in .cocoplus/lifecycle/cocoplus-init.json before dispatch, or run $cocoplus reset-init to restart the gate.';
+}
+
+function premortemEnabled(config) {
+  const pilot = config.cocopilot || {};
+  return pilot.premortem_enabled !== false && pilot.premortem_enabled !== 'false';
+}
+
+function premortemWarnOnAbsent(config) {
+  const pilot = config.cocopilot || {};
+  return pilot.premortem_warn_on_absent !== false && pilot.premortem_warn_on_absent !== 'false';
+}
+
+function premortemRequired(stage) {
+  if (!stage) return false;
+  if (stage.premortem === true || stage.premortem === 'true') return true;
+  if (stage.premortem === false || stage.premortem === 'false') return false;
+  return stage.allow_irreversible_actions === true ||
+    stage.allow_irreversible_actions === 'true' ||
+    stage.require_outcome_verification === true ||
+    stage.require_outcome_verification === 'true';
+}
+
+function premortemStatePath(runId) {
+  return path.join(COCOPLUS_DIR, 'lifecycle', 'cocoflow', runId, 'premortem-gates.json');
+}
+
+function premortemAcknowledged(runId, stageId) {
+  const state = readJsonFile(premortemStatePath(runId), { stages: {} });
+  const stageState = state.stages && state.stages[stageId];
+  if (!(stageState && stageState.premortem_acknowledged === true)) return false;
+  const progressPath = path.join(COCOPLUS_DIR, 'session', 'PROGRESS.md');
+  try {
+    const progress = fs.readFileSync(progressPath, 'utf8');
+    const escapedStageId = String(stageId).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`^## Pre-Mortem:.*${escapedStageId}`, 'm').test(progress);
+  } catch (_) {
+    return false;
+  }
+}
+
+function checkPremortemGate(config, params, ts) {
+  if (!premortemEnabled(config) || !isStageBoundaryDispatch(params)) return null;
+  const stageId = currentStageId(params);
+  const stage = findStage(stageId);
+  if (!premortemRequired(stage)) return null;
+  const runId = flowRunId(params);
+  if (premortemAcknowledged(runId, stageId)) return null;
+
+  const statePath = premortemStatePath(runId);
+  const state = readJsonFile(statePath, { run_id: runId, stages: {} });
+  if (!state.stages) state.stages = {};
+  state.stages[stageId] = {
+    ...(state.stages[stageId] || {}),
+    premortem_required: true,
+    premortem_acknowledged: false,
+    blocked_at: ts,
+    reason: stage.require_outcome_verification === true || stage.require_outcome_verification === 'true'
+      ? 'require_outcome_verification'
+      : 'allow_irreversible_actions',
+    warning_mode: premortemWarnOnAbsent(config) ? 'hold_until_acknowledged' : 'advisory_only',
+  };
+  writeJsonFile(statePath, state);
+  appendJsonLine(HOOK_LOG, {
+    hook: 'pre-tool-use',
+    action: 'premortem_required',
+    run_id: runId,
+    stage_id: stageId,
+    premortem_acknowledged: false,
+    require_outcome_verification: Boolean(stage.require_outcome_verification === true || stage.require_outcome_verification === 'true'),
+    ts,
+  });
+
+  if (!premortemWarnOnAbsent(config)) {
+    return null;
+  }
+
+  return `CocoPilot pre-mortem gate: stage "${stageId}" requires a pre-dispatch pre-mortem before execution. Record three failure scenarios and prevention status in PROGRESS.md, then acknowledge this stage in ${statePath}.`;
+}
+
 function budgetState() {
   const state = readJsonFile(SESSION_BUDGET_STATE, { budget_state: 'normal' });
   return state.budget_state || 'normal';
@@ -648,6 +764,18 @@ function main() {
 
   ensurePolicySnapshot(config, params, ts);
   ensureStagePolicySnapshot(config, params, ts);
+
+  const firstRunBlock = checkFirstRunConfigurationGate(params, ts);
+  if (firstRunBlock) {
+    block(firstRunBlock);
+    return;
+  }
+
+  const premortemBlock = checkPremortemGate(config, params, ts);
+  if (premortemBlock) {
+    block(premortemBlock);
+    return;
+  }
 
   const humanGateBlock = checkHumanGate(config, params, ts);
   if (humanGateBlock) {
