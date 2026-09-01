@@ -293,12 +293,12 @@ function main() {
     }
   }
 
-  if (plugin.version !== '2.0.1') {
-    failures.push('.cortex-plugin/plugin.json must declare version 2.0.1');
+  if (plugin.version !== '2.0.2') {
+    failures.push('.cortex-plugin/plugin.json must declare version 2.0.2');
   }
 
   if (manifestScripts.length !== 1 || manifestScripts[0] !== '.cortex/scripts/cocoplus-console.js') {
-    failures.push('.cortex-plugin/plugin.json must register only .cortex/scripts/cocoplus-console.js as a V2.0.1 runtime script');
+    failures.push('.cortex-plugin/plugin.json must register only .cortex/scripts/cocoplus-console.js as a V2.0.2 runtime script');
   }
 
   for (const script of plugin.scripts || []) {
@@ -398,7 +398,7 @@ function main() {
   for (const filePath of walkFiles(runtimeScriptsDir, (candidate) => candidate.endsWith('.js'))) {
     const fileName = path.basename(filePath);
     if (!allowedRuntimeScripts.has(fileName)) {
-      failures.push(`V2.0.1 ships only CocoConsole as a runtime script; remove ${path.relative(repoRoot, filePath)}`);
+      failures.push(`V2.0.2 ships only CocoConsole as a runtime script; remove ${path.relative(repoRoot, filePath)}`);
     }
   }
 
@@ -423,8 +423,12 @@ function main() {
     'auto_distill',
     'distill_on_failure',
     'contradiction_action',
+    'session_index_enabled',
+    'session_index_path',
+    'redact_credentials_at_index',
     'injection_mode',
     'preload_categories',
+    'stage_mappings_enabled',
     '[run_policy]',
     'merge_policy',
     'allow_irreversible_actions',
@@ -441,8 +445,8 @@ function main() {
 
   const principlesHtml = readFile(path.join(repoRoot, 'docs', 'principles.html'));
   const principleCount = (principlesHtml.match(/<h2 id="[0-9]/g) || []).length;
-  if (principleCount !== 47) {
-    failures.push(`docs/principles.html must contain 47 principle headings; found ${principleCount}`);
+  if (principleCount !== 51) {
+    failures.push(`docs/principles.html must contain 51 principle headings; found ${principleCount}`);
   }
   requireIncludes(principlesHtml, 'The Transcript Is the Source of Truth', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Timestamps Have Provenance', failures, 'docs/principles.html');
@@ -454,6 +458,10 @@ function main() {
   requireIncludes(principlesHtml, 'Lexical Baseline Before LLM Processing', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Structural Correctness', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Structure Is the Reliability Gap', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Manifest-First Loading', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Explicit Curation Over Automatic Accumulation', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Git-Native Memory', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Air-Gap Compatible by Default', failures, 'docs/principles.html');
 
   const preToolUse = readFile(path.join(hooksDir, 'pre-tool-use.js'));
   requireIncludes(preToolUse, 'model_tier_floor_applied', failures, 'PreToolUse hook');
@@ -573,6 +581,9 @@ function main() {
     'CocoPilot pre-mortem gate',
     'CocoContract risk-scaled verification tiers',
     'Structure Is the Reliability Gap',
+    'manifest-first memory',
+    'branch-scoped memory',
+    'air-gap compatible',
   ]) {
     requireIncludes(snowParityDocs, expected, failures, 'CocoPlus source parity docs');
   }

@@ -4,6 +4,19 @@ All notable changes to CocoPlus are documented here.
 
 ---
 
+## [2.0.2] — September 2026
+
+### Changed
+
+- `.cortex-plugin/plugin.json` now declares version `2.0.2`.
+- CocoWisdom documents manifest-first memory: `SCHEMA.md` stage mappings route positive wisdom topics, while `do-not-use.md` remains universal negative memory.
+- Added `[wisdom]` config defaults for local session-log indexing: `session_index_enabled`, `session_index_path`, `redact_credentials_at_index`, and `stage_mappings_enabled`.
+- CocoPilot now documents stage-mapped wisdom preload behavior and a static Cortex MCP routing table for common Snowflake task patterns.
+- Public docs now describe explicit curation, branch-scoped memory, and air-gap compatible Markdown memory as 2.0.2 operating constraints.
+- `scripts/validate-cocoplus.js` now enforces the V2.0.2 manifest/runtime contract and checks the new memory-discipline documentation.
+
+---
+
 ## [2.0.1] — August 2026
 
 ### Changed
