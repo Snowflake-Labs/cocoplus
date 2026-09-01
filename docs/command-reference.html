@@ -1207,6 +1207,7 @@ $wisdom learnings
 $wisdom index
 </code></pre>
 <p>Builds a credential-redacted local index over existing session JSONL transcripts. Raw session logs are not modified; redaction applies to the indexed representation before content becomes searchable.</p>
+<p>Controlled by <code>[wisdom].session_index_enabled</code>, <code>[wisdom].session_index_path</code>, and <code>[wisdom].redact_credentials_at_index</code>. The default path is local and air-gap compatible.</p>
 <p><strong>Output:</strong> Updated local wisdom index and indexing summary.</p>
 <hr>
 <p><strong><code>$wisdom recall &lt;query&gt;</code></strong> — Search curated wisdom and session history together</p>
@@ -1214,6 +1215,7 @@ $wisdom index
 $wisdom recall "PII masking role drift"
 </code></pre>
 <p>Searches both curated wisdom files and the lexical session index, labels each result by source, and prioritizes <code>do-not-use.md</code> matches when confidence ties.</p>
+<p>Lexical recall is the baseline. Semantic or LLM retrieval layers are optional only after exact and close-match recall quality has been measured.</p>
 <p><strong>Output:</strong> Ranked recall results with source labels and excerpts.</p>
 <hr>
 <p><strong><code>$wisdom export</code></strong> — Export all rejection records as a formatted Markdown report</p>

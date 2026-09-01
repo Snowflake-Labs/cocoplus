@@ -619,7 +619,7 @@
   </div>
   <div class="principle-applied">
     <div class="principle-label">Applied in CocoPlus</div>
-    <p>PreToolUse writes <code>session/open-the PreToolUse hookon</code>, PostToolUse closes the matching record, and Notification classifies permission-blocked events from that open set instead of scraping notification wording.</p>
+    <p>PreToolUse writes <code>session/open-pre-tool-use.json</code>, PostToolUse closes the matching record, and Notification classifies permission-blocked events from that open set instead of scraping notification wording.</p>
   </div>
 </div>
 <hr>
@@ -685,6 +685,58 @@
   <div class="principle-applied">
     <div class="principle-label">Applied in CocoPlus</div>
     <p>CocoPilot uses pre-mortem and first-run configuration gates, while CocoContract uses risk-scaled tiers, mutation verification, and six honesty rules so unverified work cannot be laundered into a passing verdict.</p>
+  </div>
+</div>
+<hr>
+<h2 id="48-manifest-first-loading">48. Manifest-First Loading</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
+<p>Memory should be routed before it is read. A manifest that maps task type to file set keeps context small, explainable, and repeatable; retrieval is not a substitute for knowing which sources are appropriate for the job.</p>
+<p>The right default is names first, content only when routed. This preserves awareness without paying the token and attention cost of speculative preload.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoWisdom reads <code>SCHEMA.md</code> stage mappings to preload only positive topics relevant to the current stage. Unmapped topics remain available through <code>$wisdom get &lt;topic&gt;</code>, while <code>do-not-use.md</code> remains universal.</p>
+  </div>
+</div>
+<hr>
+<h2 id="49-explicit-curation-over-automatic-accumulation">49. Explicit Curation Over Automatic Accumulation</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
+<p>Durable memory is a judgment, not a transcript dump. Automatic capture can identify candidates, but permanent project knowledge needs a reason, an evidence pointer, and a reviewable shape.</p>
+<p>Systems that remember everything eventually make every future session carry yesterday's noise. Curation is the discipline that lets memory stay useful.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoWisdom distillation writes schema-declared candidates and queues contradictions for review. Permanent constraints, rejected approaches, and stable lessons are Markdown records with explicit rationale.</p>
+  </div>
+</div>
+<hr>
+<h2 id="50-git-native-memory">50. Git-Native Memory</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
+<p>Project memory should branch, diff, review, and revert with the project itself. A memory change on a feature branch is part of that branch's claim about reality; it should not leak into main before the work merges.</p>
+<p>Plain files make institutional knowledge inspectable by humans and portable across agent runtimes.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p>CocoWisdom, CocoContext, and CocoGrove use branch-scoped memory in Markdown and JSONL files. Git provides the audit trail, review boundary, and rollback mechanism.</p>
+  </div>
+</div>
+<hr>
+<h2 id="51-air-gap-compatible-by-default">51. Air-Gap Compatible by Default</h2>
+<div class="principle-block">
+  <div class="principle-core">
+    <div class="principle-label">Principle</div>
+<p>Enterprise data teams often work where cloud memory services, external indexes, and opaque dependencies require security review. Local Markdown and deterministic indexes are not just simpler; they are deployable in restricted environments.</p>
+<p>A feature that can work offline should work offline by default. Networked or semantic layers must be opt-in and justified by measured value.</p>
+  </div>
+  <div class="principle-applied">
+    <div class="principle-label">Applied in CocoPlus</div>
+    <p><code>$wisdom index</code> builds a local lexical index, redacts credentials before storage, and leaves raw transcripts unchanged. CocoPlus memory remains air-gap compatible unless a project explicitly enables external services.</p>
   </div>
 </div>
 <blockquote><p><em>Principles are only principles when they are applied in the cases where violating them would be convenient.</em></p></blockquote>

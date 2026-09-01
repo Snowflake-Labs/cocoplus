@@ -34,7 +34,7 @@ The current operating layer includes:
 
 The root plugin implements the current runtime and documentation surface while preserving older project state through explicit migration skills.
 
-Older CocoPods migrate forward with `$migrate v2 --dry-run` and `$migrate v2`; new work should use the feature-owned skills directly. In V2.0.1, queued hook follow-up work uses durable request envelopes, stable idempotency keys, and skill-owned settlements so replayed queues do not duplicate meter, trace, or flow artifacts.
+Older CocoPods migrate forward with `$migrate v2 --dry-run` and `$migrate v2`; new work should use the feature-owned skills directly. In V2.0.2, queued hook follow-up work uses durable request envelopes, stable idempotency keys, and skill-owned settlements so replayed queues do not duplicate meter, trace, or flow artifacts. CocoWisdom also adopts manifest-first memory: `do-not-use.md` stays universal, positive topic files load only when routed by stage or requested with `$wisdom get`, and branch-scoped memory remains plain Markdown for air-gap compatible review.
 
 ## Specialist Personas
 
