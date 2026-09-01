@@ -211,6 +211,89 @@ function targetMatchesProduction(target, prefixes) {
   });
 }
 
+function parsePolicyFile(filePath) {
+  const text = fs.readFileSync(filePath, 'utf8');
+  if (/\.json$/i.test(filePath)) return JSON.parse(text);
+  const policy = {};
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.replace(/\s+#.*$/, '').trim();
+    if (!line || line.startsWith('#')) continue;
+    const match = line.match(/^([A-Za-z0-9_-]+)\s*:\s*(.+)$/);
+    if (!match) continue;
+    policy[match[1].replace(/-/g, '_')] = match[2].trim().replace(/^['"]|['"]$/g, '');
+  }
+  return policy;
+}
+
+function loadPolicyFiles() {
+  const dir = path.join(COCOPLUS_DIR, 'lifecycle', 'policies');
+  try {
+    return fs.readdirSync(dir, { withFileTypes: true })
+      .filter((entry) => entry.isFile() && /\.(json|ya?ml)$/i.test(entry.name))
+      .map((entry) => {
+        const filePath = path.join(dir, entry.name);
+        try {
+          const policy = parsePolicyFile(filePath);
+          policy.name = policy.name || entry.name.replace(/\.(json|ya?ml)$/i, '');
+          return policy;
+        } catch (err) {
+          appendJsonLine(HOOK_LOG, {
+            hook: 'pre-tool-use',
+            action: 'runtime_policy_file_skipped',
+            file: entry.name,
+            error: err.message,
+            ts: isoUtc(),
+          });
+          return null;
+        }
+      })
+      .filter(Boolean);
+  } catch (_) {
+    return [];
+  }
+}
+
+function customPolicyDecision(policy, params, sql, operation, ts) {
+  const pattern = policy.sql_pattern || policy.pattern || policy.regex || '';
+  if (!pattern) return null;
+  let matched = false;
+  try {
+    matched = new RegExp(pattern, 'i').test(sql);
+  } catch (_) {
+    matched = String(sql || '').toLowerCase().includes(String(pattern).toLowerCase());
+  }
+  if (!matched) return null;
+  const decision = String(policy.decision || policy.action || 'instruct').toLowerCase();
+  if (!['allow', 'deny', 'instruct'].includes(decision)) return null;
+  return {
+    ts,
+    stage_id: currentStageId(params),
+    step_id: params.step_id || params.step || '',
+    operation: operation.type,
+    target: operation.target,
+    decision,
+    policy: policy.name || 'custom-policy',
+    message: policy.message || `Custom runtime policy ${decision}: ${policy.name || pattern}`,
+    excerpt: String(sql || '').slice(0, 500),
+  };
+}
+
+function evaluateCustomPolicies(params, sql, operation, ts) {
+  const instructions = [];
+  for (const policy of loadPolicyFiles()) {
+    const decision = customPolicyDecision(policy, params, sql, operation, ts);
+    if (!decision) continue;
+    if (decision.decision === 'deny') return decision;
+    if (decision.decision === 'instruct') instructions.push(decision);
+  }
+  if (instructions.length === 0) return null;
+  const first = instructions[0];
+  return Object.assign({}, first, {
+    policy: instructions.map((item) => item.policy).join(', '),
+    message: instructions.map((item) => item.message).join('\n'),
+  });
+}
+
 function deleteWithoutWhere(sql) {
   return /\bDELETE\s+FROM\b/i.test(sql) && !/\bWHERE\b/i.test(sql);
 }
@@ -314,6 +397,9 @@ function evaluateRuntimePolicy(config, params, sql, ts) {
       message: 'ALTER TABLE on production requires schema-change complexity tier in the CocoFlow stage definition. Declare the tier before dispatch.',
     });
   }
+
+  const customDecision = evaluateCustomPolicies(params, sql, operation, ts);
+  if (customDecision) return customDecision;
 
   return Object.assign(base, {
     decision: 'allow',

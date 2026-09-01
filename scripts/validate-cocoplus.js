@@ -482,6 +482,8 @@ function main() {
   requireIncludes(preToolUse, 'block-delete-without-where', failures, 'PreToolUse hook');
   requireIncludes(preToolUse, 'policy-decisions.jsonl', failures, 'PreToolUse hook');
   requireIncludes(preToolUse, 'policy-instructions.jsonl', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'loadPolicyFiles', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'lifecycle\', \'policies', failures, 'PreToolUse hook');
   rejectPattern(preToolUse, /params\.premortem_acknowledged/, failures, 'PreToolUse hook');
 
   const sessionStart = readFile(path.join(hooksDir, 'session-start.js'));
@@ -601,6 +603,7 @@ function main() {
     'runtime policy engine',
     'Policy Decision Log',
     'instruct()',
+    'policy-as-code',
   ]) {
     requireIncludes(snowParityDocs, expected, failures, 'CocoPlus source parity docs');
   }

@@ -24,6 +24,7 @@ block_drop_table_production = true
 block_truncate = true
 block_delete_without_where = true
 block_alter_table_production = true
+# Optional local policy-as-code files load from .cocoplus/lifecycle/policies/*.json|*.yaml.
 
 [warehouses]
 # Snowflake warehouse access control
