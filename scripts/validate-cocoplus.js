@@ -439,6 +439,12 @@ function main() {
     'premortem_enabled',
     'premortem_warn_on_absent',
     'contract_tier',
+    '[safety]',
+    'runtime_policy_engine',
+    'policy_log_all',
+    'production_schema_prefixes',
+    'block_drop_table_production',
+    'block_delete_without_where',
   ]) {
     requireIncludes(configTemplate, expected, failures, 'cocoplus.toml.template');
   }
@@ -471,6 +477,11 @@ function main() {
   requireIncludes(preToolUse, 'premortem_acknowledged', failures, 'PreToolUse hook');
   requireIncludes(preToolUse, 'require_outcome_verification', failures, 'PreToolUse hook');
   requireIncludes(preToolUse, 'pilotConfig.first_run_gate', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'evaluateRuntimePolicy', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'block-drop-table-production', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'block-delete-without-where', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'policy-decisions.jsonl', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'policy-instructions.jsonl', failures, 'PreToolUse hook');
   rejectPattern(preToolUse, /params\.premortem_acknowledged/, failures, 'PreToolUse hook');
 
   const sessionStart = readFile(path.join(hooksDir, 'session-start.js'));
@@ -490,6 +501,9 @@ function main() {
   requireIncludes(consoleScript, 'Danger only', failures, 'CocoConsole script');
   requireIncludes(consoleScript, 'Human Gate Hold', failures, 'CocoConsole script');
   requireIncludes(consoleScript, '$flow gate-clear', failures, 'CocoConsole script');
+  requireIncludes(consoleScript, 'renderPolicyDecisionLog', failures, 'CocoConsole script');
+  requireIncludes(consoleScript, 'Policy Decision Log', failures, 'CocoConsole script');
+  requireIncludes(consoleScript, 'show-all-policy-decisions', failures, 'CocoConsole script');
 
   const stalePatterns = [
     /All 32 Features/i,
@@ -584,6 +598,9 @@ function main() {
     'manifest-first memory',
     'branch-scoped memory',
     'air-gap compatible',
+    'runtime policy engine',
+    'Policy Decision Log',
+    'instruct()',
   ]) {
     requireIncludes(snowParityDocs, expected, failures, 'CocoPlus source parity docs');
   }

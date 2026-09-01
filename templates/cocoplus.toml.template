@@ -15,6 +15,16 @@ ask_first = ["Write", "Edit", "SnowflakeSqlExecute:INSERT", "SnowflakeSqlExecute
 human_required = ["SnowflakeSqlExecute:DROP", "SnowflakeSqlExecute:TRUNCATE", "SnowflakeSqlExecute:DELETE"]
 never = ["credential_read", "external_network_write"]
 
+[safety]
+# Runtime policy engine (three-decision model: allow, deny, instruct).
+runtime_policy_engine = true
+policy_log_all = false
+production_schema_prefixes = ["PROD.", "PRODUCTION."]
+block_drop_table_production = true
+block_truncate = true
+block_delete_without_where = true
+block_alter_table_production = true
+
 [warehouses]
 # Snowflake warehouse access control
 allowed = ["DEV_WH"]       # Warehouses permitted for autonomous use

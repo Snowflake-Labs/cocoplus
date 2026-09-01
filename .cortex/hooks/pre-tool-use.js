@@ -34,9 +34,12 @@ const HOOK_LOG      = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const SAFETY_LOG    = path.join(COCOPLUS_DIR, 'safety-decisions.log');
 const SAFETY_AUDIT  = path.join(COCOPLUS_DIR, 'safety-audit.jsonl');
 const GOVERNANCE_LOG = path.join(COCOPLUS_DIR, 'lifecycle', 'governance-log.json');
+const POLICY_DECISIONS = path.join(COCOPLUS_DIR, 'lifecycle', 'policy-decisions.jsonl');
 const AUDIT_MD = path.join(COCOPLUS_DIR, 'lifecycle', 'audit.md');
 const STEER_INBOX = path.join(COCOPLUS_DIR, 'STEER.md');
 const STAGE_EVIDENCE = path.join(COCOPLUS_DIR, 'session', 'stage-evidence.json');
+const POLICY_INSTRUCTIONS = path.join(COCOPLUS_DIR, 'session', 'policy-instructions.jsonl');
+const POLICY_REPEAT_STATE = path.join(COCOPLUS_DIR, 'session', 'policy-repeat-state.json');
 const PROPOSAL_LOG = path.join(COCOPLUS_DIR, 'proposals', 'proposal-log.jsonl');
 const FLOW_ARTIFACT_ROOT = path.join(COCOPLUS_DIR, 'flow', 'artifacts');
 const SESSION_BUDGET_STATE = path.join(COCOPLUS_DIR, 'session', 'budget-state.json');
@@ -167,6 +170,156 @@ function writeJsonFile(filePath, value) {
 function appendAudit(text) {
   fs.mkdirSync(path.dirname(AUDIT_MD), { recursive: true });
   fs.appendFileSync(AUDIT_MD, `${text}\n`, 'utf8');
+}
+
+function configValue(config, sections, key, fallback) {
+  for (const section of sections) {
+    if (config[section] && config[section][key] !== undefined) return config[section][key];
+  }
+  return fallback;
+}
+
+function runtimePolicyEnabled(config) {
+  return configValue(config, ['safety', 'security'], 'runtime_policy_engine', true) !== false;
+}
+
+function policyLogAll(config) {
+  return configValue(config, ['safety', 'security'], 'policy_log_all', false) === true;
+}
+
+function configuredProductionPrefixes(config) {
+  const values = configValue(config, ['safety', 'security', 'project'], 'production_schema_prefixes', ['PROD.', 'PRODUCTION.']);
+  if (Array.isArray(values)) return values;
+  if (typeof values === 'string' && values.trim()) return values.split(',').map((item) => item.trim()).filter(Boolean);
+  return [];
+}
+
+function sqlOperation(sql) {
+  const normalized = String(sql || '').replace(/\s+/g, ' ').trim();
+  const match = normalized.match(/\b(DROP\s+TABLE|TRUNCATE(?:\s+TABLE)?|DELETE\s+FROM|ALTER\s+TABLE|COPY\s+INTO|SELECT)\b\s+(?:IF\s+EXISTS\s+)?([A-Za-z0-9_.$"]+)?/i);
+  if (!match) return { type: 'UNKNOWN', target: '', label: normalized.slice(0, 80) };
+  const type = match[1].toUpperCase().replace(/\s+/g, ' ');
+  const target = (match[2] || '').replace(/"/g, '');
+  return { type, target, label: `${type}${target ? ` on ${target}` : ''}` };
+}
+
+function targetMatchesProduction(target, prefixes) {
+  const upperTarget = String(target || '').toUpperCase();
+  return prefixes.some((prefix) => {
+    const normalized = String(prefix || '').replace(/\*/g, '').toUpperCase();
+    return normalized && upperTarget.startsWith(normalized);
+  });
+}
+
+function deleteWithoutWhere(sql) {
+  return /\bDELETE\s+FROM\b/i.test(sql) && !/\bWHERE\b/i.test(sql);
+}
+
+function currentStageTier(params) {
+  const stage = findStage(currentStageId(params));
+  return String(stage.complexity_tier || stage.contract_tier || stage.model_tier_floor || params.complexity_tier || '').toLowerCase();
+}
+
+function policyStateKey(policyName, operation) {
+  return `${policyName}:${operation.target || operation.label}`.toLowerCase();
+}
+
+function seenPolicyInstruction(policyName, operation) {
+  const state = readJsonFile(POLICY_REPEAT_STATE, {});
+  return Boolean(state[policyStateKey(policyName, operation)]);
+}
+
+function markPolicyInstruction(policyName, operation, ts) {
+  const state = readJsonFile(POLICY_REPEAT_STATE, {});
+  state[policyStateKey(policyName, operation)] = ts;
+  writeJsonFile(POLICY_REPEAT_STATE, state);
+}
+
+function logPolicyDecision(config, decision) {
+  const record = Object.assign({
+    ts: isoUtc(),
+    stage_id: '',
+    step_id: '',
+    tool: 'SnowflakeSqlExecute',
+    decision: 'allow',
+    policy: 'none',
+    operation: 'UNKNOWN',
+    target: '',
+    message: '',
+    excerpt: '',
+  }, decision);
+  if (record.decision !== 'allow' || policyLogAll(config)) {
+    appendJsonLine(POLICY_DECISIONS, record);
+  }
+  if (record.decision === 'deny' || record.decision === 'instruct') {
+    appendAudit(`- ${record.ts} runtime policy ${record.decision}: ${record.policy} | ${record.operation}${record.target ? ` ${record.target}` : ''} | ${record.message}`);
+  }
+  if (record.decision === 'instruct') {
+    appendJsonLine(POLICY_INSTRUCTIONS, record);
+  }
+}
+
+function evaluateRuntimePolicy(config, params, sql, ts) {
+  if (!runtimePolicyEnabled(config)) return { decision: 'disabled' };
+  const safetyConfig = config.safety || config.security || {};
+  const operation = sqlOperation(sql);
+  const prefixes = configuredProductionPrefixes(config);
+  const stageId = currentStageId(params);
+  const base = {
+    ts,
+    stage_id: stageId,
+    step_id: params.step_id || params.step || '',
+    operation: operation.type,
+    target: operation.target,
+    excerpt: String(sql || '').slice(0, 500),
+  };
+
+  if (safetyConfig.block_drop_table_production !== false && /\bDROP\s+TABLE\b/i.test(sql) && targetMatchesProduction(operation.target, prefixes)) {
+    return Object.assign(base, {
+      decision: 'deny',
+      policy: 'block-drop-table-production',
+      message: 'DROP TABLE on production schema is blocked. Use a CocoFlow stage with schema-change complexity tier and explicit operator approval.',
+    });
+  }
+
+  if (safetyConfig.block_truncate !== false && /\bTRUNCATE(?:\s+TABLE)?\b/i.test(sql) && !/\birreversible\b/i.test(currentStageTier(params))) {
+    return Object.assign(base, {
+      decision: 'deny',
+      policy: 'block-truncate',
+      message: 'TRUNCATE is blocked by default because it is irreversible. Declare the stage as irreversible complexity tier and obtain explicit CocoContract approval.',
+    });
+  }
+
+  if (safetyConfig.block_delete_without_where !== false && deleteWithoutWhere(sql)) {
+    const policyName = 'block-delete-without-where';
+    if (seenPolicyInstruction(policyName, operation)) {
+      return Object.assign(base, {
+        decision: 'deny',
+        policy: policyName,
+        message: 'DELETE without WHERE was already flagged in this session. Add a WHERE clause before proceeding.',
+      });
+    }
+    markPolicyInstruction(policyName, operation, ts);
+    return Object.assign(base, {
+      decision: 'instruct',
+      policy: policyName,
+      message: 'This DELETE has no WHERE clause. Add a WHERE clause to scope the deletion, or declare the stage as data-write complexity tier with an explicit row-count pre-check.',
+    });
+  }
+
+  if (safetyConfig.block_alter_table_production !== false && /\bALTER\s+TABLE\b/i.test(sql) && targetMatchesProduction(operation.target, prefixes) && !/\bschema-change\b/i.test(currentStageTier(params))) {
+    return Object.assign(base, {
+      decision: 'deny',
+      policy: 'block-alter-table-production',
+      message: 'ALTER TABLE on production requires schema-change complexity tier in the CocoFlow stage definition. Declare the tier before dispatch.',
+    });
+  }
+
+  return Object.assign(base, {
+    decision: 'allow',
+    policy: 'built-in-default',
+    message: 'No runtime policy matched.',
+  });
 }
 
 function isGateWeakeningSteer(text) {
@@ -897,6 +1050,21 @@ function main() {
 
   // Extract SQL from parameters.sql (spec-defined path)
   const sql = params.sql || params.query || params.statement || '';
+  const runtimePolicy = evaluateRuntimePolicy(config, params, sql, ts);
+  if (runtimePolicy.decision === 'deny') {
+    logPolicyDecision(config, runtimePolicy);
+    block(`[Runtime Policy] ${runtimePolicy.policy}: ${runtimePolicy.message}`);
+    return;
+  }
+  if (runtimePolicy.decision === 'instruct') {
+    logPolicyDecision(config, runtimePolicy);
+    allow(`[Runtime Policy] ${runtimePolicy.policy}: ${runtimePolicy.message}`);
+    return;
+  }
+  if (runtimePolicy.decision === 'allow') {
+    logPolicyDecision(config, runtimePolicy);
+  }
+
   const policy = activePolicy(config, params);
   if (!policy.allow_irreversible_actions && sqlIsIrreversible(sql)) {
     appendJsonLine(GOVERNANCE_LOG, {
