@@ -1,7 +1,7 @@
 ---
 name: wisdom-distill
 description: "Distill terminal session outcomes into CocoWisdom using the project schema. Usage: $wisdom distill [session-id|run-id]"
-version: "2.0.1"
+version: "2.0.2"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -24,7 +24,7 @@ Extract durable, reusable lessons from a completed, exited, or failed session an
 
 ## Procedure
 
-1. Check `.cocoplus/wisdom/SCHEMA.md`. If it does not exist, create a minimal schema with topic categories, source session id, outcome status, evidence pointer, confidence, and contradiction handling fields.
+1. Check `.cocoplus/wisdom/SCHEMA.md`. If it does not exist, create a minimal schema with topic categories, source session id, outcome status, evidence pointer, confidence, contradiction handling fields, and an optional `## Stage Mappings` table for routing stage role patterns to positive wisdom topics.
 2. Read only the terminal-session artifacts needed to identify lessons, rejections, corrections, governance decisions, and repeated failure modes.
 3. Classify each candidate into a schema-declared category file. Do not invent standing-context text outside the schema.
 4. If a candidate contradicts existing wisdom, follow `[wisdom].contradiction_action`:
@@ -40,6 +40,7 @@ Extract durable, reusable lessons from a completed, exited, or failed session an
 - Failed sessions are valid sources when `[wisdom].distill_on_failure = true`.
 - Store evidence pointers, not transcript dumps.
 - Preserve reviewability: every accepted or queued lesson needs source id, timestamp, category, and rationale.
+- Prefer explicit curation for permanent memory. Automatic distillation may queue candidates, but durable project constraints, rejected approaches, and branch-scoped decisions need evidence pointers and reviewable rationale.
 
 ## Success Criteria
 

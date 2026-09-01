@@ -82,8 +82,12 @@ auto_distill = true           # Stop hook queues background wisdom distillation 
 distill_on_failure = true     # Failed or exited sessions can still contribute validated lessons
 contradiction_action = "queue" # "queue" | "overwrite" | "skip"
 schema_file = ".cocoplus/wisdom/SCHEMA.md"
+session_index_enabled = true  # Enable local lexical indexing for $wisdom index and $wisdom recall
+session_index_path = "lifecycle/wisdom-index/"
+redact_credentials_at_index = true
 injection_mode = "progressive" # "progressive" | "preload"
 preload_categories = []       # Keep empty unless a project needs standing wisdom topics
+stage_mappings_enabled = true # SCHEMA.md may map stage role patterns to positive wisdom topics
 
 [sprint]
 # CocoOps $ops sprint configuration

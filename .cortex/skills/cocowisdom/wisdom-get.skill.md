@@ -1,7 +1,7 @@
 ---
 name: wisdom-get
 description: "Load a specific CocoWisdom topic on demand. Usage: $wisdom get <topic>"
-version: "2.0.1"
+version: "2.0.2"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -26,6 +26,8 @@ Support progressive disclosure by returning only the requested wisdom category.
 ## Notes
 
 The default `[wisdom].injection_mode = "progressive"` means CocoPilot and other orchestrators should list available topics and counts in preamble context, then call `$wisdom get <topic>` only when a topic is relevant.
+
+When `.cocoplus/wisdom/SCHEMA.md` contains a `## Stage Mappings` table, orchestrators may preload only the positive topics mapped to the current stage role. `do-not-use.md` is outside this routing table and remains universal negative memory.
 
 ## Success Criteria
 
