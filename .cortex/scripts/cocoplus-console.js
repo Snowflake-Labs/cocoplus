@@ -176,6 +176,7 @@ function collectState() {
     routines: safeJson(path.join(COCOPLUS_DIR, 'routines', 'registry.json'), { routines: [] }),
     retrospective: readText(path.join(lifecycle, 'retrospective-ledger.jsonl'), 'No retrospective ledger recorded.'),
     governanceLog: readText(path.join(lifecycle, 'governance-log.json'), 'No governance events recorded.'),
+    policyDecisionLog: readText(path.join(lifecycle, 'policy-decisions.jsonl'), ''),
     stageQuality: readText(path.join(COCOPLUS_DIR, 'sentinel', 'stage-quality.jsonl'), 'No stage quality scores recorded.'),
     findings: readText(path.join(lifecycle, 'FINDINGS.md'), 'No findings recorded.'),
     audit: readText(path.join(lifecycle, 'audit.md'), 'No audit trail recorded.'),
@@ -256,6 +257,41 @@ function humanGateHoldCard(state) {
   return panelCard('Human Gate Hold', `<div class="human-gate-card"><p><strong>${esc(stageName)}</strong></p><p>Persona: <strong>${esc(persona)}</strong></p><p>${esc(reason)}</p><p class="note">Clear this gate from the terminal:</p><pre>${esc(command)}</pre></div>`);
 }
 
+function renderPolicyDecisionLog(state) {
+  const safetyConfig = state.config.safety || state.config.security || {};
+  if (safetyConfig.runtime_policy_engine === false) {
+    return '<p>Runtime policy engine is disabled. Enable <code>runtime_policy_engine = true</code> in <code>cocoplus.toml [safety]</code> to activate the policy decision log.</p>';
+  }
+  const decisions = parseJsonLines(state.policyDecisionLog || '')
+    .filter((item) => item && item.decision)
+    .slice(-200)
+    .reverse();
+  const denyCount = decisions.filter((item) => item.decision === 'deny').length;
+  const instructCount = decisions.filter((item) => item.decision === 'instruct').length;
+  const rows = decisions.map((item) => {
+    const decision = String(item.decision || 'allow').toLowerCase();
+    const chip = `<span class="decision-chip decision-${esc(decision)}">${esc(decision)}</span>`;
+    const defaultHidden = decision === 'allow' ? ' data-default-hidden="true" style="display:none"' : '';
+    const operation = [item.operation, item.target].filter(Boolean).join(' ');
+    return `<tr${defaultHidden}><td>${esc(item.ts || '')}</td><td>${esc(item.stage_id || item.stage || '')}</td><td>${esc(operation || 'unknown')}</td><td>${esc(item.policy || '')}</td><td>${chip}</td><td><details><summary>${esc(String(item.message || '').slice(0, 96) || 'No message')}</summary><pre>${esc(item.message || '')}</pre><pre>${esc(item.excerpt || '')}</pre></details></td></tr>`;
+  }).join('');
+  const empty = rows || '<tr><td colspan="6">No policy events this session. All operations allowed or no SQL policy checks have run.</td></tr>';
+  return `<p><strong>${esc(denyCount)}</strong> deny / <strong>${esc(instructCount)}</strong> instruct decisions this session.</p>
+<p><label><input id="show-all-policy-decisions" type="checkbox"> Show all decisions</label></p>
+<table><thead><tr><th>Time</th><th>Stage</th><th>Operation</th><th>Policy</th><th>Decision</th><th>Message</th></tr></thead><tbody>${empty}</tbody></table>
+<script>
+(() => {
+  const toggle = document.getElementById('show-all-policy-decisions');
+  if (!toggle) return;
+  toggle.addEventListener('change', () => {
+    document.querySelectorAll('tr[data-default-hidden="true"]').forEach((row) => {
+      row.style.display = toggle.checked ? '' : 'none';
+    });
+  });
+})();
+</script>`;
+}
+
 function renderPanel(panel, state) {
   const flowStages = Array.isArray(state.flow.stages) ? state.flow.stages : [];
   const cards = {
@@ -300,6 +336,7 @@ function renderPanel(panel, state) {
       panelCard('Sentinel', `<pre>${esc(JSON.stringify(state.sentinel, null, 2))}</pre>`),
       panelCard('Governance', `<pre>${esc(JSON.stringify(state.config.governance || {}, null, 2))}</pre>`),
       panelCard('Live Governance Events', `<pre>${esc(state.governanceLog.slice(-5000))}</pre>`),
+      panelCard('Policy Decision Log', renderPolicyDecisionLog(state)),
       panelCard('Session History Mode', `<p>${process.env.CORTEX_CODE_NO_HISTORY_MODE === 'true' || process.env.COCO_NO_HISTORY_MODE === 'true' ? 'Session history appears suppressed for this process.' : 'No private/no-history flag visible to this console process.'}</p>`),
       panelCard('Retrospective', `<pre>${esc(state.retrospective.slice(-4000))}</pre>`),
     ],
@@ -409,6 +446,10 @@ function renderHtml(panel, state) {
     table{width:100%;border-collapse:collapse}
     th,td{border-bottom:1px solid #2b3744;padding:7px;text-align:left;vertical-align:top}
     .danger-row td{color:#ffd48a}
+    .decision-chip{display:inline-block;border:1px solid #5a6d82;border-radius:999px;padding:2px 8px;text-transform:uppercase}
+    .decision-deny{border-color:#a94442;color:#ffaaa5}
+    .decision-instruct{border-color:#a87321;color:#ffd48a}
+    .decision-allow{border-color:#2f8f5b;color:#9be7c4}
     pre{white-space:pre-wrap;word-break:break-word;margin:0;color:#d6e2ee}
     code{color:#9be7c4}
   </style>

@@ -26,7 +26,8 @@ If not: output "CocoPlus not initialized in this directory. Run `$pod init` to b
 3. If no running console is recorded, run:
    `invoke cocoplus-console.js`
 4. The server writes `.cocoplus/lifecycle/console-state.json` with `running`, `port`, `url`, `pid`, `started_at`, and panel list.
-5. Open `http://localhost:<port>/` in the browser when the host permits browser opening.
+5. The Safety panel reads `.cocoplus/lifecycle/policy-decisions.jsonl` and shows the Policy Decision Log. Default view includes `deny` and `instruct`; the browser toggle reveals `allow` decisions when `policy_log_all = true` produced them.
+6. Open `http://localhost:<port>/` in the browser when the host permits browser opening.
 
 ### `$cocoplus console status`
 
@@ -53,6 +54,7 @@ CocoConsole never edits project files, changes configuration, resumes flows, app
 - [ ] `$cocoplus console` produces a local URL.
 - [ ] `.cocoplus/lifecycle/console-state.json` records the running instance.
 - [ ] Dashboard panels are read-only.
+- [ ] Policy Decision Log is read-only and never clears, approves, or edits runtime policy decisions.
 
 ## Anti-Rationalization
 

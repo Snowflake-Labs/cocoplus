@@ -128,7 +128,7 @@ $cocoplus console
 $cocoplus console status
 $cocoplus console stop
 </code></pre>
-<p>Starts a local Node.js server on the configured port (default <code>7779</code>) and writes <code>.cocoplus/lifecycle/console-state.json</code>. If already running, reuses the recorded instance. The dashboard is read-only and never approves gates or mutates project state. The Flow panel includes Prompt Quality complexity preview and completion-source provenance; the Cost panel includes ACRR trend, metering-gap advisories, model-drift indicators, and session calibration records.</p>
+<p>Starts a local Node.js server on the configured port (default <code>7779</code>) and writes <code>.cocoplus/lifecycle/console-state.json</code>. If already running, reuses the recorded instance. The dashboard is read-only and never approves gates or mutates project state. The Flow panel includes Prompt Quality complexity preview and completion-source provenance; the Cost panel includes ACRR trend, metering-gap advisories, model-drift indicators, and session calibration records; the Safety panel includes the runtime policy engine <strong>Policy Decision Log</strong>.</p>
 <hr>
 <p><strong><code>$pilot on</code> / <code>$pilot off</code></strong> — Toggle CocoPilot for the current session</p>
 <pre><code>
@@ -531,6 +531,7 @@ $inspector off
 <h2 id="safety-gate">Safety Gate</h2>
 <hr>
 <p><strong><code>$safety strict</code></strong> — Maximum protection mode</p>
+<p>When <code>[safety].runtime_policy_engine = true</code>, Safety Gate also applies PreToolUse runtime policies using <code>allow()</code>, <code>deny(message)</code>, and <code>instruct(message)</code>. <code>deny</code> blocks before Snowflake execution; <code>instruct()</code> permits the operation while recording protective guidance in <code>.cocoplus/session/policy-instructions.jsonl</code>. Decisions are logged to <code>.cocoplus/lifecycle/policy-decisions.jsonl</code> for CocoConsole.</p>
 <pre><code>
 $safety strict
 </code></pre>

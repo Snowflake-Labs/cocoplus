@@ -12,6 +12,8 @@ All notable changes to CocoPlus are documented here.
 - CocoWisdom documents manifest-first memory: `SCHEMA.md` stage mappings route positive wisdom topics, while `do-not-use.md` remains universal negative memory.
 - Added `[wisdom]` config defaults for local session-log indexing: `session_index_enabled`, `session_index_path`, `redact_credentials_at_index`, and `stage_mappings_enabled`.
 - CocoPilot now documents stage-mapped wisdom preload behavior and a static Cortex MCP routing table for common Snowflake task patterns.
+- Added the thirty-first-cycle runtime policy engine for Snowflake SQL PreToolUse calls, including `allow()` / `deny()` / `instruct()` decisions, built-in production/destructive SQL policies, repeat escalation for unscoped DELETE, and durable policy decision/instruction logs.
+- CocoConsole Safety panel now renders the Policy Decision Log with deny/instruct default filtering, allow-decision reveal toggle, colored chips, expandable messages, and SQL excerpts.
 - Public docs now describe explicit curation, branch-scoped memory, and air-gap compatible Markdown memory as 2.0.2 operating constraints.
 - `scripts/validate-cocoplus.js` now enforces the V2.0.2 manifest/runtime contract and checks the new memory-discipline documentation.
 

@@ -14,12 +14,13 @@ CocoPlus wraps a structured development lifecycle around every project — from 
 
 The current operating layer includes:
 
-- **CocoConsole**: a local, read-only browser control plane launched with `$cocoplus console`, including Flow, Cost, Sessions, Forge intent translation, and Fleet Comms visibility.
+- **CocoConsole**: a local, read-only browser control plane launched with `$cocoplus console`, including Flow, Cost, Sessions, Forge intent translation, Fleet Comms visibility, and the Safety panel Policy Decision Log.
 - **CocoPilot**: opt-in natural-language orchestration with `$pilot on` / `$pilot off`.
 - **CocoForge**: goal-driven expert-team meta-loop with `$forge`.
 - **Leviathan Mode + Ronin**: explicit-activation autonomous coordination with a personal assistant return briefing.
 - **Dynamic Personas**: evidence-gated emergent specialists with retained history.
 - **Governance hooks**: ReviewerLockout and PII governance with observe/enforce rollout.
+- **Runtime policy engine**: PreToolUse safety policies apply an `allow()` / `deny()` / `instruct()` model to Snowflake operations, with built-in protections for production DROP TABLE, TRUNCATE, DELETE without WHERE, and production ALTER TABLE.
 - **Feature-owned runtime**: hooks enqueue deterministic work through idempotent, feature-owned skill contracts; CocoConsole is the only registered local runtime script.
 - **CocoFlow orchestration**: tiered planning, pre-dispatch complexity scoring, committed run-policy snapshots, stage model floors, explicit human gates, inbox-first stage transitions, dependency-group dispatch, dotted branch topology, named artifacts, thinking-effort tuning, divergence at branch points, synthesis passes, and `$flow template` reuse.
 - **CocoSession continuity**: PROGRESS handoff, predicate context, iteration and cost budgets with reserve landing, operator kill-switch, canonical terminal statuses, and one-shot steering for long-running work.
