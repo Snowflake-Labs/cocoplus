@@ -249,7 +249,29 @@ function main() {
   ];
 
   const requiredRuntimeScripts = [
+    '_contract-hash.js',
+    '_script-utils.js',
+    'alignment-check.js',
+    'audit-events.js',
+    'behavior-maturity.js',
+    'chargeback-refresh.js',
     'cocoplus-console.js',
+    'contract-gate.js',
+    'contract-prove.js',
+    'health-grader.js',
+    'model-tier-resolve.js',
+    'noop-check.js',
+    'ops-thesis-updater.js',
+    'pivot-merge.js',
+    'recipe-metadata.js',
+    'recall-import.js',
+    'refine-update.js',
+    'report-export.js',
+    'rollback.js',
+    'scope-classify.js',
+    'spec-validator.js',
+    'status-envelope-check.js',
+    'wisdom-route.js',
   ];
 
   const allowedRuntimeScripts = new Set(requiredRuntimeScripts);
@@ -297,8 +319,11 @@ function main() {
     failures.push('.cortex-plugin/plugin.json must declare version 2.0.2');
   }
 
-  if (manifestScripts.length !== 1 || manifestScripts[0] !== '.cortex/scripts/cocoplus-console.js') {
-    failures.push('.cortex-plugin/plugin.json must register only .cortex/scripts/cocoplus-console.js as a V2.0.2 runtime script');
+  for (const fileName of requiredRuntimeScripts) {
+    const manifestPath = `.cortex/scripts/${fileName}`;
+    if (!manifestScripts.includes(manifestPath)) {
+      failures.push(`.cortex-plugin/plugin.json must register runtime script ${manifestPath}`);
+    }
   }
 
   for (const script of plugin.scripts || []) {
@@ -396,9 +421,12 @@ function main() {
   }
 
   for (const filePath of walkFiles(runtimeScriptsDir, (candidate) => candidate.endsWith('.js'))) {
-    const fileName = path.basename(filePath);
-    if (!allowedRuntimeScripts.has(fileName)) {
-      failures.push(`V2.0.2 ships only CocoConsole as a runtime script; remove ${path.relative(repoRoot, filePath)}`);
+    const relative = normalizeManifestPath(path.relative(repoRoot, filePath));
+    if (!manifestScripts.includes(relative)) {
+      failures.push(`Runtime script ${relative} must be registered in .cortex-plugin/plugin.json`);
+    }
+    if (!allowedRuntimeScripts.has(path.basename(filePath))) {
+      failures.push(`Unexpected runtime script is not in the required deterministic backing set: ${relative}`);
     }
   }
 
@@ -445,6 +473,7 @@ function main() {
     'production_schema_prefixes',
     'block_drop_table_production',
     'block_delete_without_where',
+    'escalate_on_repeat',
   ]) {
     requireIncludes(configTemplate, expected, failures, 'cocoplus.toml.template');
   }
@@ -483,6 +512,8 @@ function main() {
   requireIncludes(preToolUse, 'policy-decisions.jsonl', failures, 'PreToolUse hook');
   requireIncludes(preToolUse, 'policy-instructions.jsonl', failures, 'PreToolUse hook');
   requireIncludes(preToolUse, 'loadPolicyFiles', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'policyMatch', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'escalate_on_repeat', failures, 'PreToolUse hook');
   requireIncludes(preToolUse, 'lifecycle\', \'policies', failures, 'PreToolUse hook');
   rejectPattern(preToolUse, /params\.premortem_acknowledged/, failures, 'PreToolUse hook');
 

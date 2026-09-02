@@ -20,7 +20,7 @@ The current operating layer includes:
 - **Leviathan Mode + Ronin**: explicit-activation autonomous coordination with a personal assistant return briefing.
 - **Dynamic Personas**: evidence-gated emergent specialists with retained history.
 - **Governance hooks**: ReviewerLockout and PII governance with observe/enforce rollout.
-- **Runtime policy engine**: PreToolUse safety policies apply an `allow()` / `deny()` / `instruct()` model to Snowflake operations, with built-in protections for production DROP TABLE, TRUNCATE, DELETE without WHERE, production ALTER TABLE, and optional local policy-as-code.
+- **Runtime policy engine**: PreToolUse safety policies apply an `allow()` / `deny()` / `instruct()` model to Snowflake operations, with built-in protections for production DROP TABLE, TRUNCATE, DELETE without WHERE, production ALTER TABLE, and local policy-as-code using regex or documented `match.operations` / `match.schemas` / `match.tables` rules.
 - **Feature-owned runtime**: hooks enqueue deterministic work through idempotent, feature-owned skill contracts; CocoConsole is the only registered local runtime script.
 - **CocoFlow orchestration**: tiered planning, pre-dispatch complexity scoring, committed run-policy snapshots, stage model floors, explicit human gates, inbox-first stage transitions, dependency-group dispatch, dotted branch topology, named artifacts, thinking-effort tuning, divergence at branch points, synthesis passes, and `$flow template` reuse.
 - **CocoSession continuity**: PROGRESS handoff, predicate context, iteration and cost budgets with reserve landing, operator kill-switch, canonical terminal statuses, and one-shot steering for long-running work.

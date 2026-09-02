@@ -215,12 +215,33 @@ function parsePolicyFile(filePath) {
   const text = fs.readFileSync(filePath, 'utf8');
   if (/\.json$/i.test(filePath)) return JSON.parse(text);
   const policy = {};
+  let nested = null;
   for (const rawLine of text.split(/\r?\n/)) {
     const line = rawLine.replace(/\s+#.*$/, '').trim();
     if (!line || line.startsWith('#')) continue;
+    const nestedMatch = rawLine.match(/^\s{2,}([A-Za-z0-9_-]+)\s*:\s*(.+)$/);
+    if (nested && nestedMatch) {
+      const rawValue = nestedMatch[2].trim();
+      const value = /^\[[^\]]*\]$/.test(rawValue)
+        ? rawValue.slice(1, -1).split(',').map((item) => item.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean)
+        : rawValue.replace(/^['"]|['"]$/g, '');
+      nested[nestedMatch[1].replace(/-/g, '_')] = value;
+      continue;
+    }
     const match = line.match(/^([A-Za-z0-9_-]+)\s*:\s*(.+)$/);
+    const objectStart = line.match(/^([A-Za-z0-9_-]+)\s*:\s*$/);
+    if (objectStart) {
+      nested = {};
+      policy[objectStart[1].replace(/-/g, '_')] = nested;
+      continue;
+    }
     if (!match) continue;
-    policy[match[1].replace(/-/g, '_')] = match[2].trim().replace(/^['"]|['"]$/g, '');
+    nested = null;
+    const key = match[1].replace(/-/g, '_');
+    const rawValue = match[2].trim();
+    policy[key] = /^\[[^\]]*\]$/.test(rawValue)
+      ? rawValue.slice(1, -1).split(',').map((item) => item.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean)
+      : rawValue.replace(/^['"]|['"]$/g, '');
   }
   return policy;
 }
@@ -255,35 +276,70 @@ function loadPolicyFiles() {
 
 function customPolicyDecision(policy, params, sql, operation, ts) {
   const pattern = policy.sql_pattern || policy.pattern || policy.regex || '';
-  if (!pattern) return null;
   let matched = false;
-  try {
-    matched = new RegExp(pattern, 'i').test(sql);
-  } catch (_) {
-    matched = String(sql || '').toLowerCase().includes(String(pattern).toLowerCase());
+  if (pattern) {
+    try {
+      matched = new RegExp(pattern, 'i').test(sql);
+    } catch (_) {
+      matched = String(sql || '').toLowerCase().includes(String(pattern).toLowerCase());
+    }
+  } else if (policy.match && typeof policy.match === 'object') {
+    matched = policyMatch(policy.match, operation);
   }
   if (!matched) return null;
   const decision = String(policy.decision || policy.action || 'instruct').toLowerCase();
   if (!['allow', 'deny', 'instruct'].includes(decision)) return null;
+  const policyName = policy.name || 'custom-policy';
+  const repeatsEscalate = policy.escalate_on_repeat === true || policy.escalate_on_repeat === 'true';
+  const repeated = repeatsEscalate && seenPolicyInstruction(policyName, operation);
+  if (decision === 'instruct' && repeatsEscalate && !repeated) {
+    markPolicyInstruction(policyName, operation, ts);
+  }
   return {
     ts,
     stage_id: currentStageId(params),
     step_id: params.step_id || params.step || '',
     operation: operation.type,
     target: operation.target,
-    decision,
-    policy: policy.name || 'custom-policy',
-    message: policy.message || `Custom runtime policy ${decision}: ${policy.name || pattern}`,
+    decision: repeated ? 'deny' : decision,
+    policy: policyName,
+    message: repeated
+      ? `Custom runtime policy ${policyName} was already instructed in this session and escalated on repeat.`
+      : policy.message || `Custom runtime policy ${decision}: ${policyName || pattern}`,
     excerpt: String(sql || '').slice(0, 500),
   };
 }
 
-function evaluateCustomPolicies(params, sql, operation, ts) {
+function policyValues(value) {
+  if (Array.isArray(value)) return value.map((item) => String(item).replace(/"/g, '').toUpperCase());
+  if (typeof value === 'string' && value.trim()) return value.split(',').map((item) => item.trim().replace(/"/g, '').toUpperCase());
+  return [];
+}
+
+function policyMatch(match, operation) {
+  const operations = policyValues(match.operations || match.operation);
+  const schemas = policyValues(match.schemas || match.schema);
+  const tables = policyValues(match.tables || match.table);
+  const op = String(operation.type || '').toUpperCase();
+  const target = String(operation.target || '').replace(/"/g, '').toUpperCase();
+  const parts = target.split('.');
+  const table = parts[parts.length - 1] || '';
+  const schema = parts.length >= 2 ? `${parts[parts.length - 2]}.` : '';
+  const fullSchema = parts.length >= 3 ? `${parts[0]}.${parts[1]}.` : schema;
+
+  if (operations.length && !operations.some((item) => op === item || op.startsWith(item))) return false;
+  if (schemas.length && !schemas.some((item) => fullSchema.startsWith(item) || schema.startsWith(item) || target.startsWith(item))) return false;
+  if (tables.length && !tables.includes(table) && !tables.includes(target)) return false;
+  return true;
+}
+
+function evaluateCustomPolicies(params, sql, operation, ts, options = {}) {
   const instructions = [];
   for (const policy of loadPolicyFiles()) {
+    if (options.names && !options.names.has(policy.name)) continue;
     const decision = customPolicyDecision(policy, params, sql, operation, ts);
     if (!decision) continue;
-    if (decision.decision === 'deny') return decision;
+    if (decision.decision === 'deny' || decision.decision === 'allow') return decision;
     if (decision.decision === 'instruct') instructions.push(decision);
   }
   if (instructions.length === 0) return null;
@@ -347,6 +403,14 @@ function evaluateRuntimePolicy(config, params, sql, ts) {
   const safetyConfig = config.safety || config.security || {};
   const operation = sqlOperation(sql);
   const prefixes = configuredProductionPrefixes(config);
+  const builtInPolicies = new Set([
+    'block-drop-table-production',
+    'block-truncate',
+    'block-delete-without-where',
+    'block-alter-table-production',
+  ]);
+  const customBuiltInOverride = evaluateCustomPolicies(params, sql, operation, ts, { names: builtInPolicies });
+  if (customBuiltInOverride) return customBuiltInOverride;
   const stageId = currentStageId(params);
   const base = {
     ts,
@@ -1149,6 +1213,10 @@ function main() {
   }
   if (runtimePolicy.decision === 'allow') {
     logPolicyDecision(config, runtimePolicy);
+    if (runtimePolicy.policy !== 'built-in-default') {
+      allow();
+      return;
+    }
   }
 
   const policy = activePolicy(config, params);
