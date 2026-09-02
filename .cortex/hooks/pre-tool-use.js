@@ -26,6 +26,7 @@
 
 const fs   = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { isoUtc, appendJsonLine, logError, readStdinJson, normalizeToolEvent } = require('./_common.js');
 const { loadConfig } = require('./_v2-state.js');
 
@@ -110,8 +111,8 @@ const EHRB_BILLING_THRESHOLD_DEFAULT = 100000; // configurable in safety-config.
 function classifyEHRB(sql, prodPatterns, billingThreshold) {
   // Production systems
   for (const prod of prodPatterns) {
-    const escaped = prod.replace(/\*/g, '.*').replace(/\?/g, '.');
-    if (new RegExp(escaped, 'i').test(sql) && /\b(DDL|DROP|ALTER|CREATE\s+OR\s+REPLACE)\b/i.test(sql)) {
+    const escaped = wildcardPatternToRegex(prod);
+    if (safeRegexTest(escaped, sql, 'ehrb-production-pattern') && /\b(DDL|DROP|ALTER|CREATE\s+OR\s+REPLACE)\b/i.test(sql)) {
       return { ehrb: true, category: 'Production systems', indicator: `DDL targeting production schema pattern: ${prod}` };
     }
   }
@@ -196,11 +197,21 @@ function configuredProductionPrefixes(config) {
 
 function sqlOperation(sql) {
   const normalized = String(sql || '').replace(/\s+/g, ' ').trim();
-  const match = normalized.match(/\b(DROP\s+TABLE|TRUNCATE(?:\s+TABLE)?|DELETE\s+FROM|ALTER\s+TABLE|COPY\s+INTO|SELECT)\b\s+(?:IF\s+EXISTS\s+)?([A-Za-z0-9_.$"]+)?/i);
-  if (!match) return { type: 'UNKNOWN', target: '', label: normalized.slice(0, 80) };
-  const type = match[1].toUpperCase().replace(/\s+/g, ' ');
-  const target = (match[2] || '').replace(/"/g, '');
-  return { type, target, label: `${type}${target ? ` on ${target}` : ''}` };
+  const patterns = [
+    [/^\s*DROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?([A-Za-z0-9_.$"]+)/i, 'DROP TABLE'],
+    [/^\s*TRUNCATE\s+(?:TABLE\s+)?([A-Za-z0-9_.$"]+)/i, 'TRUNCATE'],
+    [/^\s*DELETE\s+FROM\s+([A-Za-z0-9_.$"]+)/i, 'DELETE FROM'],
+    [/^\s*ALTER\s+TABLE\s+([A-Za-z0-9_.$"]+)/i, 'ALTER TABLE'],
+    [/^\s*COPY\s+INTO\s+([A-Za-z0-9_.$"]+)/i, 'COPY INTO'],
+    [/^\s*SELECT\b/i, 'SELECT'],
+  ];
+  for (const [pattern, type] of patterns) {
+    const match = normalized.match(pattern);
+    if (!match) continue;
+    const target = (match[1] || '').replace(/"/g, '');
+    return { type, target, label: `${type}${target ? ` on ${target}` : ''}` };
+  }
+  return { type: 'UNKNOWN', target: '', label: normalized.slice(0, 80) };
 }
 
 function targetMatchesProduction(target, prefixes) {
@@ -209,6 +220,55 @@ function targetMatchesProduction(target, prefixes) {
     const normalized = String(prefix || '').replace(/\*/g, '').toUpperCase();
     return normalized && upperTarget.startsWith(normalized);
   });
+}
+
+function policyFileHash(filePath) {
+  return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+
+function unsafeRegexReason(pattern) {
+  const text = String(pattern || '');
+  if (text.length > 160) return 'pattern exceeds 160 characters';
+  if (/[^\x09\x0a\x0d\x20-\x7e]/.test(text)) return 'pattern contains non-printable characters';
+  if (/\([^)]*[+*][^)]*\)\s*[+*?{]/.test(text)) return 'nested quantifier pattern';
+  if (/\([^)]*\{[^}]+}[^)]*\)\s*[+*?{]/.test(text)) return 'nested bounded quantifier pattern';
+  if (/(?:\.\*){3,}/.test(text)) return 'excessive wildcard repetition';
+  return null;
+}
+
+function safeRegexTest(pattern, input, context) {
+  const reason = unsafeRegexReason(pattern);
+  if (reason) {
+    appendJsonLine(HOOK_LOG, {
+      hook: 'pre-tool-use',
+      action: 'unsafe_regex_skipped',
+      context,
+      reason,
+      pattern: String(pattern || '').slice(0, 120),
+      ts: isoUtc(),
+    });
+    return false;
+  }
+  try {
+    return new RegExp(pattern, 'i').test(input);
+  } catch (err) {
+    appendJsonLine(HOOK_LOG, {
+      hook: 'pre-tool-use',
+      action: 'invalid_regex_skipped',
+      context,
+      error: err.message,
+      pattern: String(pattern || '').slice(0, 120),
+      ts: isoUtc(),
+    });
+    return false;
+  }
+}
+
+function wildcardPatternToRegex(pattern) {
+  return String(pattern || '')
+    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+    .replace(/\*/g, '.*')
+    .replace(/\?/g, '.');
 }
 
 function parsePolicyFile(filePath) {
@@ -254,8 +314,21 @@ function loadPolicyFiles() {
       .map((entry) => {
         const filePath = path.join(dir, entry.name);
         try {
+          const stat = fs.lstatSync(filePath);
+          if (!stat.isFile() || stat.isSymbolicLink()) {
+            appendJsonLine(HOOK_LOG, {
+              hook: 'pre-tool-use',
+              action: 'runtime_policy_file_skipped',
+              file: entry.name,
+              error: 'policy file must be a regular file',
+              ts: isoUtc(),
+            });
+            return null;
+          }
           const policy = parsePolicyFile(filePath);
           policy.name = policy.name || entry.name.replace(/\.(json|ya?ml)$/i, '');
+          policy.source_file = path.join(dir, entry.name).replace(/\\/g, '/');
+          policy.source_sha256 = policyFileHash(filePath);
           return policy;
         } catch (err) {
           appendJsonLine(HOOK_LOG, {
@@ -278,11 +351,7 @@ function customPolicyDecision(policy, params, sql, operation, ts) {
   const pattern = policy.sql_pattern || policy.pattern || policy.regex || '';
   let matched = false;
   if (pattern) {
-    try {
-      matched = new RegExp(pattern, 'i').test(sql);
-    } catch (_) {
-      matched = String(sql || '').toLowerCase().includes(String(pattern).toLowerCase());
-    }
+    matched = safeRegexTest(pattern, sql, `runtime-policy:${policy.name || 'unnamed'}`);
   } else if (policy.match && typeof policy.match === 'object') {
     matched = policyMatch(policy.match, operation);
   }
@@ -307,6 +376,8 @@ function customPolicyDecision(policy, params, sql, operation, ts) {
       ? `Custom runtime policy ${policyName} was already instructed in this session and escalated on repeat.`
       : policy.message || `Custom runtime policy ${decision}: ${policyName || pattern}`,
     excerpt: String(sql || '').slice(0, 500),
+    source_file: policy.source_file || '',
+    source_sha256: policy.source_sha256 || '',
   };
 }
 
@@ -410,7 +481,18 @@ function evaluateRuntimePolicy(config, params, sql, ts) {
     'block-alter-table-production',
   ]);
   const customBuiltInOverride = evaluateCustomPolicies(params, sql, operation, ts, { names: builtInPolicies });
-  if (customBuiltInOverride) return customBuiltInOverride;
+  if (customBuiltInOverride) {
+    const allowOverrides = safetyConfig.allow_custom_policy_overrides === true ||
+      safetyConfig.allow_custom_policy_overrides === 'true';
+    if (customBuiltInOverride.decision === 'allow' && builtInPolicies.has(customBuiltInOverride.policy) && !allowOverrides) {
+      return Object.assign(customBuiltInOverride, {
+        decision: 'deny',
+        policy: 'custom_allow_override_disabled',
+        message: `Custom policy ${customBuiltInOverride.policy} attempted to allow a built-in policy override. Set [safety].allow_custom_policy_overrides = true only when Snowflake-side controls are the authoritative boundary.`,
+      });
+    }
+    return customBuiltInOverride;
+  }
   const stageId = currentStageId(params);
   const base = {
     ts,
@@ -1308,7 +1390,7 @@ function main() {
 
     // Tier 4: NEVER — unconditional block, cannot be overridden
     for (const pattern of neverPatterns) {
-      if (new RegExp(pattern, 'i').test(sql)) {
+      if (safeRegexTest(pattern, sql, 'boundary-tier-never')) {
         block(`[TIER 4 — NEVER] This operation matches a pattern that CocoPlus is configured to never execute: "${pattern}". This cannot be overridden. Edit boundary_tiers.never_patterns in safety-config.json to change this policy.`);
         appendJsonLine(SAFETY_AUDIT, { ts, tool: toolName, tier: 4, pattern, mode: 'never' });
         return;
@@ -1317,7 +1399,7 @@ function main() {
 
     // Tier 3: HUMAN REQUIRED — hard stop requiring typed rationale
     for (const pattern of humanPatterns) {
-      if (new RegExp(pattern, 'i').test(sql)) {
+      if (safeRegexTest(pattern, sql, 'boundary-tier-human-required')) {
         block(`[TIER 3 — HUMAN REQUIRED] This operation requires explicit human authorization: "${pattern}" matched. Provide written rationale and re-submit: "AUTHORIZED: <your reason>"`);
         appendJsonLine(SAFETY_AUDIT, { ts, tool: toolName, tier: 3, pattern, mode: 'human_required' });
         return;
@@ -1326,7 +1408,7 @@ function main() {
 
     // Tier 2: ASK FIRST — confirmation prompt before execution
     for (const pattern of askFirstPatterns) {
-      if (new RegExp(pattern, 'i').test(sql)) {
+      if (safeRegexTest(pattern, sql, 'boundary-tier-ask-first')) {
         allow(`[TIER 2 — ASK FIRST] This operation matches a pattern requiring confirmation: "${pattern}". Confirm to proceed? Type YES to allow this operation.`);
         appendJsonLine(SAFETY_AUDIT, { ts, tool: toolName, tier: 2, pattern, mode: 'ask_first' });
         return;
@@ -1362,8 +1444,8 @@ function main() {
   // Check production schema patterns in ALTER TABLE (prodPatterns already loaded above)
   if (!pattern && /ALTER\s+TABLE/i.test(sql)) {
     for (const prod of prodPatterns) {
-      const escaped = prod.replace(/\*/g, '.*').replace(/\?/g, '.');
-      if (new RegExp(escaped, 'i').test(sql)) {
+      const escaped = wildcardPatternToRegex(prod);
+      if (safeRegexTest(escaped, sql, 'layer1-production-pattern')) {
         pattern = `ALTER TABLE on production schema (${prod})`;
         break;
       }

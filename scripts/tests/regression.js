@@ -126,7 +126,7 @@ test('contract ci executes archived check commands and fails regressions', () =>
       tier: 'e2e',
       result: 'pass',
       source_hash: hash,
-      check_command: [process.execPath, '-e', 'process.exit(7)'],
+      check_command: [process.execPath, 'scripts/validate-cocoplus.js'],
     },
   });
   const result = run(process.execPath, ['.cortex/scripts/contract-prove.js', '--ci'], { cwd: dir });
@@ -134,9 +134,22 @@ test('contract ci executes archived check commands and fails regressions', () =>
   assert.match(result.stdout, /check command failed/i);
 });
 
+test('contract ci refuses unapproved archived check commands', () => {
+  const dir = tempRepo();
+  writeJson(path.join(dir, '.cocoplus', 'contract-evidence.json'), {
+    malicious: {
+      result: 'pass',
+      check_command: ['powershell', '-NoProfile', '-Command', 'Write-Output unsafe'],
+    },
+  });
+  const result = run(process.execPath, ['.cortex/scripts/contract-prove.js', '--ci'], { cwd: dir });
+  assert.notStrictEqual(result.status, 0);
+  assert.match(result.stderr, /not approved/i);
+});
+
 test('runtime policies support documented match schema, repeat escalation, and built-in overrides', () => {
   const dir = tempRepo();
-  fs.writeFileSync(path.join(dir, 'cocoplus.toml'), '[safety]\nruntime_policy_engine = true\npolicy_log_all = true\n[run_policy]\nallow_irreversible_actions = true\n', 'utf8');
+  fs.writeFileSync(path.join(dir, 'cocoplus.toml'), '[safety]\nruntime_policy_engine = true\npolicy_log_all = true\nallow_custom_policy_overrides = true\n[run_policy]\nallow_irreversible_actions = true\n', 'utf8');
   fs.mkdirSync(path.join(dir, '.cocoplus', 'lifecycle', 'policies'), { recursive: true });
   fs.writeFileSync(path.join(dir, '.cocoplus', 'lifecycle', 'policies', 'copy-row-count.yaml'), [
     'name: row-count-before-copy',
@@ -176,6 +189,43 @@ test('runtime policies support documented match schema, repeat escalation, and b
   });
   assert.strictEqual(override.status, 0, override.stderr);
   assert.strictEqual(JSON.parse(override.stdout).action, 'allow');
+});
+
+test('runtime policies skip unsafe regex and gate custom allow overrides with integrity logs', () => {
+  const dir = tempRepo();
+  fs.writeFileSync(path.join(dir, 'cocoplus.toml'), '[safety]\nruntime_policy_engine = true\npolicy_log_all = true\n[run_policy]\nallow_irreversible_actions = true\n', 'utf8');
+  fs.mkdirSync(path.join(dir, '.cocoplus', 'lifecycle', 'policies'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.cocoplus', 'lifecycle', 'policies', 'unsafe-regex.yaml'), [
+    'name: unsafe-regex',
+    'decision: instruct',
+    'pattern: (a+)+$',
+    'message: unsafe',
+  ].join('\n'), 'utf8');
+  fs.writeFileSync(path.join(dir, '.cocoplus', 'lifecycle', 'policies', 'allow-override.yaml'), [
+    'name: block-truncate',
+    'decision: allow',
+    'match:',
+    '  operations: [TRUNCATE]',
+    '  schemas: [DEV.PUBLIC.]',
+  ].join('\n'), 'utf8');
+
+  const unsafeRegex = run(process.execPath, ['.cortex/hooks/pre-tool-use.js'], {
+    cwd: dir,
+    input: JSON.stringify({ tool: 'SnowflakeSqlExecute', parameters: { sql: `${'a'.repeat(64)}!` } }),
+  });
+  assert.strictEqual(unsafeRegex.status, 0, unsafeRegex.stderr);
+  assert.doesNotMatch(unsafeRegex.stdout, /unsafe/);
+  assert.match(fs.readFileSync(path.join(dir, '.cocoplus', 'hook-log.jsonl'), 'utf8'), /unsafe_regex/);
+
+  const gatedAllow = run(process.execPath, ['.cortex/hooks/pre-tool-use.js'], {
+    cwd: dir,
+    input: JSON.stringify({ tool: 'SnowflakeSqlExecute', parameters: { sql: 'TRUNCATE TABLE DEV.PUBLIC.T' } }),
+  });
+  assert.strictEqual(gatedAllow.status, 0, gatedAllow.stderr);
+  assert.match(gatedAllow.stdout, /"action":"block"/);
+  const policyLog = fs.readFileSync(path.join(dir, '.cocoplus', 'lifecycle', 'policy-decisions.jsonl'), 'utf8');
+  assert.match(policyLog, /source_sha256/);
+  assert.match(policyLog, /custom_allow_override_disabled/);
 });
 
 test('recall imports jsonl, stores real source path, supports function and show modes', () => {

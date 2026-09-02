@@ -473,6 +473,7 @@ function main() {
     'production_schema_prefixes',
     'block_drop_table_production',
     'block_delete_without_where',
+    'allow_custom_policy_overrides',
     'escalate_on_repeat',
   ]) {
     requireIncludes(configTemplate, expected, failures, 'cocoplus.toml.template');
@@ -514,6 +515,9 @@ function main() {
   requireIncludes(preToolUse, 'loadPolicyFiles', failures, 'PreToolUse hook');
   requireIncludes(preToolUse, 'policyMatch', failures, 'PreToolUse hook');
   requireIncludes(preToolUse, 'escalate_on_repeat', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'safeRegexTest', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'source_sha256', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'allow_custom_policy_overrides', failures, 'PreToolUse hook');
   requireIncludes(preToolUse, 'lifecycle\', \'policies', failures, 'PreToolUse hook');
   rejectPattern(preToolUse, /params\.premortem_acknowledged/, failures, 'PreToolUse hook');
 

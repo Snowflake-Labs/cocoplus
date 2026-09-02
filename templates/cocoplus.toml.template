@@ -24,6 +24,7 @@ block_drop_table_production = true
 block_truncate = true
 block_delete_without_where = true
 block_alter_table_production = true
+allow_custom_policy_overrides = false
 # Optional local policy-as-code files load from .cocoplus/lifecycle/policies/*.json|*.yaml.
 # Supported keys: name, decision = "allow|deny|instruct", message, escalate_on_repeat,
 # and either sql_pattern/pattern/regex or:
@@ -31,7 +32,8 @@ block_alter_table_production = true
 #   operations: ["COPY INTO", "UPDATE"]
 #   schemas: ["DEV.PUBLIC."]
 #   tables: ["TARGET_TABLE"]
-# A custom policy with the same name as a built-in can override that built-in.
+# A custom policy with the same name as a built-in can override that built-in only
+# when allow_custom_policy_overrides = true and Snowflake-side controls are authoritative.
 
 [warehouses]
 # Snowflake warehouse access control
