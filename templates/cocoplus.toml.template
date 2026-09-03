@@ -15,6 +15,26 @@ ask_first = ["Write", "Edit", "SnowflakeSqlExecute:INSERT", "SnowflakeSqlExecute
 human_required = ["SnowflakeSqlExecute:DROP", "SnowflakeSqlExecute:TRUNCATE", "SnowflakeSqlExecute:DELETE"]
 never = ["credential_read", "external_network_write"]
 
+[safety]
+# Runtime policy engine (three-decision model: allow, deny, instruct).
+runtime_policy_engine = true
+policy_log_all = false
+production_schema_prefixes = ["PROD.", "PRODUCTION."]
+block_drop_table_production = true
+block_truncate = true
+block_delete_without_where = true
+block_alter_table_production = true
+allow_custom_policy_overrides = false
+# Optional local policy-as-code files load from .cocoplus/lifecycle/policies/*.json|*.yaml.
+# Supported keys: name, decision = "allow|deny|instruct", message, escalate_on_repeat,
+# and either sql_pattern/pattern/regex or:
+# match:
+#   operations: ["COPY INTO", "UPDATE"]
+#   schemas: ["DEV.PUBLIC."]
+#   tables: ["TARGET_TABLE"]
+# A custom policy with the same name as a built-in can override that built-in only
+# when allow_custom_policy_overrides = true and Snowflake-side controls are authoritative.
+
 [warehouses]
 # Snowflake warehouse access control
 allowed = ["DEV_WH"]       # Warehouses permitted for autonomous use
@@ -82,8 +102,12 @@ auto_distill = true           # Stop hook queues background wisdom distillation 
 distill_on_failure = true     # Failed or exited sessions can still contribute validated lessons
 contradiction_action = "queue" # "queue" | "overwrite" | "skip"
 schema_file = ".cocoplus/wisdom/SCHEMA.md"
+session_index_enabled = true  # Enable local lexical indexing for $wisdom index and $wisdom recall
+session_index_path = "lifecycle/wisdom-index/"
+redact_credentials_at_index = true
 injection_mode = "progressive" # "progressive" | "preload"
 preload_categories = []       # Keep empty unless a project needs standing wisdom topics
+stage_mappings_enabled = true # SCHEMA.md may map stage role patterns to positive wisdom topics
 
 [sprint]
 # CocoOps $ops sprint configuration

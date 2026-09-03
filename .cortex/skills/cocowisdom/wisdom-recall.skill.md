@@ -1,7 +1,7 @@
 ---
 name: "wisdom-recall"
 description: "Search curated wisdom and the session-log lexical index together."
-version: "2.0.1"
+version: "2.0.2"
 author: "CocoPlus"
 tags:
   - cocoplus
@@ -22,6 +22,8 @@ Perform two-tier lexical recall:
 3. Return results from both tiers together, labeled by source and confidence: exact phrase, all terms, or close term overlap.
 
 If no session index exists, output: "No session index found. Run `$wisdom index` first." Still search curated wisdom files.
+
+Lexical search is the baseline. Do not add semantic, embedding, or LLM retrieval unless the lexical result quality has been measured and the gap is documented.
 
 ## Negative Memory Rule
 

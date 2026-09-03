@@ -26,6 +26,7 @@
 
 const fs   = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { isoUtc, appendJsonLine, logError, readStdinJson, normalizeToolEvent } = require('./_common.js');
 const { loadConfig } = require('./_v2-state.js');
 
@@ -34,9 +35,12 @@ const HOOK_LOG      = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
 const SAFETY_LOG    = path.join(COCOPLUS_DIR, 'safety-decisions.log');
 const SAFETY_AUDIT  = path.join(COCOPLUS_DIR, 'safety-audit.jsonl');
 const GOVERNANCE_LOG = path.join(COCOPLUS_DIR, 'lifecycle', 'governance-log.json');
+const POLICY_DECISIONS = path.join(COCOPLUS_DIR, 'lifecycle', 'policy-decisions.jsonl');
 const AUDIT_MD = path.join(COCOPLUS_DIR, 'lifecycle', 'audit.md');
 const STEER_INBOX = path.join(COCOPLUS_DIR, 'STEER.md');
 const STAGE_EVIDENCE = path.join(COCOPLUS_DIR, 'session', 'stage-evidence.json');
+const POLICY_INSTRUCTIONS = path.join(COCOPLUS_DIR, 'session', 'policy-instructions.jsonl');
+const POLICY_REPEAT_STATE = path.join(COCOPLUS_DIR, 'session', 'policy-repeat-state.json');
 const PROPOSAL_LOG = path.join(COCOPLUS_DIR, 'proposals', 'proposal-log.jsonl');
 const FLOW_ARTIFACT_ROOT = path.join(COCOPLUS_DIR, 'flow', 'artifacts');
 const SESSION_BUDGET_STATE = path.join(COCOPLUS_DIR, 'session', 'budget-state.json');
@@ -107,8 +111,8 @@ const EHRB_BILLING_THRESHOLD_DEFAULT = 100000; // configurable in safety-config.
 function classifyEHRB(sql, prodPatterns, billingThreshold) {
   // Production systems
   for (const prod of prodPatterns) {
-    const escaped = prod.replace(/\*/g, '.*').replace(/\?/g, '.');
-    if (new RegExp(escaped, 'i').test(sql) && /\b(DDL|DROP|ALTER|CREATE\s+OR\s+REPLACE)\b/i.test(sql)) {
+    const escaped = wildcardPatternToRegex(prod);
+    if (safeRegexTest(escaped, sql, 'ehrb-production-pattern') && /\b(DDL|DROP|ALTER|CREATE\s+OR\s+REPLACE)\b/i.test(sql)) {
       return { ehrb: true, category: 'Production systems', indicator: `DDL targeting production schema pattern: ${prod}` };
     }
   }
@@ -167,6 +171,387 @@ function writeJsonFile(filePath, value) {
 function appendAudit(text) {
   fs.mkdirSync(path.dirname(AUDIT_MD), { recursive: true });
   fs.appendFileSync(AUDIT_MD, `${text}\n`, 'utf8');
+}
+
+function configValue(config, sections, key, fallback) {
+  for (const section of sections) {
+    if (config[section] && config[section][key] !== undefined) return config[section][key];
+  }
+  return fallback;
+}
+
+function runtimePolicyEnabled(config) {
+  return configValue(config, ['safety', 'security'], 'runtime_policy_engine', true) !== false;
+}
+
+function policyLogAll(config) {
+  return configValue(config, ['safety', 'security'], 'policy_log_all', false) === true;
+}
+
+function configuredProductionPrefixes(config) {
+  const values = configValue(config, ['safety', 'security', 'project'], 'production_schema_prefixes', ['PROD.', 'PRODUCTION.']);
+  if (Array.isArray(values)) return values;
+  if (typeof values === 'string' && values.trim()) return values.split(',').map((item) => item.trim()).filter(Boolean);
+  return [];
+}
+
+function sqlOperation(sql) {
+  const normalized = String(sql || '').replace(/\s+/g, ' ').trim();
+  const patterns = [
+    [/^\s*DROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?([A-Za-z0-9_.$"]+)/i, 'DROP TABLE'],
+    [/^\s*TRUNCATE\s+(?:TABLE\s+)?([A-Za-z0-9_.$"]+)/i, 'TRUNCATE'],
+    [/^\s*DELETE\s+FROM\s+([A-Za-z0-9_.$"]+)/i, 'DELETE FROM'],
+    [/^\s*ALTER\s+TABLE\s+([A-Za-z0-9_.$"]+)/i, 'ALTER TABLE'],
+    [/^\s*COPY\s+INTO\s+([A-Za-z0-9_.$"]+)/i, 'COPY INTO'],
+    [/^\s*SELECT\b/i, 'SELECT'],
+  ];
+  for (const [pattern, type] of patterns) {
+    const match = normalized.match(pattern);
+    if (!match) continue;
+    const target = (match[1] || '').replace(/"/g, '');
+    return { type, target, label: `${type}${target ? ` on ${target}` : ''}` };
+  }
+  return { type: 'UNKNOWN', target: '', label: normalized.slice(0, 80) };
+}
+
+function targetMatchesProduction(target, prefixes) {
+  const upperTarget = String(target || '').toUpperCase();
+  return prefixes.some((prefix) => {
+    const normalized = String(prefix || '').replace(/\*/g, '').toUpperCase();
+    return normalized && upperTarget.startsWith(normalized);
+  });
+}
+
+function policyFileHash(filePath) {
+  return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+
+function unsafeRegexReason(pattern) {
+  const text = String(pattern || '');
+  if (text.length > 160) return 'pattern exceeds 160 characters';
+  if (/[^\x09\x0a\x0d\x20-\x7e]/.test(text)) return 'pattern contains non-printable characters';
+  if (/\([^)]*[+*][^)]*\)\s*[+*?{]/.test(text)) return 'nested quantifier pattern';
+  if (/\([^)]*\{[^}]+}[^)]*\)\s*[+*?{]/.test(text)) return 'nested bounded quantifier pattern';
+  if (/(?:\.\*){3,}/.test(text)) return 'excessive wildcard repetition';
+  return null;
+}
+
+function safeRegexTest(pattern, input, context) {
+  const reason = unsafeRegexReason(pattern);
+  if (reason) {
+    appendJsonLine(HOOK_LOG, {
+      hook: 'pre-tool-use',
+      action: 'unsafe_regex_skipped',
+      context,
+      reason,
+      pattern: String(pattern || '').slice(0, 120),
+      ts: isoUtc(),
+    });
+    return false;
+  }
+  try {
+    return new RegExp(pattern, 'i').test(input);
+  } catch (err) {
+    appendJsonLine(HOOK_LOG, {
+      hook: 'pre-tool-use',
+      action: 'invalid_regex_skipped',
+      context,
+      error: err.message,
+      pattern: String(pattern || '').slice(0, 120),
+      ts: isoUtc(),
+    });
+    return false;
+  }
+}
+
+function wildcardPatternToRegex(pattern) {
+  return String(pattern || '')
+    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+    .replace(/\*/g, '.*')
+    .replace(/\?/g, '.');
+}
+
+function parsePolicyFile(filePath) {
+  const text = fs.readFileSync(filePath, 'utf8');
+  if (/\.json$/i.test(filePath)) return JSON.parse(text);
+  const policy = {};
+  let nested = null;
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.replace(/\s+#.*$/, '').trim();
+    if (!line || line.startsWith('#')) continue;
+    const nestedMatch = rawLine.match(/^\s{2,}([A-Za-z0-9_-]+)\s*:\s*(.+)$/);
+    if (nested && nestedMatch) {
+      const rawValue = nestedMatch[2].trim();
+      const value = /^\[[^\]]*\]$/.test(rawValue)
+        ? rawValue.slice(1, -1).split(',').map((item) => item.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean)
+        : rawValue.replace(/^['"]|['"]$/g, '');
+      nested[nestedMatch[1].replace(/-/g, '_')] = value;
+      continue;
+    }
+    const match = line.match(/^([A-Za-z0-9_-]+)\s*:\s*(.+)$/);
+    const objectStart = line.match(/^([A-Za-z0-9_-]+)\s*:\s*$/);
+    if (objectStart) {
+      nested = {};
+      policy[objectStart[1].replace(/-/g, '_')] = nested;
+      continue;
+    }
+    if (!match) continue;
+    nested = null;
+    const key = match[1].replace(/-/g, '_');
+    const rawValue = match[2].trim();
+    policy[key] = /^\[[^\]]*\]$/.test(rawValue)
+      ? rawValue.slice(1, -1).split(',').map((item) => item.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean)
+      : rawValue.replace(/^['"]|['"]$/g, '');
+  }
+  return policy;
+}
+
+function loadPolicyFiles() {
+  const dir = path.join(COCOPLUS_DIR, 'lifecycle', 'policies');
+  try {
+    return fs.readdirSync(dir, { withFileTypes: true })
+      .filter((entry) => entry.isFile() && /\.(json|ya?ml)$/i.test(entry.name))
+      .map((entry) => {
+        const filePath = path.join(dir, entry.name);
+        try {
+          const stat = fs.lstatSync(filePath);
+          if (!stat.isFile() || stat.isSymbolicLink()) {
+            appendJsonLine(HOOK_LOG, {
+              hook: 'pre-tool-use',
+              action: 'runtime_policy_file_skipped',
+              file: entry.name,
+              error: 'policy file must be a regular file',
+              ts: isoUtc(),
+            });
+            return null;
+          }
+          const policy = parsePolicyFile(filePath);
+          policy.name = policy.name || entry.name.replace(/\.(json|ya?ml)$/i, '');
+          policy.source_file = path.join(dir, entry.name).replace(/\\/g, '/');
+          policy.source_sha256 = policyFileHash(filePath);
+          return policy;
+        } catch (err) {
+          appendJsonLine(HOOK_LOG, {
+            hook: 'pre-tool-use',
+            action: 'runtime_policy_file_skipped',
+            file: entry.name,
+            error: err.message,
+            ts: isoUtc(),
+          });
+          return null;
+        }
+      })
+      .filter(Boolean);
+  } catch (_) {
+    return [];
+  }
+}
+
+function customPolicyDecision(policy, params, sql, operation, ts) {
+  const pattern = policy.sql_pattern || policy.pattern || policy.regex || '';
+  let matched = false;
+  if (pattern) {
+    matched = safeRegexTest(pattern, sql, `runtime-policy:${policy.name || 'unnamed'}`);
+  } else if (policy.match && typeof policy.match === 'object') {
+    matched = policyMatch(policy.match, operation);
+  }
+  if (!matched) return null;
+  const decision = String(policy.decision || policy.action || 'instruct').toLowerCase();
+  if (!['allow', 'deny', 'instruct'].includes(decision)) return null;
+  const policyName = policy.name || 'custom-policy';
+  const repeatsEscalate = policy.escalate_on_repeat === true || policy.escalate_on_repeat === 'true';
+  const repeated = repeatsEscalate && seenPolicyInstruction(policyName, operation);
+  if (decision === 'instruct' && repeatsEscalate && !repeated) {
+    markPolicyInstruction(policyName, operation, ts);
+  }
+  return {
+    ts,
+    stage_id: currentStageId(params),
+    step_id: params.step_id || params.step || '',
+    operation: operation.type,
+    target: operation.target,
+    decision: repeated ? 'deny' : decision,
+    policy: policyName,
+    message: repeated
+      ? `Custom runtime policy ${policyName} was already instructed in this session and escalated on repeat.`
+      : policy.message || `Custom runtime policy ${decision}: ${policyName || pattern}`,
+    excerpt: String(sql || '').slice(0, 500),
+    source_file: policy.source_file || '',
+    source_sha256: policy.source_sha256 || '',
+  };
+}
+
+function policyValues(value) {
+  if (Array.isArray(value)) return value.map((item) => String(item).replace(/"/g, '').toUpperCase());
+  if (typeof value === 'string' && value.trim()) return value.split(',').map((item) => item.trim().replace(/"/g, '').toUpperCase());
+  return [];
+}
+
+function policyMatch(match, operation) {
+  const operations = policyValues(match.operations || match.operation);
+  const schemas = policyValues(match.schemas || match.schema);
+  const tables = policyValues(match.tables || match.table);
+  const op = String(operation.type || '').toUpperCase();
+  const target = String(operation.target || '').replace(/"/g, '').toUpperCase();
+  const parts = target.split('.');
+  const table = parts[parts.length - 1] || '';
+  const schema = parts.length >= 2 ? `${parts[parts.length - 2]}.` : '';
+  const fullSchema = parts.length >= 3 ? `${parts[0]}.${parts[1]}.` : schema;
+
+  if (operations.length && !operations.some((item) => op === item || op.startsWith(item))) return false;
+  if (schemas.length && !schemas.some((item) => fullSchema.startsWith(item) || schema.startsWith(item) || target.startsWith(item))) return false;
+  if (tables.length && !tables.includes(table) && !tables.includes(target)) return false;
+  return true;
+}
+
+function evaluateCustomPolicies(params, sql, operation, ts, options = {}) {
+  const instructions = [];
+  for (const policy of loadPolicyFiles()) {
+    if (options.names && !options.names.has(policy.name)) continue;
+    const decision = customPolicyDecision(policy, params, sql, operation, ts);
+    if (!decision) continue;
+    if (decision.decision === 'deny' || decision.decision === 'allow') return decision;
+    if (decision.decision === 'instruct') instructions.push(decision);
+  }
+  if (instructions.length === 0) return null;
+  const first = instructions[0];
+  return Object.assign({}, first, {
+    policy: instructions.map((item) => item.policy).join(', '),
+    message: instructions.map((item) => item.message).join('\n'),
+  });
+}
+
+function deleteWithoutWhere(sql) {
+  return /\bDELETE\s+FROM\b/i.test(sql) && !/\bWHERE\b/i.test(sql);
+}
+
+function currentStageTier(params) {
+  const stage = findStage(currentStageId(params));
+  return String(stage.complexity_tier || stage.contract_tier || stage.model_tier_floor || params.complexity_tier || '').toLowerCase();
+}
+
+function policyStateKey(policyName, operation) {
+  return `${policyName}:${operation.target || operation.label}`.toLowerCase();
+}
+
+function seenPolicyInstruction(policyName, operation) {
+  const state = readJsonFile(POLICY_REPEAT_STATE, {});
+  return Boolean(state[policyStateKey(policyName, operation)]);
+}
+
+function markPolicyInstruction(policyName, operation, ts) {
+  const state = readJsonFile(POLICY_REPEAT_STATE, {});
+  state[policyStateKey(policyName, operation)] = ts;
+  writeJsonFile(POLICY_REPEAT_STATE, state);
+}
+
+function logPolicyDecision(config, decision) {
+  const record = Object.assign({
+    ts: isoUtc(),
+    stage_id: '',
+    step_id: '',
+    tool: 'SnowflakeSqlExecute',
+    decision: 'allow',
+    policy: 'none',
+    operation: 'UNKNOWN',
+    target: '',
+    message: '',
+    excerpt: '',
+  }, decision);
+  if (record.decision !== 'allow' || policyLogAll(config)) {
+    appendJsonLine(POLICY_DECISIONS, record);
+  }
+  if (record.decision === 'deny' || record.decision === 'instruct') {
+    appendAudit(`- ${record.ts} runtime policy ${record.decision}: ${record.policy} | ${record.operation}${record.target ? ` ${record.target}` : ''} | ${record.message}`);
+  }
+  if (record.decision === 'instruct') {
+    appendJsonLine(POLICY_INSTRUCTIONS, record);
+  }
+}
+
+function evaluateRuntimePolicy(config, params, sql, ts) {
+  if (!runtimePolicyEnabled(config)) return { decision: 'disabled' };
+  const safetyConfig = config.safety || config.security || {};
+  const operation = sqlOperation(sql);
+  const prefixes = configuredProductionPrefixes(config);
+  const builtInPolicies = new Set([
+    'block-drop-table-production',
+    'block-truncate',
+    'block-delete-without-where',
+    'block-alter-table-production',
+  ]);
+  const customBuiltInOverride = evaluateCustomPolicies(params, sql, operation, ts, { names: builtInPolicies });
+  if (customBuiltInOverride) {
+    const allowOverrides = safetyConfig.allow_custom_policy_overrides === true ||
+      safetyConfig.allow_custom_policy_overrides === 'true';
+    if (customBuiltInOverride.decision === 'allow' && builtInPolicies.has(customBuiltInOverride.policy) && !allowOverrides) {
+      return Object.assign(customBuiltInOverride, {
+        decision: 'deny',
+        policy: 'custom_allow_override_disabled',
+        message: `Custom policy ${customBuiltInOverride.policy} attempted to allow a built-in policy override. Set [safety].allow_custom_policy_overrides = true only when Snowflake-side controls are the authoritative boundary.`,
+      });
+    }
+    return customBuiltInOverride;
+  }
+  const stageId = currentStageId(params);
+  const base = {
+    ts,
+    stage_id: stageId,
+    step_id: params.step_id || params.step || '',
+    operation: operation.type,
+    target: operation.target,
+    excerpt: String(sql || '').slice(0, 500),
+  };
+
+  if (safetyConfig.block_drop_table_production !== false && /\bDROP\s+TABLE\b/i.test(sql) && targetMatchesProduction(operation.target, prefixes)) {
+    return Object.assign(base, {
+      decision: 'deny',
+      policy: 'block-drop-table-production',
+      message: 'DROP TABLE on production schema is blocked. Use a CocoFlow stage with schema-change complexity tier and explicit operator approval.',
+    });
+  }
+
+  if (safetyConfig.block_truncate !== false && /\bTRUNCATE(?:\s+TABLE)?\b/i.test(sql) && !/\birreversible\b/i.test(currentStageTier(params))) {
+    return Object.assign(base, {
+      decision: 'deny',
+      policy: 'block-truncate',
+      message: 'TRUNCATE is blocked by default because it is irreversible. Declare the stage as irreversible complexity tier and obtain explicit CocoContract approval.',
+    });
+  }
+
+  if (safetyConfig.block_delete_without_where !== false && deleteWithoutWhere(sql)) {
+    const policyName = 'block-delete-without-where';
+    if (seenPolicyInstruction(policyName, operation)) {
+      return Object.assign(base, {
+        decision: 'deny',
+        policy: policyName,
+        message: 'DELETE without WHERE was already flagged in this session. Add a WHERE clause before proceeding.',
+      });
+    }
+    markPolicyInstruction(policyName, operation, ts);
+    return Object.assign(base, {
+      decision: 'instruct',
+      policy: policyName,
+      message: 'This DELETE has no WHERE clause. Add a WHERE clause to scope the deletion, or declare the stage as data-write complexity tier with an explicit row-count pre-check.',
+    });
+  }
+
+  if (safetyConfig.block_alter_table_production !== false && /\bALTER\s+TABLE\b/i.test(sql) && targetMatchesProduction(operation.target, prefixes) && !/\bschema-change\b/i.test(currentStageTier(params))) {
+    return Object.assign(base, {
+      decision: 'deny',
+      policy: 'block-alter-table-production',
+      message: 'ALTER TABLE on production requires schema-change complexity tier in the CocoFlow stage definition. Declare the tier before dispatch.',
+    });
+  }
+
+  const customDecision = evaluateCustomPolicies(params, sql, operation, ts);
+  if (customDecision) return customDecision;
+
+  return Object.assign(base, {
+    decision: 'allow',
+    policy: 'built-in-default',
+    message: 'No runtime policy matched.',
+  });
 }
 
 function isGateWeakeningSteer(text) {
@@ -897,6 +1282,25 @@ function main() {
 
   // Extract SQL from parameters.sql (spec-defined path)
   const sql = params.sql || params.query || params.statement || '';
+  const runtimePolicy = evaluateRuntimePolicy(config, params, sql, ts);
+  if (runtimePolicy.decision === 'deny') {
+    logPolicyDecision(config, runtimePolicy);
+    block(`[Runtime Policy] ${runtimePolicy.policy}: ${runtimePolicy.message}`);
+    return;
+  }
+  if (runtimePolicy.decision === 'instruct') {
+    logPolicyDecision(config, runtimePolicy);
+    allow(`[Runtime Policy] ${runtimePolicy.policy}: ${runtimePolicy.message}`);
+    return;
+  }
+  if (runtimePolicy.decision === 'allow') {
+    logPolicyDecision(config, runtimePolicy);
+    if (runtimePolicy.policy !== 'built-in-default') {
+      allow();
+      return;
+    }
+  }
+
   const policy = activePolicy(config, params);
   if (!policy.allow_irreversible_actions && sqlIsIrreversible(sql)) {
     appendJsonLine(GOVERNANCE_LOG, {
@@ -986,7 +1390,7 @@ function main() {
 
     // Tier 4: NEVER — unconditional block, cannot be overridden
     for (const pattern of neverPatterns) {
-      if (new RegExp(pattern, 'i').test(sql)) {
+      if (safeRegexTest(pattern, sql, 'boundary-tier-never')) {
         block(`[TIER 4 — NEVER] This operation matches a pattern that CocoPlus is configured to never execute: "${pattern}". This cannot be overridden. Edit boundary_tiers.never_patterns in safety-config.json to change this policy.`);
         appendJsonLine(SAFETY_AUDIT, { ts, tool: toolName, tier: 4, pattern, mode: 'never' });
         return;
@@ -995,7 +1399,7 @@ function main() {
 
     // Tier 3: HUMAN REQUIRED — hard stop requiring typed rationale
     for (const pattern of humanPatterns) {
-      if (new RegExp(pattern, 'i').test(sql)) {
+      if (safeRegexTest(pattern, sql, 'boundary-tier-human-required')) {
         block(`[TIER 3 — HUMAN REQUIRED] This operation requires explicit human authorization: "${pattern}" matched. Provide written rationale and re-submit: "AUTHORIZED: <your reason>"`);
         appendJsonLine(SAFETY_AUDIT, { ts, tool: toolName, tier: 3, pattern, mode: 'human_required' });
         return;
@@ -1004,7 +1408,7 @@ function main() {
 
     // Tier 2: ASK FIRST — confirmation prompt before execution
     for (const pattern of askFirstPatterns) {
-      if (new RegExp(pattern, 'i').test(sql)) {
+      if (safeRegexTest(pattern, sql, 'boundary-tier-ask-first')) {
         allow(`[TIER 2 — ASK FIRST] This operation matches a pattern requiring confirmation: "${pattern}". Confirm to proceed? Type YES to allow this operation.`);
         appendJsonLine(SAFETY_AUDIT, { ts, tool: toolName, tier: 2, pattern, mode: 'ask_first' });
         return;
@@ -1040,8 +1444,8 @@ function main() {
   // Check production schema patterns in ALTER TABLE (prodPatterns already loaded above)
   if (!pattern && /ALTER\s+TABLE/i.test(sql)) {
     for (const prod of prodPatterns) {
-      const escaped = prod.replace(/\*/g, '.*').replace(/\?/g, '.');
-      if (new RegExp(escaped, 'i').test(sql)) {
+      const escaped = wildcardPatternToRegex(prod);
+      if (safeRegexTest(escaped, sql, 'layer1-production-pattern')) {
         pattern = `ALTER TABLE on production schema (${prod})`;
         break;
       }

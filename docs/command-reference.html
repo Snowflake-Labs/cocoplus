@@ -128,7 +128,7 @@ $cocoplus console
 $cocoplus console status
 $cocoplus console stop
 </code></pre>
-<p>Starts a local Node.js server on the configured port (default <code>7779</code>) and writes <code>.cocoplus/lifecycle/console-state.json</code>. If already running, reuses the recorded instance. The dashboard is read-only and never approves gates or mutates project state. The Flow panel includes Prompt Quality complexity preview and completion-source provenance; the Cost panel includes ACRR trend, metering-gap advisories, model-drift indicators, and session calibration records.</p>
+<p>Starts a local Node.js server on the configured port (default <code>7779</code>) and writes <code>.cocoplus/lifecycle/console-state.json</code>. If already running, reuses the recorded instance. The dashboard is read-only and never approves gates or mutates project state. The Flow panel includes Prompt Quality complexity preview and completion-source provenance; the Cost panel includes ACRR trend, metering-gap advisories, model-drift indicators, and session calibration records; the Safety panel includes the runtime policy engine <strong>Policy Decision Log</strong>.</p>
 <hr>
 <p><strong><code>$pilot on</code> / <code>$pilot off</code></strong> — Toggle CocoPilot for the current session</p>
 <pre><code>
@@ -531,6 +531,8 @@ $inspector off
 <h2 id="safety-gate">Safety Gate</h2>
 <hr>
 <p><strong><code>$safety strict</code></strong> — Maximum protection mode</p>
+<p>When <code>[safety].runtime_policy_engine = true</code>, Safety Gate also applies PreToolUse runtime policies using <code>allow()</code>, <code>deny(message)</code>, and <code>instruct(message)</code>. <code>deny</code> blocks before Snowflake execution; <code>instruct()</code> permits the operation while recording protective guidance in <code>.cocoplus/session/policy-instructions.jsonl</code>. Decisions are logged to <code>.cocoplus/lifecycle/policy-decisions.jsonl</code> for CocoConsole.</p>
+<p>Optional policy-as-code files in <code>.cocoplus/lifecycle/policies/*.json</code>, <code>*.yaml</code>, or <code>*.yml</code> may declare <code>name</code>, <code>decision</code>, <code>message</code>, <code>escalate_on_repeat</code>, and either <code>pattern</code>/<code>sql_pattern</code>/<code>regex</code> or a documented <code>match</code> object with <code>operations</code>, <code>schemas</code>, and <code>tables</code>. Unsafe regex patterns are skipped and logged. Policy decisions record the source file hash for audit. A custom policy with the same name as a built-in can override that built-in only when <code>allow_custom_policy_overrides = true</code> is explicitly configured and Snowflake-side controls are the authoritative boundary.</p>
 <pre><code>
 $safety strict
 </code></pre>
@@ -1207,6 +1209,7 @@ $wisdom learnings
 $wisdom index
 </code></pre>
 <p>Builds a credential-redacted local index over existing session JSONL transcripts. Raw session logs are not modified; redaction applies to the indexed representation before content becomes searchable.</p>
+<p>Controlled by <code>[wisdom].session_index_enabled</code>, <code>[wisdom].session_index_path</code>, and <code>[wisdom].redact_credentials_at_index</code>. The default path is local and air-gap compatible.</p>
 <p><strong>Output:</strong> Updated local wisdom index and indexing summary.</p>
 <hr>
 <p><strong><code>$wisdom recall &lt;query&gt;</code></strong> — Search curated wisdom and session history together</p>
@@ -1214,6 +1217,7 @@ $wisdom index
 $wisdom recall "PII masking role drift"
 </code></pre>
 <p>Searches both curated wisdom files and the lexical session index, labels each result by source, and prioritizes <code>do-not-use.md</code> matches when confidence ties.</p>
+<p>Lexical recall is the baseline. Semantic or LLM retrieval layers are optional only after exact and close-match recall quality has been measured.</p>
 <p><strong>Output:</strong> Ranked recall results with source labels and excerpts.</p>
 <hr>
 <p><strong><code>$wisdom export</code></strong> — Export all rejection records as a formatted Markdown report</p>

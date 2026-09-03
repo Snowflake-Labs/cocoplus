@@ -17,7 +17,7 @@ Display a CocoWisdom status summary for the current project.
 
 Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is not initialized. Run `$pod init` first." Then stop.
 
-## CocoPlus 2.0.1 Command Surface
+## CocoPlus 2.0.2 Command Surface
 
 - `$wisdom reject "<description>"` records a rejected approach in `.cocoplus/wisdom/do-not-use.md`.
 - `$wisdom index [--harness <name>]` builds the session-log lexical recall index.
@@ -26,6 +26,8 @@ Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is
 - `$wisdom learn "<text>" [--session <id>] [--reason <text>]` records an operator-curated learning.
 
 Negative memory in `do-not-use.md` is universal. Always load it before positive topic-gated wisdom, never auto-prune it, and never merge rejected approaches into positive wisdom category files.
+
+Positive wisdom uses manifest-first memory. Read `.cocoplus/wisdom/SCHEMA.md` for stage mappings before loading topic content, load only the mapped topics for the current stage role, and keep all other topic files in progressive disclosure mode until `$wisdom get <topic>` is invoked. Memory is branch-scoped Markdown: changes travel with the feature branch and are reviewed like code.
 
 ## Step 1 — Read Rejections Store
 

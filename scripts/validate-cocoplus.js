@@ -249,7 +249,29 @@ function main() {
   ];
 
   const requiredRuntimeScripts = [
+    '_contract-hash.js',
+    '_script-utils.js',
+    'alignment-check.js',
+    'audit-events.js',
+    'behavior-maturity.js',
+    'chargeback-refresh.js',
     'cocoplus-console.js',
+    'contract-gate.js',
+    'contract-prove.js',
+    'health-grader.js',
+    'model-tier-resolve.js',
+    'noop-check.js',
+    'ops-thesis-updater.js',
+    'pivot-merge.js',
+    'recipe-metadata.js',
+    'recall-import.js',
+    'refine-update.js',
+    'report-export.js',
+    'rollback.js',
+    'scope-classify.js',
+    'spec-validator.js',
+    'status-envelope-check.js',
+    'wisdom-route.js',
   ];
 
   const allowedRuntimeScripts = new Set(requiredRuntimeScripts);
@@ -293,12 +315,15 @@ function main() {
     }
   }
 
-  if (plugin.version !== '2.0.1') {
-    failures.push('.cortex-plugin/plugin.json must declare version 2.0.1');
+  if (plugin.version !== '2.0.2') {
+    failures.push('.cortex-plugin/plugin.json must declare version 2.0.2');
   }
 
-  if (manifestScripts.length !== 1 || manifestScripts[0] !== '.cortex/scripts/cocoplus-console.js') {
-    failures.push('.cortex-plugin/plugin.json must register only .cortex/scripts/cocoplus-console.js as a V2.0.1 runtime script');
+  for (const fileName of requiredRuntimeScripts) {
+    const manifestPath = `.cortex/scripts/${fileName}`;
+    if (!manifestScripts.includes(manifestPath)) {
+      failures.push(`.cortex-plugin/plugin.json must register runtime script ${manifestPath}`);
+    }
   }
 
   for (const script of plugin.scripts || []) {
@@ -396,9 +421,12 @@ function main() {
   }
 
   for (const filePath of walkFiles(runtimeScriptsDir, (candidate) => candidate.endsWith('.js'))) {
-    const fileName = path.basename(filePath);
-    if (!allowedRuntimeScripts.has(fileName)) {
-      failures.push(`V2.0.1 ships only CocoConsole as a runtime script; remove ${path.relative(repoRoot, filePath)}`);
+    const relative = normalizeManifestPath(path.relative(repoRoot, filePath));
+    if (!manifestScripts.includes(relative)) {
+      failures.push(`Runtime script ${relative} must be registered in .cortex-plugin/plugin.json`);
+    }
+    if (!allowedRuntimeScripts.has(path.basename(filePath))) {
+      failures.push(`Unexpected runtime script is not in the required deterministic backing set: ${relative}`);
     }
   }
 
@@ -423,8 +451,12 @@ function main() {
     'auto_distill',
     'distill_on_failure',
     'contradiction_action',
+    'session_index_enabled',
+    'session_index_path',
+    'redact_credentials_at_index',
     'injection_mode',
     'preload_categories',
+    'stage_mappings_enabled',
     '[run_policy]',
     'merge_policy',
     'allow_irreversible_actions',
@@ -435,14 +467,22 @@ function main() {
     'premortem_enabled',
     'premortem_warn_on_absent',
     'contract_tier',
+    '[safety]',
+    'runtime_policy_engine',
+    'policy_log_all',
+    'production_schema_prefixes',
+    'block_drop_table_production',
+    'block_delete_without_where',
+    'allow_custom_policy_overrides',
+    'escalate_on_repeat',
   ]) {
     requireIncludes(configTemplate, expected, failures, 'cocoplus.toml.template');
   }
 
   const principlesHtml = readFile(path.join(repoRoot, 'docs', 'principles.html'));
   const principleCount = (principlesHtml.match(/<h2 id="[0-9]/g) || []).length;
-  if (principleCount !== 47) {
-    failures.push(`docs/principles.html must contain 47 principle headings; found ${principleCount}`);
+  if (principleCount !== 51) {
+    failures.push(`docs/principles.html must contain 51 principle headings; found ${principleCount}`);
   }
   requireIncludes(principlesHtml, 'The Transcript Is the Source of Truth', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Timestamps Have Provenance', failures, 'docs/principles.html');
@@ -454,6 +494,10 @@ function main() {
   requireIncludes(principlesHtml, 'Lexical Baseline Before LLM Processing', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Structural Correctness', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Structure Is the Reliability Gap', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Manifest-First Loading', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Explicit Curation Over Automatic Accumulation', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Git-Native Memory', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Air-Gap Compatible by Default', failures, 'docs/principles.html');
 
   const preToolUse = readFile(path.join(hooksDir, 'pre-tool-use.js'));
   requireIncludes(preToolUse, 'model_tier_floor_applied', failures, 'PreToolUse hook');
@@ -463,6 +507,18 @@ function main() {
   requireIncludes(preToolUse, 'premortem_acknowledged', failures, 'PreToolUse hook');
   requireIncludes(preToolUse, 'require_outcome_verification', failures, 'PreToolUse hook');
   requireIncludes(preToolUse, 'pilotConfig.first_run_gate', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'evaluateRuntimePolicy', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'block-drop-table-production', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'block-delete-without-where', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'policy-decisions.jsonl', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'policy-instructions.jsonl', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'loadPolicyFiles', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'policyMatch', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'escalate_on_repeat', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'safeRegexTest', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'source_sha256', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'allow_custom_policy_overrides', failures, 'PreToolUse hook');
+  requireIncludes(preToolUse, 'lifecycle\', \'policies', failures, 'PreToolUse hook');
   rejectPattern(preToolUse, /params\.premortem_acknowledged/, failures, 'PreToolUse hook');
 
   const sessionStart = readFile(path.join(hooksDir, 'session-start.js'));
@@ -482,6 +538,9 @@ function main() {
   requireIncludes(consoleScript, 'Danger only', failures, 'CocoConsole script');
   requireIncludes(consoleScript, 'Human Gate Hold', failures, 'CocoConsole script');
   requireIncludes(consoleScript, '$flow gate-clear', failures, 'CocoConsole script');
+  requireIncludes(consoleScript, 'renderPolicyDecisionLog', failures, 'CocoConsole script');
+  requireIncludes(consoleScript, 'Policy Decision Log', failures, 'CocoConsole script');
+  requireIncludes(consoleScript, 'show-all-policy-decisions', failures, 'CocoConsole script');
 
   const stalePatterns = [
     /All 32 Features/i,
@@ -573,6 +632,13 @@ function main() {
     'CocoPilot pre-mortem gate',
     'CocoContract risk-scaled verification tiers',
     'Structure Is the Reliability Gap',
+    'manifest-first memory',
+    'branch-scoped memory',
+    'air-gap compatible',
+    'runtime policy engine',
+    'Policy Decision Log',
+    'instruct()',
+    'policy-as-code',
   ]) {
     requireIncludes(snowParityDocs, expected, failures, 'CocoPlus source parity docs');
   }

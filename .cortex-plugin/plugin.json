@@ -1,6 +1,6 @@
 {
   "name": "cocoplus",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "CocoPlus — Agentic Operating System for Snowflake Coco",
   "author": {
     "name": "sgsshankar, viveksrinivasanss"
@@ -43,7 +43,29 @@
     "./.cortex/skills"
   ],
   "scripts": [
-    ".cortex/scripts/cocoplus-console.js"
+    ".cortex/scripts/_contract-hash.js",
+    ".cortex/scripts/_script-utils.js",
+    ".cortex/scripts/alignment-check.js",
+    ".cortex/scripts/audit-events.js",
+    ".cortex/scripts/behavior-maturity.js",
+    ".cortex/scripts/chargeback-refresh.js",
+    ".cortex/scripts/cocoplus-console.js",
+    ".cortex/scripts/contract-gate.js",
+    ".cortex/scripts/contract-prove.js",
+    ".cortex/scripts/health-grader.js",
+    ".cortex/scripts/model-tier-resolve.js",
+    ".cortex/scripts/noop-check.js",
+    ".cortex/scripts/ops-thesis-updater.js",
+    ".cortex/scripts/pivot-merge.js",
+    ".cortex/scripts/recipe-metadata.js",
+    ".cortex/scripts/recall-import.js",
+    ".cortex/scripts/refine-update.js",
+    ".cortex/scripts/report-export.js",
+    ".cortex/scripts/rollback.js",
+    ".cortex/scripts/scope-classify.js",
+    ".cortex/scripts/spec-validator.js",
+    ".cortex/scripts/status-envelope-check.js",
+    ".cortex/scripts/wisdom-route.js"
   ],
   "hooks": {
     "SessionStart": [

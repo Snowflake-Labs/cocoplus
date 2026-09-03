@@ -14,12 +14,13 @@ CocoPlus wraps a structured development lifecycle around every project — from 
 
 The current operating layer includes:
 
-- **CocoConsole**: a local, read-only browser control plane launched with `$cocoplus console`, including Flow, Cost, Sessions, Forge intent translation, and Fleet Comms visibility.
+- **CocoConsole**: a local, read-only browser control plane launched with `$cocoplus console`, including Flow, Cost, Sessions, Forge intent translation, Fleet Comms visibility, and the Safety panel Policy Decision Log.
 - **CocoPilot**: opt-in natural-language orchestration with `$pilot on` / `$pilot off`.
 - **CocoForge**: goal-driven expert-team meta-loop with `$forge`.
 - **Leviathan Mode + Ronin**: explicit-activation autonomous coordination with a personal assistant return briefing.
 - **Dynamic Personas**: evidence-gated emergent specialists with retained history.
 - **Governance hooks**: ReviewerLockout and PII governance with observe/enforce rollout.
+- **Runtime policy engine**: PreToolUse safety policies apply an `allow()` / `deny()` / `instruct()` model to Snowflake operations, with built-in protections for production DROP TABLE, TRUNCATE, DELETE without WHERE, production ALTER TABLE, and local policy-as-code using safe regex or documented `match.operations` / `match.schemas` / `match.tables` rules. Custom `allow` overrides for built-ins are disabled unless explicitly configured.
 - **Feature-owned runtime**: hooks enqueue deterministic work through idempotent, feature-owned skill contracts; CocoConsole is the only registered local runtime script.
 - **CocoFlow orchestration**: tiered planning, pre-dispatch complexity scoring, committed run-policy snapshots, stage model floors, explicit human gates, inbox-first stage transitions, dependency-group dispatch, dotted branch topology, named artifacts, thinking-effort tuning, divergence at branch points, synthesis passes, and `$flow template` reuse.
 - **CocoSession continuity**: PROGRESS handoff, predicate context, iteration and cost budgets with reserve landing, operator kill-switch, canonical terminal statuses, and one-shot steering for long-running work.
@@ -34,7 +35,7 @@ The current operating layer includes:
 
 The root plugin implements the current runtime and documentation surface while preserving older project state through explicit migration skills.
 
-Older CocoPods migrate forward with `$migrate v2 --dry-run` and `$migrate v2`; new work should use the feature-owned skills directly. In V2.0.1, queued hook follow-up work uses durable request envelopes, stable idempotency keys, and skill-owned settlements so replayed queues do not duplicate meter, trace, or flow artifacts.
+Older CocoPods migrate forward with `$migrate v2 --dry-run` and `$migrate v2`; new work should use the feature-owned skills directly. In V2.0.2, queued hook follow-up work uses durable request envelopes, stable idempotency keys, and skill-owned settlements so replayed queues do not duplicate meter, trace, or flow artifacts. CocoWisdom also adopts manifest-first memory: `do-not-use.md` stays universal, positive topic files load only when routed by stage or requested with `$wisdom get`, and branch-scoped memory remains plain Markdown for air-gap compatible review.
 
 ## Specialist Personas
 

@@ -45,7 +45,7 @@ Tiers, ordered by epistemic strength (strongest first):
 - **differential** (Tier 4) — demonstrated measurably better than a documented, pre-existing baseline.
 - **unit** (Tier 5) — evaluated against criteria authored in the same session by the same or a context-sharing agent. **Insufficient for `$ship` certification regardless of thoroughness.** Recordable as developmental context only.
 
-Invoke `contract-prove --function <function-name> --tier <tier> --description "<text>" [--check-command '["node","check.js"]']`. The skill records evidence in `contract-evidence.json` keyed to the function's current source hash. When `--check-command` is provided, `$contract ci` re-executes the exact argument-vector command and fails on non-zero exit.
+Invoke `contract-prove --function <function-name> --tier <tier> --description "<text>" [--check-command '["node","scripts/validate-cocoplus.js"]']`. The skill records evidence in `contract-evidence.json` keyed to the function's current source hash. When `--check-command` is provided, `$contract ci` re-executes approved argument-vector commands only and fails on non-zero exit. Inline evaluation, shell wrappers, PowerShell, Bash, and unapproved binaries are rejected before execution.
 
 Flow stages may also declare `contract_tier: "light" | "standard" | "full"` to select verification depth:
 
