@@ -52,6 +52,7 @@
     ".cortex/scripts/cocoplus-console.js",
     ".cortex/scripts/contract-gate.js",
     ".cortex/scripts/contract-prove.js",
+    ".cortex/scripts/flow-bootstrap.js",
     ".cortex/scripts/health-grader.js",
     ".cortex/scripts/model-tier-resolve.js",
     ".cortex/scripts/noop-check.js",

@@ -258,6 +258,7 @@ function main() {
     'cocoplus-console.js',
     'contract-gate.js',
     'contract-prove.js',
+    'flow-bootstrap.js',
     'health-grader.js',
     'model-tier-resolve.js',
     'noop-check.js',
@@ -475,6 +476,12 @@ function main() {
     'block_delete_without_where',
     'allow_custom_policy_overrides',
     'escalate_on_repeat',
+    '[cocoflow]',
+    'execution_conflict_gate_enabled',
+    'surface_learning_log_enabled',
+    'surface_learning_max_inject',
+    'liveness_check_enabled',
+    'liveness_check_object_validation',
   ]) {
     requireIncludes(configTemplate, expected, failures, 'cocoplus.toml.template');
   }
@@ -541,6 +548,21 @@ function main() {
   requireIncludes(consoleScript, 'renderPolicyDecisionLog', failures, 'CocoConsole script');
   requireIncludes(consoleScript, 'Policy Decision Log', failures, 'CocoConsole script');
   requireIncludes(consoleScript, 'show-all-policy-decisions', failures, 'CocoConsole script');
+  requireIncludes(consoleScript, 'renderFlowBootstrap', failures, 'CocoConsole script');
+  requireIncludes(consoleScript, 'CocoPod Liveness', failures, 'CocoConsole script');
+  requireIncludes(consoleScript, 'Surface Learnings', failures, 'CocoConsole script');
+
+  const flowBootstrapScript = readFile(path.join(runtimeScriptsDir, 'flow-bootstrap.js'));
+  for (const expected of [
+    'conflict_gate_blocked',
+    'conflict_gate_passed',
+    'surface_learning_appended',
+    'liveness_check_blocked',
+    'liveness_check_passed',
+    'context.json',
+  ]) {
+    requireIncludes(flowBootstrapScript, expected, failures, 'CocoFlow bootstrap script');
+  }
 
   const stalePatterns = [
     /All 32 Features/i,
@@ -639,6 +661,10 @@ function main() {
     'Policy Decision Log',
     'instruct()',
     'policy-as-code',
+    'execution conflict gate',
+    'surface learning',
+    'liveness check',
+    'lifecycle/context.json',
   ]) {
     requireIncludes(snowParityDocs, expected, failures, 'CocoPlus source parity docs');
   }
