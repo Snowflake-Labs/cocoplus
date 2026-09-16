@@ -101,17 +101,18 @@ If no argument: execute all stages with status != "completed" in dependency orde
 
 For full pipeline execution:
 1. Attempt an execution plan template match from `.cocoplus/flows/templates/`. A validated match may skip the strategic assessment and orchestration pass; record the reuse in `.cocoplus/meter/template-benchmarks.jsonl`.
-2. Run the complexity estimator if enabled and store `complexity.json` before any model-backed planning call.
-3. Run the conditional strategic assessment unless a valid template match exists or the workflow is trivially single-stage. Capture objective, risk, quality bar, and escalation boundaries.
-4. Run the mandatory orchestration pass. Produce `dependency_graph`, `dependency_groups`, `tier_assignments`, `expected_outputs`, and one context brief per step. Each `context_briefs[*].text` must be 200 words or fewer.
-5. Read `runtime.concurrency_mode` from `flow.json` (or apply `--concurrency` override)
-6. Dispatch dependency groups, not isolated stages. All stages in the same ready group are submitted in one batch when their dependencies are satisfied.
-7. Apply concurrency mode:
+2. Run the CocoFlow bootstrap validator before any CocoPod dispatch. Invoke the deterministic `flow-bootstrap` backing to apply `[cocoflow] execution_conflict_gate_enabled`, `[cocoflow] liveness_check_enabled`, and `[cocoflow] surface_learning_log_enabled`. If it returns `conflict_gate_blocked` or `liveness_check_blocked`, stop before dispatch and surface the structured error. On pass, read `.cocoplus/lifecycle/context.json` and pass that file reference to every CocoPod prompt so each pod receives the same prior learnings and active policy context.
+3. Run the complexity estimator if enabled and store `complexity.json` before any model-backed planning call.
+4. Run the conditional strategic assessment unless a valid template match exists or the workflow is trivially single-stage. Capture objective, risk, quality bar, and escalation boundaries.
+5. Run the mandatory orchestration pass. Produce `dependency_graph`, `dependency_groups`, `tier_assignments`, `expected_outputs`, and one context brief per step. Each `context_briefs[*].text` must be 200 words or fewer.
+6. Read `runtime.concurrency_mode` from `flow.json` (or apply `--concurrency` override)
+7. Dispatch dependency groups, not isolated stages. All stages in the same ready group are submitted in one batch when their dependencies are satisfied.
+8. Apply concurrency mode:
    - **normal**: spawn all ready stages simultaneously
    - **caution**: spawn at most 2 stages simultaneously; wait for at least 1 to complete before spawning another
    - **single-track**: spawn 1 stage at a time; wait for completion and checkpoint validation before spawning next
-8. After each dependency group completes, run a synthesis pass to reconcile contradictions before unblocking downstream groups.
-9. Repeat until all stages complete or one fails with on_failure: stop
+9. After each dependency group completes, run a synthesis pass to reconcile contradictions before unblocking downstream groups.
+10. Repeat until all stages complete or one fails with on_failure: stop
 
 ## Execute Each Stage
 
@@ -146,6 +147,7 @@ For each stage to execute:
 15. **HITL pause** (if `hitl: true`): after successful completion, output the stage results and ask developer to confirm before spawning downstream stages
 16. **No-op workflow check** (if `handler: "noop-check"`): execute the `execution-engine/noop-check` skill-native check against the stage state. If it returns `noop: true`, mark the stage `skipped` with the recorded reason and append `NOOP_SKIPPED` to progress. This is a successful no-op, not an error.
 17. **Retained proposal model** (if `writes_via_proposal: true`): write Snowflake DDL, SQL file changes, or pipeline configuration output under `.cocoplus/proposals/[stage-id]/[timestamp]/` and stop before live application. Surface: `Proposal retained. Run $flow settle --accept [stage-id] or $flow settle --discard [stage-id].`
+18. **Surface learning append**: when a CocoPod stage concludes with success, regression, or abandoned status, append one domain learning through the CocoFlow bootstrap backing when `[cocoflow] surface_learning_log_enabled = true`. The line belongs in `.cocoplus/lifecycle/surfaces/<surface>.md` and must preserve prior entries.
 
 ## Adaptive Checkpoint Typing
 
@@ -313,3 +315,6 @@ Time: [duration]
 - [ ] No-op stages write `noop-log.jsonl` before being marked skipped
 - [ ] Strategic assessment, orchestration pass, dependency-group dispatch, and synthesis pass are recorded unless a validated execution plan template was reused
 - [ ] Every worker context brief is 200 words or fewer
+- [ ] CocoFlow bootstrap wrote `.cocoplus/lifecycle/context.json` before first CocoPod dispatch
+- [ ] Execution conflict gate and CocoPod liveness check passed, or dispatch stopped with a structured block
+- [ ] Surface learning logs under `.cocoplus/lifecycle/surfaces/` were appended, never overwritten, for concluded CocoPod stages with learnings
