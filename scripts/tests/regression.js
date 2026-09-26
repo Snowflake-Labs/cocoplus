@@ -228,6 +228,134 @@ test('runtime policies skip unsafe regex and gate custom allow overrides with in
   assert.match(policyLog, /custom_allow_override_disabled/);
 });
 
+test('flow bootstrap blocks overlapping CocoPod domains without ordering or static scope separation', () => {
+  const dir = tempRepo();
+  fs.writeFileSync(path.join(dir, 'cocoplus.toml'), '[cocoflow]\nexecution_conflict_gate_enabled = true\nliveness_check_enabled = false\n', 'utf8');
+  writeJson(path.join(dir, '.cocoplus', 'flow.json'), {
+    run_id: 'run-conflict',
+    stages: [
+      { id: 'load-orders', cocoPodId: 'orders-loader', domain: ['RAW.ORDERS'] },
+      { id: 'score-orders', cocoPodId: 'orders-scorer', domain: ['RAW.ORDERS'] },
+    ],
+  });
+
+  const result = run(process.execPath, ['.cortex/scripts/flow-bootstrap.js', '--check'], { cwd: dir });
+  assert.notStrictEqual(result.status, 0);
+  assert.match(result.stdout, /conflict_gate_blocked/);
+  assert.match(result.stdout, /orders-loader/);
+  assert.match(fs.readFileSync(path.join(dir, '.cocoplus', 'lifecycle', 'PROGRESS.md'), 'utf8'), /conflict_gate_blocked/);
+  assert.ok(fs.existsSync(path.join(dir, '.cocoplus', 'lifecycle', 'surfaces')));
+});
+
+test('flow bootstrap accepts ordered overlaps, writes context, and injects surface learnings', () => {
+  const dir = tempRepo();
+  fs.writeFileSync(path.join(dir, 'cocoplus.toml'), '[cocoflow]\nexecution_conflict_gate_enabled = true\nliveness_check_enabled = true\nsurface_learning_log_enabled = true\nsurface_learning_max_inject = 2\n', 'utf8');
+  writeJson(path.join(dir, '.cocoplus', 'pods', 'orders-loader.json'), {
+    status: 'active',
+    inputs: { watermark: 'string' },
+    outputs: { order_count: 'number' },
+  });
+  writeJson(path.join(dir, '.cocoplus', 'pods', 'orders-scorer.json'), {
+    status: 'active',
+    inputs: { order_count: 'number' },
+    outputs: { score_table: 'string' },
+  });
+  fs.mkdirSync(path.join(dir, '.cocoplus', 'lifecycle', 'surfaces'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.cocoplus', 'lifecycle', 'surfaces', 'orders.md'), [
+    '2026-09-14: prior-pod - regression. Avoid missing tenant filter.',
+    '2026-09-15: prior-pod - success. Cluster by order_date.',
+    '2026-09-16: prior-pod - abandoned. Legacy join exceeded budget.',
+  ].join('\n'), 'utf8');
+  writeJson(path.join(dir, '.cocoplus', 'flow.json'), {
+    run_id: 'run-clean',
+    current_stage: 'load',
+    stages: [
+      {
+        id: 'load',
+        cocoPodId: 'orders-loader',
+        domain: ['orders'],
+        dependencies: [],
+        contract: {
+          inputs: { watermark: 'string' },
+          outputs: { order_count: 'number' },
+        },
+      },
+      {
+        id: 'score',
+        cocoPodId: 'orders-scorer',
+        domain: ['orders'],
+        dependencies: ['load'],
+        contract: {
+          inputs: { order_count: 'number' },
+          outputs: { score_table: 'string' },
+        },
+      },
+    ],
+  });
+
+  const result = run(process.execPath, ['.cortex/scripts/flow-bootstrap.js', '--check'], { cwd: dir });
+  assert.strictEqual(result.status, 0, result.stderr);
+  assert.match(result.stdout, /conflict_gate_passed/);
+  assert.match(result.stdout, /liveness_check_passed/);
+  const context = readJson(path.join(dir, '.cocoplus', 'lifecycle', 'context.json'));
+  assert.strictEqual(context.conflict_gate.status, 'conflict_gate_passed');
+  assert.strictEqual(context.liveness.status, 'liveness_check_passed');
+  assert.strictEqual(context.cocopods.length, 2);
+  assert.strictEqual(context.surface_learnings.orders.length, 2);
+  assert.match(context.pre_prompt_blocks.orders, /Prior learnings for this surface/);
+  assert.match(context.pre_prompt_blocks.orders, /Legacy join exceeded budget/);
+});
+
+test('flow bootstrap blocks missing or schema-mismatched CocoPod references', () => {
+  const dir = tempRepo();
+  fs.writeFileSync(path.join(dir, 'cocoplus.toml'), '[cocoflow]\nexecution_conflict_gate_enabled = false\nliveness_check_enabled = true\n', 'utf8');
+  writeJson(path.join(dir, '.cocoplus', 'pods', 'valid-pod.json'), {
+    status: 'active',
+    inputs: { tenant_id: 'string' },
+    outputs: { rows: 'number' },
+  });
+  writeJson(path.join(dir, '.cocoplus', 'flow.json'), {
+    run_id: 'run-liveness',
+    stages: [
+      {
+        id: 'valid',
+        cocoPodId: 'valid-pod',
+        domain: ['customers'],
+        contract: { inputs: { tenant_id: 'string' }, outputs: { rows: 'integer' } },
+      },
+      { id: 'missing', cocoPodId: 'missing-pod', domain: ['customers_archive'] },
+    ],
+  });
+
+  const result = run(process.execPath, ['.cortex/scripts/flow-bootstrap.js', '--check'], { cwd: dir });
+  assert.notStrictEqual(result.status, 0);
+  assert.match(result.stdout, /liveness_check_blocked/);
+  assert.match(result.stdout, /missing-pod/);
+  assert.match(result.stdout, /outputs.rows/);
+});
+
+test('flow bootstrap appends surface learnings without overwriting the log', () => {
+  const dir = tempRepo();
+  fs.writeFileSync(path.join(dir, 'cocoplus.toml'), '[cocoflow]\nsurface_learning_log_enabled = true\n', 'utf8');
+  const surfacePath = path.join(dir, '.cocoplus', 'lifecycle', 'surfaces', 'orders.md');
+  fs.mkdirSync(path.dirname(surfacePath), { recursive: true });
+  fs.writeFileSync(surfacePath, '2026-09-15: old-pod - success. Keep the old entry.\n', 'utf8');
+
+  const result = run(process.execPath, [
+    '.cortex/scripts/flow-bootstrap.js',
+    '--conclude',
+    '--surface', 'orders',
+    '--pod', 'orders-loader',
+    '--outcome', 'regression',
+    '--learning', 'Tenant filter omission caused duplicate rows.',
+    '--date', '2026-09-16',
+  ], { cwd: dir });
+  assert.strictEqual(result.status, 0, result.stderr);
+  const text = fs.readFileSync(surfacePath, 'utf8');
+  assert.match(text, /Keep the old entry/);
+  assert.match(text, /2026-09-16: orders-loader - regression\. Tenant filter omission caused duplicate rows\./);
+});
+
 test('recall imports jsonl, stores real source path, supports function and show modes', () => {
   const dir = tempRepo();
   const source = path.join(dir, 'transcripts');

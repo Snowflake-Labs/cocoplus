@@ -215,6 +215,14 @@ meter_reconciliation_threshold = 0.05
 complexity_estimation = true
 model_tier_default = "regular"
 
+[cocoflow]
+# Thirty-seventh-cycle pre-dispatch controls. These run before CocoPod dispatch.
+execution_conflict_gate_enabled = true
+surface_learning_log_enabled = true
+surface_learning_max_inject = 10
+liveness_check_enabled = true
+liveness_check_object_validation = false
+
 [flow.stage]
 human_gate_clearance_file = ".cocoplus/lifecycle/cocoflow/<run-id>/gate-clearances.json"
 # contract_tier = "standard" # "light" | "standard" | "full"; irreversible or human-gated stages default to full

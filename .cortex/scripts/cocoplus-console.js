@@ -169,6 +169,7 @@ function collectState() {
     discoveries: readText(path.join(COCOPLUS_DIR, 'session', 'discoveries.jsonl'), 'No session discoveries recorded.'),
     stageEvidence: safeJson(path.join(COCOPLUS_DIR, 'session', 'stage-evidence.json'), {}),
     flowState: safeJson(path.join(lifecycle, 'flow-state.json'), {}),
+    flowBootstrap: safeJson(path.join(lifecycle, 'context.json'), {}),
     runPolicy: latestPolicySnapshot(),
     adapterSelfTest: safeJson(path.join(COCOPLUS_DIR, 'meter', 'adapter-self-test.json'), {}),
     complexity: latestComplexity(),
@@ -292,6 +293,33 @@ function renderPolicyDecisionLog(state) {
 </script>`;
 }
 
+function renderFlowBootstrap(state) {
+  const context = state.flowBootstrap || {};
+  if (!Object.keys(context).length) {
+    return '<p>No CocoFlow bootstrap context has been generated yet. The next guarded flow run writes <code>.cocoplus/lifecycle/context.json</code> before CocoPod dispatch.</p>';
+  }
+  const conflict = context.conflict_gate || {};
+  const liveness = context.liveness || {};
+  return `<p>Generated: <strong>${esc(context.generated_at || 'unknown')}</strong></p>
+<p>Run: <strong>${esc(context.run_id || 'unknown')}</strong></p>
+<p>Conflict gate: ${statusBadge(conflict.status || 'idle')}</p>
+<p>CocoPod liveness: ${statusBadge(liveness.status || 'idle')}</p>
+<pre>${esc(JSON.stringify(context, null, 2).slice(0, 5000))}</pre>`;
+}
+
+function renderSurfaceLearnings(state) {
+  const context = state.flowBootstrap || {};
+  const learnings = context.surface_learnings || {};
+  const entries = Object.entries(learnings);
+  if (!entries.length) return '<p>No surface learning entries are present in the latest bootstrap context.</p>';
+  return entries.map(([surface, lines]) => {
+    const items = Array.isArray(lines) && lines.length
+      ? `<ul>${lines.map((line) => `<li>${esc(line)}</li>`).join('')}</ul>`
+      : '<p>No prior learnings recorded for this surface.</p>';
+    return `<section class="surface-learning"><h3>${esc(surface)}</h3>${items}</section>`;
+  }).join('\n');
+}
+
 function renderPanel(panel, state) {
   const flowStages = Array.isArray(state.flow.stages) ? state.flow.stages : [];
   const cards = {
@@ -305,6 +333,8 @@ function renderPanel(panel, state) {
       panelCard('Pipeline', `<p>${flowStages.length} stages found.</p><pre>${esc(JSON.stringify(state.flow, null, 2).slice(0, 4000))}</pre>`),
       panelCard('Arc Reactor', `<p>${Object.keys(state.fleetState || {}).length ? 'Fleet topology is available for the orchestration view.' : 'Arc-reactor mode appears when a fleet run writes state.json and comms.log.'}</p><pre>${esc(JSON.stringify(state.fleetState, null, 2).slice(0, 3000))}</pre>`),
       panelCard('Active Run Policy', `<pre>${esc(JSON.stringify(state.runPolicy, null, 2).slice(0, 2500))}</pre>`),
+      panelCard('CocoFlow Bootstrap', renderFlowBootstrap(state)),
+      panelCard('CocoPod Liveness', `<pre>${esc(JSON.stringify((state.flowBootstrap.liveness || {}).results || [], null, 2).slice(0, 3000))}</pre>`),
       panelCard('Gate-Weakening Refusals', `<p>Refused: <strong>${esc(state.flowState.gate_weakening_refusals || 0)}</strong></p><p>Last: <strong>${esc(state.flowState.last_gate_weakening_refusal_at || 'none')}</strong></p>`),
       humanGateHoldCard(state),
       panelCard('Prompt Quality', `${promptQualityWidget()}<pre>${esc(JSON.stringify(state.complexity, null, 2).slice(0, 2500))}</pre>`),
@@ -325,6 +355,7 @@ function renderPanel(panel, state) {
     ],
     quality: [
       panelCard('Findings', `<pre>${esc(state.findings.slice(0, 5000))}</pre>`),
+      panelCard('Surface Learnings', renderSurfaceLearnings(state)),
       panelCard('Contracts', '<p>Outcome contracts and evidence freshness are read from <code>outcomes/</code>.</p>'),
       panelCard('External Coach', `<pre>${esc(state.stageQuality.slice(-4000))}</pre>`),
     ],

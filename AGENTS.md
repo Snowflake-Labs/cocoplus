@@ -50,7 +50,7 @@ You have the CocoPlus plugin active. CocoPlus enhances Coco with:
 - **Dynamic Personas** V2 evidence-gated emergent specialists ($personas discover/list/invoke/dissolve)
 - **Governance Hooks** V2 ReviewerLockout and PII governance observe/enforce policies
 - **CocoSession** V2 multi-session continuity and operator control ($session status/progress/steer/stop/resume)
-- **CocoFlow Evidence and Proposal Gates** V2 opt-in stage evidence and retained proposal settlement ($flow settle)
+- **CocoFlow Evidence, Proposal, and Bootstrap Gates** V2 opt-in stage evidence, retained proposal settlement ($flow settle), pre-dispatch execution conflict checks, CocoPod liveness validation, domain surface learnings, and lifecycle/context.json bootstrap context
 - **CocoRetro and CocoHygiene** V2 measured improvement loops ($retrospective, $hygiene --model-upgrade, $meter benchmark)
 - **CocoRoutine** V2 opt-in Snowflake TASK scheduling for self-contained completed workflows ($routine)
 - **Late-Cycle Governance and Quality Gates** V2 RBAC escalation guard, bypass safeguard logging, named artifacts, stage coach, correctness-first metering, allowlisted transcript adapter, run-policy snapshots, inbox-first stage transitions, critic read-only separation, timestamp provenance, complexity-aware dispatch, ACRR calibration, and CocoBrew distribution gate
@@ -103,6 +103,7 @@ You have the CocoPlus plugin active. CocoPlus enhances Coco with:
    When `[evidence_gate] enabled = true`, CocoFlow stages do not advance without a qualifying evidence read.
    When a stage uses retained proposals, Snowflake writes and pipeline changes stay under `.cocoplus/proposals/` until `$flow settle --accept`.
    CocoFlow run policy is declared before a run in `[run_policy]`, snapshotted under `.cocoplus/lifecycle/cocoflow/<run-id>/policy-snapshot.json`, and cannot be weakened mid-run through steering.
+   Before CocoPod dispatch, CocoFlow must run the execution conflict gate, CocoPod liveness check, and session bootstrap context generation when the corresponding `[cocoflow]` gates are enabled.
 
 12. **Measure before optimizing.**
    Use `$meter benchmark`, ACRR trends, `$retrospective run`, and `$hygiene --model-upgrade` to establish evidence before changing skills, hooks, governance rules, flow templates, or complexity baselines.
