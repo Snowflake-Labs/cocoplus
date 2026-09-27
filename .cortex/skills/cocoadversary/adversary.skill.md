@@ -6,7 +6,6 @@ author: "CocoPlus"
 tags:
   - cocoplus
   - cocoadversary
-  - snow-cocoplus
 ---
 
 Your objective is to implement `$adversary`.

@@ -6,7 +6,6 @@ author: "CocoPlus"
 tags:
   - cocoplus
   - cocostyle
-  - snow-cocoplus
 ---
 
 Your objective is to implement `$style`.

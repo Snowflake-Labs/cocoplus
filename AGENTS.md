@@ -51,6 +51,8 @@ You have the CocoPlus plugin active. CocoPlus enhances Coco with:
 - **Governance Hooks** V2 ReviewerLockout and PII governance observe/enforce policies
 - **CocoSession** V2 multi-session continuity and operator control ($session status/progress/steer/stop/resume)
 - **CocoFlow Evidence, Proposal, and Bootstrap Gates** V2 opt-in stage evidence, retained proposal settlement ($flow settle), pre-dispatch execution conflict checks, CocoPod liveness validation, domain surface learnings, and lifecycle/context.json bootstrap context
+- **Instruction Rubric Governance** V2 opt-in probabilistic enforcement of committed CocoPod rules ($cocopod calibrate-rubric, $cocopod tune-rubric)
+- **Autonomous Wisdom Reflection** V2 opt-in read-only pattern proposals, promoter validation, adherence ledgers, probation, and recoverable archival
 - **CocoRetro and CocoHygiene** V2 measured improvement loops ($retrospective, $hygiene --model-upgrade, $meter benchmark)
 - **CocoRoutine** V2 opt-in Snowflake TASK scheduling for self-contained completed workflows ($routine)
 - **Late-Cycle Governance and Quality Gates** V2 RBAC escalation guard, bypass safeguard logging, named artifacts, stage coach, correctness-first metering, allowlisted transcript adapter, run-policy snapshots, inbox-first stage transitions, critic read-only separation, timestamp provenance, complexity-aware dispatch, ACRR calibration, and CocoBrew distribution gate
@@ -116,6 +118,10 @@ You have the CocoPlus plugin active. CocoPlus enhances Coco with:
 
 15. **Correctness leads cost.**
    CocoMeter comparisons report accuracy before token, credit, or ACRR deltas unless cost-first mode is explicitly configured and acknowledged. Cost reduction with accuracy regression is not an improvement; high ACRR with stable accuracy is a calibration issue, not a quality win. Billing-significant token totals and actual model identity must prefer transcript-derived reconciliation over runtime estimates when reconciliation data exists; all transcript reads must route through the named-field adapter, and background completion timestamps must carry provenance.
+
+16. **Instruction evolution separates judgment from mutation.**
+   When `[cocopod].instruction_rubric_enforcement_enabled = true`, compile `lifecycle/cocopod-instructions.md` into `lifecycle/rubric.json` and evaluate operation and stage rules through the documented confidence bands. High-confidence violations require a source-cited repair before another unrelated tool call; evaluation failures are fail-open and audit-visible.
+   When `[cocowisdom].autonomous_wisdom_reflection_enabled = true`, the reflector proposes only. The promoter is the sole writer, rejects human and marketplace targets, records content-addressed evidence, and manages mature capacity by opportunity-relative adherence rather than age.
 
 ## Persona Shorthand Quick Reference
 

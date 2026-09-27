@@ -6,7 +6,6 @@ author: "CocoPlus"
 tags:
   - cocoplus
   - cocodiary
-  - snow-cocoplus
 ---
 
 Your objective is to implement `$diary`.

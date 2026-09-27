@@ -128,7 +128,7 @@ $cocoplus console
 $cocoplus console status
 $cocoplus console stop
 </code></pre>
-<p>Starts a local Node.js server on the configured port (default <code>7779</code>) and writes <code>.cocoplus/lifecycle/console-state.json</code>. If already running, reuses the recorded instance. The dashboard is read-only and never approves gates or mutates project state. The Flow panel includes Prompt Quality complexity preview, completion-source provenance, CocoFlow bootstrap context, execution conflict gate status, and CocoPod liveness results; the Quality panel includes recent surface learning entries; the Cost panel includes ACRR trend, metering-gap advisories, model-drift indicators, and session calibration records; the Safety panel includes the runtime policy engine <strong>Policy Decision Log</strong>.</p>
+<p>Starts a local Node.js server on the configured port (default <code>7779</code>) and writes <code>.cocoplus/lifecycle/console-state.json</code>. If already running, reuses the recorded instance. The dashboard is read-only and never approves gates or mutates project state. The Flow panel includes Prompt Quality complexity preview, completion-source provenance, CocoFlow bootstrap context, execution conflict gate status, and CocoPod liveness results; the Quality panel includes recent surface learning entries and the Pattern Adherence Ledger; the Cost panel includes ACRR trend, metering-gap advisories, model-drift indicators, and session calibration records; the Safety panel includes the runtime policy engine <strong>Policy Decision Log</strong> and Instruction Rubric Enforcement results.</p>
 <hr>
 <p><strong><code>$pilot on</code> / <code>$pilot off</code></strong> — Toggle CocoPilot for the current session</p>
 <pre><code>
@@ -1122,6 +1122,12 @@ $sentinel --approve --rationale "CONCERN A2 accepted: internal function only"
 <p><strong>Output:</strong> Approval record committed to <code>approvals.jsonl</code>.</p>
 <hr>
 <h2 id="institutional-rejection-memory-cocowisdom">Institutional Rejection Memory — CocoWisdom</h2>
+<p><strong><code>$cocopod calibrate-rubric</code></strong> — Calibrate committed instruction rules against recent operations</p>
+<pre><code>$cocopod calibrate-rubric</code></pre>
+<p>Updates each entry in <code>.cocoplus/lifecycle/rubric.json</code> with sample count, maximum observed probability, and an <code>active</code>, <code>never_fires</code>, or <code>insufficient_evidence</code> status. Rules whose observed probabilities never exceed 0.4 are flagged for review.</p>
+<p><strong><code>$cocopod tune-rubric</code></strong> — Propose operator-reviewed rewrites for rules flagged as never firing</p>
+<pre><code>$cocopod tune-rubric</code></pre>
+<p>Tuning is never automatic. Accepted changes modify <code>lifecycle/cocopod-instructions.md</code>, preserve source citations, and trigger rubric recompilation.</p>
 <hr>
 <p><strong><code>$wisdom</code></strong> — Show a summary of the project's quality rejection history</p>
 <pre><code>

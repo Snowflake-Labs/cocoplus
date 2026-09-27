@@ -70,3 +70,8 @@ Use `$retrospective run`, `$hygiene --model-upgrade`, and `$meter benchmark --fl
 
 ### CocoWisdom Progressive Loading
 When `[wisdom].injection_mode = "progressive"`, list available wisdom topics and load content only with `$wisdom get <topic>`. Stop-hook distillation may queue lessons from terminal sessions, but contradictions must go through `wisdom/review-queue.md` and `$wisdom review`.
+
+### Instruction Rubric and Autonomous Reflection
+When `[cocopod].instruction_rubric_enforcement_enabled = true`, compile `lifecycle/cocopod-instructions.md` into the committed `lifecycle/rubric.json`. Operation and stage checks use three probability bands: repair at 0.8 or higher, operator note from 0.5 to less than 0.8, and silent below 0.5. Evaluation failures fail open and append an audit miss.
+
+When `[cocowisdom].autonomous_wisdom_reflection_enabled = true`, reflection runs at the configured turn cadence. The reflector has no write tools; only the promoter may apply complete, safe, autonomously-authored intents. Pattern survival uses calls over relevant requests, with probation before maturity and recoverable archival instead of deletion.

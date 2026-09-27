@@ -6,7 +6,6 @@ author: "CocoPlus"
 tags:
   - cocoplus
   - cocometer
-  - snow-cocoplus
 ---
 
 Your objective is to implement `$meter waste [--window <N>] [--run-id <id>]`.

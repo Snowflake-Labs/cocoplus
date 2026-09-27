@@ -631,6 +631,28 @@ function main() {
     }
   }
 
+  const publicAndContractFiles = [
+    path.join(repoRoot, 'README.md'),
+    path.join(repoRoot, 'AGENTS.md'),
+    path.join(repoRoot, 'CHANGELOG.md'),
+    path.join(repoRoot, 'INSTALLATION.md'),
+    ...walkFiles(path.join(repoRoot, 'docs'), (filePath) => filePath.endsWith('.html')),
+    ...walkFiles(path.join(repoRoot, '.cortex', 'skills'), (filePath) => filePath.endsWith('.md')),
+    ...walkFiles(path.join(repoRoot, 'templates'), (filePath) => filePath.endsWith('.md') || filePath.endsWith('.template')),
+  ];
+  for (const filePath of publicAndContractFiles) {
+    rejectPattern(readFile(filePath), /snow[-_]cocoplus/i, failures, path.relative(repoRoot, filePath));
+  }
+
+  const conceptsHtml = readFile(path.join(repoRoot, 'docs', 'concepts.html'));
+  const livingContractsPosition = conceptsHtml.indexOf('id="living-instruction-contracts"');
+  const contentClosePosition = conceptsHtml.lastIndexOf('</div>');
+  if (livingContractsPosition < 0 || livingContractsPosition > contentClosePosition) {
+    failures.push('docs/concepts.html must keep Living Instruction Contracts inside the content container');
+  }
+  rejectPattern(conceptsHtml, /<hr>\s*<hr>/i, failures, 'docs/concepts.html');
+  rejectPattern(conceptsHtml, /three models\s*\(Haiku, Sonnet, Opus\)/i, failures, 'docs/concepts.html');
+
   const legacyRuntimeReferencePatterns = [
     /\.cortex[\\/]scripts[\\/](?!cocoplus-console\.js)/i,
     /node\s+\.cortex[\\/]scripts/i,

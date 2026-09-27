@@ -6,7 +6,6 @@ author: "CocoPlus"
 tags:
   - cocoplus
   - cocoaudit
-  - snow-cocoplus
 ---
 
 Your objective is to implement `$audit verify [--full]`.
