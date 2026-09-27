@@ -35,7 +35,9 @@ Your objective is to activate CocoPilot for the current session.
      - SQL performance: `QUERY_HISTORY`
      - data quality: `COLUMN_USAGE_VIEWS`
      - governance review: policy, tag, masking, and role metadata views
-7. Output exactly:
+7. Before dispatch, if `[cocopod].instruction_rubric_enforcement_enabled = true`, ensure `lifecycle/rubric.json` exists and matches `lifecycle/cocopod-instructions.md`. Queue operation-level checks after tool calls and stage-level checks at CocoFlow completion; never turn evaluator unavailability into a dispatch failure.
+8. If `[cocowisdom].autonomous_wisdom_reflection_enabled = true`, preserve the configured turn cadence and route reflection boundaries to the read-only proposer. Do not let CocoPilot apply reflection intents directly.
+9. Output exactly:
    `CocoPilot active. I'll take it from here.`
 
 ## Permission Boundary
@@ -49,6 +51,8 @@ CocoPilot may route, suggest, and perform reversible silent capture. It may not 
 - [ ] First-run configuration is confirmed in `lifecycle/cocoplus-init.json` before first dispatch.
 - [ ] Pre-mortem stages record `premortem_enabled` behavior and acknowledgments before execution.
 - [ ] Stage-mapped wisdom loads only the routed positive topics, while `do-not-use.md` remains universal.
+- [ ] Enabled instruction rubrics are current before dispatch and enforcement failures remain fail-open.
+- [ ] Enabled autonomous reflection routes through proposer/promoter separation.
 
 ## Anti-Rationalization
 

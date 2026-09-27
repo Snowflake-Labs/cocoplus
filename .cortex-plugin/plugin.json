@@ -54,6 +54,7 @@
     ".cortex/scripts/contract-prove.js",
     ".cortex/scripts/flow-bootstrap.js",
     ".cortex/scripts/health-grader.js",
+    ".cortex/scripts/instruction-rubric.js",
     ".cortex/scripts/model-tier-resolve.js",
     ".cortex/scripts/noop-check.js",
     ".cortex/scripts/ops-thesis-updater.js",
@@ -66,7 +67,8 @@
     ".cortex/scripts/scope-classify.js",
     ".cortex/scripts/spec-validator.js",
     ".cortex/scripts/status-envelope-check.js",
-    ".cortex/scripts/wisdom-route.js"
+    ".cortex/scripts/wisdom-route.js",
+    ".cortex/scripts/wisdom-reflection.js"
   ],
   "hooks": {
     "SessionStart": [

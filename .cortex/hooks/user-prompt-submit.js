@@ -35,6 +35,7 @@ const {
   setFlag,
   writeJson,
 } = require('./_v2-state.js');
+const { observeTurn } = require('../scripts/wisdom-reflection.js');
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
@@ -90,6 +91,12 @@ function spawnCocoScout(message, ts) {
   appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'scout_context_requested', ts });
 }
 
+function redactReflectionText(value) {
+  return String(value || '')
+    .replace(/\b(password|passwd|secret|token|api[_-]?key)\b\s*[:=]\s*[^\s,;]+/gi, '$1=[REDACTED]')
+    .replace(/\b(?:sk|pk)_[A-Za-z0-9_-]{12,}\b/g, '[REDACTED_KEY]');
+}
+
 function main() {
   if (!fs.existsSync(COCOPLUS_DIR)) return;
 
@@ -100,6 +107,29 @@ function main() {
   const message   = event.message   || process.env.COCO_USER_MESSAGE || '';
   const sessionId = event.session_id || process.env.COCO_SESSION_ID  || 'unknown';
   const config    = loadConfig();
+
+  const wisdomConfig = config.cocowisdom || {};
+  if (wisdomConfig.autonomous_wisdom_reflection_enabled === true && message && !message.startsWith('$')) {
+    try {
+      const reflection = observeTurn({ session_id: sessionId, role: 'user', text: redactReflectionText(message), countable: true }, {
+        cadence: wisdomConfig.wisdom_reflection_cadence || 3,
+      });
+      if (reflection.queued) {
+        appendJsonLine(V2_QUEUE, {
+          skill: 'cocowisdom/wisdom-reflect',
+          agent: 'coco-wisdom-reflector',
+          action: 'reflect',
+          idempotency_key: stableQueueKey('cocowisdom/wisdom-reflect', [reflection.request.id]),
+          request_id: reflection.request.id,
+          requested_at: ts,
+          source: 'hook.user-prompt-submit',
+        });
+        appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'wisdom_reflection_requested', request_id: reflection.request.id, ts });
+      }
+    } catch (err) {
+      logError('user-prompt-submit', `wisdom reflection scheduling failed: ${err.message}`);
+    }
+  }
 
   appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', ts });
 

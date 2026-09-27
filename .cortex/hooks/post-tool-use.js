@@ -16,9 +16,11 @@
 const fs   = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
-const { isoUtc, appendJsonLine, atomicWrite, logError, readJsonString, readJsonNumber, readStdinJson, normalizeToolEvent } = require('./_common.js');
+const { isoUtc, appendJsonLine, atomicWrite, stableQueueKey, logError, readJsonString, readJsonNumber, readStdinJson, normalizeToolEvent } = require('./_common.js');
 const { readState } = require('./lib/state-reader.js');
 const { loadConfig } = require('./_v2-state.js');
+const { compileRubric, completeRepair, evaluateAction } = require('../scripts/instruction-rubric.js');
+const { observeTurn } = require('../scripts/wisdom-reflection.js');
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
@@ -42,6 +44,13 @@ function countPii(value) {
   return PII_PATTERNS
     .map(({ type, re }) => ({ type, count: (text.match(re) || []).length }))
     .filter((entry) => entry.count > 0);
+}
+
+function redactSemanticContext(value) {
+  return String(typeof value === 'string' ? value : JSON.stringify(value || {}))
+    .replace(/\b(password|passwd|secret|token|api[_-]?key)\b\s*[:=]\s*[^\s,;]+/gi, '$1=[REDACTED]')
+    .replace(/\b(?:sk|pk)_[A-Za-z0-9_-]{12,}\b/g, '[REDACTED_KEY]')
+    .slice(0, 4000);
 }
 
 function ensureDir(dirPath) {
@@ -314,6 +323,65 @@ function main() {
   const tokensUsed = Number(result.tokens_consumed) || 0;
   const succeeded  = result.success !== false;
   const config     = loadConfig();
+
+  // Thirty-ninth cycle: capture tool I/O for the next wisdom reflection window.
+  const wisdomConfig = config.cocowisdom || {};
+  if (wisdomConfig.autonomous_wisdom_reflection_enabled === true) {
+    try {
+      observeTurn({
+        session_id: sessionId(event),
+        role: 'tool',
+        countable: false,
+        tool: toolName,
+        text: redactSemanticContext({ parameters: params, result }),
+      }, { cadence: wisdomConfig.wisdom_reflection_cadence || 3 });
+    } catch (err) {
+      logError('post-tool-use', `wisdom reflection capture failed: ${err.message}`);
+    }
+  }
+
+  // Thirty-ninth cycle: semantic scores are supplied by the queued read-only
+  // evaluator. Missing scores enqueue evaluation and remain fail-open.
+  const podConfig = config.cocopod || {};
+  if (podConfig.instruction_rubric_enforcement_enabled === true && succeeded) {
+    try {
+      const rubric = compileRubric(false);
+      const phase = flowCompleted(params, result) ? 'stage' : 'operation';
+      const action = {
+        ts,
+        phase,
+        operation: toolName,
+        file: filePath || null,
+        file_type: filePath ? path.extname(filePath) : null,
+        input_excerpt: redactSemanticContext(params.sql || params.content || params.command || params),
+        result_excerpt: redactSemanticContext(result.message || result.summary || result.error || ''),
+      };
+      const scores = result.rubric_evaluations || params.rubric_evaluations;
+      if (Array.isArray(scores)) {
+        const evaluation = evaluateAction(action, scores);
+        if (evaluation.results.some((item) => item.outcome === 'repair')) {
+          appendJsonLine(path.join(COCOPLUS_DIR, 'ui-notifications.jsonl'), {
+            event_type: 'rubric_repair_required',
+            timestamp: ts,
+            message: 'A high-confidence CocoPod instruction violation requires repair before the next tool call.',
+          });
+        }
+      } else {
+        appendJsonLine(path.join(COCOPLUS_DIR, 'v2-runtime-requests.jsonl'), {
+          skill: 'cocopod/instruction-rubric',
+          action: 'evaluate',
+          idempotency_key: stableQueueKey('cocopod/instruction-rubric', [sessionId(event), ts, toolName, action.file || '']),
+          requested_at: ts,
+          source: 'hook.post-tool-use',
+          operation: action,
+          rubric_sha256: rubric.source_sha256,
+        });
+      }
+      if (params.rubric_repair_id) completeRepair(String(params.rubric_repair_id));
+    } catch (err) {
+      try { fs.appendFileSync(path.join(COCOPLUS_DIR, 'lifecycle', 'audit.md'), `- ${ts} rubric_check_missed rule=runtime reason=${err.message}\n`, 'utf8'); } catch (_) { /* fail open */ }
+    }
+  }
 
   clearOpenPreToolUse(event, toolName);
   appendJsonLine(HOOK_LOG, { hook: 'post-tool-use', tool: toolName, ts });
