@@ -102,6 +102,21 @@ function parseJsonLines(text) {
     });
 }
 
+function collectWisdomPatterns() {
+  const patterns = [];
+  for (const tier of ['project', 'global']) {
+    const root = path.join(COCOPLUS_DIR, 'wisdom', 'patterns', tier);
+    try {
+      for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue;
+        const meta = safeJson(path.join(root, entry.name, 'pattern.json'), null);
+        if (meta) patterns.push(meta);
+      }
+    } catch (_) { /* tier not initialized */ }
+  }
+  return patterns;
+}
+
 function translateIntent(event) {
   const tool = event.tool || event.tool_name || event.name || 'tool';
   const input = event.parameters || event.tool_input || event.input || {};
@@ -178,6 +193,11 @@ function collectState() {
     retrospective: readText(path.join(lifecycle, 'retrospective-ledger.jsonl'), 'No retrospective ledger recorded.'),
     governanceLog: readText(path.join(lifecycle, 'governance-log.json'), 'No governance events recorded.'),
     policyDecisionLog: readText(path.join(lifecycle, 'policy-decisions.jsonl'), ''),
+    rubric: safeJson(path.join(lifecycle, 'rubric.json'), { rules: [] }),
+    rubricResults: readText(path.join(lifecycle, 'rubric-results.jsonl'), ''),
+    rubricNotes: readText(path.join(lifecycle, 'rubric-notes.jsonl'), ''),
+    wisdomReflections: readText(path.join(COCOPLUS_DIR, 'wisdom', 'reflection-requests.jsonl'), ''),
+    wisdomPatterns: collectWisdomPatterns(),
     stageQuality: readText(path.join(COCOPLUS_DIR, 'sentinel', 'stage-quality.jsonl'), 'No stage quality scores recorded.'),
     findings: readText(path.join(lifecycle, 'FINDINGS.md'), 'No findings recorded.'),
     audit: readText(path.join(lifecycle, 'audit.md'), 'No audit trail recorded.'),
@@ -293,6 +313,20 @@ function renderPolicyDecisionLog(state) {
 </script>`;
 }
 
+function renderRubricEnforcement(state) {
+  const records = parseJsonLines(state.rubricResults).slice(-100).reverse();
+  const neverFires = (state.rubric.rules || []).filter((rule) => rule.calibration && rule.calibration.status === 'never_fires');
+  const rows = records.map((item) => `<tr><td>${esc(item.ts || '')}</td><td>${esc(item.rule_id || '')}</td><td>${esc(item.probability == null ? '' : item.probability)}</td><td>${esc(item.outcome || item.status || '')}</td><td>${esc(item.source ? `${item.source.file}:${item.source.line}` : '')}</td><td><details><summary>${esc(String(item.rule || '').slice(0, 90))}</summary><pre>${esc(item.reason || item.directive || '')}</pre></details></td></tr>`).join('');
+  return `<p><strong>${esc(records.filter((item) => item.outcome === 'repair').length)}</strong> repairs / <strong>${esc(records.filter((item) => item.outcome === 'note').length)}</strong> notes. Never-fires rules: <strong>${esc(neverFires.length)}</strong>.</p><table><thead><tr><th>Time</th><th>Rule</th><th>Probability</th><th>Outcome</th><th>Source</th><th>Detail</th></tr></thead><tbody>${rows || '<tr><td colspan="6">No instruction rubric evaluations recorded.</td></tr>'}</tbody></table>`;
+}
+
+function renderPatternAdherence(state) {
+  const patterns = (state.wisdomPatterns || []).slice().sort((a, b) => Number(a.adherence_rate || 0) - Number(b.adherence_rate || 0));
+  const rows = patterns.map((item) => `<tr><td>${esc(item.title || item.id)}</td><td>${esc(item.tier)}</td><td>${esc(item.status)}</td><td>${esc(item.calls || 0)} / ${esc(item.requests || 0)}</td><td>${esc(item.adherence_rate == null ? 'pending' : Number(item.adherence_rate).toFixed(2))}</td></tr>`).join('');
+  const reflections = parseJsonLines(state.wisdomReflections).slice(-10).reverse();
+  return `<table><thead><tr><th>Pattern</th><th>Tier</th><th>Lifecycle</th><th>Calls / Requests</th><th>Adherence</th></tr></thead><tbody>${rows || '<tr><td colspan="5">No autonomous wisdom patterns recorded.</td></tr>'}</tbody></table><h3>Recent Reflection Intents</h3><pre>${esc(JSON.stringify(reflections, null, 2).slice(0, 5000))}</pre>`;
+}
+
 function renderFlowBootstrap(state) {
   const context = state.flowBootstrap || {};
   if (!Object.keys(context).length) {
@@ -356,6 +390,7 @@ function renderPanel(panel, state) {
     quality: [
       panelCard('Findings', `<pre>${esc(state.findings.slice(0, 5000))}</pre>`),
       panelCard('Surface Learnings', renderSurfaceLearnings(state)),
+      panelCard('Pattern Adherence Ledger', renderPatternAdherence(state)),
       panelCard('Contracts', '<p>Outcome contracts and evidence freshness are read from <code>outcomes/</code>.</p>'),
       panelCard('External Coach', `<pre>${esc(state.stageQuality.slice(-4000))}</pre>`),
     ],
@@ -368,6 +403,7 @@ function renderPanel(panel, state) {
       panelCard('Governance', `<pre>${esc(JSON.stringify(state.config.governance || {}, null, 2))}</pre>`),
       panelCard('Live Governance Events', `<pre>${esc(state.governanceLog.slice(-5000))}</pre>`),
       panelCard('Policy Decision Log', renderPolicyDecisionLog(state)),
+      panelCard('Instruction Rubric Enforcement', renderRubricEnforcement(state)),
       panelCard('Session History Mode', `<p>${process.env.CORTEX_CODE_NO_HISTORY_MODE === 'true' || process.env.COCO_NO_HISTORY_MODE === 'true' ? 'Session history appears suppressed for this process.' : 'No private/no-history flag visible to this console process.'}</p>`),
       panelCard('Retrospective', `<pre>${esc(state.retrospective.slice(-4000))}</pre>`),
     ],
