@@ -260,6 +260,7 @@ function main() {
     'contract-prove.js',
     'flow-bootstrap.js',
     'health-grader.js',
+    'instruction-rubric.js',
     'model-tier-resolve.js',
     'noop-check.js',
     'ops-thesis-updater.js',
@@ -273,6 +274,7 @@ function main() {
     'spec-validator.js',
     'status-envelope-check.js',
     'wisdom-route.js',
+    'wisdom-reflection.js',
   ];
 
   const allowedRuntimeScripts = new Set(requiredRuntimeScripts);
@@ -482,14 +484,19 @@ function main() {
     'surface_learning_max_inject',
     'liveness_check_enabled',
     'liveness_check_object_validation',
+    '[cocopod]',
+    'instruction_rubric_enforcement_enabled',
+    '[cocowisdom]',
+    'autonomous_wisdom_reflection_enabled',
+    'wisdom_reflection_cadence',
   ]) {
     requireIncludes(configTemplate, expected, failures, 'cocoplus.toml.template');
   }
 
   const principlesHtml = readFile(path.join(repoRoot, 'docs', 'principles.html'));
   const principleCount = (principlesHtml.match(/<h2 id="[0-9]/g) || []).length;
-  if (principleCount !== 51) {
-    failures.push(`docs/principles.html must contain 51 principle headings; found ${principleCount}`);
+  if (principleCount !== 52) {
+    failures.push(`docs/principles.html must contain 52 principle headings; found ${principleCount}`);
   }
   requireIncludes(principlesHtml, 'The Transcript Is the Source of Truth', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Timestamps Have Provenance', failures, 'docs/principles.html');
@@ -505,6 +512,7 @@ function main() {
   requireIncludes(principlesHtml, 'Explicit Curation Over Automatic Accumulation', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Git-Native Memory', failures, 'docs/principles.html');
   requireIncludes(principlesHtml, 'Air-Gap Compatible by Default', failures, 'docs/principles.html');
+  requireIncludes(principlesHtml, 'Instruction Files Earn Authority Through Enforcement', failures, 'docs/principles.html');
 
   const preToolUse = readFile(path.join(hooksDir, 'pre-tool-use.js'));
   requireIncludes(preToolUse, 'model_tier_floor_applied', failures, 'PreToolUse hook');
@@ -533,9 +541,12 @@ function main() {
 
   const userPromptSubmit = readFile(path.join(hooksDir, 'user-prompt-submit.js'));
   requireIncludes(userPromptSubmit, '$cocoplus reset-init', failures, 'UserPromptSubmit hook');
+  requireIncludes(userPromptSubmit, 'wisdom_reflection_requested', failures, 'UserPromptSubmit hook');
 
   const postToolUse = readFile(path.join(hooksDir, 'post-tool-use.js'));
   requireIncludes(postToolUse, 'open-pre-tool-use', failures, 'PostToolUse hook');
+  requireIncludes(postToolUse, 'evaluateAction', failures, 'PostToolUse hook');
+  requireIncludes(postToolUse, 'observeTurn', failures, 'PostToolUse hook');
 
   const notificationHook = readFile(path.join(hooksDir, 'notification.js'));
   requireIncludes(notificationHook, 'open-pre-tool-use', failures, 'Notification hook');
@@ -551,6 +562,19 @@ function main() {
   requireIncludes(consoleScript, 'renderFlowBootstrap', failures, 'CocoConsole script');
   requireIncludes(consoleScript, 'CocoPod Liveness', failures, 'CocoConsole script');
   requireIncludes(consoleScript, 'Surface Learnings', failures, 'CocoConsole script');
+  requireIncludes(consoleScript, 'renderRubricEnforcement', failures, 'CocoConsole script');
+  requireIncludes(consoleScript, 'Instruction Rubric Enforcement', failures, 'CocoConsole script');
+  requireIncludes(consoleScript, 'renderPatternAdherence', failures, 'CocoConsole script');
+  requireIncludes(consoleScript, 'Pattern Adherence Ledger', failures, 'CocoConsole script');
+
+  const instructionRubricScript = readFile(path.join(runtimeScriptsDir, 'instruction-rubric.js'));
+  for (const expected of ['rubric.json', 'pending-rubric-repair.json', 'never_fires', 'rubric_check_missed']) {
+    requireIncludes(instructionRubricScript, expected, failures, 'Instruction rubric script');
+  }
+  const wisdomReflectionScript = readFile(path.join(runtimeScriptsDir, 'wisdom-reflection.js'));
+  for (const expected of ['drop-support-file', 'self-authored-only', '.ledger.jsonl', 'adherence_rate', 'probation', 'capacity_archive']) {
+    requireIncludes(wisdomReflectionScript, expected, failures, 'Wisdom reflection script');
+  }
 
   const flowBootstrapScript = readFile(path.join(runtimeScriptsDir, 'flow-bootstrap.js'));
   for (const expected of [
@@ -665,6 +689,10 @@ function main() {
     'surface learning',
     'liveness check',
     'lifecycle/context.json',
+    'instruction rubric',
+    'calibrate-rubric',
+    'autonomous wisdom reflection',
+    'Pattern Adherence Ledger',
   ]) {
     requireIncludes(snowParityDocs, expected, failures, 'CocoPlus source parity docs');
   }
