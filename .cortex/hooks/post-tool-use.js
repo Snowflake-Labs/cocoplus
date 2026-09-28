@@ -19,6 +19,7 @@ const { spawn } = require('child_process');
 const { isoUtc, appendJsonLine, atomicWrite, stableQueueKey, logError, readJsonString, readJsonNumber, readStdinJson, normalizeToolEvent } = require('./_common.js');
 const { readState } = require('./lib/state-reader.js');
 const { loadConfig } = require('./_v2-state.js');
+const { redactSemanticContext } = require('./lib/semantic-redaction.js');
 const { compileRubric, completeRepair, evaluateAction } = require('../scripts/instruction-rubric.js');
 const { observeTurn } = require('../scripts/wisdom-reflection.js');
 
@@ -44,13 +45,6 @@ function countPii(value) {
   return PII_PATTERNS
     .map(({ type, re }) => ({ type, count: (text.match(re) || []).length }))
     .filter((entry) => entry.count > 0);
-}
-
-function redactSemanticContext(value) {
-  return String(typeof value === 'string' ? value : JSON.stringify(value || {}))
-    .replace(/\b(password|passwd|secret|token|api[_-]?key)\b\s*[:=]\s*[^\s,;]+/gi, '$1=[REDACTED]')
-    .replace(/\b(?:sk|pk)_[A-Za-z0-9_-]{12,}\b/g, '[REDACTED_KEY]')
-    .slice(0, 4000);
 }
 
 function ensureDir(dirPath) {

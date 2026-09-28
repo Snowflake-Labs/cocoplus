@@ -800,6 +800,79 @@ test('wisdom reflection queues on cadence with full recent events and prior dige
   assert.strictEqual(request.proposer_write_tools, false);
 });
 
+test('semantic queue capture redacts secrets and PII from wisdom and rubric files', () => {
+  const dir = tempRepo();
+  fs.writeFileSync(path.join(dir, 'cocoplus.toml'), [
+    '[cocowisdom]',
+    'autonomous_wisdom_reflection_enabled = true',
+    'wisdom_reflection_cadence = 1',
+    '',
+    '[cocopod]',
+    'instruction_rubric_enforcement_enabled = true',
+    '',
+  ].join('\n'), 'utf8');
+  const lifecycle = path.join(dir, '.cocoplus', 'lifecycle');
+  fs.mkdirSync(lifecycle, { recursive: true });
+  fs.writeFileSync(path.join(lifecycle, 'cocopod-instructions.md'), '- [operation] Do not expose private data.\n', 'utf8');
+
+  const privateValues = [
+    'correct horse battery staple',
+    'sk_test_1234567890abcdef',
+    'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.signature',
+    'alice@example.com',
+    '312-555-0199',
+    '123-45-6789',
+    '4111 1111 1111 1111',
+    'Alice Example',
+    '123 Main Street',
+    '1990-01-02',
+  ];
+  const event = {
+    tool: 'Write',
+    session_id: 'redaction-session',
+    parameters: {
+      file_path: 'output.sql',
+      password: privateValues[0],
+      api_key: privateValues[1],
+      customer: {
+        name: privateValues[7],
+        address: privateValues[8],
+        dob: privateValues[9],
+      },
+      content: `email=${privateValues[3]} phone=${privateValues[4]} ssn=${privateValues[5]} card=${privateValues[6]}`,
+    },
+    result: {
+      success: true,
+      message: `authorization: Bearer ${privateValues[2]}`,
+    },
+  };
+  const captured = run(process.execPath, ['.cortex/hooks/post-tool-use.js'], {
+    cwd: dir,
+    input: JSON.stringify(event),
+  });
+  assert.strictEqual(captured.status, 0, captured.stderr);
+
+  const promptPrivateValues = ['another secret phrase', 'Bob Sensitive', '987 Private Lane'];
+  const promptCaptured = run(process.execPath, ['.cortex/hooks/user-prompt-submit.js'], {
+    cwd: dir,
+    input: JSON.stringify({
+      session_id: 'redaction-session',
+      message: `password: ${promptPrivateValues[0]}; name: ${promptPrivateValues[1]}; address: ${promptPrivateValues[2]}`,
+    }),
+  });
+  assert.strictEqual(promptCaptured.status, 0, promptCaptured.stderr);
+
+  const persisted = [
+    path.join(dir, '.cocoplus', 'session', 'wisdom-turns.jsonl'),
+    path.join(dir, '.cocoplus', 'v2-runtime-requests.jsonl'),
+    path.join(dir, '.cocoplus', 'wisdom', 'reflection-requests.jsonl'),
+  ].map((filePath) => fs.readFileSync(filePath, 'utf8')).join('\n');
+  for (const privateValue of [...privateValues, ...promptPrivateValues]) {
+    assert.ok(!persisted.includes(privateValue), `queue persisted private value: ${privateValue}`);
+  }
+  assert.match(persisted, /\[REDACTED_(?:SECRET|EMAIL|PHONE|SSN|PAYMENT_CARD|NAME|ADDRESS|DOB)\]/);
+});
+
 test('wisdom promoter enforces authorship, ledger, probation, adherence, and archive capacity', () => {
   const dir = tempRepo();
   const intentFile = path.join(dir, 'intent.json');

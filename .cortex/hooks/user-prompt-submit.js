@@ -36,6 +36,7 @@ const {
   writeJson,
 } = require('./_v2-state.js');
 const { observeTurn } = require('../scripts/wisdom-reflection.js');
+const { redactSemanticContext } = require('./lib/semantic-redaction.js');
 
 const COCOPLUS_DIR = '.cocoplus';
 const HOOK_LOG     = path.join(COCOPLUS_DIR, 'hook-log.jsonl');
@@ -91,12 +92,6 @@ function spawnCocoScout(message, ts) {
   appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'scout_context_requested', ts });
 }
 
-function redactReflectionText(value) {
-  return String(value || '')
-    .replace(/\b(password|passwd|secret|token|api[_-]?key)\b\s*[:=]\s*[^\s,;]+/gi, '$1=[REDACTED]')
-    .replace(/\b(?:sk|pk)_[A-Za-z0-9_-]{12,}\b/g, '[REDACTED_KEY]');
-}
-
 function main() {
   if (!fs.existsSync(COCOPLUS_DIR)) return;
 
@@ -105,13 +100,14 @@ function main() {
   const event      = readStdinJson();
 
   const message   = event.message   || process.env.COCO_USER_MESSAGE || '';
+  const semanticMessage = redactSemanticContext(message);
   const sessionId = event.session_id || process.env.COCO_SESSION_ID  || 'unknown';
   const config    = loadConfig();
 
   const wisdomConfig = config.cocowisdom || {};
   if (wisdomConfig.autonomous_wisdom_reflection_enabled === true && message && !message.startsWith('$')) {
     try {
-      const reflection = observeTurn({ session_id: sessionId, role: 'user', text: redactReflectionText(message), countable: true }, {
+      const reflection = observeTurn({ session_id: sessionId, role: 'user', text: semanticMessage, countable: true }, {
         cadence: wisdomConfig.wisdom_reflection_cadence || 3,
       });
       if (reflection.queued) {
@@ -141,27 +137,28 @@ function main() {
     let steerText = '';
     try { steerText = fs.readFileSync(steerPath, 'utf8').trim(); } catch (_) { /* absent */ }
     if (steerText) {
+      const semanticSteer = redactSemanticContext(steerText, 1000);
       if (isGateWeakeningSteer(steerText)) {
         appendJsonLine(HOOK_LOG, {
           hook: 'user-prompt-submit',
           action: 'gate_weakening_refused',
-          instruction: steerText.slice(0, 160),
+          instruction: semanticSteer.slice(0, 160),
           ts,
         });
-        appendAudit(`- ${ts} gate-weakening steer refused at prompt submit: ${steerText.slice(0, 240)}`);
+        appendAudit(`- ${ts} gate-weakening steer refused at prompt submit: ${semanticSteer.slice(0, 240)}`);
       } else {
         appendJsonLine(V2_QUEUE, {
           skill: 'cocosession/session',
           action: 'steer',
           idempotency_key: stableQueueKey('cocosession/session', [sessionId, steerText.slice(0, 240)]),
-          instruction: steerText.slice(0, 1000),
+          instruction: semanticSteer,
           requested_at: ts,
           source: 'hook.user-prompt-submit',
         });
         appendJsonLine(HOOK_LOG, {
           hook: 'user-prompt-submit',
           action: 'operator_steering_injected',
-          instruction: steerText.slice(0, 160),
+          instruction: semanticSteer.slice(0, 160),
           ts,
         });
       }
@@ -185,7 +182,7 @@ function main() {
       appendJsonLine(path.join(SESSION_DIR, 'task-queue.jsonl'), {
         ts,
         session_id: sessionId,
-        message: message.slice(0, 500),
+        message: semanticMessage.slice(0, 500),
         status: 'queued',
       });
     }
@@ -255,7 +252,7 @@ function main() {
       checkpointForge({
         active: true,
         mode: goalMode ? 'goal' : 'task',
-        goal: goal.replace(/\s--ladder(\s|$)/, ' ').trim(),
+        goal: redactSemanticContext(goal.replace(/\s--ladder(\s|$)/, ' ').trim()),
         iteration: 1,
         phase: 'plan',
         refinement_ladder: ladderEnabled ? {
@@ -267,7 +264,7 @@ function main() {
         } : { enabled: false },
         pilot_superseded: flagExists('cocopilot.on'),
         event_type: 'forge_started',
-        message: `Forge started for goal: ${goal.slice(0, 160)}`,
+        message: `Forge started for goal: ${redactSemanticContext(goal, 160)}`,
       });
       appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'forge_started', tier: 1, mode: goalMode ? 'goal' : 'task', ts });
       return;
@@ -304,7 +301,7 @@ function main() {
       skill: 'cocoroutine/routine',
       action,
       idempotency_key: stableQueueKey('cocoroutine/routine', [action, message.slice(0, 500)]),
-      command: message.slice(0, 500),
+      command: semanticMessage.slice(0, 500),
       requested_at: ts,
       source: 'hook.user-prompt-submit',
     });
@@ -317,11 +314,11 @@ function main() {
     checkpointForge({
       phase: 'input',
       event_type: 'forge_input_observed',
-      message: `Developer input recorded for forge context: ${message.slice(0, 160)}`,
+      message: `Developer input recorded for forge context: ${semanticMessage.slice(0, 160)}`,
     });
     appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'forge_team_lead_intercept', tier: 1, ts });
   } else if (flagExists('cocopilot.on')) {
-    initPilotSession(message, sessionId);
+    initPilotSession(semanticMessage, sessionId);
     appendJsonLine(HOOK_LOG, { hook: 'user-prompt-submit', action: 'pilot_intercept_observed', tier: 1, ts });
   }
 
@@ -365,7 +362,7 @@ function main() {
         tier: 1,
         shorthand,
         persona: personaName,
-        task: taskText.slice(0, 100),
+        task: redactSemanticContext(taskText, 100),
         ts,
       });
       // Register the routing in subagents.json for SubagentStop tracking
@@ -389,7 +386,7 @@ function main() {
   appendJsonLine(V2_QUEUE, {
     skill: 'cococupper/cupper-capture',
     idempotency_key: stableQueueKey('cococupper/cupper-capture', [routedPersona || 'none', message.slice(0, 500), ts.slice(0, 16)]),
-    message: message.slice(0, 500),
+    message: semanticMessage.slice(0, 500),
     skill_context: routedPersona,
     requested_at: ts,
     source: 'hook.user-prompt-submit',
@@ -405,7 +402,7 @@ function main() {
     appendJsonLine(path.join(SESSION_DIR, 'discoveries.jsonl'), {
       ts,
       kind: 'skill_match',
-      message: message.slice(0, 240),
+      message: semanticMessage.slice(0, 240),
       category: lowerMessage.includes('schedule') || lowerMessage.includes('routine') ? 'CocoRoutine' :
         lowerMessage.includes('review') ? 'CocoReview' :
         lowerMessage.includes('research') || lowerMessage.includes('synthesis') ? 'CocoFlow Research' :
@@ -417,7 +414,7 @@ function main() {
     appendJsonLine(path.join(SESSION_DIR, 'discoveries.jsonl'), {
       ts,
       kind: 'convergence',
-      message: message.slice(0, 240),
+      message: semanticMessage.slice(0, 240),
       recommendation: 'Diverge-then-focus frame shift before another iteration.',
     });
   }
@@ -462,7 +459,7 @@ function main() {
   // --- Tier 2 start (async, fire-and-forget) ---
   // CocoScout context injection: spawned only for non-command, non-routed messages.
   if (!routed) {
-    spawnCocoScout(message, ts);
+    spawnCocoScout(semanticMessage, ts);
   }
 }
 
