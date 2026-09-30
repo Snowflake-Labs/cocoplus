@@ -304,7 +304,7 @@ function main() {
   }
 
   // 10. CocoSentinel dimension completion — safety-net stale lock cleanup
-  // Primary lock deletion is performed by sentinel.skill.md Step 8 directly.
+  // Primary lock deletion is performed by the sentinel skill's Step 8 directly.
   // This hook only cleans up a stale lock if sentinel crashed mid-evaluation.
   const isSentinelDimension = subagentId.startsWith('sentinel-');
   if (isSentinelDimension) {
