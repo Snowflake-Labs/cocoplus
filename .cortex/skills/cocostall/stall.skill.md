@@ -6,7 +6,6 @@ author: "CocoPlus"
 tags:
   - cocoplus
   - cocostall
-  - snow-cocoplus
 ---
 
 Your objective is to implement `$stall`.

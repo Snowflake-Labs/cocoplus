@@ -731,6 +731,174 @@ test('behavior maturity enforces declared maturity ceiling and autonomous-readin
   assert.ok(maturity.l3_checklist.some((item) => /attempt cap/i.test(item.description)));
 });
 
+test('instruction rubric compiles cited operation and stage rules and refreshes on source change', () => {
+  const dir = tempRepo();
+  const source = path.join(dir, '.cocoplus', 'lifecycle', 'cocopod-instructions.md');
+  fs.mkdirSync(path.dirname(source), { recursive: true });
+  fs.writeFileSync(source, '- [operation; scope=*.sql] DELETE statements require a WHERE clause.\n- [stage] Stage output must include validation evidence.\n', 'utf8');
+  const first = run(process.execPath, ['.cortex/scripts/instruction-rubric.js', 'compile'], { cwd: dir });
+  assert.strictEqual(first.status, 0, first.stderr);
+  let rubric = readJson(path.join(dir, '.cocoplus', 'lifecycle', 'rubric.json'));
+  assert.strictEqual(rubric.rules.length, 2);
+  assert.deepStrictEqual(rubric.rules[0].scope, ['*.sql']);
+  assert.strictEqual(rubric.rules[1].phase, 'stage');
+  assert.strictEqual(rubric.rules[1].source.line, 2);
+  const oldHash = rubric.source_sha256;
+  fs.appendFileSync(source, '- [operation] Never expose credentials.\n');
+  const second = run(process.execPath, ['.cortex/scripts/instruction-rubric.js', 'compile'], { cwd: dir });
+  assert.strictEqual(second.status, 0, second.stderr);
+  rubric = readJson(path.join(dir, '.cocoplus', 'lifecycle', 'rubric.json'));
+  assert.notStrictEqual(rubric.source_sha256, oldHash);
+  assert.strictEqual(rubric.rules.length, 3);
+});
+
+test('instruction rubric applies repair, note, silent, and fail-open bands', () => {
+  const dir = tempRepo();
+  const lifecycle = path.join(dir, '.cocoplus', 'lifecycle');
+  fs.mkdirSync(lifecycle, { recursive: true });
+  fs.writeFileSync(path.join(lifecycle, 'cocopod-instructions.md'), '- [operation] Rule alpha must hold.\n- [operation] Rule beta must hold.\n- [operation] Rule gamma must hold.\n', 'utf8');
+  run(process.execPath, ['.cortex/scripts/instruction-rubric.js', 'compile'], { cwd: dir });
+  const rubric = readJson(path.join(lifecycle, 'rubric.json'));
+  const action = path.join(dir, 'action.json');
+  const scores = path.join(dir, 'scores.json');
+  writeJson(action, { phase: 'operation', operation: 'Write' });
+  writeJson(scores, [
+    { rule_id: rubric.rules[0].id, probability: 0.9, violation: true, reason: 'alpha failed' },
+    { rule_id: rubric.rules[1].id, probability: 0.6, violation: true, reason: 'beta uncertain' },
+    { rule_id: rubric.rules[2].id, probability: 0.3, violation: true, reason: 'gamma weak' },
+  ]);
+  const evaluated = run(process.execPath, ['.cortex/scripts/instruction-rubric.js', 'evaluate', '--action-file', action, '--scores-file', scores], { cwd: dir });
+  assert.strictEqual(evaluated.status, 0, evaluated.stderr);
+  const output = JSON.parse(evaluated.stdout);
+  assert.deepStrictEqual(output.results.map((item) => item.outcome), ['repair', 'note', 'silent']);
+  assert.ok(fs.existsSync(path.join(dir, '.cocoplus', 'session', 'pending-rubric-repair.json')));
+  assert.strictEqual(fs.readFileSync(path.join(lifecycle, 'rubric-notes.jsonl'), 'utf8').trim().split(/\r?\n/).length, 1);
+
+  fs.rmSync(path.join(lifecycle, 'cocopod-instructions.md'));
+  fs.rmSync(path.join(lifecycle, 'rubric.json'));
+  const missed = run(process.execPath, ['.cortex/scripts/instruction-rubric.js', 'evaluate', '--action-file', action, '--scores-file', scores], { cwd: dir });
+  assert.strictEqual(missed.status, 0, missed.stderr);
+  assert.strictEqual(JSON.parse(missed.stdout).fail_open, true);
+  assert.match(fs.readFileSync(path.join(lifecycle, 'audit.md'), 'utf8'), /rubric_check_missed/);
+});
+
+test('wisdom reflection queues on cadence with full recent events and prior digest', () => {
+  const dir = tempRepo();
+  const turnFile = path.join(dir, 'turn.json');
+  for (let index = 1; index <= 3; index += 1) {
+    writeJson(turnFile, { session_id: 'session-a', role: 'user', countable: true, text: `turn ${index}` });
+    const result = run(process.execPath, ['.cortex/scripts/wisdom-reflection.js', 'observe', '--turn-file', turnFile, '--cadence', '3'], { cwd: dir });
+    assert.strictEqual(result.status, 0, result.stderr);
+    assert.strictEqual(JSON.parse(result.stdout).queued, index === 3);
+    if (index === 1) {
+      writeJson(turnFile, { session_id: 'session-a', role: 'tool', countable: false, tool: 'Read', text: 'tool io' });
+      run(process.execPath, ['.cortex/scripts/wisdom-reflection.js', 'observe', '--turn-file', turnFile, '--cadence', '3'], { cwd: dir });
+    }
+  }
+  const request = JSON.parse(fs.readFileSync(path.join(dir, '.cocoplus', 'wisdom', 'reflection-requests.jsonl'), 'utf8').trim());
+  assert.ok(request.recent_turns.some((item) => item.role === 'tool'));
+  assert.strictEqual(request.proposer_write_tools, false);
+});
+
+test('semantic queue capture redacts secrets and PII from wisdom and rubric files', () => {
+  const dir = tempRepo();
+  fs.writeFileSync(path.join(dir, 'cocoplus.toml'), [
+    '[cocowisdom]',
+    'autonomous_wisdom_reflection_enabled = true',
+    'wisdom_reflection_cadence = 1',
+    '',
+    '[cocopod]',
+    'instruction_rubric_enforcement_enabled = true',
+    '',
+  ].join('\n'), 'utf8');
+  const lifecycle = path.join(dir, '.cocoplus', 'lifecycle');
+  fs.mkdirSync(lifecycle, { recursive: true });
+  fs.writeFileSync(path.join(lifecycle, 'cocopod-instructions.md'), '- [operation] Do not expose private data.\n', 'utf8');
+
+  const privateValues = [
+    'correct horse battery staple',
+    'sk_test_1234567890abcdef',
+    'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.signature',
+    'alice@example.com',
+    '312-555-0199',
+    '123-45-6789',
+    '4111 1111 1111 1111',
+    'Alice Example',
+    '123 Main Street',
+    '1990-01-02',
+  ];
+  const event = {
+    tool: 'Write',
+    session_id: 'redaction-session',
+    parameters: {
+      file_path: 'output.sql',
+      password: privateValues[0],
+      api_key: privateValues[1],
+      customer: {
+        name: privateValues[7],
+        address: privateValues[8],
+        dob: privateValues[9],
+      },
+      content: `email=${privateValues[3]} phone=${privateValues[4]} ssn=${privateValues[5]} card=${privateValues[6]}`,
+    },
+    result: {
+      success: true,
+      message: `authorization: Bearer ${privateValues[2]}`,
+    },
+  };
+  const captured = run(process.execPath, ['.cortex/hooks/post-tool-use.js'], {
+    cwd: dir,
+    input: JSON.stringify(event),
+  });
+  assert.strictEqual(captured.status, 0, captured.stderr);
+
+  const promptPrivateValues = ['another secret phrase', 'Bob Sensitive', '987 Private Lane'];
+  const promptCaptured = run(process.execPath, ['.cortex/hooks/user-prompt-submit.js'], {
+    cwd: dir,
+    input: JSON.stringify({
+      session_id: 'redaction-session',
+      message: `password: ${promptPrivateValues[0]}; name: ${promptPrivateValues[1]}; address: ${promptPrivateValues[2]}`,
+    }),
+  });
+  assert.strictEqual(promptCaptured.status, 0, promptCaptured.stderr);
+
+  const persisted = [
+    path.join(dir, '.cocoplus', 'session', 'wisdom-turns.jsonl'),
+    path.join(dir, '.cocoplus', 'v2-runtime-requests.jsonl'),
+    path.join(dir, '.cocoplus', 'wisdom', 'reflection-requests.jsonl'),
+  ].map((filePath) => fs.readFileSync(filePath, 'utf8')).join('\n');
+  for (const privateValue of [...privateValues, ...promptPrivateValues]) {
+    assert.ok(!persisted.includes(privateValue), `queue persisted private value: ${privateValue}`);
+  }
+  assert.match(persisted, /\[REDACTED_(?:SECRET|EMAIL|PHONE|SSN|PAYMENT_CARD|NAME|ADDRESS|DOB)\]/);
+});
+
+test('wisdom promoter enforces authorship, ledger, probation, adherence, and archive capacity', () => {
+  const dir = tempRepo();
+  const intentFile = path.join(dir, 'intent.json');
+  const script = '.cortex/scripts/wisdom-reflection.js';
+  for (const id of ['alpha', 'beta']) {
+    writeJson(intentFile, { action: 'add', tier: 'project', pattern_id: id, title: id, content: `# ${id}`, reason: 'observed repeatedly', evidence: { session: 's1', turn: id } });
+    const promoted = run(process.execPath, [script, 'promote', '--intent-file', intentFile, '--project-cap', '1', '--project-maturity', '1'], { cwd: dir });
+    assert.strictEqual(promoted.status, 0, promoted.stderr);
+    assert.strictEqual(JSON.parse(promoted.stdout).accepted, true);
+    assert.ok(fs.existsSync(path.join(dir, '.cocoplus', 'wisdom', 'patterns', 'project', id, '.ledger.jsonl')));
+    const opportunity = run(process.execPath, [script, 'opportunity', '--tier', 'project', '--pattern', id, '--followed', id === 'beta' ? 'true' : 'false', '--project-cap', '1', '--project-maturity', '1'], { cwd: dir });
+    assert.strictEqual(opportunity.status, 0, opportunity.stderr);
+  }
+  assert.ok(!fs.existsSync(path.join(dir, '.cocoplus', 'wisdom', 'patterns', 'project', 'alpha')));
+  assert.ok(fs.readdirSync(path.join(dir, '.cocoplus', 'wisdom', 'archive', 'project')).some((name) => name.startsWith('alpha-')));
+
+  const humanDir = path.join(dir, '.cocoplus', 'wisdom', 'patterns', 'project', 'human-rule');
+  fs.mkdirSync(humanDir, { recursive: true });
+  writeJson(path.join(humanDir, 'pattern.json'), { id: 'human-rule', tier: 'project', authorship: 'human' });
+  writeJson(intentFile, { action: 'patch', tier: 'project', pattern_id: 'human-rule', content: 'changed', reason: 'proposal', evidence: { session: 's2' } });
+  const rejected = run(process.execPath, [script, 'promote', '--intent-file', intentFile], { cwd: dir });
+  assert.strictEqual(rejected.status, 0, rejected.stderr);
+  assert.strictEqual(JSON.parse(rejected.stdout).accepted, false);
+  assert.match(JSON.parse(rejected.stdout).reason, /self-authored-only/);
+});
+
 let failed = 0;
 for (const { name, fn } of tests) {
   try {

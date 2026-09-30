@@ -109,6 +109,19 @@ injection_mode = "progressive" # "progressive" | "preload"
 preload_categories = []       # Keep empty unless a project needs standing wisdom topics
 stage_mappings_enabled = true # SCHEMA.md may map stage role patterns to positive wisdom topics
 
+[cocopod]
+# Probabilistic instruction enforcement is opt-in and fail-open.
+instruction_rubric_enforcement_enabled = false
+
+[cocowisdom]
+# Autonomous reflection uses a read-only proposer and a deterministic promoter gate.
+autonomous_wisdom_reflection_enabled = false
+wisdom_reflection_cadence = 3
+project_pattern_capacity = 50
+project_pattern_maturity_requests = 5
+global_pattern_capacity = 20
+global_pattern_maturity_requests = 10
+
 [sprint]
 # CocoOps $ops sprint configuration
 # start_date = "2024-01-15"   # ISO date - update at start of each sprint

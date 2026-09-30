@@ -37,6 +37,10 @@ The root plugin implements the current runtime and documentation surface while p
 
 Older CocoPods migrate forward with `$migrate v2 --dry-run` and `$migrate v2`; new work should use the feature-owned skills directly. In V2.0.2, queued hook follow-up work uses durable request envelopes, stable idempotency keys, and skill-owned settlements so replayed queues do not duplicate meter, trace, or flow artifacts. CocoFlow also runs a pre-dispatch execution conflict gate, appends domain surface learning records, validates CocoPod liveness, and writes `lifecycle/context.json` before dispatch. CocoWisdom adopts manifest-first memory: `do-not-use.md` stays universal, positive topic files load only when routed by stage or requested with `$wisdom get`, and branch-scoped memory remains plain Markdown for air-gap compatible review.
 
+The controls are opt-in. `[cocopod].instruction_rubric_enforcement_enabled` compiles committed CocoPod instructions into `lifecycle/rubric.json`, applies repair/note/silent probability bands after operations and stages, and fails open with audit evidence when evaluation is unavailable. `[cocowisdom].autonomous_wisdom_reflection_enabled` schedules read-only reflection every configured number of turns; a separate promoter enforces autonomous-authorship, evidence-ledger, probation, and adherence-based archival rules. CocoConsole exposes both the Instruction Rubric Enforcement log and Pattern Adherence Ledger without mutating either system.
+
+This autonomous wisdom reflection lifecycle remains disabled by default and never grants write tools to the reflector.
+
 ## Specialist Personas
 
 `$de` Data Engineer · `$ae` Analytics Engineer · `$ds` Data Scientist · `$da` Data Analyst  

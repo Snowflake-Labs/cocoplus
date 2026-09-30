@@ -6,7 +6,6 @@ author: "CocoPlus"
 tags:
   - cocoplus
   - cocolex
-  - snow-cocoplus
 ---
 
 Your objective is to implement `$lex`.

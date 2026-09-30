@@ -46,6 +46,7 @@ const FLOW_ARTIFACT_ROOT = path.join(COCOPLUS_DIR, 'flow', 'artifacts');
 const SESSION_BUDGET_STATE = path.join(COCOPLUS_DIR, 'session', 'budget-state.json');
 const OPEN_PRE_TOOL_USE = path.join(COCOPLUS_DIR, 'session', 'open-pre-tool-use.json');
 const INIT_CONFIRMATION = path.join(COCOPLUS_DIR, 'lifecycle', 'cocoplus-init.json');
+const PENDING_RUBRIC_REPAIR = path.join(COCOPLUS_DIR, 'session', 'pending-rubric-repair.json');
 
 const COMPLEXITY_TIERS = [
   { name: 'trivial', max: 20 },
@@ -1189,6 +1190,19 @@ function main() {
     appendJsonLine(HOOK_LOG, { hook: 'pre-tool-use', action: 'agent_stop_blocked', tool: toolName, ts });
     block('CocoSession kill-switch is active: .cocoplus/AGENT_STOP exists. Remove it to resume tool use.');
     return;
+  }
+
+  // High-confidence instruction violations are repaired before any unrelated
+  // tool call. The repair call identifies itself with the issued repair id.
+  if (fs.existsSync(PENDING_RUBRIC_REPAIR)) {
+    try {
+      const pending = JSON.parse(fs.readFileSync(PENDING_RUBRIC_REPAIR, 'utf8'));
+      if (String(params.rubric_repair_id || '') !== String(pending.repair_id || '')) {
+        appendJsonLine(HOOK_LOG, { hook: 'pre-tool-use', action: 'rubric_repair_blocked', repair_id: pending.repair_id, tool: toolName, ts });
+        block(`${pending.directive}\nResubmit the repair tool call with rubric_repair_id=${pending.repair_id}.`);
+        return;
+      }
+    } catch (_) { /* malformed repair state fails open */ }
   }
 
   // CocoFlow Named Artifact Protocol: optional declared reads/writes become a

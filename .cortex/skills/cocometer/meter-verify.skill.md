@@ -6,7 +6,6 @@ author: "CocoPlus"
 tags:
   - cocoplus
   - cocometer
-  - snow-cocoplus
 ---
 
 Your objective is to implement `$meter verify <run-id> [--evidence "<description>"] [--update]`.

@@ -6,7 +6,6 @@ author: "CocoPlus"
 tags:
   - cocoplus
   - cocopulse
-  - snow-cocoplus
 ---
 
 Your objective is to implement `$pulse`.

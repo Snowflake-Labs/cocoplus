@@ -133,7 +133,8 @@ For each stage to execute:
     - If all checkpoints pass: update flow.json stage to `"completed"`, add `completed_at`. Append `STAGE_COMPLETED` to progress.txt. Reset `consecutive_failure_count` to 0 in tasks.json.
     - If any checkpoint fails: increment `consecutive_failure_count` in tasks.json. Append `STAGE_FAILED` to progress.txt. Apply `on_failure` action. If `consecutive_failure_count` reaches `maxConsecutiveFailures`, append `ESCALATED` and halt with full escalation message.
 13. **External coach queue:** if `[harness] coach_model` is configured, stage completion queues a per-stage CocoSentinel coach review. The coach model must differ from the executor model; same-model coach requests become known-gaps entries.
-14. **Dual synthesis path** (if stage has `synthesis.primary: "llm"` and `synthesis.fallback: "rule-based"`):
+14. **Stage instruction rubric:** if `[cocopod].instruction_rubric_enforcement_enabled = true`, evaluate applicable `phase: stage` rubric entries against the completed stage context. A probability of 0.8 or higher creates a source-cited repair request before downstream dispatch; 0.5 through less than 0.8 records a non-blocking Safety-panel note; evaluator failure is logged and fails open.
+15. **Dual synthesis path** (if stage has `synthesis.primary: "llm"` and `synthesis.fallback: "rule-based"`):
     - Attempt primary LLM synthesis normally.
     - If the LLM synthesis call fails (access error, timeout, rate limit, credential constraint):
       - Do NOT halt the pipeline.
@@ -144,10 +145,10 @@ For each stage to execute:
       - Continue the pipeline with the fallback output.
     - Stages with `synthesis` absent or `synthesis.primary != "llm"` are unaffected.
     - Execution stages (SQL execution, test runs, file writes) do NOT have a fallback — they fail hard by design.
-15. **HITL pause** (if `hitl: true`): after successful completion, output the stage results and ask developer to confirm before spawning downstream stages
-16. **No-op workflow check** (if `handler: "noop-check"`): execute the `execution-engine/noop-check` skill-native check against the stage state. If it returns `noop: true`, mark the stage `skipped` with the recorded reason and append `NOOP_SKIPPED` to progress. This is a successful no-op, not an error.
-17. **Retained proposal model** (if `writes_via_proposal: true`): write Snowflake DDL, SQL file changes, or pipeline configuration output under `.cocoplus/proposals/[stage-id]/[timestamp]/` and stop before live application. Surface: `Proposal retained. Run $flow settle --accept [stage-id] or $flow settle --discard [stage-id].`
-18. **Surface learning append**: when a CocoPod stage concludes with success, regression, or abandoned status, append one domain learning through the CocoFlow bootstrap backing when `[cocoflow] surface_learning_log_enabled = true`. The line belongs in `.cocoplus/lifecycle/surfaces/<surface>.md` and must preserve prior entries.
+16. **HITL pause** (if `hitl: true`): after successful completion, output the stage results and ask developer to confirm before spawning downstream stages
+17. **No-op workflow check** (if `handler: "noop-check"`): execute the `execution-engine/noop-check` skill-native check against the stage state. If it returns `noop: true`, mark the stage `skipped` with the recorded reason and append `NOOP_SKIPPED` to progress. This is a successful no-op, not an error.
+18. **Retained proposal model** (if `writes_via_proposal: true`): write Snowflake DDL, SQL file changes, or pipeline configuration output under `.cocoplus/proposals/[stage-id]/[timestamp]/` and stop before live application. Surface: `Proposal retained. Run $flow settle --accept [stage-id] or $flow settle --discard [stage-id].`
+19. **Surface learning append**: when a CocoPod stage concludes with success, regression, or abandoned status, append one domain learning through the CocoFlow bootstrap backing when `[cocoflow] surface_learning_log_enabled = true`. The line belongs in `.cocoplus/lifecycle/surfaces/<surface>.md` and must preserve prior entries.
 
 ## Adaptive Checkpoint Typing
 
