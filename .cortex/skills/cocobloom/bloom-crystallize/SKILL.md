@@ -91,7 +91,7 @@ If DISCARD: output "Crystallization cancelled." and stop.
 
 ## Step 6 — Write Skill File
 
-Only after developer ACCEPT, write the skill to `.cortex/skills/<slug>/SKILL.md` with `source: crystallized` in frontmatter metadata.
+Only after developer ACCEPT, write the skill to `.cortex/skills/crystallized/<slug>/SKILL.md` with `source: crystallized` in frontmatter metadata.
 
 Create `.cortex/skills/crystallized/` directory if it does not exist.
 
@@ -103,7 +103,7 @@ Create git commit: `feat(skills): crystallize <slug> skill from execution trace`
 
 ```
 CocoBloom: skill crystallized.
-  File: .cortex/skills/<slug>/SKILL.md
+  File: .cortex/skills/crystallized/<slug>/SKILL.md
   Source: crystallized from <deployment.md date>
   Invoke with: $<slug>
 
