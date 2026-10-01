@@ -1,0 +1,133 @@
+---
+name: wisdom
+description: CocoWisdom — displays project quality rejection history summary. Shows total rejection count, most frequent gate, most blocked dimension, last rejection, and quality trend. Invoked via $wisdom.
+version: "1.1.0"
+author: CocoPlus
+tags:
+  - cocowisdom
+  - institutional-memory
+  - quality-gate
+user-invocable: true
+blocking: false
+---
+
+## Objective
+
+Display a CocoWisdom status summary for the current project.
+
+Before proceeding, verify that `.cocoplus/` exists. If not, output: "CocoPlus is not initialized. Run `$pod init` first." Then stop.
+
+## CocoPlus 2.0.2 Command Surface
+
+- `$wisdom reject "<description>"` records a rejected approach in `.cocoplus/wisdom/do-not-use.md`.
+- `$wisdom index [--harness <name>]` builds the session-log lexical recall index.
+- `$wisdom recall "<query>"` searches curated wisdom plus the session-log index.
+- `$wisdom learnings [--filter <text>]` lists curated learning and rejection records.
+- `$wisdom learn "<text>" [--session <id>] [--reason <text>]` records an operator-curated learning.
+
+Negative memory in `do-not-use.md` is universal. Always load it before positive topic-gated wisdom, never auto-prune it, and never merge rejected approaches into positive wisdom category files.
+
+Positive wisdom uses manifest-first memory. Read `.cocoplus/wisdom/SCHEMA.md` for stage mappings before loading topic content, load only the mapped topics for the current stage role, and keep all other topic files in progressive disclosure mode until `$wisdom get <topic>` is invoked. Memory is branch-scoped Markdown: changes travel with the feature branch and are reviewed like code.
+
+## Step 1 — Read Rejections Store
+
+Read `.cocoplus/wisdom/rejections.jsonl`. If it does not exist or is empty, output:
+
+```
+CocoWisdom — No rejection records yet.
+Quality gates have not produced any BLOCKED outcomes in this project.
+Run $sentinel <file> or $secondeye to begin evaluating artifacts.
+```
+Then stop.
+
+## Step 2 — Compute Summary Statistics
+
+Parse all JSONL records. Compute:
+- Total record count (excluding `type: "retraction"` records)
+- Count by gate: secondeye, sentinel, da_critic
+- Most frequent gate (highest count)
+- Count by dimension across all gates
+- Most blocked dimension (highest count)
+- Most recent record by timestamp
+- Sessions in last 8: count records from last 8 distinct `session_id` values — if count is 0, trend is "Improving"
+
+## Step 3 — Output Summary
+
+```
+CocoWisdom — Project: <project name from .cocoplus/ or directory name>
+Total rejection records: <count>
+Most frequent gate: <gate> (<count> records)
+Most blocked dimension: <dimension> (<count> records)
+Last rejection: <date> | <gate> | <dimension>
+Quality trend: <Improving (no rejection in last 8 sessions) | Active (<count> in last 8 sessions)>
+```
+
+## `$wisdom route` — Correction Routing (Feature 37 Enhancement)
+
+Routes CocoCupper's auto-captured corrections (`.cocoplus/cupper/auto-captured.json`) to proposed skill-file edits, closing the loop between "the developer corrected the agent" and "the skill that caused it gets fixed."
+
+1. Invoke `cocowisdom/wisdom-route`. It reads `.cocoplus/cupper/auto-captured.json` entries that carry a `skill_context` field, groups them by skill file, and applies a routing classification per group:
+   - **incorrect-behavior** — the skill's instructions produced an action the developer reversed
+   - **missing-variant** — the correction asks for an option or mode the skill doesn't support
+   - **agent-misapplication** — the skill or persona was invoked in a context it doesn't fit
+
+   This classification may invoke Haiku (Tier 3, async) since it requires judging correction intent — unlike CocoCupper's Tier 1 capture, which is pure regex.
+
+2. For each group, `cocowisdom/wisdom-route` generates a proposed edit (the specific skill section and suggested change) but does not apply it.
+
+3. Present each proposed edit to the developer for explicit confirmation:
+
+   ```
+   CocoWisdom Route — [skill-name]
+   Routing: incorrect-behavior (3 corrections)
+   Proposed edit: [section] — [specific change]
+
+   Apply this edit? (yes/no)
+   ```
+
+4. **The routing workflow requires explicit developer confirmation before any file is modified.** No proposed edit is ever applied automatically, regardless of how many corrections support it.
+
+## `$wisdom keep` and `$wisdom forget`
+
+`$wisdom keep --id <id> --text "<rule>"` writes protected institutional memory to `.cocoplus/wisdom/must-keep.md`. Must-keep entries are not candidates for automatic consolidation.
+
+`$wisdom forget --id <id> --rationale "<reason>"` records an explicit removal rationale in `.cocoplus/wisdom/consolidation-log.md`. Forgetting without rationale is rejected.
+
+Use:
+
+```text
+invoke cocowisdom/wisdom-route --keep --id <id> --text "<rule>"
+invoke cocowisdom/wisdom-route --forget --id <id> --rationale "<reason>"
+```
+
+## Evidence Gate and Denser-Not-Larger Rule
+
+Stable CocoWisdom promotion requires at least 3 distinct confirmed sessions by default. The threshold is configurable in `cocoplus.toml` under `[wisdom].min_evidence_sessions`.
+
+Before promoting a consolidated thesis, validate it with:
+
+```text
+invoke cocowisdom/wisdom-route --candidate <candidate.json>
+```
+
+The candidate is rejected if it increases word count without reducing entry count, unless a justified exception is recorded. Consolidation should make memory denser, not merely larger.
+
+## Anti-Rationalization Table
+
+| Shortcut / Temptation | Why It Fails |
+|-----------------------|--------------|
+| Show "Improving" when only a few sessions exist | Trend requires 8 distinct sessions — fewer sessions cannot establish a pattern |
+| Skip reading rejections.jsonl when file is large | The quality trend depends on the last 8 sessions — truncating the read produces wrong counts |
+| Auto-apply a routed edit when many corrections agree | Volume of corrections is evidence for review, not authorization to skip developer confirmation — the workflow is structurally confirm-first |
+| Promote a wisdom pattern from one dramatic incident | Stable institutional memory requires repeated confirmed evidence across distinct sessions |
+| Grow a thesis without reducing entries | Denser-not-larger keeps memory useful under context pressure |
+
+## Exit Criteria
+
+- Summary displays correctly even if only 1 record exists
+- Trend shows "Improving" only when zero rejections in last 8 distinct sessions
+- `$wisdom route` groups auto-captured corrections by skill file and applies one of the three routing classifications to each group
+- No skill file is modified by `$wisdom route` without explicit developer confirmation of the specific proposed edit
+- `$wisdom keep` writes protected entries to `must-keep.md`
+- `$wisdom forget` records rationale in `consolidation-log.md`
+- Promotion candidates pass evidence and density gates before becoming stable knowledge

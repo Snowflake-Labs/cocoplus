@@ -22,8 +22,9 @@ All notable changes to CocoPlus are documented here.
 - CocoConsole Safety/Quality panels now surface instruction rubric outcomes, never-fires calibration flags, pattern adherence rates, and recent reflection requests.
 - CocoConsole Safety panel now renders the Policy Decision Log with deny/instruct default filtering, allow-decision reveal toggle, colored chips, expandable messages, and SQL excerpts.
 - Restored deterministic runtime script backing for contract gates, recall import, refinement updates, pivot merging, Ops thesis generation, report export, chargeback refresh, health grading, wisdom routing, model-tier resolution, no-op detection, audit events, recipe metadata, status envelopes, and behavior maturity checks; the regression harness now validates these scripts directly.
+- Reorganized `.cortex/skills` into the Cortex Code discovery convention (`.cortex/skills/**/<skill-name>/SKILL.md`), preserving feature-family grouping while allowing Cortex Code 1.1.87 to discover the full V2.0.2 command surface without a duplicated generated tree.
 - Public docs now describe explicit curation, branch-scoped memory, and air-gap compatible Markdown memory as 2.0.2 operating constraints.
-- `scripts/validate-cocoplus.js` now enforces the V2.0.2 manifest/runtime contract and checks the new memory-discipline documentation.
+- `scripts/validate-cocoplus.js` now enforces the V2.0.2 manifest/runtime contract, validates the canonical one-folder-per-skill layout, and checks the new memory-discipline documentation.
 
 ---
 

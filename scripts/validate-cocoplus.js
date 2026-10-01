@@ -10,6 +10,7 @@ const agentsDir = path.join(repoRoot, '.cortex', 'agents');
 const hooksDir = path.join(repoRoot, '.cortex', 'hooks');
 const hookLibDir = path.join(hooksDir, 'lib');
 const runtimeScriptsDir = path.join(repoRoot, '.cortex', 'scripts');
+const skillsDir = path.join(repoRoot, '.cortex', 'skills');
 const templatesDir = path.join(repoRoot, 'templates');
 const recipesDir = path.join(repoRoot, 'recipes');
 const referenceDir = path.join(repoRoot, 'reference-specs');
@@ -69,6 +70,16 @@ function asArray(value) {
 
 function normalizeManifestPath(value) {
   return String(value).replace(/\\/g, '/').replace(/\/+$/, '').replace(/^\.\//, '');
+}
+
+function skillPath(name) {
+  const directPath = path.join(skillsDir, name, 'SKILL.md');
+  if (fs.existsSync(directPath)) return directPath;
+
+  return walkFiles(skillsDir, (filePath) =>
+    path.basename(filePath) === 'SKILL.md'
+    && path.basename(path.dirname(filePath)) === name
+  )[0] || directPath;
 }
 
 function manifestIncludesPath(value, expected) {
@@ -189,56 +200,56 @@ function main() {
   ];
 
   const requiredSkillPaths = [
-    path.join(repoRoot, '.cortex', 'skills', 'cocobloom', 'bloom-skip.skill.md'),
+    skillPath('bloom-skip'),
     path.join(repoRoot, '.cortex', 'skills', 'cocowatch', 'SKILL.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocohealth', 'pod-checkpoint.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'execution-engine', 'runtime-queue.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocometer', 'meter-reconcile.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'execution-engine', 'flow-event-reader.skill.md'),
+    skillPath('pod-checkpoint'),
+    skillPath('runtime-queue'),
+    skillPath('meter-reconcile'),
+    skillPath('flow-event-reader'),
   ];
 
   const sourceParitySkillPaths = [
-    path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-reject.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-index.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-recall.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-learnings.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-learn.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocometer', 'meter-verify.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocometer', 'meter-waste.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocoaudit', 'audit-verify.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocostyle', 'style.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocostyle', 'style-init.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocostyle', 'style-refresh.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocostyle', 'style-show.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocostyle', 'style-mode.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocostyle', 'style-diff.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocostyle', 'style-status.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocolex', 'lex.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocolex', 'lex-define.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocolex', 'lex-list.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocolex', 'lex-show.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocolex', 'lex-extract.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocolex', 'lex-validate.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocostall', 'stall.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocostall', 'stall-status.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocostall', 'stall-thresholds.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocostall', 'stall-reset.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocopulse', 'pulse.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocopulse', 'pulse-on.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocopulse', 'pulse-off.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocopulse', 'pulse-status.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocopulse', 'pulse-configure.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocoadversary', 'adversary.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocoadversary', 'adversary-enable.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocoadversary', 'adversary-disable.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocoadversary', 'adversary-run.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocoadversary', 'adversary-show.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocoadversary', 'adversary-audit.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocoadversary', 'adversary-gap.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocodiary', 'diary.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocodiary', 'diary-view.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocodiary', 'diary-list.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocodiary', 'diary-search.skill.md'),
+    skillPath('wisdom-reject'),
+    skillPath('wisdom-index'),
+    skillPath('wisdom-recall'),
+    skillPath('wisdom-learnings'),
+    skillPath('wisdom-learn'),
+    skillPath('meter-verify'),
+    skillPath('meter-waste'),
+    skillPath('audit-verify'),
+    skillPath('style'),
+    skillPath('style-init'),
+    skillPath('style-refresh'),
+    skillPath('style-show'),
+    skillPath('style-mode'),
+    skillPath('style-diff'),
+    skillPath('style-status'),
+    skillPath('lex'),
+    skillPath('lex-define'),
+    skillPath('lex-list'),
+    skillPath('lex-show'),
+    skillPath('lex-extract'),
+    skillPath('lex-validate'),
+    skillPath('stall'),
+    skillPath('stall-status'),
+    skillPath('stall-thresholds'),
+    skillPath('stall-reset'),
+    skillPath('pulse'),
+    skillPath('pulse-on'),
+    skillPath('pulse-off'),
+    skillPath('pulse-status'),
+    skillPath('pulse-configure'),
+    skillPath('adversary'),
+    skillPath('adversary-enable'),
+    skillPath('adversary-disable'),
+    skillPath('adversary-run'),
+    skillPath('adversary-show'),
+    skillPath('adversary-audit'),
+    skillPath('adversary-gap'),
+    skillPath('diary'),
+    skillPath('diary-view'),
+    skillPath('diary-list'),
+    skillPath('diary-search'),
   ];
 
   const requiredRecipes = [
@@ -280,16 +291,42 @@ function main() {
   const allowedRuntimeScripts = new Set(requiredRuntimeScripts);
 
   const requiredTwentySixthSkills = [
-    path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-distill.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-review.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-status.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'cocowisdom', 'wisdom-get.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'execution-engine', 'flow-gate-clear.skill.md'),
-    path.join(repoRoot, '.cortex', 'skills', 'execution-engine', 'flow-gate-status.skill.md'),
+    skillPath('wisdom-distill'),
+    skillPath('wisdom-review'),
+    skillPath('wisdom-status'),
+    skillPath('wisdom-get'),
+    skillPath('flow-gate-clear'),
+    skillPath('flow-gate-status'),
   ];
 
   if (!manifestIncludesPath(plugin.skills, './.cortex/skills')) {
     failures.push('.cortex-plugin/plugin.json must register skills as "./.cortex/skills"');
+  }
+
+  const legacySkillFiles = walkFiles(skillsDir, (filePath) => filePath.endsWith('.skill.md'));
+  for (const filePath of legacySkillFiles) {
+    failures.push(`Legacy skill filename must be migrated to <skill>/SKILL.md: ${path.relative(repoRoot, filePath)}`);
+  }
+
+  const canonicalSkillFiles = walkFiles(skillsDir, (filePath) => path.basename(filePath) === 'SKILL.md');
+  const canonicalSkillNames = new Set();
+  for (const filePath of canonicalSkillFiles) {
+    const relativeParts = path.relative(skillsDir, filePath).split(path.sep);
+    if (relativeParts.length < 2 || relativeParts.length > 11) {
+      failures.push(`Skill must be within Cortex Code's 10-directory discovery depth: ${path.relative(repoRoot, filePath)}`);
+      continue;
+    }
+    const folderName = relativeParts[relativeParts.length - 2];
+    const content = readFile(filePath);
+    const nameMatch = content.match(/^name:\s*["']?([^\r\n"']+)["']?\s*$/m);
+    const frontmatterName = nameMatch ? nameMatch[1].trim() : '';
+    if (frontmatterName !== folderName) {
+      failures.push(`Skill folder ${folderName} must match frontmatter name ${frontmatterName || '<missing>'}`);
+    }
+    if (canonicalSkillNames.has(frontmatterName)) {
+      failures.push(`Duplicate skill frontmatter name: ${frontmatterName}`);
+    }
+    canonicalSkillNames.add(frontmatterName);
   }
 
   if (!manifestIncludesPath(plugin.agents, './.cortex/agents')) {
@@ -600,9 +637,7 @@ function main() {
     ...walkFiles(path.join(repoRoot, '.cortex', 'skills'), (filePath) => filePath.endsWith('.md')),
   ];
 
-  const skillContractFiles = walkFiles(path.join(repoRoot, '.cortex', 'skills'), (filePath) =>
-    filePath.endsWith('.skill.md') || path.basename(filePath) === 'SKILL.md'
-  );
+  const skillContractFiles = walkFiles(skillsDir, (filePath) => path.basename(filePath) === 'SKILL.md');
   for (const filePath of skillContractFiles) {
     const relative = path.relative(repoRoot, filePath);
     const content = readFile(filePath);
@@ -668,7 +703,7 @@ function main() {
 
   for (const filePath of runtimeReferenceFiles) {
     const relative = path.relative(repoRoot, filePath).replace(/\\/g, '/');
-    if (relative === '.cortex/skills/assist-mode/cocoplus-console.skill.md') continue;
+    if (relative === '.cortex/skills/assist-mode/cocoplus-console/SKILL.md') continue;
     const content = readFile(filePath);
     for (const pattern of legacyRuntimeReferencePatterns) {
       if (pattern.test(content)) {
@@ -760,7 +795,7 @@ function main() {
     }
   }
 
-  const runtimeQueueSkillPath = path.join(repoRoot, '.cortex', 'skills', 'execution-engine', 'runtime-queue.skill.md');
+  const runtimeQueueSkillPath = skillPath('runtime-queue');
   if (requireFile(runtimeQueueSkillPath, failures, 'V2 runtime queue skill')) {
     const runtimeQueueSkill = readFile(runtimeQueueSkillPath);
     for (const expected of [
@@ -775,7 +810,7 @@ function main() {
     }
   }
 
-  const meterReconcileSkillPath = path.join(repoRoot, '.cortex', 'skills', 'cocometer', 'meter-reconcile.skill.md');
+  const meterReconcileSkillPath = skillPath('meter-reconcile');
   if (requireFile(meterReconcileSkillPath, failures, 'CocoMeter reconciliation skill')) {
     const meterReconcileSkill = readFile(meterReconcileSkillPath);
     for (const expected of [
@@ -790,7 +825,7 @@ function main() {
     }
   }
 
-  const flowEventReaderSkillPath = path.join(repoRoot, '.cortex', 'skills', 'execution-engine', 'flow-event-reader.skill.md');
+  const flowEventReaderSkillPath = skillPath('flow-event-reader');
   if (requireFile(flowEventReaderSkillPath, failures, 'CocoFlow event reader skill')) {
     const flowEventReaderSkill = readFile(flowEventReaderSkillPath);
     for (const expected of [
@@ -805,17 +840,17 @@ function main() {
     }
   }
 
-  const harvestSkill = readFile(path.join(repoRoot, '.cortex', 'skills', 'cocoharvest.skill.md'));
+  const harvestSkill = readFile(skillPath('cocoharvest'));
   if (!/pullThreshold/.test(harvestSkill) || !/\$pull <input>/.test(harvestSkill)) {
     failures.push('CocoHarvest skill must document automatic CocoPull use above pullThreshold');
   }
 
-  const podInitSkill = readFile(path.join(repoRoot, '.cortex', 'skills', 'cocopod', 'pod-init.skill.md'));
+  const podInitSkill = readFile(skillPath('pod-init'));
   if (!podInitSkill.includes('lifecycle/cocowatch-session.md')) {
     failures.push('$pod init gitignore must exclude lifecycle/cocowatch-session.md');
   }
 
-  const rewindSkill = readFile(path.join(repoRoot, '.cortex', 'skills', 'rewind.skill.md'));
+  const rewindSkill = readFile(skillPath('rewind'));
   requireIncludes(
     rewindSkill,
     'cannot reverse Snowflake or other external side effects',

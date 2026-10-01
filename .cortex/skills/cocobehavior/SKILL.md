@@ -101,7 +101,7 @@ These six constraints are your cognitive foundation. They do not override develo
 
 ## L0–L3 Maturity Levels
 
-CocoPod automation maturity (L0 Manual through L3 Autonomous-Eligible) is assessed by the companion `$behavior maturity` command — see `behavior-maturity.skill.md` in this directory. That assessment governs whether AFK stages may proceed without per-stage developer approval, subject to the Four-Tier Boundary Framework's NEVER tier.
+CocoPod automation maturity (L0 Manual through L3 Autonomous-Eligible) is assessed by the companion `$behavior maturity` command — see `.cortex/skills/cocobehavior/behavior-maturity/SKILL.md`. That assessment governs whether AFK stages may proceed without per-stage developer approval, subject to the Four-Tier Boundary Framework's NEVER tier.
 
 ## Exit Criteria
 
