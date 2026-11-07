@@ -47,6 +47,51 @@ body::selection {
   color: #ffffff;
 }
 
+/* ── Award announcement ─────────────────────────────────── */
+
+.award-banner {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0.65rem 1.25rem;
+  text-align: center;
+}
+
+.award-banner a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.65rem;
+  color: var(--text);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  border-radius: 4px;
+}
+
+.award-banner-icon {
+  flex-shrink: 0;
+  color: var(--accent-2);
+}
+
+.award-banner-link {
+  color: var(--accent-2);
+  white-space: nowrap;
+}
+
+.award-banner a:hover {
+  text-decoration: none;
+}
+
+.award-banner a:hover .award-banner-link {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.award-banner a:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 5px;
+}
+
 /* ── Navigation ─────────────────────────────────────────── */
 
 nav {
